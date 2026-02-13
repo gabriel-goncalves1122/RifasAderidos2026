@@ -1,0 +1,33 @@
+# --- GERAL DO SISTEMA ---
+node_modules/
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# --- FRONTEND (React + Vite) ---
+frontend/dist/
+frontend/build/
+frontend/coverage/
+frontend/*.local
+frontend/.env.local
+frontend/.env.*.local
+
+# --- BACKEND (Firebase Functions) ---
+# Ignorar dependências instaladas dentro da função
+backend/functions/node_modules/
+
+# Ignorar o código compilado (JS gerado do TS)
+backend/functions/lib/
+
+# Arquivos de log e debug do emulador
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+backend/firebase-debug.log*
+backend/firestore-debug.log*
+backend/ui-debug.log*
+
+# Arquivos de ambiente do backend (SEGREDO MÁXIMO)
+backend/functions/.env
+backend/.runtimeconfig.json
