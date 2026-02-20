@@ -7,7 +7,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
-  User, // Importação necessária para a interface
+  User,
+  signOut, // Importação necessária para a interface
 } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
@@ -83,6 +84,14 @@ export function useAuthController() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error("Erro ao sair da conta:", err);
+    }
+  };
+
   const handleRegister = async (email: string, senha: string) => {
     setLoading(true);
     setError(null);
@@ -119,5 +128,12 @@ export function useAuthController() {
     }
   };
 
-  return { handleLogin, handleRegister, error, loading, usuarioAtual };
+  return {
+    usuarioAtual,
+    loading,
+    error,
+    handleLogin,
+    handleRegister,
+    handleLogout, // <--- Faltava isso aqui!
+  };
 }

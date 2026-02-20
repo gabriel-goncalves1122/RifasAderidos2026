@@ -60,21 +60,21 @@ export interface Comprador {
 // 3. NÚMERO (O Bilhete da Rifa)
 // Coleção: 'bilhetes'
 // ----------------------------------------------------------------------------
-// 'pendente': O aderido enviou o comprovante, mas a Tesouraria ainda não olhou.
 export type StatusBilhete = "disponivel" | "reservado" | "pendente" | "pago";
 
 export interface Bilhete {
-  numero: string; // Ex: "00054"
+  numero: string;
   status: StatusBilhete;
 
-  vendedor_cpf: string; // CPF do aluno para rastreabilidade total
+  vendedor_cpf: string;
+  vendedor_nome?: string; // <--- NOVO: Metadado do Vendedor
+
   comprador_id: string | null;
+  comprador_nome?: string; // <--- NOVO: Metadado do Comprador
 
-  // Timestamps de Auditoria
-  data_reserva: string | null; // Quando foi selecionado no checkout
-  data_pagamento: string | null; // Quando a Tesouraria clicou em "Aprovar"
+  data_reserva: string | null;
+  data_pagamento: string | null;
 
-  // Link do Firebase Storage com Metadados
   comprovante_url: string | null;
 }
 

@@ -41,6 +41,7 @@ describe("DashboardPage", () => {
       error: null,
       handleLogin: vi.fn(),
       handleRegister: vi.fn(),
+      handleLogout: vi.fn(),
     });
 
     vi.mocked(useRifasController).mockReturnValue({

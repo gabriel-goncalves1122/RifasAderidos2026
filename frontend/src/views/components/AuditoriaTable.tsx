@@ -1,16 +1,8 @@
 // ============================================================================
-// ARQUIVO: AuditoriaTable.tsx (Tabela com Modal de Confirmação Animado)
+// ARQUIVO: frontend/src/views/components/AuditoriaTable.tsx
 // ============================================================================
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
   Typography,
   Box,
   CircularProgress,
@@ -22,6 +14,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Card,
+  CardContent,
+  CardActions,
+  Divider,
+  Button,
 } from "@mui/material";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -30,24 +27,36 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import CloseIcon from "@mui/icons-material/Close";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import PersonIcon from "@mui/icons-material/Person";
+import BadgeIcon from "@mui/icons-material/Badge";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
 import { useRifasController } from "../../controllers/useRifasController";
-import { Bilhete } from "../../types/models";
+import { Bilhete } from "../../types/models"; // <-- Importando o modelo oficial
 
-// NOVA PROP: Avisa o "Pai" (Dashboard) que algo mudou no banco
 interface AuditoriaTableProps {
   onAtualizacao?: () => void;
+}
+
+// CONTRATO DE AGRUPAMENTO: Ensina o TypeScript o formato exato da transação
+interface TransacaoAgrupada {
+  comprovante_url: string | null;
+  vendedor_cpf: string;
+  vendedor_nome: string;
+  comprador_nome: string;
+  data_reserva: string | null;
+  bilhetes: string[];
 }
 
 export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
   const { buscarPendentes, avaliarComprovante } = useRifasController();
 
+  // Agora dizemos que a lista que vem do banco é uma lista de Bilhetes
   const [pendentes, setPendentes] = useState<Bilhete[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [processandoId, setProcessandoId] = useState<string | null>(null);
   const [comprovanteAtivo, setComprovanteAtivo] = useState<string | null>(null);
 
-  // ESTADO DO NOVO MODAL DE CONFIRMAÇÃO
   const [modalConfirmacao, setModalConfirmacao] = useState<{
     open: boolean;
     chaveUnica: string | null;
@@ -66,35 +75,32 @@ export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
     carregarLista();
   }, []);
 
-  const transacoesAgrupadas = pendentes.reduce(
-    (acc, bilhete) => {
-      const chave = bilhete.comprovante_url || bilhete.numero;
-      if (!acc[chave]) {
-        acc[chave] = {
-          comprovante_url: bilhete.comprovante_url,
-          vendedor_cpf: bilhete.vendedor_cpf,
-          data_reserva: bilhete.data_reserva,
-          bilhetes: [bilhete.numero],
-        };
-      } else {
-        acc[chave].bilhetes.push(bilhete.numero);
-      }
-      return acc;
-    },
-    {} as Record<
-      string,
-      {
-        comprovante_url: string | null;
-        vendedor_cpf: string;
-        data_reserva: string | null;
-        bilhetes: string[];
-      }
-    >,
-  );
+  // ==========================================================================
+  // AGRUPAMENTO TIPADO
+  // ==========================================================================
+  const transacoesAgrupadas = pendentes.reduce<
+    Record<string, TransacaoAgrupada>
+  >((acc, bilhete) => {
+    const chave = bilhete.comprovante_url || bilhete.numero;
+    if (!acc[chave]) {
+      acc[chave] = {
+        comprovante_url: bilhete.comprovante_url,
+        vendedor_cpf: bilhete.vendedor_cpf,
+        vendedor_nome: bilhete.vendedor_nome || "Nome não informado",
+        comprador_nome: bilhete.comprador_nome || "Nome não informado",
+        data_reserva: bilhete.data_reserva,
+        bilhetes: [bilhete.numero],
+      };
+    } else {
+      acc[chave].bilhetes.push(bilhete.numero);
+    }
+    return acc;
+  }, {});
 
-  const listaTransacoes = Object.values(transacoesAgrupadas);
+  // Extrai os valores do objeto para uma Array perfeitamente tipada
+  const listaTransacoes: TransacaoAgrupada[] =
+    Object.values(transacoesAgrupadas);
 
-  // 1. ABRE O MODAL BONITO (Em vez do window.confirm)
   const solicitarAvaliacao = (
     chaveUnica: string | null,
     numeros: string[],
@@ -103,24 +109,19 @@ export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
     setModalConfirmacao({ open: true, chaveUnica, numeros, decisao });
   };
 
-  // 2. EXECUTA A AÇÃO QUANDO O USUÁRIO CLICAR EM "SIM" NO MODAL
   const confirmarAvaliacao = async () => {
     const { chaveUnica, numeros, decisao } = modalConfirmacao;
     if (!numeros.length || !decisao) return;
 
-    setModalConfirmacao({ ...modalConfirmacao, open: false }); // Fecha o modal
+    setModalConfirmacao({ ...modalConfirmacao, open: false });
     setProcessandoId(chaveUnica || numeros[0]);
 
     const promessas = numeros.map((num) => avaliarComprovante(num, decisao));
     await Promise.all(promessas);
 
     setProcessandoId(null);
-    carregarLista(); // Limpa a tabela da tesouraria
-
-    // 🔥 O SEGREDO DO "NÃO PRECISA DE F5"
-    if (onAtualizacao) {
-      onAtualizacao();
-    }
+    carregarLista();
+    if (onAtualizacao) onAtualizacao();
   };
 
   if (carregando) {
@@ -133,7 +134,15 @@ export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
 
   if (listaTransacoes.length === 0) {
     return (
-      <Box sx={{ textAlign: "center", py: 5 }}>
+      <Box
+        sx={{
+          textAlign: "center",
+          py: 5,
+          bgcolor: "white",
+          borderRadius: 2,
+          border: "1px dashed #ccc",
+        }}
+      >
         <CheckCircleIcon sx={{ fontSize: 60, color: "success.light", mb: 2 }} />
         <Typography variant="h6" color="text.secondary">
           Tudo limpo!
@@ -147,136 +156,208 @@ export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
 
   return (
     <Box>
-      <TableContainer component={Paper} variant="outlined">
-        <Table size="small">
-          <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
-            <TableRow>
-              <TableCell>
-                <strong>Rifas do Pedido</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Valor Esperado</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Data</strong>
-              </TableCell>
-              <TableCell align="center">
-                <strong>Comprovante</strong>
-              </TableCell>
-              <TableCell align="center">
-                <strong>Ações (Lote)</strong>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {listaTransacoes.map((transacao) => {
-              const dataFormatada = transacao.data_reserva
-                ? new Date(transacao.data_reserva).toLocaleDateString("pt-BR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "N/A";
+      <Stack spacing={3}>
+        {listaTransacoes.map((transacao) => {
+          const dataFormatada = transacao.data_reserva
+            ? new Date(transacao.data_reserva).toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Data não registrada";
 
-              const valorTotal = (transacao.bilhetes.length * 10)
-                .toFixed(2)
-                .replace(".", ",");
-              const isProcessando =
-                processandoId ===
-                (transacao.comprovante_url || transacao.bilhetes[0]);
+          const valorTotal = (transacao.bilhetes.length * 10)
+            .toFixed(2)
+            .replace(".", ",");
+          const isProcessando =
+            processandoId ===
+            (transacao.comprovante_url || transacao.bilhetes[0]);
 
-              return (
-                <TableRow
-                  key={transacao.comprovante_url || transacao.bilhetes[0]}
-                  hover
+          return (
+            <Card
+              key={transacao.comprovante_url || transacao.bilhetes[0]}
+              elevation={3}
+              sx={{
+                borderRadius: 2,
+                borderLeft: "6px solid",
+                borderColor: "warning.main",
+              }}
+            >
+              <CardContent sx={{ pb: 1 }}>
+                {/* CABEÇALHO DO CARD */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                    flexWrap: "wrap",
+                    gap: 1,
+                  }}
                 >
-                  <TableCell>
-                    <Stack direction="row" flexWrap="wrap" gap={0.5}>
-                      {transacao.bilhetes.map((num) => (
-                        <Chip
-                          key={num}
-                          label={num}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      ))}
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      fontWeight="bold"
-                      color="success.main"
-                      sx={{ display: "flex", alignItems: "center" }}
-                    >
-                      <AttachMoneyIcon fontSize="small" /> {valorTotal}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{dataFormatada}</TableCell>
-                  <TableCell align="center">
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<VisibilityIcon />}
-                      disabled={!transacao.comprovante_url}
-                      onClick={() =>
-                        setComprovanteAtivo(transacao.comprovante_url)
-                      }
-                    >
-                      Ver Pix
-                    </Button>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box
-                      sx={{ display: "flex", justifyContent: "center", gap: 1 }}
-                    >
-                      <Button
-                        variant="contained"
-                        color="success"
-                        size="small"
-                        startIcon={
-                          isProcessando ? (
-                            <CircularProgress size={16} color="inherit" />
-                          ) : (
-                            <CheckCircleIcon />
-                          )
-                        }
-                        disabled={isProcessando}
-                        onClick={() =>
-                          solicitarAvaliacao(
-                            transacao.comprovante_url,
-                            transacao.bilhetes,
-                            "aprovar",
-                          )
-                        }
-                      >
-                        Aprovar
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        startIcon={<CancelIcon />}
-                        disabled={isProcessando}
-                        onClick={() =>
-                          solicitarAvaliacao(
-                            transacao.comprovante_url,
-                            transacao.bilhetes,
-                            "rejeitar",
-                          )
-                        }
-                      >
-                        Rejeitar
-                      </Button>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                  >
+                    <CalendarTodayIcon fontSize="small" /> {dataFormatada}
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    color="success.main"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <AttachMoneyIcon /> {valorTotal}
+                  </Typography>
+                </Box>
 
-      {/* MODAL 1: FOTO DO PIX */}
+                <Divider sx={{ mb: 2 }} />
+
+                {/* METADADOS DA VENDA (Usando CSS Grid nativo no Box, à prova de falhas) */}
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                    gap: 2,
+                    mb: 2,
+                  }}
+                >
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
+                      Vendido por (Aderido):
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight="bold"
+                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                    >
+                      <BadgeIcon fontSize="small" color="primary" />{" "}
+                      {transacao.vendedor_nome}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      CPF: {transacao.vendedor_cpf}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
+                      Comprado por:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight="bold"
+                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                    >
+                      <PersonIcon fontSize="small" color="secondary" />{" "}
+                      {transacao.comprador_nome}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* RIFAS AGRUPADAS */}
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  mb={1}
+                >
+                  Rifas do Pedido ({transacao.bilhetes.length}):
+                </Typography>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                  {transacao.bilhetes.map((num: string) => (
+                    <Chip
+                      key={num}
+                      label={num}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                      sx={{ fontWeight: "bold" }}
+                    />
+                  ))}
+                </Box>
+              </CardContent>
+
+              {/* ÁREA DE AÇÕES */}
+              <CardActions
+                sx={{
+                  px: 2,
+                  pb: 2,
+                  pt: 1,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: 1,
+                  bgcolor: "#f9f9f9",
+                  borderTop: "1px solid #eee",
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<VisibilityIcon />}
+                  disabled={!transacao.comprovante_url}
+                  onClick={() => setComprovanteAtivo(transacao.comprovante_url)}
+                >
+                  Ver Pix
+                </Button>
+
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    startIcon={
+                      isProcessando ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : (
+                        <CheckCircleIcon />
+                      )
+                    }
+                    disabled={isProcessando}
+                    onClick={() =>
+                      solicitarAvaliacao(
+                        transacao.comprovante_url,
+                        transacao.bilhetes,
+                        "aprovar",
+                      )
+                    }
+                  >
+                    Aprovar
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="small"
+                    startIcon={<CancelIcon />}
+                    disabled={isProcessando}
+                    onClick={() =>
+                      solicitarAvaliacao(
+                        transacao.comprovante_url,
+                        transacao.bilhetes,
+                        "rejeitar",
+                      )
+                    }
+                  >
+                    Rejeitar
+                  </Button>
+                </Box>
+              </CardActions>
+            </Card>
+          );
+        })}
+      </Stack>
+
+      {/* MODAL DO PIX */}
       <Dialog
         open={!!comprovanteAtivo}
         onClose={() => setComprovanteAtivo(null)}
@@ -307,7 +388,7 @@ export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
           {comprovanteAtivo && (
             <img
               src={comprovanteAtivo}
-              alt="Comprovante de Pagamento"
+              alt="Comprovante Pix"
               style={{
                 maxWidth: "100%",
                 maxHeight: "80vh",
@@ -318,7 +399,7 @@ export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
         </Box>
       </Dialog>
 
-      {/* MODAL 2: CONFIRMAÇÃO DE AÇÃO (O Novo "Window.Confirm") */}
+      {/* MODAL DE CONFIRMAÇÃO */}
       <Dialog
         open={modalConfirmacao.open}
         onClose={() =>
@@ -348,15 +429,7 @@ export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
         <DialogContent>
           <DialogContentText>
             Você está prestes a <strong>{modalConfirmacao.decisao}</strong> o
-            pagamento de {modalConfirmacao.numeros.length} rifa(s):
-            <br />
-            <br />
-            <strong>Bilhetes:</strong> {modalConfirmacao.numeros.join(", ")}
-            <br />
-            <br />
-            {modalConfirmacao.decisao === "aprovar"
-              ? "Esta ação confirmará a venda e atualizará a meta do aderido. Deseja continuar?"
-              : "Esta ação devolverá as rifas para o mercado e apagará o comprovante. Deseja continuar?"}
+            pagamento de {modalConfirmacao.numeros.length} rifa(s).
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ pb: 2, pr: 2 }}>

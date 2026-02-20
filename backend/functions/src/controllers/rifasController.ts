@@ -52,13 +52,14 @@ export const rifasController = {
   },
 
   // =========================================================
-  // 2. PROCESSAR A VENDA E SALVAR COMPROVANTE
+  // 2. PROCESSAR A VENDA E SALVAR COMPROVANTE (Enriquecido)
   // =========================================================
   async processarVenda(req: AuthRequest, res: Response) {
     try {
-      const db = admin.firestore(); // <-- Variável restaurada!
+      const db = admin.firestore();
 
       const uid = req.user?.uid;
+      const emailLogado = req.user?.email; // Precisamos do e-mail para achar o vendedor
       const { nome, telefone, email, numerosRifas, comprovanteUrl } = req.body;
 
       if (
@@ -72,7 +73,25 @@ export const rifasController = {
           .json({ error: "Dados incompletos ou comprovante faltando." });
       }
 
-      // 1. REGISTRAR O COMPRADOR NO FIRESTORE
+      // 1. BUSCAR DADOS DO VENDEDOR (Para salvar no bilhete e facilitar a auditoria)
+      let vendedorNome = "Nome não registrado";
+      let vendedorCpf = "CPF não registrado";
+
+      if (emailLogado) {
+        const userDocs = await db
+          .collection("usuarios")
+          .where("email", "==", emailLogado)
+          .limit(1)
+          .get();
+
+        if (!userDocs.empty) {
+          const userData = userDocs.docs[0].data();
+          vendedorNome = userData.nome || vendedorNome;
+          vendedorCpf = userData.cpf || vendedorCpf;
+        }
+      }
+
+      // 2. REGISTRAR O COMPRADOR NO FIRESTORE
       const compradorRef = db.collection("compradores").doc();
       await compradorRef.set({
         id: compradorRef.id,
@@ -82,17 +101,19 @@ export const rifasController = {
         criado_em: new Date().toISOString(),
       });
 
-      // 2. ATUALIZAR OS BILHETES (BATCH)
+      // 3. ATUALIZAR OS BILHETES (BATCH COM METADADOS ENRIQUECIDOS)
       const batch = db.batch();
 
       numerosRifas.forEach((numero: string) => {
         const bilheteRef = db.collection("bilhetes").doc(numero);
-        // Usando set com merge para garantir que não dê erro se o documento não existir
         batch.set(
           bilheteRef,
           {
-            status: "pendente", // <--- CORREÇÃO AQUI: Troque "em_analise" por "pendente"
+            status: "pendente",
             comprador_id: compradorRef.id,
+            comprador_nome: nome, // <--- NOVO METADADO!
+            vendedor_nome: vendedorNome, // <--- NOVO METADADO!
+            vendedor_cpf: vendedorCpf, // <--- NOVO METADADO!
             data_reserva: new Date().toISOString(),
             comprovante_url: comprovanteUrl,
           },
