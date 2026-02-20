@@ -93,9 +93,9 @@ describe("Componente <AuditoriaTable />", () => {
     fireEvent.click(btnAprovar);
 
     // Garante que a ação não vá direto para o backend. O Modal de segurança deve aparecer.
-    expect(screen.getByText(/Confirmar Aprovação/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Esta ação confirmará a venda e atualizará a meta/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Confirmar Aprovação/i)).toBeInTheDocument();
+
+    // Novo texto que configuramos nos cards para mobile
+    expect(screen.getByText(/Você está prestes a/i)).toBeInTheDocument();
   });
 });

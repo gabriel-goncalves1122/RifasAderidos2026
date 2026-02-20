@@ -1,35 +1,31 @@
-import { render, screen, waitFor } from "@testing-library/react";
+// ============================================================================
+// ARQUIVO: frontend/tests/DashBoardPage.spec.tsx
+// ============================================================================
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BrowserRouter } from "react-router-dom";
 import { DashboardPage } from "../src/views/pages/DashboardPage";
 
-// ============================================================================
-// MOCKS: "Falsificando" as dependências externas para isolar o componente
-// ============================================================================
-
-// 1. Mock do Auth Controller: Finge que temos um usuário logado com cargo de tesouraria
+// MOCKS DAS DEPENDÊNCIAS
 vi.mock("../src/controllers/useAuthController", () => ({
   useAuthController: vi.fn(),
 }));
 import { useAuthController } from "../src/controllers/useAuthController";
 
-// 2. Mock do Rifas Controller: Finge a comunicação com o banco de dados
 vi.mock("../src/controllers/useRifasController", () => ({
   useRifasController: vi.fn(),
 }));
 import { useRifasController } from "../src/controllers/useRifasController";
 
-// 3. Mock do Firebase Auth global: Evita que a biblioteca tente conectar com a internet real
 vi.mock("firebase/auth", () => ({
   getAuth: vi.fn(),
   signOut: vi.fn(),
   onAuthStateChanged: vi.fn(),
 }));
 
-describe("DashboardPage", () => {
+describe("DashboardPage (Novo Layout Híbrido)", () => {
   beforeEach(() => {
-    // PREPARAÇÃO: Injeta os dados falsos antes de cada teste rodar
     vi.mocked(useAuthController).mockReturnValue({
       usuarioAtual: {
         uid: "123",
@@ -57,41 +53,46 @@ describe("DashboardPage", () => {
     vi.clearAllMocks();
   });
 
-  // TESTE 1: Garante que a tela principal carrega com o cargo correto
-  it("deve renderizar o cabeçalho do painel do aderido e buscar as rifas", async () => {
+  it("deve renderizar o painel do aderido e abrir o menu da tesouraria", async () => {
+    const user = userEvent.setup();
     render(
       <BrowserRouter>
         <DashboardPage />
       </BrowserRouter>,
     );
 
-    // waitFor é usado porque o nome pode demorar uns milissegundos para ser injetado
+    // 1. Verifica se a tela inicial (Aderido) carregou
     await waitFor(() => {
-      expect(screen.getByText(/Olá, Tester!/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Olá, Tester!/i).length).toBeGreaterThan(0);
     });
-    expect(screen.getByText(/Cargo:/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Bloco de Vendas/i)).toBeInTheDocument();
 
-    // Usamos getAllByText porque a palavra 'TESOURARIA' aparece tanto no perfil quanto no nome da aba
-    const elementosTesouraria = screen.getAllByText(/TESOURARIA/i);
-    expect(elementosTesouraria.length).toBeGreaterThan(0);
+    // 2. Simula o clique no botão de Menu (Hambúrguer)
+    const btnMenu = screen.getByRole("button", { name: /menu/i });
+    await user.click(btnMenu);
+
+    // 3. Verifica se o Drawer abriu e mostrou as opções de Admin
+    expect(await screen.findByText(/Comissão 2026/i)).toBeInTheDocument();
+    expect(screen.getByText(/Painel da Tesouraria/i)).toBeInTheDocument();
   });
 
-  // TESTE 2: Simula a navegação do usuário clicando em outra aba
-  it("deve trocar para a aba de prêmios ao clicar", async () => {
-    const user = userEvent.setup(); // Prepara o simulador de mouse/teclado
+  it("deve alterar a aba selecionada no cabeçalho", () => {
     render(
       <BrowserRouter>
         <DashboardPage />
       </BrowserRouter>,
     );
 
-    // Busca a aba pelo "role" (papel de acessibilidade) e clica nela
-    const abaPremios = screen.getByRole("tab", { name: /Prêmios/i });
-    await user.click(abaPremios);
+    // Verifica se a primeira aba está ativa por padrão
+    const abaMinhasRifas = screen.getByRole("tab", { name: /Minhas Rifas/i });
+    expect(abaMinhasRifas).toHaveAttribute("aria-selected", "true");
 
-    // Garante que o conteúdo da aba Prêmios substituiu o conteúdo das rifas
-    expect(
-      await screen.findByText(/Os prêmios serão listados em breve/i),
-    ).toBeInTheDocument();
+    // Procura a segunda aba e clica nela
+    const abaPremios = screen.getByRole("tab", { name: /Prêmios/i });
+    expect(abaPremios).toHaveAttribute("aria-selected", "false");
+
+    // Clica e garante que o Material UI trocou a classe "selected" dela (A validação real de DOM)
+    fireEvent.click(abaPremios);
+    expect(abaPremios).toHaveAttribute("aria-selected", "true");
   });
 });

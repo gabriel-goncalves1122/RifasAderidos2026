@@ -5,28 +5,42 @@
 import { rifasController } from "../src/controllers/rifasController";
 import { AuthRequest } from "../src/middlewares/authMiddleware";
 import { Response } from "express";
+
 // ----------------------------------------------------------------------------
 // 1. MOCK (FALSIFICAÇÃO) DE DEPENDÊNCIAS EXTERNAS
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-// 1. MOCK (FALSIFICAÇÃO) DE DEPENDÊNCIAS EXTERNAS
-// ----------------------------------------------------------------------------
+// Mock do Firebase Admin
 jest.mock("firebase-admin", () => {
-  // Criamos as variáveis falsas DENTRO do escopo do mock para fugir do erro de hoisting
-  const mockDocRef = { id: "comprador_mock_123", set: jest.fn() };
-  const mockBatch = {
+  const batchMock = {
     set: jest.fn(),
     update: jest.fn(),
-    commit: jest.fn().mockResolvedValue(true), // Simula o salvamento com sucesso
+    commit: jest.fn().mockResolvedValue(true),
+  };
+  const docMock = {
+    get: jest.fn(),
+    set: jest.fn(),
+    id: "comprador_falso_123", // Simulando um ID gerado pelo doc()
+  };
+  const collectionMock = {
+    doc: jest.fn(() => docMock),
+    // Ensinando o Mock a lidar com as novas buscas (where, limit, get)
+    where: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    get: jest.fn().mockResolvedValue({
+      empty: false,
+      docs: [
+        {
+          data: () => ({ nome: "Aderido Teste", cpf: "111.222.333-44" }),
+        },
+      ],
+    }),
   };
 
   return {
-    firestore: jest.fn().mockReturnValue({
-      collection: jest.fn().mockReturnValue({
-        doc: jest.fn().mockReturnValue(mockDocRef),
-      }),
-      batch: jest.fn().mockReturnValue(mockBatch),
-    }),
+    firestore: jest.fn(() => ({
+      collection: jest.fn(() => collectionMock),
+      batch: jest.fn(() => batchMock),
+    })),
   };
 });
 
