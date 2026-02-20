@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+// ============================================================================
+// ARQUIVO: CheckoutModal.tsx (Interface de Venda e Upload)
+// ============================================================================
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -13,15 +16,14 @@ import {
   InputAdornment,
   Paper,
   Chip,
-  CircularProgress, // NOVO: O ícone de carregamento do Material UI
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
 
-// NOVO: Importando o nosso controlador que faz o serviço pesado
-import { useRifasController } from "../../services/useRifasController";
+import { useRifasController } from "../../controllers/useRifasController";
 
 interface CheckoutModalProps {
   open: boolean;
@@ -36,14 +38,34 @@ export function CheckoutModal({
   onSuccess,
   numerosRifas,
 }: CheckoutModalProps) {
+  // --------------------------------------------------------------------------
+  // 1. ESTADOS LOCAIS (Dados do Comprador)
+  // --------------------------------------------------------------------------
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [email, setEmail] = useState("");
   const [comprovante, setComprovante] = useState<File | null>(null);
 
-  // NOVO: Puxando a função de venda e o estado de carregamento do nosso Hook
+  // Controller que gerencia o fluxo pesado (Upload + API)
   const { finalizarVenda, loading } = useRifasController();
 
+  // --------------------------------------------------------------------------
+  // 2. CICLO DE VIDA (Lifecycle)
+  // --------------------------------------------------------------------------
+  // GATILHO DE LIMPEZA: Toda a vez que o modal FECHAR (!open), nós apagamos
+  // a memória dele. Evita que o "Pedro" apareça como comprador da próxima rifa.
+  useEffect(() => {
+    if (!open) {
+      setNome("");
+      setTelefone("");
+      setEmail("");
+      setComprovante(null);
+    }
+  }, [open]);
+
+  // --------------------------------------------------------------------------
+  // 3. VARIÁVEIS DE CÁLCULO
+  // --------------------------------------------------------------------------
   const chavePixComissao = "comissao.engenharia@unifei.edu.br";
   const PRECO_RIFA = 10.0;
   const valorTotal = numerosRifas.length * PRECO_RIFA;
@@ -52,22 +74,27 @@ export function CheckoutModal({
     currency: "BRL",
   });
 
+  // --------------------------------------------------------------------------
+  // 4. AÇÕES (Handlers)
+  // --------------------------------------------------------------------------
   const handleCopiarPix = () => {
     navigator.clipboard.writeText(chavePixComissao);
+    // TODO: Trocar este alert nativo feio por um Snackbar do Material UI no futuro
     alert("Chave PIX copiada para a área de transferência!");
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // PROTEÇÃO: Só atualiza se o utilizador realmente selecionou um ficheiro.
+    // Se ele abriu a janela e cancelou, o event.target.files fica vazio e não quebra o app.
     if (event.target.files && event.target.files.length > 0) {
       setComprovante(event.target.files[0]);
     }
   };
 
-  // NOVO: A função agora é assíncrona (async) porque vai esperar o upload terminar
   const handleFinalizar = async () => {
     if (!comprovante) return;
 
-    // Dispara a função real que envia para o Firebase Storage e depois pro Backend Node.js
+    // Dispara a pipeline completa: Storage (Imagem) -> Backend (API) -> Banco (Firestore)
     const sucesso = await finalizarVenda({
       nome,
       telefone,
@@ -78,26 +105,26 @@ export function CheckoutModal({
 
     if (sucesso) {
       alert("Sucesso! Venda enviada para a tesouraria.");
-      // Limpa os campos para a próxima venda
-      setNome("");
-      setTelefone("");
-      setEmail("");
-      setComprovante(null);
-      onSuccess(); // Fecha o modal e limpa o carrinho no Dashboard
+      onSuccess(); // O onSuccess do pai (Dashboard) é o responsável por fechar o modal e limpar o carrinho
     }
   };
 
-  // A validação agora trava o botão se estiver faltando dados OU se estiver carregando (loading)
+  // Regra de Negócio: O botão só acende se os dados vitais existirem
   const formValido =
     nome.trim() !== "" && telefone.trim() !== "" && comprovante !== null;
 
+  // --------------------------------------------------------------------------
+  // 5. INTERFACE (UI)
+  // --------------------------------------------------------------------------
   return (
+    // O Dialog bloqueia cliques fora dele se estiver a carregar (disableEscapeKeyDown não funciona nativamente no onClose do Material UI, então condicionamos)
     <Dialog
       open={open}
-      onClose={!loading ? onClose : undefined}
+      onClose={loading ? undefined : onClose}
       fullWidth
       maxWidth="sm"
     >
+      {/* CABEÇALHO */}
       <DialogTitle
         sx={{ m: 0, p: 2, backgroundColor: "#1976d2", color: "white" }}
       >
@@ -105,7 +132,7 @@ export function CheckoutModal({
         <IconButton
           aria-label="close"
           onClick={onClose}
-          disabled={loading} // Não deixa fechar o modal no meio do envio
+          disabled={loading} // Bloqueia o "X" enquanto faz o upload
           sx={{ position: "absolute", right: 8, top: 8, color: "white" }}
         >
           <CloseIcon />
@@ -113,6 +140,7 @@ export function CheckoutModal({
       </DialogTitle>
 
       <DialogContent dividers>
+        {/* RESUMO DO CARRINHO */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="body2" color="text.secondary" gutterBottom>
             Números selecionados:
@@ -126,6 +154,7 @@ export function CheckoutModal({
 
         <Divider sx={{ mb: 3 }} />
 
+        {/* SEÇÃO 1: FORMULÁRIO DO COMPRADOR */}
         <Typography
           variant="subtitle1"
           fontWeight="bold"
@@ -143,7 +172,6 @@ export function CheckoutModal({
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             disabled={loading}
-            required
           />
           <TextField
             label="WhatsApp (com DDD) *"
@@ -154,7 +182,6 @@ export function CheckoutModal({
             onChange={(e) => setTelefone(e.target.value)}
             disabled={loading}
             placeholder="(35) 99999-9999"
-            required
           />
           <TextField
             label="E-mail (Opcional)"
@@ -171,6 +198,7 @@ export function CheckoutModal({
 
         <Divider sx={{ mb: 3 }} />
 
+        {/* SEÇÃO 2: DADOS BANCÁRIOS */}
         <Typography
           variant="subtitle1"
           fontWeight="bold"
@@ -211,6 +239,7 @@ export function CheckoutModal({
 
         <Divider sx={{ mb: 3 }} />
 
+        {/* SEÇÃO 3: UPLOAD DO COMPROVANTE */}
         <Typography
           variant="subtitle1"
           fontWeight="bold"
@@ -233,7 +262,7 @@ export function CheckoutModal({
             color={comprovante ? "success" : "primary"}
             startIcon={<CloudUploadIcon />}
             fullWidth
-            disabled={loading}
+            disabled={loading} // Trava o botão de procurar ficheiro durante o upload
           >
             {comprovante ? "Trocar Comprovante" : "Anexar Imagem ou PDF"}
             <input
@@ -243,15 +272,17 @@ export function CheckoutModal({
               onChange={handleFileChange}
             />
           </Button>
+          {/* Feedback visual de que o ficheiro foi anexado */}
           {comprovante && (
-            <Typography variant="body2" color="success.main">
-              Arquivo: {comprovante.name}
+            <Typography variant="body2" color="success.main" fontWeight="bold">
+              ✓ Ficheiro pronto: {comprovante.name}
             </Typography>
           )}
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2 }}>
+      {/* RODAPÉ E AÇÃO FINAL */}
+      <DialogActions sx={{ p: 2, backgroundColor: "#f8f9fa" }}>
         <Button onClick={onClose} color="inherit" disabled={loading}>
           Cancelar
         </Button>
@@ -260,7 +291,7 @@ export function CheckoutModal({
           variant="contained"
           color="success"
           disabled={!formValido || loading}
-          sx={{ minWidth: 160 }} // Garante que o botão não encolha quando o ícone aparecer
+          sx={{ minWidth: 160 }} // Evita que o botão "trema" quando o texto muda para o ícone de load
         >
           {loading ? (
             <CircularProgress size={24} color="inherit" />

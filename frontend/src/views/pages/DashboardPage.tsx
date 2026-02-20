@@ -38,7 +38,7 @@ import { Premio } from "../../types/models";
 import { CheckoutModal } from "../components/CheckoutModal";
 
 // 🔴 CORREÇÃO DO IMPORT: Trazendo o Hook do Frontend, não do Backend!
-import { useRifasController } from "../../services/useRifasController";
+import { useRifasController } from "../../controllers/useRifasController";
 
 // ==========================================
 // COMPONENTE AUXILIAR: ABA (TAB PANEL)

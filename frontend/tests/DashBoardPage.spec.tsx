@@ -20,15 +20,20 @@ const mocks = vi.hoisted(() => ({
   ]),
 }));
 
-// Falsifica a conexão com o Firebase (Evita erro de rede e importação)
+// 2. Falsifica a conexão com o Firebase (Agora com getIdToken de mentira para segurança extra)
 vi.mock("../src/config/firebase", () => ({
-  auth: { currentUser: { uid: "123", email: "teste@teste.com" } },
+  auth: {
+    currentUser: {
+      uid: "123",
+      email: "teste@teste.com",
+      getIdToken: vi.fn().mockResolvedValue("token-falso-123"), // <-- ADICIONADO AQUI
+    },
+  },
   storage: {},
 }));
 
-// Falsifica o Hook que faria o "fetch" na nossa API do backend.
-// Nós injetamos os bilhetinhos falsos que criamos ali em cima.
-vi.mock("../src/services/useRifasController", () => ({
+// 3. Falsificamos o Controller usando o NOVO CAMINHO CORRETO
+vi.mock("../src/controllers/useRifasController", () => ({
   useRifasController: () => ({
     loading: false,
     buscarMinhasRifas: mocks.buscarMinhasRifas,
