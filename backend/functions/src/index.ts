@@ -1,25 +1,28 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-// 1. INICIALIZE O FIREBASE ANTES DE QUALQUER OUTRA COISA!
-admin.initializeApp();
-
-// 2. SÓ DEPOIS IMPORTE O EXPRESS E SUAS ROTAS
-import express from "express";
-import cors from "cors";
-import rifasRoutes from "./routes/rifasRoutes";
-import { validateToken, AuthRequest } from "./middlewares/authMiddleware";
-// ... resto do seu código (app.use, cors, etc) continua normal ...
 // ============================================================================
 // 1. INICIALIZAÇÃO GLOBAL DO FIREBASE ADMIN
 // ============================================================================
-// ATENÇÃO: Para o Firebase Storage funcionar, você precisa colocar a URL do seu bucket.
-// Você encontra isso no painel do Firebase -> Storage (Ex: seu-projeto.appspot.com)
-
-//const db = admin.firestore();
+// O Firebase deve ser inicializado antes de qualquer outra importação local
+// que dependa dele (como os nossos controllers e middlewares).
+admin.initializeApp();
 
 // ============================================================================
-// 2. CONFIGURAÇÃO DO EXPRESS (O SERVIDOR)
+// 2. IMPORTAÇÕES DE BIBLIOTECAS E ROTAS
+// ============================================================================
+import express from "express";
+import cors from "cors";
+
+// Middlewares e Controllers Globais
+import { validateToken, AuthRequest } from "./middlewares/authMiddleware";
+import { authController } from "./controllers/authController";
+
+// Módulos de Rotas Separados
+import rifasRoutes from "./routes/rifasRoutes";
+
+// ============================================================================
+// 3. CONFIGURAÇÃO DO EXPRESS (O SERVIDOR)
 // ============================================================================
 const app = express();
 
@@ -28,8 +31,10 @@ app.use(cors({ origin: true }));
 app.use(express.json()); // Permite que o servidor entenda JSON no body das requisições
 
 // ============================================================================
-// 3. ROTAS PÚBLICAS (Healthcheck)
+// 4. ROTAS PÚBLICAS (Não precisam de Token JWT)
 // ============================================================================
+
+// Healthcheck: Para monitorar se a API da comissão está viva
 app.get("/status", (req, res) => {
   res.json({
     status: "API da Comissão Online",
@@ -37,14 +42,14 @@ app.get("/status", (req, res) => {
   });
 });
 
-// A Rota de Seed entrará aqui futuramente, quando tivermos a planilha da turma.
-// app.post("/seed-turma", ...);
+// A NOVA ROTA DO PORTEIRO: Verifica se o e-mail está na lista oficial da Keeper
+app.post("/auth/verificar", authController.verificarElegibilidade);
 
 // ============================================================================
-// 4. ROTAS PRIVADAS (Requerem Token JWT)
+// 5. ROTAS PRIVADAS (Requerem Token JWT)
 // ============================================================================
 
-// Rota de teste antiga (Mantida para fins de debug da autenticação)
+// Rota de teste (Mantida para fins de debug da autenticação)
 app.get("/dados-bancarios", validateToken, async (req: AuthRequest, res) => {
   try {
     const uid = req.user?.uid;
@@ -59,10 +64,11 @@ app.get("/dados-bancarios", validateToken, async (req: AuthRequest, res) => {
 });
 
 // ============================================================================
-// 5. MÓDULOS DE DOMÍNIO (Plugar as rotas separadas)
+// 6. MÓDULOS DE DOMÍNIO
 // ============================================================================
-// Toda requisição que chegar em "seusite.com/api/rifas/..." será redirecionada
-// para o arquivo rifasRoutes.ts que nós criamos.
+
+// Toda requisição que chegar em "sua-api.com/rifas/..." será redirecionada
+// para o arquivo rifasRoutes.ts.
 app.use("/rifas", rifasRoutes);
 
 // ============================================================================
