@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { auth } from "../../config/firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../services/api";
 import {
   AppBar,
   Toolbar,
@@ -12,69 +11,216 @@ import {
   Grid,
   Paper,
   Box,
-  CircularProgress,
-  Alert,
+  Tabs,
+  Tab,
+  Card,
+  CardContent,
+  CardMedia,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  IconButton,
+  Popover,
+  Stack,
 } from "@mui/material";
+
+// Ícones
 import LogoutIcon from "@mui/icons-material/Logout";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
-// Tipagem dos dados que esperamos do backend
-interface DadosPainel {
-  meta_vendas: number;
-  total_arrecadado: number;
-  bilhetes_vendidos: number;
-  rifas_restantes: number;
+import { Bilhete, Premio } from "../../types/models";
+import { CheckoutModal } from "../components/CheckoutModal";
+
+// ==========================================
+// COMPONENTE 1: ABA (TAB PANEL)
+// ==========================================
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
 }
 
+function CustomTabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      {...other} // <-- ADICIONE ISSO AQUI
+    >
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+// ==========================================
+// COMPONENTE 2: ÍCONE DE AJUDA E LEGENDA (NOVO)
+// ==========================================
+function LegendaPopover({
+  tipoVisao,
+}: {
+  tipoVisao: "disponiveis" | "vendidas";
+}) {
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
+  return (
+    <>
+      <IconButton
+        onClick={handleClick}
+        size="small"
+        color="primary"
+        sx={{ ml: 1 }}
+        title="Ver legenda de cores"
+      >
+        <HelpOutlineIcon fontSize="small" />
+      </IconButton>
+
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+      >
+        <Box sx={{ p: 2, minWidth: "220px" }}>
+          <Typography
+            variant="subtitle2"
+            gutterBottom
+            sx={{ fontWeight: "bold" }}
+          >
+            Legenda de Cores
+          </Typography>
+          <Stack spacing={1.5} sx={{ mt: 1 }}>
+            {tipoVisao === "vendidas" ? (
+              <>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Chip label="0000" color="success" size="small" />
+                  <Typography variant="body2">Pago (Confirmado)</Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Chip label="0000" color="info" size="small" />
+                  <Typography variant="body2">
+                    Em Análise (PIX enviado)
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Chip label="0000" color="warning" size="small" />
+                  <Typography variant="body2">
+                    Reservado (Aguardando PIX)
+                  </Typography>
+                </Box>
+              </>
+            ) : (
+              <>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Chip label="0000" variant="outlined" size="small" />
+                  <Typography variant="body2">Disponível para venda</Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Chip label="0000" color="primary" size="small" />
+                  <Typography variant="body2">
+                    Selecionado (No Carrinho)
+                  </Typography>
+                </Box>
+              </>
+            )}
+          </Stack>
+        </Box>
+      </Popover>
+    </>
+  );
+}
+
+// ==========================================
+// DADOS SIMULADOS (MOCKS)
+// ==========================================
+const mockBilhetes: Bilhete[] = Array.from({ length: 120 }, (_, i) => {
+  const numero = (i + 1).toString().padStart(4, "0");
+  let status: Bilhete["status"] = "disponivel";
+  if (i < 15) status = "pago";
+  else if (i < 20) status = "em_analise";
+  else if (i < 22) status = "reservado";
+
+  return {
+    numero,
+    status,
+    vendedor_cpf: "12345678900",
+    comprador_id: status !== "disponivel" ? "comp_123" : null,
+    data_reserva: null,
+    data_pagamento: null,
+    comprovante_url: null,
+  };
+});
+
+const mockPremios: Premio[] = [
+  {
+    id: "1",
+    ordem_sorteio: 1,
+    titulo: "Pix de R$ 5.000,00",
+    descricao: "Prêmio principal em dinheiro.",
+    imagem_url:
+      "https://images.unsplash.com/photo-1580519542014-cb928cb981b5?q=80&w=500&auto=format&fit=crop",
+  },
+  {
+    id: "2",
+    ordem_sorteio: 2,
+    titulo: "iPhone 15 Pro Max",
+    descricao: "O smartphone mais desejado.",
+    imagem_url:
+      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=500&auto=format&fit=crop",
+  },
+];
+
+// ==========================================
+// PÁGINA PRINCIPAL
+// ==========================================
 export function DashboardPage() {
   const navigate = useNavigate();
-  const user = auth.currentUser;
+  const [tabValue, setTabValue] = useState(0);
+  const [filtroVisao, setFiltroVisao] = useState<"disponiveis" | "vendidas">(
+    "disponiveis",
+  );
 
-  // Estados da página
-  const [dados, setDados] = useState<DadosPainel | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function carregarDados() {
-      try {
-        // Dispara a requisição. O Token vai automaticamente graças ao Interceptor!
-        const response = await api.get("/dados-bancarios");
-
-        // Pega a meta que veio do backend
-        const metaBackend = response.data.dados.meta_vendas;
-
-        // Como o backend ainda não calcula os totais, vamos simular o resto
-        // para renderizar a interface. Depois substituímos por dados reais.
-        setDados({
-          meta_vendas: metaBackend,
-          total_arrecadado: 250.0, // Simulação
-          bilhetes_vendidos: 25, // Simulação
-          rifas_restantes: 95, // Simulação (120 - 25)
-        });
-      } catch (err) {
-        console.error("Erro ao buscar dados:", err);
-        setErro("Não foi possível carregar as informações do servidor.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    carregarDados();
-  }, []);
+  // Carrinho e Modal
+  const [rifasSelecionadas, setRifasSelecionadas] = useState<string[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleLogout = async () => {
     await signOut(auth);
     navigate("/");
   };
 
-  // Formata números para o padrão Moeda Real
-  const formatarMoeda = (valor: number) => {
-    return valor.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
+  const handleToggleRifa = (numero: string) => {
+    setRifasSelecionadas((prev) =>
+      prev.includes(numero)
+        ? prev.filter((n) => n !== numero)
+        : [...prev, numero],
+    );
   };
+
+  const bilhetesDisponiveis = mockBilhetes.filter(
+    (b) => b.status === "disponivel",
+  );
+  const bilhetesVendidos = mockBilhetes.filter(
+    (b) => b.status !== "disponivel",
+  );
+  const bilhetesExibidos =
+    filtroVisao === "disponiveis" ? bilhetesDisponiveis : bilhetesVendidos;
 
   return (
     <Box sx={{ flexGrow: 1, minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
@@ -84,97 +230,239 @@ export function DashboardPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Painel do Aderido
           </Typography>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography
-              variant="body2"
-              sx={{ display: { xs: "none", sm: "block" } }}
-            >
-              {user?.email}
-            </Typography>
-            <Button
-              color="inherit"
-              startIcon={<LogoutIcon />}
-              onClick={handleLogout}
-            >
-              Sair
-            </Button>
-          </Box>
+          <Button
+            color="inherit"
+            startIcon={<LogoutIcon />}
+            onClick={handleLogout}
+          >
+            Sair
+          </Button>
         </Toolbar>
       </AppBar>
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        {/* Tratamento de Estados (Carregando / Erro) */}
-        {loading && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
-            <CircularProgress />
+        {/* CABEÇALHO */}
+        <Paper
+          sx={{
+            p: 3,
+            mb: 4,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography variant="h5" color="primary">
+              Olá, Engenheiro!
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Seu Lote: 0001 a 0120
+            </Typography>
           </Box>
-        )}
+          <Box sx={{ textAlign: "right" }}>
+            <Typography variant="body2" color="text.secondary">
+              Meta Arrecadada
+            </Typography>
+            <Typography variant="h4" color="success.main">
+              R$ 150,00 / R$ 1.200,00
+            </Typography>
+          </Box>
+        </Paper>
 
-        {erro && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {erro}
-          </Alert>
-        )}
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)}>
+            <Tab label="Minhas Rifas" />
+            <Tab label="Prêmios do Sorteio" />
+          </Tabs>
+        </Box>
 
-        {/* Renderiza os cards apenas se tiver dados */}
-        {!loading && dados && (
+        {/* ABA 1: MINHAS RIFAS */}
+        <CustomTabPanel value={tabValue} index={0}>
+          <Paper sx={{ p: 2, mb: 3 }}>
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="filtro-visao-label">
+                Alternar Visualização
+              </InputLabel>
+              <Select
+                labelId="filtro-visao-label"
+                value={filtroVisao}
+                onChange={(e) => {
+                  setFiltroVisao(e.target.value as "disponiveis" | "vendidas");
+                  if (e.target.value === "vendidas") setRifasSelecionadas([]);
+                }}
+                label="Alternar Visualização"
+              >
+                <MenuItem value="disponiveis">
+                  🟢 Ver Rifas Disponíveis ({bilhetesDisponiveis.length})
+                </MenuItem>
+                <MenuItem value="vendidas">
+                  📦 Ver Histórico de Vendas ({bilhetesVendidos.length})
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Paper>
+
+          {/* BANNER DO CARRINHO */}
+          {rifasSelecionadas.length > 0 && filtroVisao === "disponiveis" && (
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                mb: 3,
+                backgroundColor: "#e8f5e9",
+                border: "1px solid #4caf50",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 2,
+              }}
+            >
+              <Typography
+                variant="h6"
+                color="success.main"
+                sx={{ fontWeight: "bold" }}
+              >
+                {rifasSelecionadas.length} rifa(s) selecionada(s) = R${" "}
+                {(rifasSelecionadas.length * 10).toFixed(2).replace(".", ",")}
+              </Typography>
+              <Button
+                variant="contained"
+                color="success"
+                size="large"
+                startIcon={<ShoppingCartCheckoutIcon />}
+                onClick={() => setModalOpen(true)}
+              >
+                Avançar para Pagamento
+              </Button>
+            </Paper>
+          )}
+
+          {/* GRADE DE RIFAS COM O ÍCONE DE AJUDA */}
+          <Paper sx={{ p: 3, minHeight: "300px" }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Typography
+                variant="h6"
+                color={
+                  filtroVisao === "disponiveis" ? "primary" : "textSecondary"
+                }
+              >
+                {filtroVisao === "disponiveis"
+                  ? "Clique nos números para adicionar à venda:"
+                  : "Rifas já negociadas:"}
+              </Typography>
+
+              {/* COMPONENTE DA LEGENDA CHAMADO AQUI */}
+              <LegendaPopover tipoVisao={filtroVisao} />
+            </Box>
+
+            <Grid container spacing={1.5}>
+              {bilhetesExibidos.map((bilhete) => {
+                const isSelected = rifasSelecionadas.includes(bilhete.numero);
+
+                let chipColor:
+                  | "default"
+                  | "primary"
+                  | "success"
+                  | "warning"
+                  | "info" = "default";
+                let chipVariant: "outlined" | "filled" = "filled";
+
+                if (bilhete.status === "disponivel") {
+                  chipColor = isSelected ? "primary" : "default";
+                  chipVariant = isSelected ? "filled" : "outlined";
+                } else {
+                  if (bilhete.status === "pago") chipColor = "success";
+                  else if (bilhete.status === "em_analise") chipColor = "info";
+                  else if (bilhete.status === "reservado")
+                    chipColor = "warning";
+                }
+
+                return (
+                  <Grid size={{ xs: 3, sm: 2, md: 1.5 }} key={bilhete.numero}>
+                    <Chip
+                      label={bilhete.numero}
+                      variant={chipVariant}
+                      color={chipColor}
+                      onClick={
+                        bilhete.status === "disponivel"
+                          ? () => handleToggleRifa(bilhete.numero)
+                          : undefined
+                      }
+                      sx={{
+                        width: "100%",
+                        fontWeight: "bold",
+                        cursor:
+                          bilhete.status === "disponivel"
+                            ? "pointer"
+                            : "default",
+                        transition: "all 0.2s ease-in-out",
+                        transform: isSelected ? "scale(1.05)" : "scale(1)",
+                        boxShadow: isSelected ? 2 : 0,
+                      }}
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </Paper>
+        </CustomTabPanel>
+
+        {/* ABA 2: PRÊMIOS */}
+        <CustomTabPanel value={tabValue} index={1}>
           <Grid container spacing={3}>
-            <Grid size={{ xs: 12 }}>
-              <Paper sx={{ p: 3, display: "flex", flexDirection: "column" }}>
-                <Typography
-                  variant="h4"
-                  gutterBottom
-                  component="div"
-                  color="primary"
+            {mockPremios.map((premio) => (
+              <Grid size={{ xs: 12, md: 6 }} key={premio.id}>
+                <Card
+                  sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    height: "100%",
+                  }}
                 >
-                  Olá, Engenheiro!
-                </Typography>
-                <Typography variant="body1">
-                  Sua meta de vendas é:{" "}
-                  <strong>{formatarMoeda(dados.meta_vendas)}</strong>.
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Compartilhe seu link exclusivo para começar a vender.
-                </Typography>
-              </Paper>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Paper sx={{ p: 3, textAlign: "center", height: "100%" }}>
-                <Typography color="textSecondary" gutterBottom>
-                  Total Arrecadado
-                </Typography>
-                <Typography variant="h3" component="div">
-                  {formatarMoeda(dados.total_arrecadado)}
-                </Typography>
-              </Paper>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Paper sx={{ p: 3, textAlign: "center", height: "100%" }}>
-                <Typography color="textSecondary" gutterBottom>
-                  Bilhetes Vendidos
-                </Typography>
-                <Typography variant="h3" component="div">
-                  {dados.bilhetes_vendidos}
-                </Typography>
-              </Paper>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Paper sx={{ p: 3, textAlign: "center", height: "100%" }}>
-                <Typography color="textSecondary" gutterBottom>
-                  Rifas Restantes
-                </Typography>
-                <Typography variant="h3" component="div" color="success.main">
-                  {dados.rifas_restantes}
-                </Typography>
-              </Paper>
-            </Grid>
+                  <CardMedia
+                    component="img"
+                    sx={{
+                      width: { xs: "100%", sm: 200 },
+                      height: { xs: 200, sm: "auto" },
+                      objectFit: "cover",
+                    }}
+                    image={premio.imagem_url}
+                    alt={premio.titulo}
+                  />
+                  <CardContent sx={{ flex: "1 0 auto" }}>
+                    <Typography component="div" variant="h5" color="primary">
+                      {premio.ordem_sorteio}º Prêmio
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      {premio.titulo}
+                    </Typography>
+                    <Typography variant="body2" component="div">
+                      {premio.descricao}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
           </Grid>
-        )}
+        </CustomTabPanel>
       </Container>
+
+      <CheckoutModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSuccess={() => {
+          setModalOpen(false);
+          setRifasSelecionadas([]);
+        }}
+        numerosRifas={rifasSelecionadas}
+      />
     </Box>
   );
 }

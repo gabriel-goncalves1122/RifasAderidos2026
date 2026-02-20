@@ -30,4 +30,5 @@ backend/ui-debug.log*
 
 # Arquivos de ambiente do backend (SEGREDO MÁXIMO)
 backend/functions/.env
-backend/.runtimeconfig.json
+backend/.runtimeconfig.jsonchave-privada.json
+chave-firebase.json
