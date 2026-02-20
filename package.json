@@ -1,0 +1,12 @@
+{
+  "name": "sistema-rifas",
+  "version": "1.0.0",
+  "description": "Orquestrador do Monorepo da Comissão",
+  "private": true,
+  "scripts": {
+    "test:backend": "npm run test --prefix backend/functions",
+    "test:frontend": "npm run test --prefix frontend",
+    "test": "npm run test:backend && npm run test:frontend",
+    "dev": "npm run serve --prefix backend/functions & npm run dev --prefix frontend"
+  }
+}

@@ -8,4 +8,7 @@ module.exports = {
   transform: {
     ...tsJestTransformCfg,
   },
+  // 🔴 ADIÇÕES PARA CORRIGIR A EXECUÇÃO DUPLA
+  roots: ["<rootDir>/src", "<rootDir>/tests"],
+  testPathIgnorePatterns: ["/node_modules/", "/lib/"],
 };

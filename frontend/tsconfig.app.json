@@ -23,5 +23,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "../backend/functions/src/middlewares", "../backend/functions/src/middlewares/controllers", "../backend/functions/src/routes"]
+  "include": ["src", "../backend/functions/src/middlewares", "../backend/functions/src/middlewares/controllers", "../backend/functions/src/routes", "../backend/functions/tests/authMiddleware.test.ts", "tests"]
 }

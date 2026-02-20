@@ -15,5 +15,5 @@
   "compileOnSave": true,
   "include": [
     "src"
-  ]
+, "__testes__", "tests/authMiddleware.test.ts", "tests/rifaController.spec.ts"  ]
 }
