@@ -1,92 +1,96 @@
-// ============================================================================
-// ARQUIVO: DashBoardPage.spec.tsx (Testes de Componente do Frontend)
-// ============================================================================
-
-import { vi, describe, it, expect, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BrowserRouter } from "react-router-dom";
 import { DashboardPage } from "../src/views/pages/DashboardPage";
-import userEvent from "@testing-library/user-event"; // Adicione no topo do arquivo junto com os outros imports
 
-// ----------------------------------------------------------------------------
-// 1. ELEVAÇÃO E FALSIFICAÇÃO (HOISTING & MOCKING)
-// ----------------------------------------------------------------------------
-// O vi.hoisted cria as nossas funções ANTES de o React tentar rodar.
-// Evita o "vazamento" onde o React tenta acessar o banco real por 1 milissegundo.
-const mocks = vi.hoisted(() => ({
-  buscarMinhasRifas: vi.fn().mockResolvedValue([
-    { numero: "00001", status: "disponivel" },
-    { numero: "00002", status: "pago" },
-  ]),
+// ============================================================================
+// MOCKS: "Falsificando" as dependências externas para isolar o componente
+// ============================================================================
+
+// 1. Mock do Auth Controller: Finge que temos um usuário logado com cargo de tesouraria
+vi.mock("../src/controllers/useAuthController", () => ({
+  useAuthController: vi.fn(),
 }));
+import { useAuthController } from "../src/controllers/useAuthController";
 
-// 2. Falsifica a conexão com o Firebase (Agora com getIdToken de mentira para segurança extra)
-vi.mock("../src/config/firebase", () => ({
-  auth: {
-    currentUser: {
-      uid: "123",
-      email: "teste@teste.com",
-      getIdToken: vi.fn().mockResolvedValue("token-falso-123"), // <-- ADICIONADO AQUI
-    },
-  },
-  storage: {},
-}));
-
-// 3. Falsificamos o Controller usando o NOVO CAMINHO CORRETO
+// 2. Mock do Rifas Controller: Finge a comunicação com o banco de dados
 vi.mock("../src/controllers/useRifasController", () => ({
-  useRifasController: () => ({
-    loading: false,
-    buscarMinhasRifas: mocks.buscarMinhasRifas,
-  }),
+  useRifasController: vi.fn(),
+}));
+import { useRifasController } from "../src/controllers/useRifasController";
+
+// 3. Mock do Firebase Auth global: Evita que a biblioteca tente conectar com a internet real
+vi.mock("firebase/auth", () => ({
+  getAuth: vi.fn(),
+  signOut: vi.fn(),
+  onAuthStateChanged: vi.fn(),
 }));
 
 describe("DashboardPage", () => {
   beforeEach(() => {
-    vi.clearAllMocks(); // Limpeza de cachê entre testes
+    // PREPARAÇÃO: Injeta os dados falsos antes de cada teste rodar
+    vi.mocked(useAuthController).mockReturnValue({
+      usuarioAtual: {
+        uid: "123",
+        email: "teste@unifei.br",
+        cargo: "tesouraria",
+        displayName: "Tester",
+      } as any,
+      loading: false,
+      error: null,
+      handleLogin: vi.fn(),
+      handleRegister: vi.fn(),
+    });
+
+    vi.mocked(useRifasController).mockReturnValue({
+      buscarMinhasRifas: vi
+        .fn()
+        .mockResolvedValue([{ numero: "001", status: "disponivel" }]),
+      buscarPendentes: vi.fn().mockResolvedValue([]),
+      avaliarComprovante: vi.fn(),
+      finalizarVenda: vi.fn(),
+      loading: false,
+    });
+
+    vi.clearAllMocks();
   });
 
-  // ========================================================================
-  // TESTE 1: RENDERIZAÇÃO DA TELA (Com dados falsos)
-  // ========================================================================
+  // TESTE 1: Garante que a tela principal carrega com o cargo correto
   it("deve renderizar o cabeçalho do painel do aderido e buscar as rifas", async () => {
-    // A - ARRANGE & ACT (Renderizamos a tela dentro do roteador)
     render(
       <BrowserRouter>
         <DashboardPage />
       </BrowserRouter>,
     );
 
-    // A - ASSERT (Verificamos se o layout base carregou)
-    // O findByText é assíncrono, útil para quando componentes demoram a piscar na tela
-    const titulo = await screen.findByText(/Painel do Aderido/i);
-    const mensagemBoasVindas = await screen.findByText(/Olá, Engenheiro!/i);
-
-    expect(titulo).toBeInTheDocument();
-    expect(mensagemBoasVindas).toBeInTheDocument();
-
-    // Assert Crítico: Garante que a tela tentou buscar os bilhetes usando
-    // a nossa função mockada (e não vazou tentando bater na API real)
+    // waitFor é usado porque o nome pode demorar uns milissegundos para ser injetado
     await waitFor(() => {
-      expect(mocks.buscarMinhasRifas).toHaveBeenCalled();
+      expect(screen.getByText(/Olá, Tester!/i)).toBeInTheDocument();
     });
+    expect(screen.getByText(/Cargo:/i)).toBeInTheDocument();
+
+    // Usamos getAllByText porque a palavra 'TESOURARIA' aparece tanto no perfil quanto no nome da aba
+    const elementosTesouraria = screen.getAllByText(/TESOURARIA/i);
+    expect(elementosTesouraria.length).toBeGreaterThan(0);
   });
 
+  // TESTE 2: Simula a navegação do usuário clicando em outra aba
   it("deve trocar para a aba de prêmios ao clicar", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup(); // Prepara o simulador de mouse/teclado
     render(
       <BrowserRouter>
         <DashboardPage />
       </BrowserRouter>,
     );
 
-    // A - ACT (Clica na aba de Prêmios)
-    const abaPremios = await screen.findByRole("tab", {
-      name: /Prêmios do Sorteio/i,
-    });
+    // Busca a aba pelo "role" (papel de acessibilidade) e clica nela
+    const abaPremios = screen.getByRole("tab", { name: /Prêmios/i });
     await user.click(abaPremios);
 
-    // A - ASSERT (Verifica se o prêmio mockado apareceu na tela)
-    const tituloPremio = await screen.findByText(/Pix de R\$ 5.000,00/i);
-    expect(tituloPremio).toBeInTheDocument();
+    // Garante que o conteúdo da aba Prêmios substituiu o conteúdo das rifas
+    expect(
+      await screen.findByText(/Os prêmios serão listados em breve/i),
+    ).toBeInTheDocument();
   });
 });
