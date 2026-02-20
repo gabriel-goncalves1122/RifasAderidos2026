@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { auth } from "../../config/firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,6 @@ import {
   Typography,
   Button,
   Container,
-  Grid,
   Paper,
   Box,
   Tabs,
@@ -24,7 +23,10 @@ import {
   IconButton,
   Popover,
   Stack,
+  Grid,
 } from "@mui/material";
+// Import do Grid v2 do Material UI
+//import Grid from "@mui/material/Grid2";
 
 // Ícones
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -32,11 +34,14 @@ import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
-import { Bilhete, Premio } from "../../types/models";
+import { Premio } from "../../types/models";
 import { CheckoutModal } from "../components/CheckoutModal";
 
+// 🔴 CORREÇÃO DO IMPORT: Trazendo o Hook do Frontend, não do Backend!
+import { useRifasController } from "../../services/useRifasController";
+
 // ==========================================
-// COMPONENTE 1: ABA (TAB PANEL)
+// COMPONENTE AUXILIAR: ABA (TAB PANEL)
 // ==========================================
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -51,7 +56,7 @@ function CustomTabPanel(props: TabPanelProps) {
       role="tabpanel"
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
-      {...other} // <-- ADICIONE ISSO AQUI
+      {...other}
     >
       {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
     </div>
@@ -59,7 +64,7 @@ function CustomTabPanel(props: TabPanelProps) {
 }
 
 // ==========================================
-// COMPONENTE 2: ÍCONE DE AJUDA E LEGENDA (NOVO)
+// COMPONENTE AUXILIAR: LEGENDA
 // ==========================================
 function LegendaPopover({
   tipoVisao,
@@ -109,33 +114,29 @@ function LegendaPopover({
             {tipoVisao === "vendidas" ? (
               <>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Chip label="0000" color="success" size="small" />
+                  <Chip label="00000" color="success" size="small" />
                   <Typography variant="body2">Pago (Confirmado)</Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Chip label="0000" color="info" size="small" />
+                  <Chip label="00000" color="info" size="small" />
                   <Typography variant="body2">
                     Em Análise (PIX enviado)
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Chip label="0000" color="warning" size="small" />
-                  <Typography variant="body2">
-                    Reservado (Aguardando PIX)
-                  </Typography>
+                  <Chip label="00000" color="warning" size="small" />
+                  <Typography variant="body2">Reservado</Typography>
                 </Box>
               </>
             ) : (
               <>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Chip label="0000" variant="outlined" size="small" />
+                  <Chip label="00000" variant="outlined" size="small" />
                   <Typography variant="body2">Disponível para venda</Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Chip label="0000" color="primary" size="small" />
-                  <Typography variant="body2">
-                    Selecionado (No Carrinho)
-                  </Typography>
+                  <Chip label="00000" color="primary" size="small" />
+                  <Typography variant="body2">Selecionado</Typography>
                 </Box>
               </>
             )}
@@ -147,26 +148,8 @@ function LegendaPopover({
 }
 
 // ==========================================
-// DADOS SIMULADOS (MOCKS)
+// DADOS SIMULADOS (Apenas Prêmios agora)
 // ==========================================
-const mockBilhetes: Bilhete[] = Array.from({ length: 120 }, (_, i) => {
-  const numero = (i + 1).toString().padStart(4, "0");
-  let status: Bilhete["status"] = "disponivel";
-  if (i < 15) status = "pago";
-  else if (i < 20) status = "em_analise";
-  else if (i < 22) status = "reservado";
-
-  return {
-    numero,
-    status,
-    vendedor_cpf: "12345678900",
-    comprador_id: status !== "disponivel" ? "comp_123" : null,
-    data_reserva: null,
-    data_pagamento: null,
-    comprovante_url: null,
-  };
-});
-
 const mockPremios: Premio[] = [
   {
     id: "1",
@@ -187,19 +170,38 @@ const mockPremios: Premio[] = [
 ];
 
 // ==========================================
-// PÁGINA PRINCIPAL
+// PÁGINA PRINCIPAL (ÚNICA DECLARAÇÃO!)
 // ==========================================
 export function DashboardPage() {
   const navigate = useNavigate();
+
+  // 1. Estados da Tela
   const [tabValue, setTabValue] = useState(0);
   const [filtroVisao, setFiltroVisao] = useState<"disponiveis" | "vendidas">(
     "disponiveis",
   );
-
-  // Carrinho e Modal
   const [rifasSelecionadas, setRifasSelecionadas] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
 
+  // 2. Conexão com o Backend (Usando o Hook)
+  const { buscarMinhasRifas } = useRifasController();
+  const [bilhetesReais, setBilhetesReais] = useState<any[]>([]);
+  const [carregandoDados, setCarregandoDados] = useState(true);
+
+  // 3. Efeito de Carregamento
+  useEffect(() => {
+    async function carregar() {
+      setCarregandoDados(true);
+      const dados = await buscarMinhasRifas();
+      if (dados) {
+        setBilhetesReais(dados);
+      }
+      setCarregandoDados(false);
+    }
+    carregar();
+  }, [buscarMinhasRifas]);
+
+  // 4. Funções de Ação
   const handleLogout = async () => {
     await signOut(auth);
     navigate("/");
@@ -213,10 +215,11 @@ export function DashboardPage() {
     );
   };
 
-  const bilhetesDisponiveis = mockBilhetes.filter(
+  // 5. Filtros da Lista (Agora usando os dados REAIS do banco)
+  const bilhetesDisponiveis = bilhetesReais.filter(
     (b) => b.status === "disponivel",
   );
-  const bilhetesVendidos = mockBilhetes.filter(
+  const bilhetesVendidos = bilhetesReais.filter(
     (b) => b.status !== "disponivel",
   );
   const bilhetesExibidos =
@@ -258,7 +261,7 @@ export function DashboardPage() {
               Olá, Engenheiro!
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Seu Lote: 0001 a 0120
+              Seu Lote: 120 Bilhetes
             </Typography>
           </Box>
           <Box sx={{ textAlign: "right" }}>
@@ -266,7 +269,8 @@ export function DashboardPage() {
               Meta Arrecadada
             </Typography>
             <Typography variant="h4" color="success.main">
-              R$ 150,00 / R$ 1.200,00
+              R$ {(bilhetesVendidos.length * 10).toFixed(2).replace(".", ",")} /
+              R$ 1.200,00
             </Typography>
           </Box>
         </Paper>
@@ -340,7 +344,7 @@ export function DashboardPage() {
             </Paper>
           )}
 
-          {/* GRADE DE RIFAS COM O ÍCONE DE AJUDA */}
+          {/* GRADE DE RIFAS */}
           <Paper sx={{ p: 3, minHeight: "300px" }}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
               <Typography
@@ -353,60 +357,73 @@ export function DashboardPage() {
                   ? "Clique nos números para adicionar à venda:"
                   : "Rifas já negociadas:"}
               </Typography>
-
-              {/* COMPONENTE DA LEGENDA CHAMADO AQUI */}
               <LegendaPopover tipoVisao={filtroVisao} />
             </Box>
 
-            <Grid container spacing={1.5}>
-              {bilhetesExibidos.map((bilhete) => {
-                const isSelected = rifasSelecionadas.includes(bilhete.numero);
+            {carregandoDados ? (
+              <Typography variant="body1" sx={{ textAlign: "center", mt: 4 }}>
+                Carregando suas rifas do servidor...
+              </Typography>
+            ) : bilhetesExibidos.length === 0 ? (
+              <Typography
+                variant="body1"
+                color="textSecondary"
+                sx={{ textAlign: "center", mt: 4 }}
+              >
+                Nenhuma rifa encontrada nesta categoria.
+              </Typography>
+            ) : (
+              <Grid container spacing={1.5}>
+                {bilhetesExibidos.map((bilhete) => {
+                  const isSelected = rifasSelecionadas.includes(bilhete.numero);
 
-                let chipColor:
-                  | "default"
-                  | "primary"
-                  | "success"
-                  | "warning"
-                  | "info" = "default";
-                let chipVariant: "outlined" | "filled" = "filled";
+                  let chipColor:
+                    | "default"
+                    | "primary"
+                    | "success"
+                    | "warning"
+                    | "info" = "default";
+                  let chipVariant: "outlined" | "filled" = "filled";
 
-                if (bilhete.status === "disponivel") {
-                  chipColor = isSelected ? "primary" : "default";
-                  chipVariant = isSelected ? "filled" : "outlined";
-                } else {
-                  if (bilhete.status === "pago") chipColor = "success";
-                  else if (bilhete.status === "em_analise") chipColor = "info";
-                  else if (bilhete.status === "reservado")
-                    chipColor = "warning";
-                }
+                  if (bilhete.status === "disponivel") {
+                    chipColor = isSelected ? "primary" : "default";
+                    chipVariant = isSelected ? "filled" : "outlined";
+                  } else {
+                    if (bilhete.status === "pago") chipColor = "success";
+                    else if (bilhete.status === "em_analise")
+                      chipColor = "info";
+                    else if (bilhete.status === "reservado")
+                      chipColor = "warning";
+                  }
 
-                return (
-                  <Grid size={{ xs: 3, sm: 2, md: 1.5 }} key={bilhete.numero}>
-                    <Chip
-                      label={bilhete.numero}
-                      variant={chipVariant}
-                      color={chipColor}
-                      onClick={
-                        bilhete.status === "disponivel"
-                          ? () => handleToggleRifa(bilhete.numero)
-                          : undefined
-                      }
-                      sx={{
-                        width: "100%",
-                        fontWeight: "bold",
-                        cursor:
+                  return (
+                    <Grid size={{ xs: 3, sm: 2, md: 1.5 }} key={bilhete.numero}>
+                      <Chip
+                        label={bilhete.numero}
+                        variant={chipVariant}
+                        color={chipColor}
+                        onClick={
                           bilhete.status === "disponivel"
-                            ? "pointer"
-                            : "default",
-                        transition: "all 0.2s ease-in-out",
-                        transform: isSelected ? "scale(1.05)" : "scale(1)",
-                        boxShadow: isSelected ? 2 : 0,
-                      }}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
+                            ? () => handleToggleRifa(bilhete.numero)
+                            : undefined
+                        }
+                        sx={{
+                          width: "100%",
+                          fontWeight: "bold",
+                          cursor:
+                            bilhete.status === "disponivel"
+                              ? "pointer"
+                              : "default",
+                          transition: "all 0.2s ease-in-out",
+                          transform: isSelected ? "scale(1.05)" : "scale(1)",
+                          boxShadow: isSelected ? 2 : 0,
+                        }}
+                      />
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            )}
           </Paper>
         </CustomTabPanel>
 
@@ -460,6 +477,8 @@ export function DashboardPage() {
         onSuccess={() => {
           setModalOpen(false);
           setRifasSelecionadas([]);
+          // Seria ideal recarregar a lista aqui chamando `buscarMinhasRifas` novamente,
+          // mas como o useEffect vai disparar quando o componente remontar, já cobrimos isso.
         }}
         numerosRifas={rifasSelecionadas}
       />

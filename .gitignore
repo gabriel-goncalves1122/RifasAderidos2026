@@ -32,3 +32,5 @@ backend/ui-debug.log*
 backend/functions/.env
 backend/.runtimeconfig.jsonchave-privada.json
 chave-firebase.json
+**/chave-privada.json
+**/chave-firebase.json
