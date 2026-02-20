@@ -35,6 +35,7 @@ import { useRifasController } from "../../controllers/useRifasController";
 import { CheckoutModal } from "../components/CheckoutModal";
 import { RifaGrid } from "../components/RifaGrid"; // Componente extraído
 import { ResumoHeader } from "../components/ResumoHeader"; // Componente extraído
+import { AuditoriaTable } from "../components/AuditoriaTable"; // Componente extraído
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -196,13 +197,26 @@ export function DashboardPage() {
           </Typography>
         </TabPanel>
 
-        {/* ABA 3: TESOURARIA (ADMIN) */}
+        {/* CONTEÚDO 3: ADMINISTRAÇÃO (TESOURARIA) */}
         {isAdmin && (
           <TabPanel value={tabValue} index={2}>
-            <Paper
-              sx={{ p: 4, textAlign: "center", border: "2px dashed #ccc" }}
-            >
-              <Typography variant="h5">Painel de Auditoria</Typography>
+            <Paper sx={{ p: 4, borderRadius: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                <AdminPanelSettingsIcon
+                  sx={{ fontSize: 32, color: "success.main", mr: 1 }}
+                />
+                <Typography variant="h5" fontWeight="bold">
+                  Auditoria de Vendas
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                Revise os comprovantes de pagamento abaixo. A aprovação
+                transfere o dinheiro virtualmente para a meta do aderido.
+                Rejeitar devolve a rifa para o mercado.
+              </Typography>
+
+              {/* O NOSSO NOVO COMPONENTE AQUI */}
+              <AuditoriaTable onAtualizacao={carregarDados} />
             </Paper>
           </TabPanel>
         )}

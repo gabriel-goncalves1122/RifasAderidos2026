@@ -120,5 +120,77 @@ export function useRifasController() {
     }
   };
 
-  return { buscarMinhasRifas, finalizarVenda, loading };
+  // =========================================================
+  // [ADMIN] BUSCAR RIFAS PENDENTES
+  // =========================================================
+  const buscarPendentes = useCallback(async () => {
+    setLoading(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+
+      const token = await user.getIdToken();
+      const response = await fetch(
+        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/pendentes",
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.error || "Erro ao buscar pendentes");
+
+      return result.bilhetes;
+    } catch (error) {
+      console.error("Erro ao buscar pendentes:", error);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // =========================================================
+  // [ADMIN] AVALIAR COMPROVANTE (Aprovar/Rejeitar)
+  // =========================================================
+  const avaliarComprovante = async (
+    numeroRifa: string,
+    decisao: "aprovar" | "rejeitar",
+  ) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+
+      const token = await user.getIdToken();
+      const response = await fetch(
+        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/avaliar",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ numeroRifa, decisao }),
+        },
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Erro ao avaliar rifa");
+
+      return true;
+    } catch (error) {
+      console.error("Erro ao avaliar:", error);
+      alert("Falha ao processar a avaliação. Tente novamente.");
+      return false;
+    }
+  };
+
+  return {
+    buscarMinhasRifas,
+    finalizarVenda,
+    buscarPendentes,
+    avaliarComprovante,
+    loading,
+  };
 }

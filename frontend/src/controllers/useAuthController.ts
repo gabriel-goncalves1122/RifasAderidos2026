@@ -9,7 +9,7 @@ import {
   onAuthStateChanged,
   User, // Importação necessária para a interface
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 // Importamos o tipo oficial que acabamos de definir no models.ts
 import { CargoComissao } from "../types/models";
@@ -31,23 +31,26 @@ export function useAuthController() {
   );
 
   // ----------------------------------------------------------------------------
-  // 2. OBSERVADOR DE AUTENTICAÇÃO (O Olheiro)
+  // 2. OBSERVADOR DE AUTENTICAÇÃO (Limpo e Otimizado)
   // ----------------------------------------------------------------------------
   useEffect(() => {
-    // Escuta mudanças no login (login, logout, refresh)
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
+      if (user && user.email) {
         try {
-          // Quando o usuário loga, buscamos o documento dele para saber o cargo
-          // Usamos o UID como chave no Firestore
-          const docSnap = await getDoc(doc(db, "usuarios", user.uid));
-          let cargo: CargoComissao = "membro"; // Padrão caso não exista no doc
+          // Busca o documento do usuário pelo e-mail
+          const q = query(
+            collection(db, "usuarios"),
+            where("email", "==", user.email),
+          );
+          const querySnapshot = await getDocs(q);
 
-          if (docSnap.exists()) {
-            cargo = (docSnap.data().cargo as CargoComissao) || "membro";
+          let cargo: CargoComissao = "membro";
+
+          if (!querySnapshot.empty) {
+            const dadosDoBanco = querySnapshot.docs[0].data();
+            cargo = (dadosDoBanco.cargo as CargoComissao) || "membro";
           }
 
-          // Combinamos os dados: Firebase Auth + Cargo do Firestore
           setUsuarioAtual({ ...user, cargo } as UsuarioFormatura);
         } catch (err) {
           console.error("Erro ao buscar cargo:", err);
@@ -56,12 +59,11 @@ export function useAuthController() {
       } else {
         setUsuarioAtual(null);
       }
-      setLoading(false); // Libera a tela após a verificação
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
-
   // ----------------------------------------------------------------------------
   // 3. AÇÕES (Login e Cadastro)
   // ----------------------------------------------------------------------------

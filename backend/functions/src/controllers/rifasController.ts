@@ -91,7 +91,7 @@ export const rifasController = {
         batch.set(
           bilheteRef,
           {
-            status: "em_analise",
+            status: "pendente", // <--- CORREÇÃO AQUI: Troque "em_analise" por "pendente"
             comprador_id: compradorRef.id,
             data_reserva: new Date().toISOString(),
             comprovante_url: comprovanteUrl,
@@ -109,6 +109,97 @@ export const rifasController = {
     } catch (error) {
       console.error("Erro ao processar venda:", error);
       return res.status(500).json({ error: "Erro ao processar a venda." });
+    }
+  },
+
+  // ==========================================================================
+  // [ADMIN] LISTAR RIFAS PENDENTES DE AUDITORIA
+  // ==========================================================================
+  async listarPendentes(req: AuthRequest, res: Response) {
+    try {
+      const db = admin.firestore();
+
+      // Busca todos os bilhetes que estão aguardando avaliação da Tesouraria
+      const pendentesSnapshot = await db
+        .collection("bilhetes")
+        .where("status", "==", "pendente")
+        .get();
+
+      const bilhetesPendentes = pendentesSnapshot.docs.map((doc) => doc.data());
+
+      return res.status(200).json({ bilhetes: bilhetesPendentes });
+    } catch (error) {
+      console.error("Erro ao listar rifas pendentes:", error);
+      return res
+        .status(500)
+        .json({ error: "Erro interno ao buscar rifas pendentes." });
+    }
+  },
+
+  // ==========================================================================
+  // [ADMIN] AVALIAR COMPROVANTE (Aprovar ou Rejeitar)
+  // ==========================================================================
+  async avaliarComprovante(req: AuthRequest, res: Response) {
+    try {
+      const db = admin.firestore();
+      // O frontend vai enviar o número do bilhete e a decisão ("aprovar" ou "rejeitar")
+      const { numeroRifa, decisao } = req.body;
+
+      if (!numeroRifa || !decisao) {
+        return res
+          .status(400)
+          .json({ error: "Número da rifa e decisão são obrigatórios." });
+      }
+
+      const bilheteRef = db.collection("bilhetes").doc(numeroRifa);
+      const bilheteSnap = await bilheteRef.get();
+
+      if (!bilheteSnap.exists) {
+        return res.status(404).json({ error: "Bilhete não encontrado." });
+      }
+
+      const dadosAtuais = bilheteSnap.data();
+
+      // Proteção de concorrência: e se outro tesoureiro já aprovou isso há 5 segundos?
+      if (dadosAtuais?.status !== "pendente") {
+        return res
+          .status(400)
+          .json({ error: "Este bilhete não está mais pendente de avaliação." });
+      }
+
+      const batch = db.batch();
+
+      if (decisao === "aprovar") {
+        batch.update(bilheteRef, {
+          status: "pago",
+          data_pagamento: new Date().toISOString(),
+        });
+      } else if (decisao === "rejeitar") {
+        // Se for fraude ou erro, resetamos a rifa para o aderido poder vender de novo
+        batch.update(bilheteRef, {
+          status: "disponivel",
+          comprador_id: null,
+          data_reserva: null,
+          comprovante_url: null,
+        });
+        // TODO Futuro: Notificar o aderido que o comprovante dele foi rejeitado
+      } else {
+        return res
+          .status(400)
+          .json({ error: "Decisão inválida. Use 'aprovar' ou 'rejeitar'." });
+      }
+
+      await batch.commit();
+
+      return res.status(200).json({
+        sucesso: true,
+        mensagem: `Rifa ${numeroRifa} ${decisao === "aprovar" ? "aprovada" : "rejeitada"} com sucesso.`,
+      });
+    } catch (error) {
+      console.error("Erro ao avaliar comprovante:", error);
+      return res
+        .status(500)
+        .json({ error: "Erro interno ao avaliar comprovante." });
     }
   },
 };
