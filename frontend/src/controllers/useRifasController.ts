@@ -217,12 +217,39 @@ export function useRifasController() {
     }
   };
 
+  // =========================================================
+  // [ADMIN] BUSCAR HISTÓRICO COMPLETO (Para gráficos e CSV)
+  // =========================================================
+  const buscarHistoricoDetalhado = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+
+      const token = await user.getIdToken();
+      const response = await fetch(
+        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/historico",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+
+      return result.historico;
+    } catch (error) {
+      console.error("Erro ao buscar histórico:", error);
+      return [];
+    }
+  };
+
   return {
     buscarMinhasRifas,
     finalizarVenda,
     buscarPendentes,
     avaliarComprovante,
     buscarRelatorio,
+    buscarHistoricoDetalhado,
     loading,
     error,
   };

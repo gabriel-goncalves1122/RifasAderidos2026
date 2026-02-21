@@ -181,11 +181,9 @@ export const rifasController = {
         numerosRifas.length === 0 ||
         !decisao
       ) {
-        return res
-          .status(400)
-          .json({
-            error: "Números das rifas (array) e decisão são obrigatórios.",
-          });
+        return res.status(400).json({
+          error: "Números das rifas (array) e decisão são obrigatórios.",
+        });
       }
 
       const batch = db.batch();
@@ -312,6 +310,50 @@ export const rifasController = {
     } catch (error) {
       console.error("Erro ao gerar relatório:", error);
       return res.status(500).json({ error: "Erro ao gerar relatório." });
+    }
+  },
+
+  // =========================================================
+  // 5. HISTÓRICO COMPLETO DETALHADO (Para Gráficos e CSV Geral)
+  // =========================================================
+  async obterHistoricoDetalhado(req: AuthRequest, res: Response) {
+    try {
+      const db = admin.firestore();
+
+      // Busca absolutamente todos os bilhetes que já tiveram alguma interação (pagos ou pendentes)
+      const bilhetesSnap = await db
+        .collection("bilhetes")
+        .where("status", "in", ["pago", "pendente"])
+        .get();
+
+      const historico = bilhetesSnap.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          numero_rifa: doc.id,
+          vendedor_nome: data.vendedor_nome || "Desconhecido",
+          vendedor_cpf: data.vendedor_cpf || "-",
+          comprador_nome: data.comprador_nome || "Desconhecido",
+          comprador_email: data.comprador_email || "-",
+          data_reserva: data.data_reserva || "-",
+          data_pagamento: data.data_pagamento || "-",
+          status: data.status,
+          valor: 10, // Valor fixo da rifa
+        };
+      });
+
+      // Ordena do mais recente para o mais antigo (usando a data de reserva como base)
+      historico.sort((a, b) => {
+        const dataA = new Date(a.data_reserva).getTime() || 0;
+        const dataB = new Date(b.data_reserva).getTime() || 0;
+        return dataB - dataA;
+      });
+
+      return res.status(200).json({ historico });
+    } catch (error) {
+      console.error("Erro ao gerar histórico detalhado:", error);
+      return res
+        .status(500)
+        .json({ error: "Erro ao buscar o histórico de vendas." });
     }
   },
 };

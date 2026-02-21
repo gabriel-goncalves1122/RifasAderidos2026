@@ -21,5 +21,11 @@ router.get(
   validateToken,
   rifasController.obterRelatorioTesouraria,
 );
+// Rota para puxar o histórico detalhado grão a grão (Precisa ser Tesouraria)
+router.get(
+  "/historico",
+  validateToken,
+  rifasController.obterHistoricoDetalhado,
+);
 
 export default router;
