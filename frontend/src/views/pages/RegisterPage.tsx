@@ -20,6 +20,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import { useAuthController } from "../../controllers/useAuthController";
 
+// Máscara de CPF automática
 const aplicarMascaraCPF = (valor: string) => {
   return valor
     .replace(/\D/g, "")
@@ -31,23 +32,26 @@ const aplicarMascaraCPF = (valor: string) => {
 
 const schema = yup
   .object({
-    nome: yup.string().required("Nome completo é obrigatório"), // <-- Validação do Nome
+    nome: yup.string().required("O nome completo é obrigatório"),
     email: yup
       .string()
-      .email("E-mail inválido")
-      .required("E-mail é obrigatório"),
+      .email("E-mail com formato inválido")
+      .required("O e-mail é obrigatório"),
     cpf: yup
       .string()
-      .required("CPF é obrigatório")
-      .matches(/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/, "Formato inválido"),
+      .required("O CPF é obrigatório")
+      .matches(
+        /^\d{3}\.\d{3}\.\d{3}\-\d{2}$/,
+        "CPF incompleto (Ex: 111.222.333-44)",
+      ),
     senha: yup
       .string()
       .min(6, "A senha deve ter no mínimo 6 caracteres")
-      .required("Senha é obrigatória"),
+      .required("A senha é obrigatória"),
     confirmarSenha: yup
       .string()
       .oneOf([yup.ref("senha")], "As senhas não conferem")
-      .required("Confirme sua senha"),
+      .required("Confirme a sua senha"),
   })
   .required();
 
@@ -56,19 +60,24 @@ type FormData = yup.InferType<typeof schema>;
 export function RegisterPage() {
   const navigate = useNavigate();
   const { handleRegister, error, loading } = useAuthController();
+
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({ resolver: yupResolver(schema) });
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
+    mode: "onChange",
+  });
 
   const onSubmit = async (data: FormData) => {
     try {
-      // Passamos o Nome junto na ordem correta
       await handleRegister(data.nome, data.email, data.senha, data.cpf);
       navigate("/dashboard");
-    } catch (err) {}
+    } catch (err) {
+      // O controller já lida com o estado de 'error' para mostrar no Alert
+    }
   };
 
   return (
@@ -94,6 +103,9 @@ export function RegisterPage() {
             <Typography variant="h5" component="h1" fontWeight="bold">
               Criar Conta
             </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Comissão de Formatura 2026
+            </Typography>
           </Box>
 
           <Alert
@@ -102,8 +114,8 @@ export function RegisterPage() {
             sx={{ mb: 3, borderRadius: 2 }}
           >
             <Typography variant="body2">
-              Use o mesmo e-mail do cadastro da plataforma{" "}
-              <strong>Keeper</strong>.
+              Utilize o <strong>mesmo e-mail</strong> cadastrado na plataforma{" "}
+              <strong>Keeper</strong> para sincronizarmos as suas rifas.
             </Typography>
           </Alert>
 
@@ -114,7 +126,6 @@ export function RegisterPage() {
           )}
 
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-            {/* NOVO CAMPO DE NOME */}
             <TextField
               margin="normal"
               required
@@ -122,6 +133,7 @@ export function RegisterPage() {
               id="nome"
               label="Nome Completo"
               autoFocus
+              disabled={loading}
               {...register("nome")}
               error={!!errors.nome}
               helperText={errors.nome?.message}
@@ -133,6 +145,7 @@ export function RegisterPage() {
               fullWidth
               id="email"
               label="E-mail da Keeper"
+              disabled={loading}
               {...register("email")}
               error={!!errors.email}
               helperText={errors.email?.message}
@@ -145,6 +158,7 @@ export function RegisterPage() {
               id="cpf"
               label="CPF"
               placeholder="111.222.333-44"
+              disabled={loading}
               {...register("cpf")}
               onChange={(e) =>
                 setValue("cpf", aplicarMascaraCPF(e.target.value), {
@@ -162,6 +176,7 @@ export function RegisterPage() {
               label="Criar Senha"
               type="password"
               id="senha"
+              disabled={loading}
               {...register("senha")}
               error={!!errors.senha}
               helperText={errors.senha?.message}
@@ -174,6 +189,7 @@ export function RegisterPage() {
               label="Confirmar Senha"
               type="password"
               id="confirmarSenha"
+              disabled={loading}
               {...register("confirmarSenha")}
               error={!!errors.confirmarSenha}
               helperText={errors.confirmarSenha?.message}
@@ -190,21 +206,24 @@ export function RegisterPage() {
               {loading ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
-                "Cadastrar e Ver Rifas"
+                "Cadastrar e Acessar"
               )}
             </Button>
 
             <Box sx={{ textAlign: "center", mt: 2 }}>
-              <Link
-                to="/"
-                style={{
-                  color: "#1976d2",
-                  textDecoration: "none",
-                  fontWeight: "bold",
-                }}
-              >
-                Já possui conta? Faça login
-              </Link>
+              <Typography variant="body2" color="text.secondary">
+                Já tem conta?{" "}
+                <Link
+                  to="/"
+                  style={{
+                    color: "#1976d2",
+                    textDecoration: "none",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Faça login
+                </Link>
+              </Typography>
             </Box>
           </Box>
         </Paper>

@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import * as admin from "firebase-admin";
+import { enviarEmailRecibo } from "../services/emailService";
 
 export const rifasController = {
   // =========================================================
@@ -33,7 +34,7 @@ export const rifasController = {
       const usuario = userDocs.docs[0].data();
       const idAderido = usuario.id_aderido;
 
-      // 2. Busca os 120 bilhetes atrelados a este usuário
+      // 2. Busca os bilhetes atrelados a este usuário
       const bilhetesSnapshot = await db
         .collection("bilhetes")
         .where("vendedor_id", "==", idAderido)
@@ -59,7 +60,7 @@ export const rifasController = {
       const db = admin.firestore();
 
       const uid = req.user?.uid;
-      const emailLogado = req.user?.email; // Precisamos do e-mail para achar o vendedor
+      const emailLogado = req.user?.email;
       const { nome, telefone, email, numerosRifas, comprovanteUrl } = req.body;
 
       if (
@@ -73,7 +74,7 @@ export const rifasController = {
           .json({ error: "Dados incompletos ou comprovante faltando." });
       }
 
-      // 1. BUSCAR DADOS DO VENDEDOR (Para salvar no bilhete e facilitar a auditoria)
+      // 1. BUSCAR DADOS DO VENDEDOR
       let vendedorNome = "Nome não registrado";
       let vendedorCpf = "CPF não registrado";
 
@@ -91,9 +92,12 @@ export const rifasController = {
         }
       }
 
-      // 2. REGISTRAR O COMPRADOR NO FIRESTORE
+      // 2. PREPARAR A TRANSAÇÃO ATÔMICA (BATCH)
+      const batch = db.batch();
+
+      // Cria a referência do comprador
       const compradorRef = db.collection("compradores").doc();
-      await compradorRef.set({
+      batch.set(compradorRef, {
         id: compradorRef.id,
         nome,
         telefone,
@@ -101,9 +105,7 @@ export const rifasController = {
         criado_em: new Date().toISOString(),
       });
 
-      // 3. ATUALIZAR OS BILHETES (BATCH COM METADADOS ENRIQUECIDOS)
-      const batch = db.batch();
-
+      // Atualiza os bilhetes
       numerosRifas.forEach((numero: string) => {
         const bilheteRef = db.collection("bilhetes").doc(numero);
         batch.set(
@@ -111,9 +113,10 @@ export const rifasController = {
           {
             status: "pendente",
             comprador_id: compradorRef.id,
-            comprador_nome: nome, // <--- NOVO METADADO!
-            vendedor_nome: vendedorNome, // <--- NOVO METADADO!
-            vendedor_cpf: vendedorCpf, // <--- NOVO METADADO!
+            comprador_nome: nome,
+            comprador_email: email || null, // Facilitador para o envio do recibo final
+            vendedor_nome: vendedorNome,
+            vendedor_cpf: vendedorCpf,
             data_reserva: new Date().toISOString(),
             comprovante_url: comprovanteUrl,
           },
@@ -121,7 +124,13 @@ export const rifasController = {
         );
       });
 
+      // Executa a gravação no banco
       await batch.commit();
+
+      // 3. ENVIAR E-MAIL DE CONFIRMAÇÃO DO PEDIDO (Background)
+      if (email) {
+        enviarEmailRecibo(email, nome, numerosRifas, "pendente");
+      }
 
       return res.status(200).json({
         sucesso: true,
@@ -140,7 +149,6 @@ export const rifasController = {
     try {
       const db = admin.firestore();
 
-      // Busca todos os bilhetes que estão aguardando avaliação da Tesouraria
       const pendentesSnapshot = await db
         .collection("bilhetes")
         .where("status", "==", "pendente")
@@ -158,69 +166,91 @@ export const rifasController = {
   },
 
   // ==========================================================================
-  // [ADMIN] AVALIAR COMPROVANTE (Aprovar ou Rejeitar)
+  // [ADMIN] AVALIAR COMPROVANTE EM LOTE (Aprovar ou Rejeitar)
   // ==========================================================================
   async avaliarComprovante(req: AuthRequest, res: Response) {
     try {
       const db = admin.firestore();
-      // O frontend vai enviar o número do bilhete e a decisão ("aprovar" ou "rejeitar")
-      const { numeroRifa, decisao } = req.body;
 
-      if (!numeroRifa || !decisao) {
+      // AGORA RECEBEMOS UM ARRAY: numerosRifas
+      const { numerosRifas, decisao } = req.body;
+
+      if (
+        !numerosRifas ||
+        !Array.isArray(numerosRifas) ||
+        numerosRifas.length === 0 ||
+        !decisao
+      ) {
         return res
           .status(400)
-          .json({ error: "Número da rifa e decisão são obrigatórios." });
-      }
-
-      const bilheteRef = db.collection("bilhetes").doc(numeroRifa);
-      const bilheteSnap = await bilheteRef.get();
-
-      if (!bilheteSnap.exists) {
-        return res.status(404).json({ error: "Bilhete não encontrado." });
-      }
-
-      const dadosAtuais = bilheteSnap.data();
-
-      // Proteção de concorrência: e se outro tesoureiro já aprovou isso há 5 segundos?
-      if (dadosAtuais?.status !== "pendente") {
-        return res
-          .status(400)
-          .json({ error: "Este bilhete não está mais pendente de avaliação." });
+          .json({
+            error: "Números das rifas (array) e decisão são obrigatórios.",
+          });
       }
 
       const batch = db.batch();
 
-      if (decisao === "aprovar") {
-        batch.update(bilheteRef, {
-          status: "pago",
-          data_pagamento: new Date().toISOString(),
-        });
-      } else if (decisao === "rejeitar") {
-        // Se for fraude ou erro, resetamos a rifa para o aderido poder vender de novo
-        batch.update(bilheteRef, {
-          status: "disponivel",
-          comprador_id: null,
-          data_reserva: null,
-          comprovante_url: null,
-        });
-        // TODO Futuro: Notificar o aderido que o comprovante dele foi rejeitado
-      } else {
-        return res
-          .status(400)
-          .json({ error: "Decisão inválida. Use 'aprovar' ou 'rejeitar'." });
+      // Variáveis para guardar os dados do comprador (pegamos do primeiro bilhete do lote)
+      let compradorEmail: string | null = null;
+      let compradorNome: string | null = null;
+
+      // Percorre todos os bilhetes da compra para atualizar juntos
+      for (const numero of numerosRifas) {
+        const bilheteRef = db.collection("bilhetes").doc(numero);
+        const bilheteSnap = await bilheteRef.get();
+
+        if (!bilheteSnap.exists) continue;
+
+        const dadosAtuais = bilheteSnap.data();
+
+        // Evita re-avaliar rifas que já foram processadas
+        if (dadosAtuais?.status !== "pendente") continue;
+
+        // Se achou um e-mail, salva para mandar o recibo no final
+        if (!compradorEmail && dadosAtuais?.comprador_email) {
+          compradorEmail = dadosAtuais.comprador_email;
+          compradorNome = dadosAtuais.comprador_nome || "Comprador";
+        }
+
+        if (decisao === "aprovar") {
+          batch.update(bilheteRef, {
+            status: "pago",
+            data_pagamento: new Date().toISOString(),
+          });
+        } else if (decisao === "rejeitar") {
+          batch.update(bilheteRef, {
+            status: "disponivel",
+            comprador_id: null,
+            data_reserva: null,
+            comprador_nome: null,
+            comprador_email: null,
+            comprovante_url: null,
+          });
+        }
       }
 
+      // Executa todas as atualizações no banco de dados DE UMA SÓ VEZ
       await batch.commit();
+
+      // MÁGICA FINAL: Dispara APENAS UM e-mail para todo o lote se for aprovado!
+      if (decisao === "aprovar" && compradorEmail) {
+        enviarEmailRecibo(
+          compradorEmail,
+          compradorNome || "Comprador",
+          numerosRifas, // Envia o array inteiro para o e-mail agrupar os bilhetes
+          "aprovado",
+        );
+      }
 
       return res.status(200).json({
         sucesso: true,
-        mensagem: `Rifa ${numeroRifa} ${decisao === "aprovar" ? "aprovada" : "rejeitada"} com sucesso.`,
+        mensagem: `Lote de ${numerosRifas.length} rifa(s) avaliado com sucesso.`,
       });
     } catch (error) {
-      console.error("Erro ao avaliar comprovante:", error);
+      console.error("Erro ao avaliar comprovante em lote:", error);
       return res
         .status(500)
-        .json({ error: "Erro interno ao avaliar comprovante." });
+        .json({ error: "Erro interno ao avaliar comprovante em lote." });
     }
   },
 
@@ -231,16 +261,13 @@ export const rifasController = {
     try {
       const db = admin.firestore();
 
-      // 1. Puxa todos os usuários cadastrados
       const usuariosSnap = await db.collection("usuarios").get();
 
-      // 2. Puxa TODOS os bilhetes que já foram pagos
       const bilhetesSnap = await db
         .collection("bilhetes")
         .where("status", "==", "pago")
         .get();
 
-      // 3. Agrupa a quantidade de rifas pagas pelo CPF do vendedor
       const vendasPorCpf: Record<string, number> = {};
       bilhetesSnap.forEach((doc) => {
         const data = doc.data();
@@ -253,26 +280,27 @@ export const rifasController = {
       let totalArrecadadoGlobal = 0;
       let rifasPagasGlobal = 0;
 
-      // 4. Monta o Dossiê de cada aluno cruzando as informações
-      const aderidos = usuariosSnap.docs.map((doc) => {
-        const user = doc.data();
-        const rifasVendidas = vendasPorCpf[user.cpf] || 0;
-        const arrecadado = rifasVendidas * 10; // R$ 10,00 por rifa
+      // Filtro para garantir que apenas os aderidos oficiais apareçam no relatório
+      const aderidos = usuariosSnap.docs
+        .filter((doc) => doc.id.startsWith("ADERIDO_"))
+        .map((doc) => {
+          const user = doc.data();
+          const rifasVendidas = vendasPorCpf[user.cpf] || 0;
+          const arrecadado = rifasVendidas * 10;
 
-        totalArrecadadoGlobal += arrecadado;
-        rifasPagasGlobal += rifasVendidas;
+          totalArrecadadoGlobal += arrecadado;
+          rifasPagasGlobal += rifasVendidas;
 
-        return {
-          id: doc.id,
-          nome: user.nome || "Aderido Sem Nome",
-          cpf: user.cpf,
-          arrecadado: arrecadado,
-          meta: user.meta_vendas || 1200,
-          rifasVendidas: rifasVendidas,
-        };
-      });
+          return {
+            id: doc.id,
+            nome: user.nome || "Aderido Sem Nome",
+            cpf: user.cpf,
+            arrecadado: arrecadado,
+            meta: user.meta_vendas || 1200,
+            rifasVendidas: rifasVendidas,
+          };
+        });
 
-      // Retorna o pacote completo para o Frontend
       return res.status(200).json({
         resumoGeral: {
           totalArrecadado: totalArrecadadoGlobal,

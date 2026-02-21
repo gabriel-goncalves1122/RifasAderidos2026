@@ -151,10 +151,10 @@ export function useRifasController() {
   }, []);
 
   // =========================================================
-  // [ADMIN] AVALIAR COMPROVANTE (Aprovar/Rejeitar)
+  // [ADMIN] AVALIAR COMPROVANTE EM LOTE (Aprovar/Rejeitar)
   // =========================================================
   const avaliarComprovante = async (
-    numeroRifa: string,
+    numerosRifas: string[], // <--- AGORA RECEBE UM ARRAY DE STRINGS
     decisao: "aprovar" | "rejeitar",
   ) => {
     try {
@@ -170,7 +170,7 @@ export function useRifasController() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ numeroRifa, decisao }),
+          body: JSON.stringify({ numerosRifas, decisao }), // <--- ENVIA O ARRAY PARA O BACKEND
         },
       );
 

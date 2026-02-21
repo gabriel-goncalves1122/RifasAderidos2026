@@ -116,8 +116,8 @@ export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
     setModalConfirmacao({ ...modalConfirmacao, open: false });
     setProcessandoId(chaveUnica || numeros[0]);
 
-    const promessas = numeros.map((num) => avaliarComprovante(num, decisao));
-    await Promise.all(promessas);
+    // AGORA ENVIAMOS TODOS OS NÚMEROS NUMA ÚNICA REQUISIÇÃO!
+    await avaliarComprovante(numeros, decisao);
 
     setProcessandoId(null);
     carregarLista();

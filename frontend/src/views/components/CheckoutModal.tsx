@@ -1,7 +1,10 @@
 // ============================================================================
-// ARQUIVO: CheckoutModal.tsx (Interface de Venda e Upload)
+// ARQUIVO: frontend/src/views/components/CheckoutModal.tsx
 // ============================================================================
 import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import {
   Dialog,
   DialogTitle,
@@ -29,6 +32,50 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 import { useRifasController } from "../../controllers/useRifasController";
 
+// --------------------------------------------------------------------------
+// MÁSCARA & VALIDAÇÃO (YUP)
+// --------------------------------------------------------------------------
+const aplicarMascaraTelefone = (valor: string) => {
+  return valor
+    .replace(/\D/g, "")
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{4,5})(\d{4})$/, "$1-$2")
+    .slice(0, 15);
+};
+
+// Usando .test() ao invés de .transform() para não confundir os tipos do TypeScript
+const schema = yup
+  .object({
+    nome: yup.string().required("O nome completo é obrigatório"),
+    telefone: yup
+      .string()
+      .required("O WhatsApp é obrigatório")
+      .min(14, "Telefone incompleto (Ex: (35) 99999-9999)"),
+    email: yup
+      .string()
+      .optional()
+      .test(
+        "is-valid-email",
+        "Formato de e-mail inválido",
+        (value) =>
+          !value ||
+          value.trim() === "" ||
+          yup.string().email().isValidSync(value),
+      ),
+    comprovante: yup
+      .mixed<File>()
+      .required("Você precisa anexar o comprovante do PIX"),
+  })
+  .required();
+
+// Criamos uma interface explícita para o TypeScript parar de brigar
+export interface CheckoutFormData {
+  nome: string;
+  telefone: string;
+  email?: string;
+  comprovante: File;
+}
+
 interface CheckoutModalProps {
   open: boolean;
   onClose: () => void;
@@ -42,36 +89,38 @@ export function CheckoutModal({
   onSuccess,
   numerosRifas,
 }: CheckoutModalProps) {
-  // --------------------------------------------------------------------------
-  // 1. ESTADOS LOCAIS
-  // --------------------------------------------------------------------------
-  const [nome, setNome] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [email, setEmail] = useState("");
-  const [comprovante, setComprovante] = useState<File | null>(null);
-
   // Estados de UI/UX (Animações e Notificações)
   const [showSuccess, setShowSuccess] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const { finalizarVenda, loading } = useRifasController();
 
-  // --------------------------------------------------------------------------
-  // 2. CICLO DE VIDA (Lifecycle)
-  // --------------------------------------------------------------------------
+  // Configuração do React Hook Form
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<CheckoutFormData>({
+    resolver: yupResolver(schema) as any, // O "as any" manda o TS ignorar conflitos internos da biblioteca
+    mode: "onChange",
+  });
+
+  // Observa o arquivo anexado para mudar o visual do botão
+  const comprovanteAnexado = watch("comprovante");
+
+  // ... O RESTANTE DO CÓDIGO CONTINUA IGUAL DAQUI PARA BAIXO (useEffect, handleCopiarPix, onSubmit, etc.)
+
+  // GATILHO DE LIMPEZA: Reseta o formulário e a tela de sucesso ao fechar o modal
   useEffect(() => {
     if (!open) {
-      setNome("");
-      setTelefone("");
-      setEmail("");
-      setComprovante(null);
+      reset(); // Limpa todos os dados do React Hook Form de uma vez
       setShowSuccess(false);
     }
-  }, [open]);
+  }, [open, reset]);
 
-  // --------------------------------------------------------------------------
-  // 3. VARIÁVEIS DE CÁLCULO
-  // --------------------------------------------------------------------------
   const chavePixComissao = "comissao.engenharia@unifei.edu.br";
   const PRECO_RIFA = 10.0;
   const valorTotal = numerosRifas.length * PRECO_RIFA;
@@ -80,48 +129,34 @@ export function CheckoutModal({
     currency: "BRL",
   });
 
-  // --------------------------------------------------------------------------
-  // 4. AÇÕES (Handlers)
-  // --------------------------------------------------------------------------
   const handleCopiarPix = () => {
     navigator.clipboard.writeText(chavePixComissao);
-    setSnackbarOpen(true); // Aciona o Snackbar elegante no lugar do alert()
+    setSnackbarOpen(true);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      setComprovante(event.target.files[0]);
+      // Injeta o arquivo dentro do Hook Form e manda ele validar se o erro sumiu
+      setValue("comprovante", event.target.files[0], { shouldValidate: true });
     }
   };
 
-  const handleFinalizar = async () => {
-    if (!comprovante) return;
-
+  // Função disparada apenas se o formulário passar por todas as regras do Yup
+  const onSubmit = async (data: CheckoutFormData) => {
     const sucesso = await finalizarVenda({
-      nome,
-      telefone,
-      email,
+      nome: data.nome,
+      telefone: data.telefone,
+      email: data.email || "",
       numerosRifas,
-      comprovante,
+      comprovante: data.comprovante,
     });
 
     if (sucesso) {
-      // 1. Troca a interface para a tela de Sucesso
       setShowSuccess(true);
-
-      // 2. Agenda o fechamento automático após 3 segundos
-      setTimeout(() => {
-        onSuccess();
-      }, 3000);
+      setTimeout(() => onSuccess(), 3000);
     }
   };
 
-  const formValido =
-    nome.trim() !== "" && telefone.trim() !== "" && comprovante !== null;
-
-  // --------------------------------------------------------------------------
-  // 5. INTERFACE (UI)
-  // --------------------------------------------------------------------------
   return (
     <>
       <Dialog
@@ -130,9 +165,6 @@ export function CheckoutModal({
         fullWidth
         maxWidth="sm"
       >
-        {/* ================================================================= */}
-        {/* TELA DE SUCESSO ANIMADA (Renderização Condicional)                */}
-        {/* ================================================================= */}
         {showSuccess ? (
           <Fade in={showSuccess}>
             <Box
@@ -160,15 +192,14 @@ export function CheckoutModal({
               </Typography>
               <Typography variant="body1" color="text.secondary" mb={4}>
                 O comprovante foi enviado para análise da tesouraria.
+                <br />
+                Esta janela fechará automaticamente...
               </Typography>
               <CircularProgress size={30} color="success" />
             </Box>
           </Fade>
         ) : (
-          /* ================================================================= */
-          /* TELA PADRÃO DE CHECKOUT                                           */
-          /* ================================================================= */
-          <>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <DialogTitle
               sx={{ m: 0, p: 2, backgroundColor: "#1976d2", color: "white" }}
             >
@@ -199,7 +230,6 @@ export function CheckoutModal({
                   ))}
                 </Box>
               </Box>
-
               <Divider sx={{ mb: 3 }} />
 
               <Typography
@@ -218,19 +248,28 @@ export function CheckoutModal({
                   variant="outlined"
                   size="small"
                   fullWidth
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
                   disabled={loading}
+                  {...register("nome")}
+                  error={!!errors.nome}
+                  helperText={errors.nome?.message}
                 />
                 <TextField
                   label="WhatsApp (com DDD) *"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  value={telefone}
-                  onChange={(e) => setTelefone(e.target.value)}
                   disabled={loading}
                   placeholder="(35) 99999-9999"
+                  {...register("telefone")}
+                  onChange={(e) =>
+                    setValue(
+                      "telefone",
+                      aplicarMascaraTelefone(e.target.value),
+                      { shouldValidate: true },
+                    )
+                  }
+                  error={!!errors.telefone}
+                  helperText={errors.telefone?.message}
                 />
                 <TextField
                   label="E-mail (Opcional)"
@@ -238,13 +277,15 @@ export function CheckoutModal({
                   size="small"
                   type="email"
                   fullWidth
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  helperText="Enviaremos o recibo para este e-mail."
+                  {...register("email")}
+                  error={!!errors.email}
+                  helperText={
+                    errors.email?.message ||
+                    "Enviaremos o recibo para este e-mail."
+                  }
                 />
               </Box>
-
               <Divider sx={{ mb: 3 }} />
 
               <Typography
@@ -290,7 +331,6 @@ export function CheckoutModal({
                   }}
                 />
               </Paper>
-
               <Divider sx={{ mb: 3 }} />
 
               <Typography
@@ -306,18 +346,20 @@ export function CheckoutModal({
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 2,
+                  gap: 1,
                 }}
               >
                 <Button
                   component="label"
-                  variant={comprovante ? "outlined" : "contained"}
-                  color={comprovante ? "success" : "primary"}
+                  variant={comprovanteAnexado ? "outlined" : "contained"}
+                  color={comprovanteAnexado ? "success" : "primary"}
                   startIcon={<CloudUploadIcon />}
                   fullWidth
                   disabled={loading}
                 >
-                  {comprovante ? "Trocar Comprovante" : "Anexar Imagem ou PDF"}
+                  {comprovanteAnexado
+                    ? "Trocar Comprovante"
+                    : "Anexar Imagem ou PDF"}
                   <input
                     type="file"
                     hidden
@@ -325,13 +367,19 @@ export function CheckoutModal({
                     onChange={handleFileChange}
                   />
                 </Button>
-                {comprovante && (
+                {comprovanteAnexado && (
                   <Typography
                     variant="body2"
                     color="success.main"
                     fontWeight="bold"
                   >
-                    ✓ Ficheiro pronto: {comprovante.name}
+                    ✓ Ficheiro pronto: {comprovanteAnexado.name}
+                  </Typography>
+                )}
+                {/* Exibe o erro do Yup caso ele tente enviar sem a foto */}
+                {errors.comprovante && (
+                  <Typography variant="caption" color="error">
+                    {errors.comprovante.message}
                   </Typography>
                 )}
               </Box>
@@ -342,10 +390,10 @@ export function CheckoutModal({
                 Cancelar
               </Button>
               <Button
-                onClick={handleFinalizar}
+                type="submit"
                 variant="contained"
                 color="success"
-                disabled={!formValido || loading}
+                disabled={loading}
                 sx={{ minWidth: 160 }}
               >
                 {loading ? (
@@ -355,11 +403,10 @@ export function CheckoutModal({
                 )}
               </Button>
             </DialogActions>
-          </>
+          </Box>
         )}
       </Dialog>
 
-      {/* SNACKBAR DE FEEDBACK (PIX COPIADO) */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
