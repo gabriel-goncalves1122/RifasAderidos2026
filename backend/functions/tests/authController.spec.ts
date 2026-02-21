@@ -3,9 +3,10 @@
 // ============================================================================
 import { authController } from "../src/controllers/authController";
 import { Request, Response } from "express";
+import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
 // 1. Criamos a função espiã fora para podermos controlá-la nos testes
-const mockGet = jest.fn();
+const mockGet = jest.fn<any>();
 
 jest.mock("firebase-admin", () => ({
   firestore: jest.fn().mockReturnValue({
@@ -28,8 +29,8 @@ describe("Auth Controller - Verificação de Elegibilidade", () => {
   beforeEach(() => {
     req = { body: {} };
     res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
+      status: jest.fn<any>().mockReturnThis(),
+      json: jest.fn<any>(),
     };
     jest.clearAllMocks(); // Zera o histórico a cada teste
   });

@@ -40,7 +40,7 @@ describe("RegisterPage", () => {
     const inputSenha = screen.getByLabelText(/^Criar Senha/i);
     const inputConfirmaSenha = screen.getByLabelText(/Confirmar Senha/i);
     const btnSubmit = screen.getByRole("button", {
-      name: /Cadastrar e Ver Rifas/i,
+      name: /Cadastrar e Acessar/i, // <-- Atualizamos o texto aqui!
     });
 
     // Preenche os dados completos
