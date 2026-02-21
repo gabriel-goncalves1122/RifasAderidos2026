@@ -52,6 +52,13 @@ describe("DashboardPage (Novo Layout Híbrido)", () => {
       buscarRelatorio: vi.fn(),
       error: null,
       buscarHistoricoDetalhado: vi.fn(),
+      buscarPremios: vi
+        .fn()
+        .mockResolvedValue({ infoSorteio: {}, premios: [] }),
+      salvarInfoSorteio: vi.fn(),
+      salvarPremio: vi.fn(),
+      excluirPremio: vi.fn(),
+      uploadImagemPremio: vi.fn(),
     });
 
     vi.clearAllMocks();

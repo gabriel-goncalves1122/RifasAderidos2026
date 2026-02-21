@@ -1,7 +1,7 @@
 // ============================================================================
 // ARQUIVO: frontend/tests/HistoricoDetalhadoTab.spec.tsx
 // ============================================================================
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { HistoricoDetalhadoTab } from "../src/views/components/HistoricoDetalhadoTab";
 import { useRifasController } from "../src/controllers/useRifasController";

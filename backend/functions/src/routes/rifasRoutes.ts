@@ -28,4 +28,10 @@ router.get(
   rifasController.obterHistoricoDetalhado,
 );
 
+// Rotas de Prêmios e Sorteio
+router.get("/premios", rifasController.obterPremios); // Qualquer um pode ver
+router.put("/sorteio", validateToken, rifasController.salvarInfoSorteio); // Só admin logado
+router.post("/premios", validateToken, rifasController.salvarPremio);
+router.delete("/premios/:id", validateToken, rifasController.excluirPremio);
+
 export default router;

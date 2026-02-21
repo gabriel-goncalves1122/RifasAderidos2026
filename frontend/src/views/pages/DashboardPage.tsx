@@ -32,7 +32,6 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import LogoutIcon from "@mui/icons-material/Logout";
-import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 
 // Controladores e Componentes
 import { useAuthController } from "../../controllers/useAuthController";
@@ -41,6 +40,7 @@ import { AuditoriaTable } from "../components/AuditoriaTable";
 import { MinhasRifasTab } from "../components/MinhasRifasTab";
 import { VisaoGraficaTab } from "../components/VisaoGraficaTab";
 import { HistoricoDetalhadoTab } from "../components/HistoricoDetalhadoTab";
+import { PremiosTab } from "../components/PremiosTab"; // <--- ADICIONE ESTA LINHA
 
 // Define os "chapéus" que o usuário pode vestir na plataforma
 type Contexto = "aderido" | "tesouraria";
@@ -266,17 +266,7 @@ export function DashboardPage() {
         )}
 
         {contextoAtual === "aderido" && abaAtual === 1 && (
-          <Box sx={{ textAlign: "center", mt: 10 }}>
-            <CardGiftcardIcon
-              sx={{ fontSize: 60, color: "text.disabled", mb: 2 }}
-            />
-            <Typography variant="h5" color="text.secondary">
-              Prêmios em Breve
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              A comissão anunciará os prêmios do sorteio nesta aba.
-            </Typography>
-          </Box>
+          <PremiosTab isAdmin={isAdmin} />
         )}
 
         {/* --- CONTEXTO: TESOURARIA --- */}

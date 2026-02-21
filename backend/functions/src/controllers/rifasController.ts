@@ -356,4 +356,81 @@ export const rifasController = {
         .json({ error: "Erro ao buscar o histórico de vendas." });
     }
   },
+
+  // =========================================================
+  // 6. GESTÃO DE PRÊMIOS E SORTEIO (TESOURARIA)
+  // =========================================================
+
+  async obterPremios(req: any, res: any) {
+    try {
+      const db = admin.firestore();
+
+      const infoSorteioSnap = await db
+        .collection("configuracoes")
+        .doc("sorteio")
+        .get();
+      const infoSorteio = infoSorteioSnap.exists
+        ? infoSorteioSnap.data()
+        : {
+            titulo: "Grande Sorteio da Comissão",
+            data: "Data a definir",
+            descricao: "Participe e concorra a prêmios incríveis!",
+          };
+
+      const premiosSnap = await db
+        .collection("premios")
+        .orderBy("colocacao")
+        .get();
+      const premios = premiosSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      return res.status(200).json({ infoSorteio, premios });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao buscar prêmios." });
+    }
+  },
+
+  async salvarInfoSorteio(req: any, res: any) {
+    try {
+      const db = admin.firestore();
+      await db.collection("configuracoes").doc("sorteio").set(req.body);
+      return res.status(200).json({ sucesso: true });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ error: "Erro ao salvar informações do sorteio." });
+    }
+  },
+
+  async salvarPremio(req: any, res: any) {
+    try {
+      const db = admin.firestore();
+      const { id, ...dadosPremio } = req.body;
+
+      if (id) {
+        await db.collection("premios").doc(id).update(dadosPremio);
+      } else {
+        await db.collection("premios").add(dadosPremio);
+      }
+      return res.status(200).json({ sucesso: true });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao salvar prêmio." });
+    }
+  },
+
+  async excluirPremio(req: any, res: any) {
+    try {
+      const db = admin.firestore();
+      // O 'as string' garante ao Firestore que o ID é apenas um texto simples
+      await db
+        .collection("premios")
+        .doc(req.params.id as string)
+        .delete();
+      return res.status(200).json({ sucesso: true });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao excluir prêmio." });
+    }
+  },
 };

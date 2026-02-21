@@ -243,6 +243,98 @@ export function useRifasController() {
     }
   };
 
+  // =========================================================
+  // GESTÃO DE PRÊMIOS (FRONTEND)
+  // =========================================================
+  const buscarPremios = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/premios",
+      );
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error("Erro ao buscar prêmios:", error);
+      return null;
+    }
+  };
+
+  const salvarInfoSorteio = async (dados: any) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+      const token = await user.getIdToken();
+
+      await fetch(
+        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/sorteio",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(dados),
+        },
+      );
+    } catch (error) {
+      console.error("Erro ao salvar sorteio:", error);
+    }
+  };
+
+  const uploadImagemPremio = async (arquivo: File): Promise<string> => {
+    try {
+      const { ref, uploadBytes, getDownloadURL } =
+        await import("firebase/storage");
+      const nomeArquivo = `premios/${Date.now()}_${arquivo.name}`;
+      const storageRef = ref(storage, nomeArquivo);
+      await uploadBytes(storageRef, arquivo);
+      return await getDownloadURL(storageRef);
+    } catch (error) {
+      console.error("Erro ao subir imagem:", error);
+      throw new Error("Falha no upload da imagem");
+    }
+  };
+
+  const salvarPremio = async (dados: any) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+      const token = await user.getIdToken();
+
+      await fetch(
+        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/premios",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(dados),
+        },
+      );
+    } catch (error) {
+      console.error("Erro ao salvar prêmio:", error);
+    }
+  };
+
+  const excluirPremio = async (id: string) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+      const token = await user.getIdToken();
+
+      await fetch(
+        `http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/premios/${id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+    } catch (error) {
+      console.error("Erro ao excluir prêmio:", error);
+    }
+  };
+
   return {
     buscarMinhasRifas,
     finalizarVenda,
@@ -250,6 +342,12 @@ export function useRifasController() {
     avaliarComprovante,
     buscarRelatorio,
     buscarHistoricoDetalhado,
+    excluirPremio,
+    salvarPremio,
+    uploadImagemPremio,
+    buscarPremios,
+    salvarInfoSorteio,
+
     loading,
     error,
   };

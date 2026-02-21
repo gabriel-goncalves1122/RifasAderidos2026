@@ -1,7 +1,7 @@
 // ============================================================================
 // ARQUIVO: frontend/tests/VisaoGraficaTab.spec.tsx
 // ============================================================================
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { VisaoGraficaTab } from "../src/views/components/VisaoGraficaTab";
 import { useRifasController } from "../src/controllers/useRifasController";
