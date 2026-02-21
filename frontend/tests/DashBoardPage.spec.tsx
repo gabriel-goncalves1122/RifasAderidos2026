@@ -1,7 +1,8 @@
 // ============================================================================
 // ARQUIVO: frontend/tests/DashBoardPage.spec.tsx
 // ============================================================================
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+// (se tiver userEvent, deixe também, só tire o fireEvent)
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BrowserRouter } from "react-router-dom";
@@ -50,6 +51,7 @@ describe("DashboardPage (Novo Layout Híbrido)", () => {
       loading: false,
       buscarRelatorio: vi.fn(),
       error: null,
+      buscarHistoricoDetalhado: vi.fn(),
     });
 
     vi.clearAllMocks();
@@ -74,7 +76,8 @@ describe("DashboardPage (Novo Layout Híbrido)", () => {
     await user.click(btnMenu);
 
     // 3. Verifica se o Drawer abriu e mostrou as opções de Admin
-    expect(await screen.findByText(/Comissão 2026/i)).toBeInTheDocument();
+    // 3. Verifica se o Drawer abriu e mostrou as opções de Admin
+    expect(await screen.findByText(/Portal da Comissão/i)).toBeInTheDocument(); // <-- Título atualizado
     expect(screen.getByText(/Painel da Tesouraria/i)).toBeInTheDocument();
   });
 
