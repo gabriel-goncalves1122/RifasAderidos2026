@@ -48,6 +48,8 @@ describe("DashboardPage (Novo Layout Híbrido)", () => {
       avaliarComprovante: vi.fn(),
       finalizarVenda: vi.fn(),
       loading: false,
+      buscarRelatorio: vi.fn(),
+      error: null,
     });
 
     vi.clearAllMocks();
@@ -76,23 +78,26 @@ describe("DashboardPage (Novo Layout Híbrido)", () => {
     expect(screen.getByText(/Painel da Tesouraria/i)).toBeInTheDocument();
   });
 
-  it("deve alterar a aba selecionada no cabeçalho", () => {
+  it("deve alterar a aba selecionada no cabeçalho", async () => {
+    const user = userEvent.setup(); // Usando a simulação real
     render(
       <BrowserRouter>
         <DashboardPage />
       </BrowserRouter>,
     );
 
-    // Verifica se a primeira aba está ativa por padrão
     const abaMinhasRifas = screen.getByRole("tab", { name: /Minhas Rifas/i });
     expect(abaMinhasRifas).toHaveAttribute("aria-selected", "true");
 
-    // Procura a segunda aba e clica nela
     const abaPremios = screen.getByRole("tab", { name: /Prêmios/i });
     expect(abaPremios).toHaveAttribute("aria-selected", "false");
 
-    // Clica e garante que o Material UI trocou a classe "selected" dela (A validação real de DOM)
-    fireEvent.click(abaPremios);
-    expect(abaPremios).toHaveAttribute("aria-selected", "true");
+    // Clica na aba usando o userEvent e espera a ação terminar
+    await user.click(abaPremios);
+
+    // Valida o resultado final
+    await waitFor(() => {
+      expect(abaPremios).toHaveAttribute("aria-selected", "true");
+    });
   });
 });

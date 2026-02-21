@@ -5,9 +5,11 @@
 import { useState, useCallback } from "react";
 import { storage, auth } from "../config/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getAuth } from "firebase/auth"; // <-- ADICIONE ISSO AQUI NO TOPO
 
 export function useRifasController() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // =========================================================
   // 1. BUSCAR AS RIFAS DO ADERIDO
@@ -21,11 +23,8 @@ export function useRifasController() {
       const token = await user.getIdToken();
 
       const response = await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/minhas-rifas",
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        `http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/minhas-rifas`,
+        { method: "GET", headers: { Authorization: `Bearer ${token}` } },
       );
 
       const result = await response.json();
@@ -186,11 +185,45 @@ export function useRifasController() {
     }
   };
 
+  // ==========================================================================
+  // BUSCAR RELATÓRIO GERAL (Exclusivo da Tesouraria)
+  // ==========================================================================
+  const buscarRelatorio = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não autenticado.");
+
+      const token = await user.getIdToken();
+      // Lembre-se de usar a sua variável de ambiente API_URL se tiver
+      const response = await fetch(
+        `http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/relatorio`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (!response.ok) throw new Error("Falha ao buscar relatório.");
+
+      return await response.json();
+    } catch (err: any) {
+      console.error("Erro no relatório:", err);
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     buscarMinhasRifas,
     finalizarVenda,
     buscarPendentes,
     avaliarComprovante,
+    buscarRelatorio,
     loading,
+    error,
   };
 }

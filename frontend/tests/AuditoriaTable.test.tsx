@@ -22,6 +22,8 @@ describe("Componente <AuditoriaTable />", () => {
       loading: false,
       buscarMinhasRifas: vi.fn(),
       finalizarVenda: vi.fn(),
+      buscarRelatorio: vi.fn(),
+      error: null,
     });
     vi.clearAllMocks();
   });

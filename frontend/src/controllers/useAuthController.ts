@@ -1,5 +1,5 @@
 // ============================================================================
-// ARQUIVO: useAuthController.ts (Controlador de Sessão e Cargos)
+// ARQUIVO: frontend/src/controllers/useAuthController.ts
 // ============================================================================
 import { useEffect, useState } from "react";
 import { auth, db } from "../config/firebase";
@@ -8,53 +8,45 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   User,
-  signOut, // Importação necessária para a interface
+  signOut,
 } from "firebase/auth";
-import { collection, query, where, getDocs } from "firebase/firestore";
-
-// Importamos o tipo oficial que acabamos de definir no models.ts
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { CargoComissao } from "../types/models";
 
-// ----------------------------------------------------------------------------
-// 1. INTERFACE DE USUÁRIO TURBINADA
-// ----------------------------------------------------------------------------
-// Unimos as informações nativas do Firebase (email, uid) com o nosso 'cargo'
 export interface UsuarioFormatura extends User {
   cargo?: CargoComissao;
 }
 
 export function useAuthController() {
-  // Iniciamos com loading true para o PrivateRoute saber que estamos checando o banco
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usuarioAtual, setUsuarioAtual] = useState<UsuarioFormatura | null>(
     null,
   );
 
-  // ----------------------------------------------------------------------------
-  // 2. OBSERVADOR DE AUTENTICAÇÃO (Limpo e Otimizado)
-  // ----------------------------------------------------------------------------
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user && user.email) {
         try {
-          // Busca o documento do usuário pelo e-mail
           const q = query(
             collection(db, "usuarios"),
             where("email", "==", user.email),
           );
           const querySnapshot = await getDocs(q);
-
           let cargo: CargoComissao = "membro";
-
           if (!querySnapshot.empty) {
-            const dadosDoBanco = querySnapshot.docs[0].data();
-            cargo = (dadosDoBanco.cargo as CargoComissao) || "membro";
+            cargo =
+              (querySnapshot.docs[0].data().cargo as CargoComissao) || "membro";
           }
-
           setUsuarioAtual({ ...user, cargo } as UsuarioFormatura);
         } catch (err) {
-          console.error("Erro ao buscar cargo:", err);
           setUsuarioAtual({ ...user, cargo: "membro" } as UsuarioFormatura);
         }
       } else {
@@ -62,12 +54,8 @@ export function useAuthController() {
       }
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
-  // ----------------------------------------------------------------------------
-  // 3. AÇÕES (Login e Cadastro)
-  // ----------------------------------------------------------------------------
 
   const handleLogin = async (email: string, senha: string) => {
     setLoading(true);
@@ -76,7 +64,6 @@ export function useAuthController() {
       await signInWithEmailAndPassword(auth, email, senha);
       return true;
     } catch (err: any) {
-      console.error(err);
       setError("E-mail ou senha incorretos.");
       return false;
     } finally {
@@ -87,42 +74,63 @@ export function useAuthController() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-    } catch (err) {
-      console.error("Erro ao sair da conta:", err);
-    }
+    } catch (err) {}
   };
 
-  const handleRegister = async (email: string, senha: string) => {
+  const handleRegister = async (
+    nome: string,
+    email: string,
+    senha: string,
+    cpf: string,
+  ) => {
     setLoading(true);
     setError(null);
     try {
-      // Validação de elegibilidade no Backend (Porteiro)
-      const response = await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/auth/verificar",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        },
+      // 1. PRIMEIRO PASSO: Cria a conta no Firebase Auth para ganharmos o "crachá" de acesso
+      // (Isso já faz o login do usuário "por baixo dos panos" automaticamente)
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        senha,
       );
+      const user = userCredential.user;
 
-      const data = await response.json();
+      // 2. SEGUNDO PASSO: Agora que estamos logados e com permissão, buscamos a ficha da Keeper
+      const q = query(
+        collection(db, "usuarios"),
+        where("email", "==", user.email),
+      );
+      const querySnapshot = await getDocs(q);
 
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao verificar elegibilidade.");
+      if (querySnapshot.empty) {
+        throw new Error(
+          "E-mail não encontrado na base da comissão. Use o e-mail exato da Keeper.",
+        );
       }
 
-      // Se elegível, cria no Firebase Auth
-      await createUserWithEmailAndPassword(auth, email, senha);
-      return true;
+      // Descobrimos quem é o aderido (Ex: ADERIDO_001)
+      const aderidoDoc = querySnapshot.docs[0];
+
+      // 3. TERCEIRO PASSO: MÁGICA FINAL! Atualiza a ficha ADERIDO_XXX conectando tudo
+      await updateDoc(doc(db, "usuarios", aderidoDoc.id), {
+        uid: user.uid, // Conecta com a conta que acabamos de criar
+        cpf: cpf, // Salva o CPF validado
+        nome: nome, // Garante que o nome do relatório será o digitado
+      });
+
+      return user;
     } catch (err: any) {
-      console.error(err);
-      if (err.code === "auth/email-already-in-use") {
-        setError("Este e-mail já possui conta.");
+      console.error("Erro no cadastro:", err);
+      if (err.message && err.message.includes("E-mail não encontrado")) {
+        setError(err.message);
+      } else if (err.code === "auth/email-already-in-use") {
+        setError(
+          "Este e-mail já possui uma senha. Faça login na tela inicial.",
+        );
       } else {
-        setError(err.message || "Erro ao criar conta.");
+        setError("Erro ao criar conta. Verifique os dados.");
       }
-      return false;
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -134,6 +142,6 @@ export function useAuthController() {
     error,
     handleLogin,
     handleRegister,
-    handleLogout, // <--- Faltava isso aqui!
+    handleLogout,
   };
 }

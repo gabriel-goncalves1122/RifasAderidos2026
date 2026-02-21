@@ -223,4 +223,67 @@ export const rifasController = {
         .json({ error: "Erro interno ao avaliar comprovante." });
     }
   },
+
+  // =========================================================
+  // 4. RELATÓRIO DA TESOURARIA (Dashboard)
+  // =========================================================
+  async obterRelatorioTesouraria(req: AuthRequest, res: Response) {
+    try {
+      const db = admin.firestore();
+
+      // 1. Puxa todos os usuários cadastrados
+      const usuariosSnap = await db.collection("usuarios").get();
+
+      // 2. Puxa TODOS os bilhetes que já foram pagos
+      const bilhetesSnap = await db
+        .collection("bilhetes")
+        .where("status", "==", "pago")
+        .get();
+
+      // 3. Agrupa a quantidade de rifas pagas pelo CPF do vendedor
+      const vendasPorCpf: Record<string, number> = {};
+      bilhetesSnap.forEach((doc) => {
+        const data = doc.data();
+        if (data.vendedor_cpf) {
+          vendasPorCpf[data.vendedor_cpf] =
+            (vendasPorCpf[data.vendedor_cpf] || 0) + 1;
+        }
+      });
+
+      let totalArrecadadoGlobal = 0;
+      let rifasPagasGlobal = 0;
+
+      // 4. Monta o Dossiê de cada aluno cruzando as informações
+      const aderidos = usuariosSnap.docs.map((doc) => {
+        const user = doc.data();
+        const rifasVendidas = vendasPorCpf[user.cpf] || 0;
+        const arrecadado = rifasVendidas * 10; // R$ 10,00 por rifa
+
+        totalArrecadadoGlobal += arrecadado;
+        rifasPagasGlobal += rifasVendidas;
+
+        return {
+          id: doc.id,
+          nome: user.nome || "Aderido Sem Nome",
+          cpf: user.cpf,
+          arrecadado: arrecadado,
+          meta: user.meta_vendas || 1200,
+          rifasVendidas: rifasVendidas,
+        };
+      });
+
+      // Retorna o pacote completo para o Frontend
+      return res.status(200).json({
+        resumoGeral: {
+          totalArrecadado: totalArrecadadoGlobal,
+          rifasPagas: rifasPagasGlobal,
+          aderidosAtivos: aderidos.length,
+        },
+        aderidos,
+      });
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      return res.status(500).json({ error: "Erro ao gerar relatório." });
+    }
+  },
 };

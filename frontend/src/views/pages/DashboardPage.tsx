@@ -37,6 +37,7 @@ import { useAuthController } from "../../controllers/useAuthController";
 import { useRifasController } from "../../controllers/useRifasController";
 import { AuditoriaTable } from "../components/AuditoriaTable";
 import { MinhasRifasTab } from "../components/MinhasRifasTab";
+import { RelatoriosTab } from "../components/RelatoriosTab";
 
 type Contexto = "aderido" | "tesouraria";
 
@@ -257,27 +258,9 @@ export function DashboardPage() {
           </Box>
         )}
 
+        {/* TELA 4: EXPORTAÇÃO E DASHBOARD (Tesouraria) */}
         {contextoAtual === "tesouraria" && abaAtual === 1 && isAdmin && (
-          <Box
-            sx={{
-              textAlign: "center",
-              py: 5,
-              bgcolor: "white",
-              borderRadius: 2,
-              boxShadow: 1,
-            }}
-          >
-            <PeopleAltIcon
-              sx={{ fontSize: 60, color: "primary.main", mb: 2 }}
-            />
-            <Typography variant="h5" fontWeight="bold">
-              Exportação de Dados
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-              Em breve, você poderá baixar a lista de compradores em Excel
-              (.csv).
-            </Typography>
-          </Box>
+          <RelatoriosTab />
         )}
       </Container>
     </Box>

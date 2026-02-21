@@ -15,5 +15,11 @@ router.get("/minhas-rifas", validateToken, rifasController.getMinhasRifas);
 // ============================================================================
 router.get("/pendentes", validateToken, rifasController.listarPendentes);
 router.post("/avaliar", validateToken, rifasController.avaliarComprovante);
+// Adicione esta linha junto com as suas outras rotas (provavelmente perto do buscarPendentes):
+router.get(
+  "/relatorio",
+  validateToken,
+  rifasController.obterRelatorioTesouraria,
+);
 
 export default router;

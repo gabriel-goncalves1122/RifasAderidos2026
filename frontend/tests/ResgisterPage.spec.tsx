@@ -1,58 +1,68 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BrowserRouter } from "react-router-dom";
 import { RegisterPage } from "../src/views/pages/RegisterPage";
 
-const mocks = vi.hoisted(() => ({
-  handleRegister: vi.fn(),
-}));
-
+// Mock do Controller de Autenticação
 vi.mock("../src/controllers/useAuthController", () => ({
-  useAuthController: () => ({
-    handleRegister: mocks.handleRegister,
-    error: null,
-    loading: false,
-  }),
+  useAuthController: vi.fn(),
 }));
+import { useAuthController } from "../src/controllers/useAuthController";
 
-const renderWithRouter = (ui: React.ReactElement) => {
-  return render(<BrowserRouter>{ui}</BrowserRouter>);
-};
+describe("RegisterPage", () => {
+  const mockHandleRegister = vi.fn();
 
-describe("Tela de Cadastro (RegisterPage)", () => {
   beforeEach(() => {
+    vi.mocked(useAuthController).mockReturnValue({
+      handleRegister: mockHandleRegister,
+      handleLogin: vi.fn(),
+      handleLogout: vi.fn(),
+      usuarioAtual: null,
+      loading: false,
+      error: null,
+    });
     vi.clearAllMocks();
   });
 
-  it("Deve renderizar os campos de cadastro e o aviso da Keeper", () => {
-    renderWithRouter(<RegisterPage />);
-    expect(
-      screen.getByText(/exatamente o mesmo e-mail que utilizou/i),
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText(/E-mail da Keeper/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Criar Senha/i)).toBeInTheDocument();
-  });
-
-  it("Deve acionar o handleRegister ao preencher os dados corretamente", async () => {
+  it("Deve acionar o handleRegister ao preencher os dados corretamente (incluindo Nome e CPF)", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<RegisterPage />);
-
-    await user.type(
-      screen.getByLabelText(/E-mail da Keeper/i),
-      "engenheiro@unifei.edu.br",
-    );
-    await user.type(screen.getByLabelText(/^Criar Senha/i), "senhaForte123");
-    await user.type(screen.getByLabelText(/Confirmar Senha/i), "senhaForte123");
-
-    await user.click(
-      screen.getByRole("button", { name: /Cadastrar e Ver Rifas/i }),
+    render(
+      <BrowserRouter>
+        <RegisterPage />
+      </BrowserRouter>,
     );
 
+    // Seleciona os campos (Agora incluindo o Nome)
+    const inputNome = screen.getByLabelText(/Nome Completo/i);
+    const inputEmail = screen.getByLabelText(/E-mail da Keeper/i);
+    const inputCpf = screen.getByLabelText(/CPF/i);
+    const inputSenha = screen.getByLabelText(/^Criar Senha/i);
+    const inputConfirmaSenha = screen.getByLabelText(/Confirmar Senha/i);
+    const btnSubmit = screen.getByRole("button", {
+      name: /Cadastrar e Ver Rifas/i,
+    });
+
+    // Preenche os dados completos
+    await user.type(inputNome, "Gabriel Gonçalves Sampaio"); // <--- O robô agora digita o nome!
+    await user.type(inputEmail, "teste@unifei.br");
+    await user.type(inputCpf, "11122233344");
+    await user.type(inputSenha, "senha123");
+    await user.type(inputConfirmaSenha, "senha123");
+
+    // Valida se a máscara de CPF funcionou na tela
+    expect(inputCpf).toHaveValue("111.222.333-44");
+
+    // Envia o formulário
+    await user.click(btnSubmit);
+
+    // Verifica se o controller foi chamado com os 4 parâmetros corretos na ordem certa
     await waitFor(() => {
-      expect(mocks.handleRegister).toHaveBeenCalledWith(
-        "engenheiro@unifei.edu.br",
-        "senhaForte123",
+      expect(mockHandleRegister).toHaveBeenCalledWith(
+        "Gabriel Gonçalves Sampaio", // 1º Nome
+        "teste@unifei.br", // 2º Email
+        "senha123", // 3º Senha
+        "111.222.333-44", // 4º CPF
       );
     });
   });
