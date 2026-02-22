@@ -133,7 +133,7 @@ export function DashboardPage() {
         }}
       >
         <img
-          src="/src/assets/images/PNG (1080x1080).png"
+          src="/images/PNG (1080x1080).png"
           alt="Logo Comissão"
           style={{ width: "90px", height: "auto", marginBottom: "12px" }}
         />

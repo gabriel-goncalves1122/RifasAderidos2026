@@ -22,12 +22,20 @@ import { authController } from "./controllers/authController";
 import rifasRoutes from "./routes/rifasRoutes";
 
 // ============================================================================
-// 3. CONFIGURAÇÃO DO EXPRESS (O SERVIDOR)
+// 3. CONFIGURAÇÃO DO EXPRESS (O SERVIDOR) E SEGURANÇA (CORS)
 // ============================================================================
 const app = express();
 
-// Middlewares Globais
-app.use(cors({ origin: true }));
+// 🛡️ CONFIGURAÇÃO DEFINITIVA DO CORS
+// Permite que o Frontend (tanto no localhost quanto na web) acesse o Backend sem ser bloqueado
+app.use(
+  cors({
+    origin: true, // Aceita requisições de qualquer origem
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos permitidos
+    allowedHeaders: ["Content-Type", "Authorization"], // Cabeçalhos vitais (como o Token JWT)
+  }),
+);
+
 app.use(express.json()); // Permite que o servidor entenda JSON no body das requisições
 
 // ============================================================================
@@ -42,7 +50,7 @@ app.get("/status", (req, res) => {
   });
 });
 
-// A NOVA ROTA DO PORTEIRO: Verifica se o e-mail está na lista oficial da Keeper
+// A NOVA ROTA DO PORTEIRO: Verifica se o e-mail está na lista oficial
 app.post("/auth/verificar", authController.verificarElegibilidade);
 
 // ============================================================================
@@ -74,4 +82,5 @@ app.use("/rifas", rifasRoutes);
 // ============================================================================
 // EXPORTAÇÃO DA API PARA O CLOUD FUNCTIONS
 // ============================================================================
+// Exporta o Express embrulhado numa Cloud Function HTTP
 export const api = functions.https.onRequest(app);

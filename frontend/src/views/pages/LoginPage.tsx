@@ -56,7 +56,7 @@ export function LoginPage() {
       <Box sx={authStyles.logoContainer}>
         <Box sx={authStyles.logoWrapper}>
           <img
-            src="/src/assets/images/PNG (1080x1080).png"
+            src="/images/PNG (1080x1080).png"
             alt="Logo da Comissão"
             style={{ width: "100%", height: "auto" }}
           />
@@ -71,7 +71,7 @@ export function LoginPage() {
         <Box sx={authStyles.formWrapper}>
           <Box sx={authStyles.mobileLogo}>
             <img
-              src="/src/assets/images/Branco (1080 x 1080).png"
+              src="/images/Branco (1080 x 1080).png"
               alt="Logo"
               style={{ width: "100%", height: "auto" }}
             />

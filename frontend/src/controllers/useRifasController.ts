@@ -5,7 +5,14 @@
 import { useState, useCallback } from "react";
 import { storage, auth } from "../config/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { getAuth } from "firebase/auth"; // <-- ADICIONE ISSO AQUI NO TOPO
+
+// ----------------------------------------------------------------------------
+// URL DINÂMICA (A mágica que resolve o erro de CORS)
+// O Vite identifica automaticamente se estamos em desenvolvimento (local) ou em produção (nuvem)
+// ----------------------------------------------------------------------------
+const API_BASE_URL = import.meta.env.PROD
+  ? "https://us-central1-rifasaderidos2026.cloudfunctions.net/api"
+  : "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api";
 
 export function useRifasController() {
   const [loading, setLoading] = useState(false);
@@ -22,10 +29,10 @@ export function useRifasController() {
 
       const token = await user.getIdToken();
 
-      const response = await fetch(
-        `http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/minhas-rifas`,
-        { method: "GET", headers: { Authorization: `Bearer ${token}` } },
-      );
+      const response = await fetch(`${API_BASE_URL}/rifas/minhas-rifas`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const result = await response.json();
 
@@ -79,7 +86,7 @@ export function useRifasController() {
       const snapshot = await uploadBytesResumable(
         storageRef,
         dados.comprovante,
-        metadata, // <-- Metadados injetados aqui
+        metadata,
       );
 
       const comprovanteUrl = await getDownloadURL(snapshot.ref);
@@ -87,23 +94,20 @@ export function useRifasController() {
 
       // D. REGISTRO NO BACKEND
       const token = await user.getIdToken();
-      const response = await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/vender",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            nome: dados.nome,
-            telefone: dados.telefone,
-            email: dados.email,
-            numerosRifas: dados.numerosRifas,
-            comprovanteUrl: comprovanteUrl,
-          }),
+      const response = await fetch(`${API_BASE_URL}/rifas/vender`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          nome: dados.nome,
+          telefone: dados.telefone,
+          email: dados.email,
+          numerosRifas: dados.numerosRifas,
+          comprovanteUrl: comprovanteUrl,
+        }),
+      });
 
       const result = await response.json();
 
@@ -129,13 +133,10 @@ export function useRifasController() {
       if (!user) throw new Error("Usuário não logado");
 
       const token = await user.getIdToken();
-      const response = await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/pendentes",
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await fetch(`${API_BASE_URL}/rifas/pendentes`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const result = await response.json();
       if (!response.ok)
@@ -154,7 +155,7 @@ export function useRifasController() {
   // [ADMIN] AVALIAR COMPROVANTE EM LOTE (Aprovar/Rejeitar)
   // =========================================================
   const avaliarComprovante = async (
-    numerosRifas: string[], // <--- AGORA RECEBE UM ARRAY DE STRINGS
+    numerosRifas: string[],
     decisao: "aprovar" | "rejeitar",
   ) => {
     try {
@@ -162,17 +163,14 @@ export function useRifasController() {
       if (!user) throw new Error("Usuário não logado");
 
       const token = await user.getIdToken();
-      const response = await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/avaliar",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ numerosRifas, decisao }), // <--- ENVIA O ARRAY PARA O BACKEND
+      const response = await fetch(`${API_BASE_URL}/rifas/avaliar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({ numerosRifas, decisao }),
+      });
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Erro ao avaliar rifa");
@@ -192,18 +190,13 @@ export function useRifasController() {
     setLoading(true);
     setError(null);
     try {
-      const auth = getAuth();
-      const user = auth.currentUser;
+      const user = auth.currentUser; // Usando a importação do config
       if (!user) throw new Error("Usuário não autenticado.");
 
       const token = await user.getIdToken();
-      // Lembre-se de usar a sua variável de ambiente API_URL se tiver
-      const response = await fetch(
-        `http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/relatorio`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await fetch(`${API_BASE_URL}/rifas/relatorio`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (!response.ok) throw new Error("Falha ao buscar relatório.");
 
@@ -226,12 +219,9 @@ export function useRifasController() {
       if (!user) throw new Error("Usuário não logado");
 
       const token = await user.getIdToken();
-      const response = await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/historico",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await fetch(`${API_BASE_URL}/rifas/historico`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
@@ -248,9 +238,7 @@ export function useRifasController() {
   // =========================================================
   const buscarPremios = async () => {
     try {
-      const response = await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/premios",
-      );
+      const response = await fetch(`${API_BASE_URL}/rifas/premios`);
       const result = await response.json();
       return result;
     } catch (error) {
@@ -265,17 +253,14 @@ export function useRifasController() {
       if (!user) throw new Error("Usuário não logado");
       const token = await user.getIdToken();
 
-      await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/sorteio",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(dados),
+      await fetch(`${API_BASE_URL}/rifas/sorteio`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify(dados),
+      });
     } catch (error) {
       console.error("Erro ao salvar sorteio:", error);
     }
@@ -301,17 +286,14 @@ export function useRifasController() {
       if (!user) throw new Error("Usuário não logado");
       const token = await user.getIdToken();
 
-      await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/premios",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(dados),
+      await fetch(`${API_BASE_URL}/rifas/premios`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify(dados),
+      });
     } catch (error) {
       console.error("Erro ao salvar prêmio:", error);
     }
@@ -323,13 +305,10 @@ export function useRifasController() {
       if (!user) throw new Error("Usuário não logado");
       const token = await user.getIdToken();
 
-      await fetch(
-        `http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/premios/${id}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      await fetch(`${API_BASE_URL}/rifas/premios/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
     } catch (error) {
       console.error("Erro ao excluir prêmio:", error);
     }
@@ -340,25 +319,20 @@ export function useRifasController() {
   // =========================================================
   const anexarComprovante = async (rifaId: string, arquivo: File) => {
     try {
-      // 1. Reutilizamos a lógica de upload para o Firebase Storage
       const urlDaImagem = await uploadImagemPremio(arquivo);
 
-      // 2. Avisamos o Backend que esta rifa agora tem um comprovante
       const user = auth.currentUser;
       if (!user) throw new Error("Usuário não logado");
       const token = await user.getIdToken();
 
-      await fetch(
-        `http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/${rifaId}/comprovante`,
-        {
-          method: "PUT", // Ou POST, dependendo de como está na sua API
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ comprovante_url: urlDaImagem }),
+      await fetch(`${API_BASE_URL}/rifas/${rifaId}/comprovante`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({ comprovante_url: urlDaImagem }),
+      });
 
       return true;
     } catch (error) {
