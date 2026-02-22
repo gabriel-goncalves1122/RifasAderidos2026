@@ -1,6 +1,7 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/pages/RegisterPage.tsx
 // ============================================================================
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -13,8 +14,12 @@ import {
   Paper,
   Alert,
   CircularProgress,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 import { useAuthController } from "../../controllers/useAuthController";
 import { authStyles } from "./styles/authStyles";
@@ -56,6 +61,14 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const { handleRegister, error, loading } = useAuthController();
 
+  // Estados para os olhinhos das senhas
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickShowConfirmPassword = () =>
+    setShowConfirmPassword((show) => !show);
+
   const {
     register,
     handleSubmit,
@@ -71,7 +84,15 @@ export function RegisterPage() {
   };
 
   return (
-    <Box component="main" sx={authStyles.mainContainer}>
+    // Aplicado minHeight e fundo verde escuro para forçar o preenchimento total
+    <Box
+      component="main"
+      sx={{
+        ...authStyles.mainContainer,
+        minHeight: "100vh",
+        bgcolor: "primary.main",
+      }}
+    >
       {/* COLUNA ESQUERDA: O Formulário */}
       <Box component={Paper} elevation={6} square sx={authStyles.formContainer}>
         <Box sx={authStyles.formWrapper}>
@@ -168,30 +189,63 @@ export function RegisterPage() {
               helperText={errors.cpf?.message}
             />
 
-            <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+            {/* Ajuste de responsividade: Column no mobile, Row no PC. Gap afasta os campos */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 2,
+                mt: 1,
+              }}
+            >
               <TextField
                 margin="dense"
                 required
                 fullWidth
                 label="Criar Senha"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="senha"
                 disabled={loading}
                 {...register("senha")}
                 error={!!errors.senha}
                 helperText={errors.senha?.message}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleClickShowPassword} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
               <TextField
                 margin="dense"
                 required
                 fullWidth
                 label="Confirmar Senha"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 id="confirmarSenha"
                 disabled={loading}
                 {...register("confirmarSenha")}
                 error={!!errors.confirmarSenha}
                 helperText={errors.confirmarSenha?.message}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={handleClickShowConfirmPassword}
+                        edge="end"
+                      >
+                        {showConfirmPassword ? (
+                          <VisibilityOff />
+                        ) : (
+                          <Visibility />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Box>
 

@@ -1,6 +1,7 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/pages/LoginPage.tsx
 // ============================================================================
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -13,7 +14,13 @@ import {
   Alert,
   Paper,
   CircularProgress,
+  IconButton, // <-- Adicionado
+  InputAdornment, // <-- Adicionado
 } from "@mui/material";
+
+// <-- Imports dos ícones adicionados -->
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 import { useAuthController } from "../../controllers/useAuthController";
 import { authStyles } from "./styles/authStyles";
@@ -37,6 +44,9 @@ export function LoginPage() {
   const { handleLogin, error, loading } = useAuthController();
   const navigate = useNavigate();
 
+  const [showPassword, setShowPassword] = useState(false);
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
   const {
     register,
     handleSubmit,
@@ -51,7 +61,15 @@ export function LoginPage() {
   };
 
   return (
-    <Box component="main" sx={authStyles.mainContainer}>
+    // AJUSTE DO FUNDO: minHeight para preencher e bgcolor para colorir o fundo do navegador
+    <Box
+      component="main"
+      sx={{
+        ...authStyles.mainContainer,
+        minHeight: "100vh",
+        bgcolor: "primary.main",
+      }}
+    >
       {/* COLUNA ESQUERDA: A Imagem da Logo Dourada */}
       <Box sx={authStyles.logoContainer}>
         <Box sx={authStyles.logoWrapper}>
@@ -113,17 +131,30 @@ export function LoginPage() {
               helperText={errors.email?.message}
               sx={{ mb: 2 }}
             />
+
+            {/* NOVO CAMPO DE SENHA COM O OLHINHO */}
             <TextField
-              margin="normal"
-              required
+              label="Senha *"
+              variant="outlined"
               fullWidth
-              label="Senha"
-              type="password"
-              id="password"
-              autoComplete="current-password"
+              margin="normal"
+              type={showPassword ? "text" : "password"}
               {...register("password")}
               error={!!errors.password}
               helperText={errors.password?.message}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="alternar visibilidade da senha"
+                      onClick={handleClickShowPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             <Button

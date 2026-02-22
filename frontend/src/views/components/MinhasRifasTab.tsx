@@ -74,6 +74,7 @@ export function MinhasRifasTab() {
   const valorArrecadado =
     minhasRifas.filter((r) => r.status === "pago").length * 10;
   const valorDaVendaAtual = selecionadas.length * 10;
+
   // Forçamos o TypeScript a procurar a propriedade 'nome' que vem do seu Banco de Dados
   const nomeCompleto =
     (usuarioAtual as any)?.nome ||
@@ -82,62 +83,74 @@ export function MinhasRifasTab() {
   const primeiroNome = nomeCompleto.split(" ")[0];
 
   // ==========================================================================
-  // LEGENDA VISUAL (Para o Tooltip)
+  // LEGENDA VISUAL (Corrigida para não quebrar regras do HTML)
   // ==========================================================================
   const legendaTooltip = (
     <Box sx={{ p: 0.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
       <Typography
+        component="div" // Renderiza como DIV em vez de P
         variant="body2"
         sx={{ display: "flex", alignItems: "center", gap: 1 }}
       >
         <Box
+          component="span" // Renderiza como SPAN em vez de DIV
           sx={{
             width: 14,
             height: 14,
             borderRadius: "50%",
             border: "2px solid white",
+            display: "inline-block", // Necessário para o span respeitar width/height
           }}
         />{" "}
         Disponível
       </Typography>
       <Typography
+        component="div"
         variant="body2"
         sx={{ display: "flex", alignItems: "center", gap: 1 }}
       >
         <Box
+          component="span"
           sx={{
             width: 14,
             height: 14,
             borderRadius: "50%",
             bgcolor: "var(--cor-verde-fundo)",
+            display: "inline-block",
           }}
         />{" "}
         Selecionada
       </Typography>
       <Typography
+        component="div"
         variant="body2"
         sx={{ display: "flex", alignItems: "center", gap: 1 }}
       >
         <Box
+          component="span"
           sx={{
             width: 14,
             height: 14,
             borderRadius: "50%",
             bgcolor: "warning.main",
+            display: "inline-block",
           }}
         />{" "}
         Em Análise
       </Typography>
       <Typography
+        component="div"
         variant="body2"
         sx={{ display: "flex", alignItems: "center", gap: 1 }}
       >
         <Box
+          component="span"
           sx={{
             width: 14,
             height: 14,
             borderRadius: "50%",
             bgcolor: "success.main",
+            display: "inline-block",
           }}
         />{" "}
         Pago
@@ -169,7 +182,7 @@ export function MinhasRifasTab() {
           gap: 4,
           borderRadius: 3,
           background:
-            "linear-gradient(135deg, var(--cor-verde-fundo) 0%, #1a3c2f 100%)", // Gradiente Verde Premium
+            "linear-gradient(135deg, var(--cor-verde-fundo) 0%, #1a3c2f 100%)",
           color: "white",
           borderLeft: "6px solid var(--cor-dourado-brilho)",
         }}
@@ -207,7 +220,9 @@ export function MinhasRifasTab() {
           gap: 2,
         }}
       >
+        {/* Usando component="div" aqui também para não colocar Tooltip dentro de H6 */}
         <Typography
+          component="div"
           variant="h6"
           fontWeight="bold"
           sx={{
@@ -218,7 +233,6 @@ export function MinhasRifasTab() {
           }}
         >
           Bloco de Vendas
-          {/* Tooltip agora renderiza sem Box/divs erradas para evitar o warning */}
           <Tooltip
             title={<React.Fragment>{legendaTooltip}</React.Fragment>}
             arrow
@@ -267,9 +281,7 @@ export function MinhasRifasTab() {
             const isSelecionada = selecionadas.includes(rifa.numero);
             let cor: "default" | "primary" | "success" | "warning" = "default";
 
-            // Lógica de Cores do Chip Baseado no Status
-            if (isSelecionada)
-              cor = "primary"; // No novo tema, primary é Verde Escuro!
+            if (isSelecionada) cor = "primary";
             else if (rifa.status === "pago") cor = "success";
             else if (rifa.status === "pendente") cor = "warning";
 
@@ -333,7 +345,7 @@ export function MinhasRifasTab() {
               zIndex: 9999,
               width: { xs: "90%", sm: "auto" },
               justifyContent: "space-between",
-              border: "3px solid var(--cor-dourado-brilho)", // Borda dourada grossa destacando o carrinho
+              border: "3px solid var(--cor-dourado-brilho)",
             }}
           >
             <Box>
@@ -350,7 +362,7 @@ export function MinhasRifasTab() {
             </Box>
             <Button
               variant="contained"
-              color="secondary" // Botão dourado para fechar a venda
+              color="secondary"
               size="large"
               startIcon={<ShoppingCartCheckoutIcon />}
               sx={{ borderRadius: 6, fontWeight: "bold" }}
@@ -366,8 +378,8 @@ export function MinhasRifasTab() {
       <CheckoutModal
         open={modalAberto}
         onClose={() => setModalAberto(false)}
-        onSuccess={handleVendaSucesso} // O modal avisa a página que a venda ocorreu
-        numerosRifas={selecionadas} // Manda os números marcados no grid para o form
+        onSuccess={handleVendaSucesso}
+        numerosRifas={selecionadas}
       />
     </Box>
   );
