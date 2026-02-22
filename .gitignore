@@ -1,36 +1,111 @@
-# --- GERAL DO SISTEMA ---
-node_modules/
-.DS_Store
-*.log
-.vscode/
-.idea/
+# ============================================================================
+# .GITIGNORE GLOBAL DO PROJETO (Sistema de Rifas)
+# ============================================================================
 
-# --- FRONTEND (React + Vite) ---
+# ----------------------------------------------------------------------------
+# 1. DEPENDÊNCIAS DO NODE.JS
+# ----------------------------------------------------------------------------
+# Ignora as pastas de pacotes instalados em qualquer lugar do projeto 
+# (raiz, frontend ou backend). Nunca devem ir para o GitHub por serem pesadas.
+node_modules/
+bower_components/
+
+# ----------------------------------------------------------------------------
+# 2. VARIÁVEIS DE AMBIENTE E SEGURANÇA (SEGREDO MÁXIMO 🔒)
+# ----------------------------------------------------------------------------
+# Impede que as chaves da sua base de dados, Firebase e API sejam expostas ao público.
+.env
+.env.local
+.env.*.local
+*.local
+backend/.runtimeconfig.json
+
+# Chaves de serviço do Firebase/Google Cloud (Credenciais Administrativas)
+chave-privada.json
+chave-firebase.json
+**/chave-privada.json
+**/chave-firebase.json
+
+# ----------------------------------------------------------------------------
+# 3. PASTAS DE BUILD E COMPILAÇÃO (GERADOS AUTOMATICAMENTE)
+# ----------------------------------------------------------------------------
+# --- Frontend (Vite/React) ---
+dist/
+dist-ssr/
+build/
 frontend/dist/
 frontend/build/
-frontend/coverage/
-frontend/*.local
-frontend/.env.local
-frontend/.env.*.local
 
-# --- BACKEND (Firebase Functions) ---
-# Ignorar dependências instaladas dentro da função
-backend/functions/node_modules/
-
-# Ignorar o código compilado (JS gerado do TS)
+# --- Backend (Firebase Functions / TypeScript) ---
+# Ignora o JavaScript gerado a partir do código TypeScript das functions.
 backend/functions/lib/
 
-# Arquivos de log e debug do emulador
+# ----------------------------------------------------------------------------
+# 4. CONFIGURAÇÕES DO FIREBASE
+# ----------------------------------------------------------------------------
+# Cache interno do Firebase CLI e ficheiros do Data Connect
+.firebase/
+.dataconnect/
+
+# Logs de debug gerados pelos emuladores locais do Firebase
 firebase-debug.log*
+firebase-debug.*.log*
 firestore-debug.log*
 ui-debug.log*
 backend/firebase-debug.log*
 backend/firestore-debug.log*
 backend/ui-debug.log*
 
-# Arquivos de ambiente do backend (SEGREDO MÁXIMO)
-backend/functions/.env
-backend/.runtimeconfig.jsonchave-privada.json
-chave-firebase.json
-**/chave-privada.json
-**/chave-firebase.json
+# ----------------------------------------------------------------------------
+# 5. LOGS GERAIS DO SISTEMA
+# ----------------------------------------------------------------------------
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ----------------------------------------------------------------------------
+# 6. CONFIGURAÇÕES DE SISTEMA OPERACIONAL E EDITORES (IDE)
+# ----------------------------------------------------------------------------
+# macOS
+.DS_Store
+
+# VS Code (Muda de computador para computador)
+.vscode/*
+!.vscode/extensions.json # Permite recomendar extensões úteis para a equipa
+
+# WebStorm / IntelliJ / Visual Studio
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ----------------------------------------------------------------------------
+# 7. COBERTURA DE TESTES E CACHES (FERRAMENTAS AUXILIARES)
+# ----------------------------------------------------------------------------
+# Pastas geradas por testes (Vitest / Jest)
+coverage/
+frontend/coverage/
+.nyc_output/
+
+# Caches do ecossistema Node/NPM
+.npm
+.eslintcache
+.node_repl_history
+.yarn-integrity
+
+# Dados de tempo de execução e ficheiros temporários
+pids
+*.pid
+*.seed
+*.pid.lock
+lib-cov
+.grunt
+.lock-wscript
+build/Release
+*.tgz
