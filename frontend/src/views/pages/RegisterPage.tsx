@@ -61,7 +61,6 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const { handleRegister, error, loading } = useAuthController();
 
-  // Estados para os olhinhos das senhas
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -84,15 +83,7 @@ export function RegisterPage() {
   };
 
   return (
-    // Aplicado minHeight e fundo verde escuro para forçar o preenchimento total
-    <Box
-      component="main"
-      sx={{
-        ...authStyles.mainContainer,
-        minHeight: "100vh",
-        bgcolor: "primary.main",
-      }}
-    >
+    <Box component="main" sx={authStyles.mainContainer}>
       {/* COLUNA ESQUERDA: O Formulário */}
       <Box component={Paper} elevation={6} square sx={authStyles.formContainer}>
         <Box sx={authStyles.formWrapper}>
@@ -189,15 +180,7 @@ export function RegisterPage() {
               helperText={errors.cpf?.message}
             />
 
-            {/* Ajuste de responsividade: Column no mobile, Row no PC. Gap afasta os campos */}
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                gap: 2,
-                mt: 1,
-              }}
-            >
+            <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
               <TextField
                 margin="dense"
                 required

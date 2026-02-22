@@ -230,12 +230,7 @@ export function DashboardPage() {
 
   return (
     <Box
-      sx={{
-        flexGrow: 1,
-        minHeight: "100vh",
-        bgcolor: "background.default",
-        pb: 6,
-      }}
+      sx={{ flexGrow: 1, minHeight: "100vh", bgcolor: "background.default" }}
     >
       {/* HEADER HÍBRIDO */}
       <AppBar position="static" elevation={4} sx={{ bgcolor: "primary.main" }}>

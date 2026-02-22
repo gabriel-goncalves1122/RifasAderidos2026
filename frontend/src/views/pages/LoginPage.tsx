@@ -14,11 +14,10 @@ import {
   Alert,
   Paper,
   CircularProgress,
-  IconButton, // <-- Adicionado
-  InputAdornment, // <-- Adicionado
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 
-// <-- Imports dos ícones adicionados -->
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
@@ -61,15 +60,7 @@ export function LoginPage() {
   };
 
   return (
-    // AJUSTE DO FUNDO: minHeight para preencher e bgcolor para colorir o fundo do navegador
-    <Box
-      component="main"
-      sx={{
-        ...authStyles.mainContainer,
-        minHeight: "100vh",
-        bgcolor: "primary.main",
-      }}
-    >
+    <Box component="main" sx={authStyles.mainContainer}>
       {/* COLUNA ESQUERDA: A Imagem da Logo Dourada */}
       <Box sx={authStyles.logoContainer}>
         <Box sx={authStyles.logoWrapper}>
@@ -132,7 +123,6 @@ export function LoginPage() {
               sx={{ mb: 2 }}
             />
 
-            {/* NOVO CAMPO DE SENHA COM O OLHINHO */}
             <TextField
               label="Senha *"
               variant="outlined"
