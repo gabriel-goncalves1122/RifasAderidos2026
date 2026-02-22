@@ -1,5 +1,6 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/pages/DashboardPage.tsx
+// RESPONSABILIDADE: Layout base, persistência de abas e proteção assíncrona.
 // ============================================================================
 import React, { useState, useEffect } from "react";
 import {
@@ -35,45 +36,68 @@ import LogoutIcon from "@mui/icons-material/Logout";
 
 // Controladores e Componentes
 import { useAuthController } from "../../controllers/useAuthController";
-import { useRifasController } from "../../controllers/useRifasController";
 import { AuditoriaTable } from "../components/AuditoriaTable";
 import { MinhasRifasTab } from "../components/MinhasRifasTab";
 import { VisaoGraficaTab } from "../components/VisaoGraficaTab";
 import { HistoricoDetalhadoTab } from "../components/HistoricoDetalhadoTab";
-import { PremiosTab } from "../components/PremiosTab"; // <--- ADICIONE ESTA LINHA
+import { PremiosTab } from "../components/PremiosTab";
 
-// Define os "chapéus" que o usuário pode vestir na plataforma
 type Contexto = "aderido" | "tesouraria";
 
 export function DashboardPage() {
   const { usuarioAtual, handleLogout } = useAuthController();
-  const { buscarMinhasRifas } = useRifasController();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Detecta se é celular
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // ==========================================================================
-  // ESTADOS DE NAVEGAÇÃO HÍBRIDA
-  // ==========================================================================
-  const [menuAberto, setMenuAberto] = useState(false);
-  const [contextoAtual, setContextoAtual] = useState<Contexto>("aderido"); // Macro (Menu Lateral)
-  const [abaAtual, setAbaAtual] = useState(0); // Micro (Header Tabs)
-
-  const [minhasRifas, setMinhasRifas] = useState<any[]>([]);
-
-  // Verificação de segurança de rotas
+  // Verificação de segurança (Lida com o tempo de resposta do Firebase)
   const isAdmin =
     usuarioAtual?.cargo === "tesouraria" ||
     usuarioAtual?.cargo === "presidencia";
 
-  const carregarDados = async () => {
-    const dados = await buscarMinhasRifas();
-    setMinhasRifas(dados || []);
-  };
+  // ==========================================================================
+  // ESTADOS COM PERSISTÊNCIA NA MEMÓRIA
+  // ==========================================================================
+  const [menuAberto, setMenuAberto] = useState(false);
 
+  const [contextoAtual, setContextoAtual] = useState<Contexto>(() => {
+    return (
+      (sessionStorage.getItem("dashboard_contexto") as Contexto) || "aderido"
+    );
+  });
+
+  const [abaAtual, setAbaAtual] = useState<number>(() => {
+    const salva = sessionStorage.getItem("dashboard_aba");
+    return salva !== null ? parseInt(salva, 10) : 0;
+  });
+
+  // ==========================================================================
+  // PROTEÇÃO CONTRA BUGS DE F5 (Atualização de Página)
+  // ==========================================================================
+  // 1. Expulsão Segura: Só atua se o Firebase já tiver trazido o "cargo" do utilizador
   useEffect(() => {
-    carregarDados();
-  }, []);
+    if (usuarioAtual && usuarioAtual.cargo) {
+      const adminReal =
+        usuarioAtual.cargo === "tesouraria" ||
+        usuarioAtual.cargo === "presidencia";
+      if (!adminReal && contextoAtual === "tesouraria") {
+        setContextoAtual("aderido");
+        setAbaAtual(0);
+      }
+    }
+  }, [usuarioAtual, contextoAtual]);
 
+  // 2. Gravação em tempo real na memória
+  useEffect(() => {
+    sessionStorage.setItem("dashboard_contexto", contextoAtual);
+    sessionStorage.setItem("dashboard_aba", abaAtual.toString());
+  }, [contextoAtual, abaAtual]);
+
+  // 3. Blindagem Visual: Garante que a aba nunca aponta para um número que não existe
+  const abaSegura = contextoAtual === "aderido" && abaAtual > 1 ? 0 : abaAtual;
+
+  // ==========================================================================
+  // AÇÕES
+  // ==========================================================================
   const toggleDrawer =
     (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
@@ -86,39 +110,52 @@ export function DashboardPage() {
       setMenuAberto(open);
     };
 
-  // Troca o "chapéu" do usuário e zera a aba para a primeira opção do novo contexto
   const mudarContexto = (novoContexto: Contexto) => {
     setContextoAtual(novoContexto);
-    setAbaAtual(0); // Volta sempre para a aba 0 ao trocar de menu
+    setAbaAtual(0);
     setMenuAberto(false);
   };
 
   // ==========================================================================
-  // O MENU LATERAL (Contexto Macro)
+  // O MENU LATERAL (Drawer)
   // ==========================================================================
   const DrawerContent = (
-    <Box sx={{ width: 260 }} role="presentation">
+    <Box sx={{ width: 280 }} role="presentation">
       <Box
         sx={{
-          p: 2,
-          bgcolor: contextoAtual === "tesouraria" ? "#1e1e1e" : "primary.main",
+          p: 3,
+          bgcolor: "primary.main",
           color: "white",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          borderBottom: "4px solid var(--cor-dourado-brilho)",
         }}
       >
-        <Typography variant="h6" fontWeight="bold">
+        <img
+          src="/src/assets/images/PNG (1080x1080).png"
+          alt="Logo Comissão"
+          style={{ width: "90px", height: "auto", marginBottom: "12px" }}
+        />
+        <Typography variant="h6" fontWeight="bold" textAlign="center">
           Portal da Comissão
         </Typography>
         <Typography
           variant="body2"
-          sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 1 }}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            mt: 1,
+            color: "secondary.light",
+          }}
         >
           <AccountCircleIcon fontSize="small" />
           {isAdmin ? "Acesso Administrativo" : "Aderido"}
         </Typography>
       </Box>
-      <Divider />
 
-      <List>
+      <List sx={{ mt: 1 }}>
         <ListItem disablePadding>
           <ListItemButton
             selected={contextoAtual === "aderido"}
@@ -126,10 +163,18 @@ export function DashboardPage() {
           >
             <ListItemIcon>
               <AccountCircleIcon
-                color={contextoAtual === "aderido" ? "primary" : "inherit"}
+                sx={{
+                  color:
+                    contextoAtual === "aderido" ? "secondary.main" : "inherit",
+                }}
               />
             </ListItemIcon>
-            <ListItemText primary="Área do Aderido" />
+            <ListItemText
+              primary="Área do Aderido"
+              sx={{
+                fontWeight: contextoAtual === "aderido" ? "bold" : "normal",
+              }}
+            />
           </ListItemButton>
         </ListItem>
 
@@ -141,10 +186,21 @@ export function DashboardPage() {
             >
               <ListItemIcon>
                 <AdminPanelSettingsIcon
-                  color={contextoAtual === "tesouraria" ? "primary" : "inherit"}
+                  sx={{
+                    color:
+                      contextoAtual === "tesouraria"
+                        ? "secondary.main"
+                        : "inherit",
+                  }}
                 />
               </ListItemIcon>
-              <ListItemText primary="Painel da Tesouraria" />
+              <ListItemText
+                primary="Painel da Tesouraria"
+                sx={{
+                  fontWeight:
+                    contextoAtual === "tesouraria" ? "bold" : "normal",
+                }}
+              />
             </ListItemButton>
           </ListItem>
         )}
@@ -153,13 +209,18 @@ export function DashboardPage() {
       <Divider sx={{ mt: "auto" }} />
       <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={handleLogout}>
+          <ListItemButton
+            onClick={() => {
+              sessionStorage.clear(); // Limpa a memória ao sair da conta
+              handleLogout();
+            }}
+          >
             <ListItemIcon>
               <LogoutIcon color="error" />
             </ListItemIcon>
             <ListItemText
               primary="Sair da Conta"
-              sx={{ color: "error.main" }}
+              sx={{ color: "error.main", fontWeight: "bold" }}
             />
           </ListItemButton>
         </ListItem>
@@ -168,16 +229,11 @@ export function DashboardPage() {
   );
 
   return (
-    <Box sx={{ flexGrow: 1, minHeight: "100vh", bgcolor: "#f5f5f5" }}>
-      {/* ========================================================================== */}
-      {/* HEADER HÍBRIDO (APP BAR + TABS)                                            */}
-      {/* ========================================================================== */}
-      <AppBar
-        position="static"
-        sx={{
-          bgcolor: contextoAtual === "tesouraria" ? "#1e1e1e" : "primary.main",
-        }}
-      >
+    <Box
+      sx={{ flexGrow: 1, minHeight: "100vh", bgcolor: "background.default" }}
+    >
+      {/* HEADER HÍBRIDO */}
+      <AppBar position="static" elevation={4} sx={{ bgcolor: "primary.main" }}>
         <Toolbar>
           <IconButton
             size="large"
@@ -192,22 +248,23 @@ export function DashboardPage() {
           <Typography
             variant="h6"
             component="div"
-            sx={{ flexGrow: 1, fontWeight: "bold" }}
+            sx={{ flexGrow: 1, fontWeight: "bold", letterSpacing: 1 }}
           >
             {contextoAtual === "aderido"
-              ? "Portal do Aderido"
-              : "Gestão Financeira"}
+              ? "PORTAL DO ADERIDO"
+              : "GESTÃO FINANCEIRA"}
           </Typography>
         </Toolbar>
 
-        {/* AS ABAS DE NAVEGAÇÃO (Micro Contexto) */}
+        {/* Repare que o value agora usa o 'abaSegura' */}
         <Tabs
-          value={abaAtual}
+          value={abaSegura}
           onChange={(_, newValue) => setAbaAtual(newValue)}
           textColor="inherit"
           indicatorColor="secondary"
-          variant={isMobile ? "scrollable" : "fullWidth"} // Evita que esprema no celular
+          variant={isMobile ? "scrollable" : "fullWidth"}
           scrollButtons={isMobile ? "auto" : false}
+          sx={{ bgcolor: "rgba(0, 0, 0, 0.2)" }}
         >
           {contextoAtual === "aderido"
             ? [
@@ -225,7 +282,6 @@ export function DashboardPage() {
                 />,
               ]
             : [
-                // BUG CORRIGIDO: Agora temos os 3 botões correspondentes às 3 telas da tesouraria
                 <Tab
                   key={0}
                   label="Aprovar Pix"
@@ -240,7 +296,7 @@ export function DashboardPage() {
                 />,
                 <Tab
                   key={2}
-                  label="Histórico e CSV"
+                  label="Histórico"
                   icon={<ReceiptLongIcon />}
                   iconPosition="start"
                 />,
@@ -253,37 +309,28 @@ export function DashboardPage() {
       </Drawer>
 
       {/* ========================================================================== */}
-      {/* ÁREA DE CONTEÚDO (RENDERIZAÇÃO CONDICIONAL)                                */}
+      {/* ÁREA DE CONTEÚDO (RENDERIZAÇÃO CONDICIONAL BASEADA NA ABA SEGURA)          */}
       {/* ========================================================================== */}
       <Container maxWidth="lg" sx={{ mt: 3, mb: 4 }}>
         {/* --- CONTEXTO: ADERIDO --- */}
-        {contextoAtual === "aderido" && abaAtual === 0 && (
-          <MinhasRifasTab
-            minhasRifas={minhasRifas}
-            usuarioAtual={usuarioAtual}
-            onAtualizacao={carregarDados}
-          />
-        )}
-
-        {contextoAtual === "aderido" && abaAtual === 1 && (
+        {contextoAtual === "aderido" && abaSegura === 0 && <MinhasRifasTab />}
+        {contextoAtual === "aderido" && abaSegura === 1 && (
           <PremiosTab isAdmin={isAdmin} />
         )}
 
         {/* --- CONTEXTO: TESOURARIA --- */}
-        {contextoAtual === "tesouraria" && abaAtual === 0 && isAdmin && (
+        {contextoAtual === "tesouraria" && abaSegura === 0 && isAdmin && (
           <Box>
             <Typography variant="h6" mb={2} color="text.secondary">
               Lista de Comprovantes Pendentes
             </Typography>
-            <AuditoriaTable onAtualizacao={carregarDados} />
+            <AuditoriaTable />
           </Box>
         )}
-
-        {contextoAtual === "tesouraria" && abaAtual === 1 && isAdmin && (
+        {contextoAtual === "tesouraria" && abaSegura === 1 && isAdmin && (
           <VisaoGraficaTab />
         )}
-
-        {contextoAtual === "tesouraria" && abaAtual === 2 && isAdmin && (
+        {contextoAtual === "tesouraria" && abaSegura === 2 && isAdmin && (
           <HistoricoDetalhadoTab />
         )}
       </Container>

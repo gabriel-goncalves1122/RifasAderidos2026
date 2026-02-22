@@ -335,6 +335,38 @@ export function useRifasController() {
     }
   };
 
+  // =========================================================
+  // GESTÃO DE COMPROVANTES (ADERIDO)
+  // =========================================================
+  const anexarComprovante = async (rifaId: string, arquivo: File) => {
+    try {
+      // 1. Reutilizamos a lógica de upload para o Firebase Storage
+      const urlDaImagem = await uploadImagemPremio(arquivo);
+
+      // 2. Avisamos o Backend que esta rifa agora tem um comprovante
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+      const token = await user.getIdToken();
+
+      await fetch(
+        `http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/${rifaId}/comprovante`,
+        {
+          method: "PUT", // Ou POST, dependendo de como está na sua API
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ comprovante_url: urlDaImagem }),
+        },
+      );
+
+      return true;
+    } catch (error) {
+      console.error("Erro ao anexar comprovante:", error);
+      return false;
+    }
+  };
+
   return {
     buscarMinhasRifas,
     finalizarVenda,
@@ -347,6 +379,7 @@ export function useRifasController() {
     uploadImagemPremio,
     buscarPremios,
     salvarInfoSorteio,
+    anexarComprovante,
 
     loading,
     error,

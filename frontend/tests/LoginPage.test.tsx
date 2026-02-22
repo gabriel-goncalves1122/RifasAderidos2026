@@ -52,7 +52,7 @@ describe("Tela de Login (LoginPage)", () => {
 
     // Assert: O "screen" lê o DOM virtual igual a um leitor de tela para deficientes visuais.
     // Usamos expressões regulares (/texto/i) para ignorar letras maiúsculas/minúsculas.
-    expect(screen.getByLabelText(/endereço de e-mail/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/e-mail \*/i)).toBeInTheDocument(); // <--- CORRIGIDO
     expect(screen.getByLabelText(/senha/i)).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /acessar sistema/i }),
@@ -93,7 +93,8 @@ describe("Tela de Login (LoginPage)", () => {
     const user = userEvent.setup();
     renderWithRouter(<LoginPage />);
 
-    const inputEmail = screen.getByLabelText(/endereço de e-mail/i);
+    // O asterisco indica campo obrigatório que agora está no componente
+    const inputEmail = screen.getByLabelText(/e-mail \*/i);
     const inputSenha = screen.getByLabelText(/senha/i);
     const botaoLogin = screen.getByRole("button", { name: /acessar sistema/i });
 

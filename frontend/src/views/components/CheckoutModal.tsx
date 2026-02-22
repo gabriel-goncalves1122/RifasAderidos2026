@@ -1,5 +1,6 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/components/CheckoutModal.tsx
+// RESPONSABILIDADE: Modal de Finalização de Venda com PIX (QR Code e Chave)
 // ============================================================================
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -24,11 +25,14 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import QrCode2Icon from "@mui/icons-material/QrCode2";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import PersonIcon from "@mui/icons-material/Person";
+import PhoneIcon from "@mui/icons-material/Phone";
+import EmailIcon from "@mui/icons-material/Email";
 
 import { useRifasController } from "../../controllers/useRifasController";
 
@@ -43,7 +47,6 @@ const aplicarMascaraTelefone = (valor: string) => {
     .slice(0, 15);
 };
 
-// Usando .test() ao invés de .transform() para não confundir os tipos do TypeScript
 const schema = yup
   .object({
     nome: yup.string().required("O nome completo é obrigatório"),
@@ -68,7 +71,6 @@ const schema = yup
   })
   .required();
 
-// Criamos uma interface explícita para o TypeScript parar de brigar
 export interface CheckoutFormData {
   nome: string;
   telefone: string;
@@ -89,13 +91,11 @@ export function CheckoutModal({
   onSuccess,
   numerosRifas,
 }: CheckoutModalProps) {
-  // Estados de UI/UX (Animações e Notificações)
   const [showSuccess, setShowSuccess] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const { finalizarVenda, loading } = useRifasController();
 
-  // Configuração do React Hook Form
   const {
     register,
     handleSubmit,
@@ -104,24 +104,21 @@ export function CheckoutModal({
     reset,
     formState: { errors },
   } = useForm<CheckoutFormData>({
-    resolver: yupResolver(schema) as any, // O "as any" manda o TS ignorar conflitos internos da biblioteca
+    resolver: yupResolver(schema) as any,
     mode: "onChange",
   });
 
-  // Observa o arquivo anexado para mudar o visual do botão
   const comprovanteAnexado = watch("comprovante");
 
-  // ... O RESTANTE DO CÓDIGO CONTINUA IGUAL DAQUI PARA BAIXO (useEffect, handleCopiarPix, onSubmit, etc.)
-
-  // GATILHO DE LIMPEZA: Reseta o formulário e a tela de sucesso ao fechar o modal
   useEffect(() => {
     if (!open) {
-      reset(); // Limpa todos os dados do React Hook Form de uma vez
+      reset();
       setShowSuccess(false);
     }
   }, [open, reset]);
 
-  const chavePixComissao = "comissao.engenharia@unifei.edu.br";
+  // DADOS DA CONTA PIX
+  const chavePixComissao = "comissao0026@gmail.com";
   const PRECO_RIFA = 10.0;
   const valorTotal = numerosRifas.length * PRECO_RIFA;
   const valorFormatado = valorTotal.toLocaleString("pt-BR", {
@@ -136,12 +133,10 @@ export function CheckoutModal({
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      // Injeta o arquivo dentro do Hook Form e manda ele validar se o erro sumiu
       setValue("comprovante", event.target.files[0], { shouldValidate: true });
     }
   };
 
-  // Função disparada apenas se o formulário passar por todas as regras do Yup
   const onSubmit = async (data: CheckoutFormData) => {
     const sucesso = await finalizarVenda({
       nome: data.nome,
@@ -179,42 +174,49 @@ export function CheckoutModal({
               }}
             >
               <CheckCircleOutlineIcon
-                color="success"
+                color="secondary"
                 sx={{ fontSize: 100, mb: 2 }}
               />
               <Typography
                 variant="h4"
                 fontWeight="bold"
                 gutterBottom
-                color="text.primary"
+                color="primary.main"
               >
                 Venda Confirmada!
               </Typography>
               <Typography variant="body1" color="text.secondary" mb={4}>
                 O comprovante foi enviado para análise da tesouraria.
-                <br />
-                Esta janela fechará automaticamente...
               </Typography>
-              <CircularProgress size={30} color="success" />
+              <CircularProgress size={30} color="secondary" />
             </Box>
           </Fade>
         ) : (
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+            {/* CABEÇALHO DOURADO/VERDE */}
             <DialogTitle
-              sx={{ m: 0, p: 2, backgroundColor: "#1976d2", color: "white" }}
+              sx={{
+                m: 0,
+                p: 2,
+                bgcolor: "primary.main",
+                color: "white",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
             >
               Finalizar Venda ({numerosRifas.length} selecionadas)
               <IconButton
                 aria-label="close"
                 onClick={onClose}
                 disabled={loading}
-                sx={{ position: "absolute", right: 8, top: 8, color: "white" }}
+                sx={{ color: "white" }}
               >
                 <CloseIcon />
               </IconButton>
             </DialogTitle>
 
-            <DialogContent dividers>
+            <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
               <Box sx={{ mb: 3 }}>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   Números selecionados:
@@ -224,7 +226,11 @@ export function CheckoutModal({
                     <Chip
                       key={numero}
                       label={numero}
-                      color="primary"
+                      sx={{
+                        bgcolor: "var(--cor-dourado-brilho)",
+                        color: "primary.main",
+                        fontWeight: "bold",
+                      }}
                       size="small"
                     />
                   ))}
@@ -232,11 +238,12 @@ export function CheckoutModal({
               </Box>
               <Divider sx={{ mb: 3 }} />
 
+              {/* DADOS DO COMPRADOR */}
               <Typography
                 variant="subtitle1"
                 fontWeight="bold"
                 gutterBottom
-                color="primary"
+                color="primary.main"
               >
                 1. Dados do Comprador
               </Typography>
@@ -252,6 +259,13 @@ export function CheckoutModal({
                   {...register("nome")}
                   error={!!errors.nome}
                   helperText={errors.nome?.message}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="WhatsApp (com DDD) *"
@@ -270,6 +284,13 @@ export function CheckoutModal({
                   }
                   error={!!errors.telefone}
                   helperText={errors.telefone?.message}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PhoneIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <TextField
                   label="E-mail (Opcional)"
@@ -284,44 +305,89 @@ export function CheckoutModal({
                     errors.email?.message ||
                     "Enviaremos o recibo para este e-mail."
                   }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Box>
               <Divider sx={{ mb: 3 }} />
 
+              {/* PAGAMENTO PIX (COM QR CODE) */}
               <Typography
                 variant="subtitle1"
                 fontWeight="bold"
                 gutterBottom
-                color="primary"
+                color="primary.main"
               >
                 2. Pagamento PIX ({valorFormatado})
               </Typography>
               <Paper
                 variant="outlined"
                 sx={{
-                  p: 2,
+                  p: 3,
                   mb: 3,
-                  backgroundColor: "#f5f5f5",
+                  bgcolor: "grey.50",
                   textAlign: "center",
+                  border: "2px solid var(--cor-dourado-brilho)",
+                  borderRadius: 3,
                 }}
               >
-                <QrCode2Icon sx={{ fontSize: 60, color: "#333", mb: 1 }} />
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Transfira <strong>{valorFormatado}</strong> para a chave
-                  abaixo:
+                <Typography
+                  variant="body1"
+                  color="primary.main"
+                  fontWeight="bold"
+                  gutterBottom
+                >
+                  Escaneie o código para pagar:
                 </Typography>
+
+                {/* IMAGEM DO QR CODE */}
+                <Box sx={{ my: 2, display: "flex", justifyContent: "center" }}>
+                  <Box
+                    sx={{
+                      p: 1,
+                      bgcolor: "white",
+                      borderRadius: 2,
+                      boxShadow: 1,
+                      border: "1px dashed #ccc",
+                    }}
+                  >
+                    {/* ATENÇÃO: Coloque a imagem qrcode-pix.png dentro da pasta src/assets/images/ */}
+                    <img
+                      src="/src/assets/images/qrcode-pix.png"
+                      alt="QR Code PIX da Comissão"
+                      style={{ width: 180, height: 180, objectFit: "contain" }}
+                    />
+                  </Box>
+                </Box>
+
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ mt: 2 }}
+                >
+                  Ou copie a Chave E-mail:
+                </Typography>
+
                 <TextField
                   value={chavePixComissao}
-                  disabled
+                  // REMOVEMOS A PALAVRA "disabled" DAQUI!
                   fullWidth
                   size="small"
                   InputProps={{
+                    readOnly: true, // <-- ADICIONAMOS ISTO AQUI
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
+                          aria-label="Copiar PIX" // <-- ADICIONAMOS A ETIQUETA AQUI
                           onClick={handleCopiarPix}
                           edge="end"
-                          color="primary"
+                          sx={{ color: "primary.main" }}
                           disabled={loading}
                         >
                           <ContentCopyIcon />
@@ -329,15 +395,17 @@ export function CheckoutModal({
                       </InputAdornment>
                     ),
                   }}
+                  sx={{ bgcolor: "white" }}
                 />
               </Paper>
               <Divider sx={{ mb: 3 }} />
 
+              {/* ANEXAR COMPROVANTE */}
               <Typography
                 variant="subtitle1"
                 fontWeight="bold"
                 gutterBottom
-                color="primary"
+                color="primary.main"
               >
                 3. Enviar Comprovante
               </Typography>
@@ -352,10 +420,11 @@ export function CheckoutModal({
                 <Button
                   component="label"
                   variant={comprovanteAnexado ? "outlined" : "contained"}
-                  color={comprovanteAnexado ? "success" : "primary"}
+                  color={comprovanteAnexado ? "secondary" : "primary"}
                   startIcon={<CloudUploadIcon />}
                   fullWidth
                   disabled={loading}
+                  sx={{ py: 1.5, borderRadius: 2 }}
                 >
                   {comprovanteAnexado
                     ? "Trocar Comprovante"
@@ -370,31 +439,30 @@ export function CheckoutModal({
                 {comprovanteAnexado && (
                   <Typography
                     variant="body2"
-                    color="success.main"
+                    color="secondary.main"
                     fontWeight="bold"
                   >
                     ✓ Ficheiro pronto: {comprovanteAnexado.name}
                   </Typography>
                 )}
-                {/* Exibe o erro do Yup caso ele tente enviar sem a foto */}
                 {errors.comprovante && (
-                  <Typography variant="caption" color="error">
+                  <Typography variant="caption" color="error" fontWeight="bold">
                     {errors.comprovante.message}
                   </Typography>
                 )}
               </Box>
             </DialogContent>
 
-            <DialogActions sx={{ p: 2, backgroundColor: "#f8f9fa" }}>
+            <DialogActions sx={{ p: 2, bgcolor: "grey.50" }}>
               <Button onClick={onClose} color="inherit" disabled={loading}>
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 variant="contained"
-                color="success"
+                color="secondary"
                 disabled={loading}
-                sx={{ minWidth: 160 }}
+                sx={{ minWidth: 160, fontWeight: "bold" }}
               >
                 {loading ? (
                   <CircularProgress size={24} color="inherit" />

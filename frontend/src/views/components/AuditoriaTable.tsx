@@ -34,10 +34,6 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { useRifasController } from "../../controllers/useRifasController";
 import { Bilhete } from "../../types/models"; // <-- Importando o modelo oficial
 
-interface AuditoriaTableProps {
-  onAtualizacao?: () => void;
-}
-
 // CONTRATO DE AGRUPAMENTO: Ensina o TypeScript o formato exato da transação
 interface TransacaoAgrupada {
   comprovante_url: string | null;
@@ -48,7 +44,7 @@ interface TransacaoAgrupada {
   bilhetes: string[];
 }
 
-export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
+export function AuditoriaTable() {
   const { buscarPendentes, avaliarComprovante } = useRifasController();
 
   // Agora dizemos que a lista que vem do banco é uma lista de Bilhetes
@@ -121,7 +117,7 @@ export function AuditoriaTable({ onAtualizacao }: AuditoriaTableProps) {
 
     setProcessandoId(null);
     carregarLista();
-    if (onAtualizacao) onAtualizacao();
+    await carregarLista(); // A função correta definida na linha 42 deste arquivo
   };
 
   if (carregando) {

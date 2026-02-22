@@ -1,6 +1,6 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/components/PremiosTab.tsx
-// RESPONSABILIDADE: Componente Pai que orquestra a vitrine de prêmios.
+// RESPONSABILIDADE: Orquestrar e renderizar a vitrine interativa de prêmios.
 // ============================================================================
 import React, { useState, useEffect } from "react";
 import {
@@ -20,6 +20,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 
+// Ícones
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EditIcon from "@mui/icons-material/Edit";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -33,7 +34,7 @@ import { useRifasController } from "../../controllers/useRifasController";
 // FUNÇÃO UTILITÁRIA: Formatar Data (YYYY-MM-DD -> 20 de Dezembro de 2026)
 // ============================================================================
 const formatarDataExtenso = (dataIso: string) => {
-  if (!dataIso || !dataIso.includes("-")) return dataIso; // Se já for texto livre, não quebra
+  if (!dataIso || !dataIso.includes("-")) return dataIso;
   const [ano, mes, dia] = dataIso.split("-");
   const meses = [
     "Janeiro",
@@ -57,40 +58,77 @@ const formatarDataExtenso = (dataIso: string) => {
 // ============================================================================
 const HeroBanner = ({ infoSorteio, isAdmin, onEditClick }: any) => (
   <Paper
-    elevation={3}
+    elevation={6}
     sx={{
-      p: 4,
-      mb: 4,
-      borderRadius: 3,
-      background: "linear-gradient(135deg, #1976d2 0%, #115293 100%)",
+      p: { xs: 3, md: 5 },
+      mb: 5,
+      borderRadius: 4,
+      background:
+        "linear-gradient(135deg, var(--cor-verde-fundo) 0%, #1a3c2f 100%)",
       color: "white",
       position: "relative",
+      borderBottom: "5px solid var(--cor-dourado-brilho)",
+      overflow: "hidden",
     }}
   >
+    {/* Marca d'água de fundo (Decoração) */}
+    <Box
+      sx={{
+        position: "absolute",
+        top: -50,
+        right: -50,
+        opacity: 0.05,
+        pointerEvents: "none",
+      }}
+    >
+      <EmojiEventsIcon sx={{ fontSize: 300 }} />
+    </Box>
+
     {isAdmin && (
       <IconButton
         onClick={onEditClick}
+        aria-label="Editar Cabeçalho"
         sx={{
           position: "absolute",
           top: 16,
           right: 16,
-          bgcolor: "rgba(255,255,255,0.2)",
-          color: "white",
+          bgcolor: "rgba(255,255,255,0.1)",
+          color: "var(--cor-dourado-brilho)",
+          "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
         }}
       >
         <EditIcon />
       </IconButton>
     )}
+
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         textAlign: "center",
+        position: "relative",
+        zIndex: 1,
       }}
     >
-      <EmojiEventsIcon sx={{ fontSize: 60, mb: 1, color: "#ffd700" }} />
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
+      <EmojiEventsIcon
+        sx={{
+          fontSize: 70,
+          mb: 1,
+          color: "var(--cor-dourado-brilho)",
+          filter: "drop-shadow(0px 4px 8px rgba(0,0,0,0.5))",
+        }}
+      />
+      <Typography
+        variant="h3"
+        fontWeight="900"
+        gutterBottom
+        sx={{
+          textTransform: "uppercase",
+          letterSpacing: 1,
+          fontSize: { xs: "2rem", md: "3rem" },
+        }}
+      >
         {infoSorteio.titulo}
       </Typography>
       <Typography
@@ -100,13 +138,18 @@ const HeroBanner = ({ infoSorteio, isAdmin, onEditClick }: any) => (
           alignItems: "center",
           gap: 1,
           mb: 2,
-          color: "#90caf9",
+          color: "secondary.light",
+          fontWeight: "bold",
+          fontSize: { xs: "1rem", md: "1.25rem" },
         }}
       >
-        <CalendarMonthIcon /> Data do Sorteio:{" "}
+        <CalendarMonthIcon /> Sorteio oficial:{" "}
         {formatarDataExtenso(infoSorteio.data)}
       </Typography>
-      <Typography variant="body1" sx={{ maxWidth: 600 }}>
+      <Typography
+        variant="body1"
+        sx={{ maxWidth: 700, opacity: 0.9, fontSize: "1.1rem" }}
+      >
         {infoSorteio.descricao}
       </Typography>
     </Box>
@@ -118,35 +161,40 @@ const HeroBanner = ({ infoSorteio, isAdmin, onEditClick }: any) => (
 // ============================================================================
 const PremioCard = ({ premio, isAdmin, onEditClick }: any) => (
   <Card
-    elevation={2}
+    elevation={4}
     sx={{
-      borderRadius: 2,
+      borderRadius: 3,
       position: "relative",
-      borderTop: "4px solid #1976d2",
+      borderTop: "6px solid var(--cor-dourado-brilho)",
       height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      transition: "all 0.3s ease",
+      "&:hover": { transform: "translateY(-8px)", boxShadow: 8 },
     }}
   >
     {isAdmin && (
       <IconButton
         size="small"
         onClick={() => onEditClick(premio)}
+        aria-label="Editar Prêmio"
         sx={{
           position: "absolute",
           top: 8,
           right: 8,
-          bgcolor: "white",
-          boxShadow: 1,
+          bgcolor: "rgba(255,255,255,0.9)",
+          boxShadow: 2,
           zIndex: 2,
         }}
       >
-        <EditIcon fontSize="small" color="primary" />
+        <EditIcon fontSize="small" color="secondary" />
       </IconButton>
     )}
 
     {premio.imagem_url ? (
       <CardMedia
         component="img"
-        height="200"
+        height="220"
         image={premio.imagem_url}
         alt={premio.titulo}
         sx={{ objectFit: "cover" }}
@@ -154,30 +202,52 @@ const PremioCard = ({ premio, isAdmin, onEditClick }: any) => (
     ) : (
       <Box
         sx={{
-          height: 200,
-          bgcolor: "#f0f0f0",
+          height: 220,
+          bgcolor: "#e0e0e0",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <CardGiftcardIcon sx={{ fontSize: 60, color: "grey.400" }} />
+        <CardGiftcardIcon sx={{ fontSize: 70, color: "#bdbdbd" }} />
       </Box>
     )}
 
-    <CardContent sx={{ textAlign: "center", pt: 2 }}>
+    <CardContent
+      sx={{
+        textAlign: "center",
+        pt: 3,
+        pb: 4,
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Typography
         variant="overline"
-        color="primary"
-        fontWeight="bold"
-        display="block"
+        sx={{
+          color: "secondary.main",
+          fontWeight: "bold",
+          fontSize: "0.9rem",
+          display: "block",
+          letterSpacing: 2,
+        }}
       >
         {premio.colocacao}
       </Typography>
-      <Typography variant="h6" fontWeight="bold" gutterBottom>
+      <Typography
+        variant="h5"
+        fontWeight="bold"
+        gutterBottom
+        color="primary.main"
+      >
         {premio.titulo}
       </Typography>
-      <Typography variant="body2" color="text.secondary">
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mt: "auto", px: 1 }}
+      >
         {premio.descricao}
       </Typography>
     </CardContent>
@@ -199,7 +269,7 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
 
-  // Estados do Banco de Dados
+  // Estados dos Dados
   const [infoSorteio, setInfoSorteio] = useState({
     titulo: "",
     data: "",
@@ -212,7 +282,7 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
   const [modalPremioAberto, setModalPremioAberto] = useState(false);
   const [premioEmEdicao, setPremioEmEdicao] = useState<any>(null);
 
-  // Estados da Imagem
+  // Estados da Imagem (Upload)
   const [arquivoFoto, setArquivoFoto] = useState<File | null>(null);
   const [previewFoto, setPreviewFoto] = useState<string | null>(null);
 
@@ -228,7 +298,7 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
 
   useEffect(() => {
     carregarDados();
-  }, []);
+  }, []); // Executa apenas no Mount
 
   // --------------------------------------------------------
   // AÇÕES: CABEÇALHO
@@ -239,12 +309,12 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
     const formData = new FormData(e.currentTarget);
     const novosDados = {
       titulo: formData.get("titulo") as string,
-      data: formData.get("data") as string, // Agora pega o formato nativo do calendário YYYY-MM-DD
+      data: formData.get("data") as string,
       descricao: formData.get("descricao") as string,
     };
 
     await salvarInfoSorteio(novosDados);
-    await carregarDados(); // Recarrega os dados imediatamente
+    await carregarDados();
     setModalHeaderAberto(false);
     setSalvando(false);
   };
@@ -275,7 +345,13 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
     const formData = new FormData(e.currentTarget);
 
     let urlDaImagem = premioEmEdicao.imagem_url;
-    if (arquivoFoto) urlDaImagem = await uploadImagemPremio(arquivoFoto);
+    if (arquivoFoto) {
+      try {
+        urlDaImagem = await uploadImagemPremio(arquivoFoto);
+      } catch (error) {
+        console.error("Falha no upload, mantendo imagem anterior.");
+      }
+    }
 
     const dadosPremio = {
       id: premioEmEdicao.id,
@@ -286,47 +362,68 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
     };
 
     await salvarPremio(dadosPremio);
-    await carregarDados(); // Auto-Update na tela
+    await carregarDados();
     setModalPremioAberto(false);
     setSalvando(false);
   };
 
   const removerPremio = async (id: string) => {
-    if (!window.confirm("Tem certeza que deseja excluir este prêmio?")) return;
+    if (
+      !window.confirm(
+        "Tem a certeza que deseja excluir este prêmio? A ação é irreversível.",
+      )
+    )
+      return;
     setSalvando(true);
     await excluirPremio(id);
-    await carregarDados(); // Auto-Update na tela
+    await carregarDados();
     setModalPremioAberto(false);
     setSalvando(false);
   };
 
-  if (carregando)
+  // --------------------------------------------------------
+  // RENDERIZAÇÃO
+  // --------------------------------------------------------
+  if (carregando) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress color="secondary" />
       </Box>
     );
+  }
 
   return (
-    <Box sx={{ pb: 4, pt: 2 }}>
-      {/* 1. RENDERIZA O BANNER */}
+    <Box sx={{ pb: 6, pt: 2 }}>
       <HeroBanner
         infoSorteio={infoSorteio}
         isAdmin={isAdmin}
         onEditClick={() => setModalHeaderAberto(true)}
       />
 
-      {/* 2. BARRA DE TÍTULO DOS PRÊMIOS */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: 3,
+          mb: 4,
+          flexWrap: "wrap",
+          gap: 2,
         }}
       >
-        <Typography variant="h5" fontWeight="bold">
-          Prêmios em Disputa
+        <Typography
+          variant="h5"
+          fontWeight="bold"
+          color="primary.main"
+          sx={{ borderLeft: "4px solid var(--cor-dourado-brilho)", pl: 2 }}
+        >
+          Prêmios
         </Typography>
         {isAdmin && (
           <Button
@@ -334,13 +431,13 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
             color="secondary"
             startIcon={<AddCircleOutlineIcon />}
             onClick={() => abrirModalPremio()}
+            sx={{ borderRadius: 8 }}
           >
-            Adicionar Prêmio
+            Novo Prêmio
           </Button>
         )}
       </Box>
 
-      {/* 3. GRID DOS PRÊMIOS */}
       <Box
         sx={{
           display: "grid",
@@ -349,7 +446,7 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
             sm: "repeat(2, 1fr)",
             md: "repeat(3, 1fr)",
           },
-          gap: 3,
+          gap: 4,
         }}
       >
         {premios.map((premio) => (
@@ -361,34 +458,50 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
           />
         ))}
       </Box>
+
       {premios.length === 0 && (
-        <Typography color="text.secondary" textAlign="center" mt={5}>
-          Nenhum prêmio cadastrado.
-        </Typography>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 5,
+            textAlign: "center",
+            bgcolor: "transparent",
+            border: "2px dashed #ccc",
+          }}
+        >
+          <CardGiftcardIcon
+            sx={{ fontSize: 60, color: "text.disabled", mb: 1 }}
+          />
+          <Typography color="text.secondary" variant="h6">
+            Nenhum prêmio anunciado ainda.
+          </Typography>
+          <Typography color="text.disabled" variant="body2">
+            A comissão atualizará esta secção em breve.
+          </Typography>
+        </Paper>
       )}
 
-      {/* ========================================================= */}
-      {/* MODAL 1: EDITAR HEADER (Com Calendário Nativo)              */}
-      {/* ========================================================= */}
+      {/* ================= MODAL HEADER ================= */}
       <Dialog
         open={modalHeaderAberto}
-        onClose={() => setModalHeaderAberto(false)}
+        onClose={() => !salvando && setModalHeaderAberto(false)}
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Editar Evento</DialogTitle>
+        <DialogTitle sx={{ bgcolor: "primary.main", color: "white", pb: 2 }}>
+          Editar Evento Oficial
+        </DialogTitle>
         <form onSubmit={guardarHeader}>
-          <DialogContent dividers>
+          <DialogContent dividers sx={{ p: 3 }}>
             <TextField
               fullWidth
-              label="Título"
+              label="Título do Sorteio"
               name="titulo"
               defaultValue={infoSorteio.titulo}
               margin="normal"
               required
+              autoFocus
             />
-
-            {/* O Calendário Inteligente */}
             <TextField
               fullWidth
               type="date"
@@ -397,74 +510,97 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
               defaultValue={infoSorteio.data}
               margin="normal"
               required
-              InputLabelProps={{ shrink: true }} // Mantém o texto da label em cima para não bugar o calendário
+              InputLabelProps={{ shrink: true }}
             />
-
             <TextField
               fullWidth
-              label="Descrição"
+              label="Descrição Motivacional"
               name="descricao"
               defaultValue={infoSorteio.descricao}
               margin="normal"
               multiline
-              rows={3}
+              rows={4}
               required
             />
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ p: 2 }}>
             <Button
               onClick={() => setModalHeaderAberto(false)}
               disabled={salvando}
+              color="inherit"
             >
               Cancelar
             </Button>
-            <Button type="submit" variant="contained" disabled={salvando}>
-              {salvando ? "A Salvar..." : "Salvar"}
+            <Button
+              type="submit"
+              variant="contained"
+              color="secondary"
+              disabled={salvando}
+            >
+              {salvando ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Guardar Alterações"
+              )}
             </Button>
           </DialogActions>
         </form>
       </Dialog>
 
-      {/* ========================================================= */}
-      {/* MODAL 2: EDITAR PRÊMIO (Com Upload de Foto)                 */}
-      {/* ========================================================= */}
+      {/* ================= MODAL PRÊMIO ================= */}
       <Dialog
         open={modalPremioAberto}
-        onClose={() => setModalPremioAberto(false)}
+        onClose={() => !salvando && setModalPremioAberto(false)}
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>
-          {premioEmEdicao?.id ? "Editar Prêmio" : "Novo Prêmio"}
+        <DialogTitle sx={{ bgcolor: "primary.main", color: "white", pb: 2 }}>
+          {premioEmEdicao?.id ? "Editar Prêmio" : "Cadastrar Novo Prêmio"}
         </DialogTitle>
         <form onSubmit={guardarNovoPremio}>
-          <DialogContent dividers>
+          <DialogContent dividers sx={{ p: 3 }}>
             <Box
               sx={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                mb: 3,
-                p: 2,
-                border: "1px dashed #ccc",
+                mb: 4,
+                p: 3,
+                border: "2px dashed",
+                borderColor: "grey.300",
                 borderRadius: 2,
+                bgcolor: "grey.50",
               }}
             >
               {previewFoto ? (
-                <img
-                  src={previewFoto}
-                  alt="Preview"
-                  style={{
+                <Box
+                  sx={{
+                    position: "relative",
                     width: "100%",
-                    maxHeight: 200,
-                    objectFit: "contain",
-                    marginBottom: 16,
+                    textAlign: "center",
                   }}
-                />
+                >
+                  <img
+                    src={previewFoto}
+                    alt="Preview"
+                    style={{
+                      width: "100%",
+                      maxHeight: 220,
+                      objectFit: "contain",
+                      borderRadius: 8,
+                      marginBottom: 16,
+                    }}
+                  />
+                </Box>
               ) : (
-                <Typography color="text.secondary" mb={2}>
-                  Nenhuma foto anexada
-                </Typography>
+                <>
+                  <PhotoCameraIcon
+                    sx={{ fontSize: 40, color: "grey.400", mb: 1 }}
+                  />
+                  <Typography color="text.secondary" mb={2} variant="body2">
+                    Anexe uma imagem ilustrativa (Opcional)
+                  </Typography>
+                </>
               )}
               <input
                 accept="image/*"
@@ -472,21 +608,23 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
                 type="file"
                 style={{ display: "none" }}
                 onChange={lidarComFoto}
+                disabled={salvando}
               />
               <label htmlFor="upload-foto-premio">
                 <Button
                   variant="outlined"
                   component="span"
                   startIcon={<PhotoCameraIcon />}
+                  disabled={salvando}
                 >
-                  Escolher Foto
+                  {previewFoto ? "Trocar Imagem" : "Escolher Imagem"}
                 </Button>
               </label>
             </Box>
 
             <TextField
               fullWidth
-              label="Colocação (Ex: 1º Lugar)"
+              label="Colocação (Ex: 1º Lugar, Prêmio Extra)"
               name="colocacao"
               defaultValue={premioEmEdicao?.colocacao}
               margin="normal"
@@ -502,35 +640,49 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
             />
             <TextField
               fullWidth
-              label="Descrição"
+              label="Especificações / Detalhes"
               name="descricao"
               defaultValue={premioEmEdicao?.descricao}
               margin="normal"
               multiline
-              rows={2}
+              rows={3}
               required
             />
           </DialogContent>
-          <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
+          <DialogActions
+            sx={{
+              justifyContent: "space-between",
+              px: 3,
+              py: 2,
+              bgcolor: "grey.50",
+            }}
+          >
             {premioEmEdicao?.id ? (
               <Button
                 color="error"
                 onClick={() => removerPremio(premioEmEdicao.id)}
                 disabled={salvando}
               >
-                Excluir
+                Excluir Definitivamente
               </Button>
             ) : (
               <Box />
             )}
-            <Box sx={{ display: "flex", gap: 1 }}>
+            <Box sx={{ display: "flex", gap: 2 }}>
               <Button
                 onClick={() => setModalPremioAberto(false)}
                 disabled={salvando}
+                color="inherit"
               >
                 Cancelar
               </Button>
-              <Button type="submit" variant="contained" disabled={salvando}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="secondary"
+                disabled={salvando}
+                sx={{ minWidth: 120 }}
+              >
                 {salvando ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (

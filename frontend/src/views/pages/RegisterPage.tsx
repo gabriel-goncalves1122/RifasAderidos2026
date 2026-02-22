@@ -6,7 +6,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate, Link } from "react-router-dom";
 import {
-  Container,
   Box,
   Typography,
   TextField,
@@ -15,12 +14,11 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import SchoolIcon from "@mui/icons-material/School";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import { useAuthController } from "../../controllers/useAuthController";
+import { authStyles } from "./styles/authStyles";
 
-// Máscara de CPF automática
 const aplicarMascaraCPF = (valor: string) => {
   return valor
     .replace(/\D/g, "")
@@ -40,10 +38,7 @@ const schema = yup
     cpf: yup
       .string()
       .required("O CPF é obrigatório")
-      .matches(
-        /^\d{3}\.\d{3}\.\d{3}\-\d{2}$/,
-        "CPF incompleto (Ex: 111.222.333-44)",
-      ),
+      .matches(/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/, "CPF incompleto"),
     senha: yup
       .string()
       .min(6, "A senha deve ter no mínimo 6 caracteres")
@@ -66,68 +61,74 @@ export function RegisterPage() {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: yupResolver(schema),
-    mode: "onChange",
-  });
+  } = useForm<FormData>({ resolver: yupResolver(schema), mode: "onChange" });
 
   const onSubmit = async (data: FormData) => {
     try {
       await handleRegister(data.nome, data.email, data.senha, data.cpf);
       navigate("/dashboard");
-    } catch (err) {
-      // O controller já lida com o estado de 'error' para mostrar no Alert
-    }
+    } catch (err) {}
   };
 
   return (
-    <Container maxWidth="xs">
-      <Box
-        sx={{
-          mt: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Paper elevation={3} sx={{ p: 4, width: "100%", borderRadius: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              mb: 3,
-            }}
-          >
-            <SchoolIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-            <Typography variant="h5" component="h1" fontWeight="bold">
-              Criar Conta
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Comissão de Formatura 2026
-            </Typography>
+    <Box component="main" sx={authStyles.mainContainer}>
+      {/* COLUNA ESQUERDA: O Formulário */}
+      <Box component={Paper} elevation={6} square sx={authStyles.formContainer}>
+        <Box sx={authStyles.formWrapper}>
+          <Box sx={authStyles.mobileLogo}>
+            <img
+              src="/src/assets/images/Branco (1080 x 1080).png"
+              alt="Logo"
+              style={{ width: "100%", height: "auto" }}
+            />
           </Box>
+
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{ fontWeight: "bold", color: "primary.main", mb: 1 }}
+          >
+            Criar Conta
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ mb: 4, textAlign: "center" }}
+          >
+            Registe-se para consultar as suas rifas e prêmios.
+          </Typography>
 
           <Alert
             severity="info"
             icon={<InfoOutlinedIcon />}
-            sx={{ mb: 3, borderRadius: 2 }}
+            sx={{
+              mb: 4,
+              borderRadius: 2,
+              bgcolor: "rgba(212, 175, 55, 0.1)",
+              color: "primary.main",
+              border: "1px solid #D4AF37",
+            }}
           >
             <Typography variant="body2">
               Utilize o <strong>mesmo e-mail</strong> cadastrado na plataforma{" "}
-              <strong>Keeper</strong> para sincronizarmos as suas rifas.
+              <strong>Keeper</strong> para sincronizarmos os seus dados.
             </Typography>
           </Alert>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+            sx={{ width: "100%" }}
+          >
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            )}
 
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <TextField
-              margin="normal"
+              margin="dense"
               required
               fullWidth
               id="nome"
@@ -138,9 +139,8 @@ export function RegisterPage() {
               error={!!errors.nome}
               helperText={errors.nome?.message}
             />
-
             <TextField
-              margin="normal"
+              margin="dense"
               required
               fullWidth
               id="email"
@@ -150,9 +150,8 @@ export function RegisterPage() {
               error={!!errors.email}
               helperText={errors.email?.message}
             />
-
             <TextField
-              margin="normal"
+              margin="dense"
               required
               fullWidth
               id="cpf"
@@ -169,39 +168,41 @@ export function RegisterPage() {
               helperText={errors.cpf?.message}
             />
 
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Criar Senha"
-              type="password"
-              id="senha"
-              disabled={loading}
-              {...register("senha")}
-              error={!!errors.senha}
-              helperText={errors.senha?.message}
-            />
-
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Confirmar Senha"
-              type="password"
-              id="confirmarSenha"
-              disabled={loading}
-              {...register("confirmarSenha")}
-              error={!!errors.confirmarSenha}
-              helperText={errors.confirmarSenha?.message}
-            />
+            <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+              <TextField
+                margin="dense"
+                required
+                fullWidth
+                label="Criar Senha"
+                type="password"
+                id="senha"
+                disabled={loading}
+                {...register("senha")}
+                error={!!errors.senha}
+                helperText={errors.senha?.message}
+              />
+              <TextField
+                margin="dense"
+                required
+                fullWidth
+                label="Confirmar Senha"
+                type="password"
+                id="confirmarSenha"
+                disabled={loading}
+                {...register("confirmarSenha")}
+                error={!!errors.confirmarSenha}
+                helperText={errors.confirmarSenha?.message}
+              />
+            </Box>
 
             <Button
               type="submit"
               fullWidth
               variant="contained"
+              color="secondary"
               size="large"
               disabled={loading}
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ mt: 4, mb: 3, py: 1.5 }}
             >
               {loading ? (
                 <CircularProgress size={24} color="inherit" />
@@ -210,24 +211,38 @@ export function RegisterPage() {
               )}
             </Button>
 
-            <Box sx={{ textAlign: "center", mt: 2 }}>
+            <Box sx={{ textAlign: "center", pb: 4 }}>
               <Typography variant="body2" color="text.secondary">
                 Já tem conta?{" "}
                 <Link
                   to="/"
                   style={{
-                    color: "#1976d2",
-                    textDecoration: "none",
+                    color: "var(--cor-verde-fundo)",
+                    textDecoration: "underline",
                     fontWeight: "bold",
                   }}
                 >
-                  Faça login
+                  Voltar para o Login
                 </Link>
               </Typography>
             </Box>
           </Box>
-        </Paper>
+        </Box>
       </Box>
-    </Container>
+
+      {/* COLUNA DIREITA: Imagem da Logo Dourada */}
+      <Box sx={authStyles.logoContainer}>
+        <Box sx={authStyles.logoWrapper}>
+          <img
+            src="/src/assets/images/PNG (1080x1080).png"
+            alt="Logo da Comissão"
+            style={{ width: "100%", height: "auto" }}
+          />
+        </Box>
+        <Typography variant="body2" sx={authStyles.footerText}>
+          Portal do Aderido &copy; 2026
+        </Typography>
+      </Box>
+    </Box>
   );
 }
