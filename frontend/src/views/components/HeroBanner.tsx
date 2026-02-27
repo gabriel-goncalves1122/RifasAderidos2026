@@ -63,6 +63,7 @@ export const HeroBanner = ({ infoSorteio, isAdmin, onEditClick }: any) => (
           position: "absolute",
           top: 16,
           right: 16,
+          zIndex: 2, // <--- A MÁGICA ACONTECE AQUI! Traz o botão para a frente.
           bgcolor: "rgba(255,255,255,0.1)",
           color: "var(--cor-dourado-brilho)",
           "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
@@ -79,7 +80,7 @@ export const HeroBanner = ({ infoSorteio, isAdmin, onEditClick }: any) => (
         alignItems: "center",
         textAlign: "center",
         position: "relative",
-        zIndex: 1,
+        zIndex: 1, // O texto fica na camada 1, o botão na camada 2.
       }}
     >
       <EmojiEventsIcon
