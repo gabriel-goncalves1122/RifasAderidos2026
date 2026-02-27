@@ -87,18 +87,17 @@ export function RegisterPage() {
       {/* COLUNA ESQUERDA: O Formulário */}
       <Box component={Paper} elevation={6} square sx={authStyles.formContainer}>
         <Box sx={authStyles.formWrapper}>
-          <Box sx={authStyles.mobileLogo}>
-            <img
-              src="/images/Branco (1080 x 1080).png"
-              alt="Logo"
-              style={{ width: "100%", height: "auto" }}
-            />
-          </Box>
+          {/* Logo removido daqui para evitar o corte no topo */}
 
           <Typography
             component="h1"
             variant="h4"
-            sx={{ fontWeight: "bold", color: "primary.main", mb: 1 }}
+            sx={{
+              fontWeight: "bold",
+              color: "primary.main",
+              mb: 1,
+              mt: { xs: 2, md: 0 },
+            }}
           >
             Criar Conta
           </Typography>
@@ -180,7 +179,10 @@ export function RegisterPage() {
               helperText={errors.cpf?.message}
             />
 
-            <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+            {/* Campos de senha em coluna única */}
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 1 }}
+            >
               <TextField
                 margin="dense"
                 required
@@ -273,7 +275,12 @@ export function RegisterPage() {
           <img
             src="/images/PNG (1080x1080).png"
             alt="Logo da Comissão"
-            style={{ width: "100%", height: "auto" }}
+            style={{
+              width: "100%",
+              height: "auto",
+              maxHeight: "80vh",
+              objectFit: "contain",
+            }}
           />
         </Box>
         <Typography variant="body2" sx={authStyles.footerText}>

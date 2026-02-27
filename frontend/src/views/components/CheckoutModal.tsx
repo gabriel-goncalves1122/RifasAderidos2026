@@ -358,7 +358,7 @@ export function CheckoutModal({
                   >
                     {/* ATENÇÃO: Coloque a imagem qrcode-pix.png dentro da pasta src/assets/images/ */}
                     <img
-                      src="/src/assets/images/qrcode-pix.png"
+                      src="/images/qrcode-pix.png"
                       alt="QR Code PIX da Comissão"
                       style={{ width: 180, height: 180, objectFit: "contain" }}
                     />
