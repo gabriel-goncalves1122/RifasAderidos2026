@@ -1,16 +1,12 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/components/PremiosTab.tsx
-// RESPONSABILIDADE: Orquestrar e renderizar a vitrine interativa de prêmios.
+// RESPONSABILIDADE: Orquestrar a vitrine interativa de prêmios e gerir modais.
 // ============================================================================
 import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   Button,
-  IconButton,
-  CardMedia,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -20,243 +16,14 @@ import {
   CircularProgress,
 } from "@mui/material";
 
-// Ícones
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import EditIcon from "@mui/icons-material/Edit";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 
 import { useRifasController } from "../../controllers/useRifasController";
+import { HeroBanner } from "./HeroBanner";
+import { PremioCard } from "./PremioCard";
 
-// ============================================================================
-// FUNÇÃO UTILITÁRIA: Formatar Data (YYYY-MM-DD -> 20 de Dezembro de 2026)
-// ============================================================================
-const formatarDataExtenso = (dataIso: string) => {
-  if (!dataIso || !dataIso.includes("-")) return dataIso;
-  const [ano, mes, dia] = dataIso.split("-");
-  const meses = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
-  return `${dia} de ${meses[parseInt(mes) - 1]} de ${ano}`;
-};
-
-// ============================================================================
-// COMPONENTE 1: HEADER BANNER (Cabeçalho do Sorteio)
-// ============================================================================
-const HeroBanner = ({ infoSorteio, isAdmin, onEditClick }: any) => (
-  <Paper
-    elevation={6}
-    sx={{
-      p: { xs: 3, md: 5 },
-      mb: 5,
-      borderRadius: 4,
-      background:
-        "linear-gradient(135deg, var(--cor-verde-fundo) 0%, #1a3c2f 100%)",
-      color: "white",
-      position: "relative",
-      borderBottom: "5px solid var(--cor-dourado-brilho)",
-      overflow: "hidden",
-    }}
-  >
-    {/* Marca d'água de fundo (Decoração) */}
-    <Box
-      sx={{
-        position: "absolute",
-        top: -50,
-        right: -50,
-        opacity: 0.05,
-        pointerEvents: "none",
-      }}
-    >
-      <EmojiEventsIcon sx={{ fontSize: 300 }} />
-    </Box>
-
-    {isAdmin && (
-      <IconButton
-        onClick={onEditClick}
-        aria-label="Editar Cabeçalho"
-        sx={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          bgcolor: "rgba(255,255,255,0.1)",
-          color: "var(--cor-dourado-brilho)",
-          "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-        }}
-      >
-        <EditIcon />
-      </IconButton>
-    )}
-
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        textAlign: "center",
-        position: "relative",
-        zIndex: 1,
-      }}
-    >
-      <EmojiEventsIcon
-        sx={{
-          fontSize: 70,
-          mb: 1,
-          color: "var(--cor-dourado-brilho)",
-          filter: "drop-shadow(0px 4px 8px rgba(0,0,0,0.5))",
-        }}
-      />
-      <Typography
-        variant="h3"
-        fontWeight="900"
-        gutterBottom
-        sx={{
-          textTransform: "uppercase",
-          letterSpacing: 1,
-          fontSize: { xs: "2rem", md: "3rem" },
-        }}
-      >
-        {infoSorteio.titulo}
-      </Typography>
-      <Typography
-        variant="h6"
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          mb: 2,
-          color: "secondary.light",
-          fontWeight: "bold",
-          fontSize: { xs: "1rem", md: "1.25rem" },
-        }}
-      >
-        <CalendarMonthIcon /> Sorteio oficial:{" "}
-        {formatarDataExtenso(infoSorteio.data)}
-      </Typography>
-      <Typography
-        variant="body1"
-        sx={{ maxWidth: 700, opacity: 0.9, fontSize: "1.1rem" }}
-      >
-        {infoSorteio.descricao}
-      </Typography>
-    </Box>
-  </Paper>
-);
-
-// ============================================================================
-// COMPONENTE 2: CARD DE PRÊMIO
-// ============================================================================
-const PremioCard = ({ premio, isAdmin, onEditClick }: any) => (
-  <Card
-    elevation={4}
-    sx={{
-      borderRadius: 3,
-      position: "relative",
-      borderTop: "6px solid var(--cor-dourado-brilho)",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      transition: "all 0.3s ease",
-      "&:hover": { transform: "translateY(-8px)", boxShadow: 8 },
-    }}
-  >
-    {isAdmin && (
-      <IconButton
-        size="small"
-        onClick={() => onEditClick(premio)}
-        aria-label="Editar Prêmio"
-        sx={{
-          position: "absolute",
-          top: 8,
-          right: 8,
-          bgcolor: "rgba(255,255,255,0.9)",
-          boxShadow: 2,
-          zIndex: 2,
-        }}
-      >
-        <EditIcon fontSize="small" color="secondary" />
-      </IconButton>
-    )}
-
-    {premio.imagem_url ? (
-      <CardMedia
-        component="img"
-        height="220"
-        image={premio.imagem_url}
-        alt={premio.titulo}
-        sx={{ objectFit: "cover" }}
-      />
-    ) : (
-      <Box
-        sx={{
-          height: 220,
-          bgcolor: "#e0e0e0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <CardGiftcardIcon sx={{ fontSize: 70, color: "#bdbdbd" }} />
-      </Box>
-    )}
-
-    <CardContent
-      sx={{
-        textAlign: "center",
-        pt: 3,
-        pb: 4,
-        flexGrow: 1,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Typography
-        variant="overline"
-        sx={{
-          color: "secondary.main",
-          fontWeight: "bold",
-          fontSize: "0.9rem",
-          display: "block",
-          letterSpacing: 2,
-        }}
-      >
-        {premio.colocacao}
-      </Typography>
-      <Typography
-        variant="h5"
-        fontWeight="bold"
-        gutterBottom
-        color="primary.main"
-      >
-        {premio.titulo}
-      </Typography>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        sx={{ mt: "auto", px: 1 }}
-      >
-        {premio.descricao}
-      </Typography>
-    </CardContent>
-  </Card>
-);
-
-// ============================================================================
-// COMPONENTE PRINCIPAL: PREMIOS TAB (Orquestrador)
-// ============================================================================
 export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
   const {
     buscarPremios,
@@ -269,7 +36,6 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
 
-  // Estados dos Dados
   const [infoSorteio, setInfoSorteio] = useState({
     titulo: "",
     data: "",
@@ -277,12 +43,10 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
   });
   const [premios, setPremios] = useState<any[]>([]);
 
-  // Estados dos Modais
   const [modalHeaderAberto, setModalHeaderAberto] = useState(false);
   const [modalPremioAberto, setModalPremioAberto] = useState(false);
   const [premioEmEdicao, setPremioEmEdicao] = useState<any>(null);
 
-  // Estados da Imagem (Upload)
   const [arquivoFoto, setArquivoFoto] = useState<File | null>(null);
   const [previewFoto, setPreviewFoto] = useState<string | null>(null);
 
@@ -298,11 +62,8 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
 
   useEffect(() => {
     carregarDados();
-  }, []); // Executa apenas no Mount
+  }, []);
 
-  // --------------------------------------------------------
-  // AÇÕES: CABEÇALHO
-  // --------------------------------------------------------
   const guardarHeader = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSalvando(true);
@@ -312,16 +73,12 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
       data: formData.get("data") as string,
       descricao: formData.get("descricao") as string,
     };
-
     await salvarInfoSorteio(novosDados);
     await carregarDados();
     setModalHeaderAberto(false);
     setSalvando(false);
   };
 
-  // --------------------------------------------------------
-  // AÇÕES: PRÊMIOS
-  // --------------------------------------------------------
   const abrirModalPremio = (premio?: any) => {
     setPremioEmEdicao(
       premio || { colocacao: "", titulo: "", descricao: "", imagem_url: "" },
@@ -349,7 +106,7 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
       try {
         urlDaImagem = await uploadImagemPremio(arquivoFoto);
       } catch (error) {
-        console.error("Falha no upload, mantendo imagem anterior.");
+        console.error("Falha no upload");
       }
     }
 
@@ -381,9 +138,6 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
     setSalvando(false);
   };
 
-  // --------------------------------------------------------
-  // RENDERIZAÇÃO
-  // --------------------------------------------------------
   if (carregando) {
     return (
       <Box
@@ -481,7 +235,7 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
         </Paper>
       )}
 
-      {/* ================= MODAL HEADER ================= */}
+      {/* MODAL HEADER */}
       <Dialog
         open={modalHeaderAberto}
         onClose={() => !salvando && setModalHeaderAberto(false)}
@@ -547,7 +301,7 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
         </form>
       </Dialog>
 
-      {/* ================= MODAL PRÊMIO ================= */}
+      {/* MODAL PRÊMIO */}
       <Dialog
         open={modalPremioAberto}
         onClose={() => !salvando && setModalPremioAberto(false)}
