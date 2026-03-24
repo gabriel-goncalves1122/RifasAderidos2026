@@ -341,8 +341,47 @@ export function useRifasController() {
     }
   };
 
+  // =========================================================
+  // TRIAGEM INTELIGENTE (IA OCR PYTHON)
+  // =========================================================
+  const auditarEmLoteComIA = async () => {
+    setLoading(true);
+    try {
+      if (!auth.currentUser) throw new Error("Usuário não autenticado");
+      const token = await auth.currentUser.getIdToken();
+
+      // Corrigido: Usando a URL direta do emulador
+      const response = await fetch(
+        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/auditar-lote",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Erro ao executar a triagem inteligente.",
+        );
+      }
+
+      return data; // Retorna { sucesso, mensagem, resultados }
+    } catch (error) {
+      console.error("Erro na triagem com IA:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     buscarMinhasRifas,
+    auditarEmLoteComIA,
     finalizarVenda,
     buscarPendentes,
     avaliarComprovante,

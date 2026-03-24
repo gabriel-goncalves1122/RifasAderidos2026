@@ -32,7 +32,7 @@ async function gerarBilhetes() {
 
   for (const aderido of aderidos) {
     for (let i = 0; i < BILHETES_POR_PESSOA; i++) {
-      // Agora usamos 5 dígitos (padStart de 5) para caber os 14.280 números!
+      // Usamos 5 dígitos (padStart de 5) para caber os 14.520 números
       const numeroString = String(numeroAtual).padStart(5, "0");
 
       bilhetes.push({

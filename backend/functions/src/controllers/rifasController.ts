@@ -2,6 +2,7 @@ import { Response } from "express";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import * as admin from "firebase-admin";
 import { enviarEmailRecibo } from "../services/emailService";
+import axios from "axios";
 
 export const rifasController = {
   // =========================================================
@@ -431,6 +432,76 @@ export const rifasController = {
       return res.status(200).json({ sucesso: true });
     } catch (error) {
       return res.status(500).json({ error: "Erro ao excluir prêmio." });
+    }
+  },
+
+  // ==========================================================================
+  // [ADMIN] TRIAGEM INTELIGENTE (SALVAMENTO EM TEMPO REAL)
+  // ==========================================================================
+  async auditarPendentesEmLote(req: AuthRequest, res: Response) {
+    try {
+      const db = admin.firestore();
+
+      const pendentesSnap = await db
+        .collection("bilhetes")
+        .where("status", "==", "pendente")
+        .where("comprovante_url", "!=", null)
+        .get();
+
+      if (pendentesSnap.empty) {
+        return res
+          .status(200)
+          .json({ sucesso: true, mensagem: "Nenhum comprovante pendente." });
+      }
+
+      let preAprovados = 0;
+      let divergentes = 0;
+
+      console.log(
+        `🚀 Iniciando triagem de ${pendentesSnap.size} comprovantes em Tempo Real...`,
+      );
+
+      // 2. Envia um por um e SALVA IMEDIATAMENTE após cada leitura
+      for (const doc of pendentesSnap.docs) {
+        const dados = doc.data();
+        const urlImagem = dados.comprovante_url;
+
+        try {
+          const respostaOcr = await axios.post(
+            "http://127.0.0.1:5000/api/validar-pix",
+            {
+              comprovanteUrl: urlImagem,
+            },
+          );
+
+          if (respostaOcr.data.status === "APROVADO") {
+            // Salva na mesma hora no banco!
+            await doc.ref.update({
+              log_automacao: `✅ Pré-aprovado pela IA: ${respostaOcr.data.mensagem}`,
+            });
+            preAprovados++;
+          } else {
+            await doc.ref.update({
+              log_automacao: `⚠️ Divergência: ${respostaOcr.data.mensagem}`,
+            });
+            divergentes++;
+          }
+        } catch (err) {
+          console.error(`Erro ao comunicar com Python na rifa ${doc.id}`);
+          await doc.ref.update({
+            log_automacao: `❌ Erro de comunicação com o servidor OCR. Verifique manualmente.`,
+          });
+          divergentes++;
+        }
+      }
+
+      return res.status(200).json({
+        sucesso: true,
+        mensagem: `Triagem concluída! ${preAprovados} pré-aprovados e ${divergentes} com divergência.`,
+      });
+    } catch (error) {
+      console.error("Erro na triagem em lote:", error);
+      return res.status(500).json({ error: "Erro interno durante a triagem." });
     }
   },
 };

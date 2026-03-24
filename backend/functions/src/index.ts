@@ -1,18 +1,15 @@
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 // ============================================================================
 // 1. INICIALIZAÇÃO GLOBAL DO FIREBASE ADMIN
 // ============================================================================
-// O Firebase deve ser inicializado antes de qualquer outra importação local
-// que dependa dele (como os nossos controllers e middlewares).
 admin.initializeApp();
 
-// ============================================================================
-// 2. IMPORTAÇÕES DE BIBLIOTECAS E ROTAS
-// ============================================================================
 import express from "express";
 import cors from "cors";
+
+// IMPORTAÇÃO V2: O onRequest agora vem direto do pacote v2/https
+import { onRequest } from "firebase-functions/v2/https";
 
 // Middlewares e Controllers Globais
 import { validateToken, AuthRequest } from "./middlewares/authMiddleware";
@@ -22,27 +19,16 @@ import { authController } from "./controllers/authController";
 import rifasRoutes from "./routes/rifasRoutes";
 
 // ============================================================================
-// 3. CONFIGURAÇÃO DO EXPRESS (O SERVIDOR) E SEGURANÇA (CORS)
+// 3. CONFIGURAÇÃO DO EXPRESS (O SERVIDOR)
 // ============================================================================
 const app = express();
 
-// 🛡️ CONFIGURAÇÃO DEFINITIVA DO CORS
-// Permite que o Frontend (tanto no localhost quanto na web) acesse o Backend sem ser bloqueado
-app.use(
-  cors({
-    origin: true, // Aceita requisições de qualquer origem
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos permitidos
-    allowedHeaders: ["Content-Type", "Authorization"], // Cabeçalhos vitais (como o Token JWT)
-  }),
-);
-
-app.use(express.json()); // Permite que o servidor entenda JSON no body das requisições
+app.use(cors({ origin: true }));
+app.use(express.json());
 
 // ============================================================================
-// 4. ROTAS PÚBLICAS (Não precisam de Token JWT)
+// 4. ROTAS PÚBLICAS
 // ============================================================================
-
-// Healthcheck: Para monitorar se a API da comissão está viva
 app.get("/status", (req, res) => {
   res.json({
     status: "API da Comissão Online",
@@ -50,14 +36,11 @@ app.get("/status", (req, res) => {
   });
 });
 
-// A NOVA ROTA DO PORTEIRO: Verifica se o e-mail está na lista oficial
 app.post("/auth/verificar", authController.verificarElegibilidade);
 
 // ============================================================================
-// 5. ROTAS PRIVADAS (Requerem Token JWT)
+// 5. ROTAS PRIVADAS
 // ============================================================================
-
-// Rota de teste (Mantida para fins de debug da autenticação)
 app.get("/dados-bancarios", validateToken, async (req: AuthRequest, res) => {
   try {
     const uid = req.user?.uid;
@@ -74,13 +57,16 @@ app.get("/dados-bancarios", validateToken, async (req: AuthRequest, res) => {
 // ============================================================================
 // 6. MÓDULOS DE DOMÍNIO
 // ============================================================================
-
-// Toda requisição que chegar em "sua-api.com/rifas/..." será redirecionada
-// para o arquivo rifasRoutes.ts.
 app.use("/rifas", rifasRoutes);
 
 // ============================================================================
-// EXPORTAÇÃO DA API PARA O CLOUD FUNCTIONS
+// EXPORTAÇÃO DA API PARA O CLOUD FUNCTIONS (FIREBASE V2)
 // ============================================================================
-// Exporta o Express embrulhado numa Cloud Function HTTP
-export const api = functions.https.onRequest(app);
+export const api = onRequest(
+  {
+    timeoutSeconds: 180,
+    memory: "512MiB",
+    cors: true,
+  },
+  app,
+);

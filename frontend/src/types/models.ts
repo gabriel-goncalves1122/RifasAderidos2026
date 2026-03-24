@@ -73,6 +73,7 @@ export interface Bilhete {
   comprador_nome?: string; // <--- NOVO: Metadado do Comprador
 
   data_reserva: string | null;
+  log_automacao?: string; // <--- NOVO: Campo para registrar decisões da IA (ex: "IA: Aprovado por parecer positivo no comprovante")
   data_pagamento: string | null;
 
   comprovante_url: string | null;

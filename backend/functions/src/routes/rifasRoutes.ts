@@ -33,5 +33,10 @@ router.get("/premios", rifasController.obterPremios); // Qualquer um pode ver
 router.put("/sorteio", validateToken, rifasController.salvarInfoSorteio); // Só admin logado
 router.post("/premios", validateToken, rifasController.salvarPremio);
 router.delete("/premios/:id", validateToken, rifasController.excluirPremio);
+router.post(
+  "/auditar-lote",
+  validateToken,
+  rifasController.auditarPendentesEmLote,
+);
 
 export default router;
