@@ -64,25 +64,23 @@ export function useRifasController() {
       const user = auth.currentUser;
       if (!user) throw new Error("Usuário não logado");
 
-      console.log("1. Iniciando Upload Seguro para o Storage...");
-
       // A. PREPARAÇÃO DO ARQUIVO
       const extensao = dados.comprovante.name.split(".").pop();
       const nomeArquivo = `comprovantes/${user.uid}_${Date.now()}.${extensao}`;
       const storageRef = ref(storage, nomeArquivo);
 
-      // B. A MÁGICA DOS METADADOS: Carimbando as informações no arquivo!
+      // B. A MÁGICA DOS METADADOS
       const metadata = {
         contentType: dados.comprovante.type,
         customMetadata: {
           vendedorId: user.uid,
           nomeComprador: dados.nome,
-          bilhetesVendidos: dados.numerosRifas.join(","), // Salva ex: "00123,00124"
+          bilhetesVendidos: dados.numerosRifas.join(","),
           dataUpload: new Date().toISOString(),
         },
       };
 
-      // C. EXECUÇÃO DO UPLOAD (Agora enviando a imagem + metadados juntos)
+      // C. EXECUÇÃO DO UPLOAD
       const snapshot = await uploadBytesResumable(
         storageRef,
         dados.comprovante,
@@ -90,7 +88,6 @@ export function useRifasController() {
       );
 
       const comprovanteUrl = await getDownloadURL(snapshot.ref);
-      console.log("2. UPLOAD CONCLUÍDO. URL GERADA:", comprovanteUrl);
 
       // D. REGISTRO NO BACKEND
       const token = await user.getIdToken();
@@ -157,6 +154,7 @@ export function useRifasController() {
   const avaliarComprovante = async (
     numerosRifas: string[],
     decisao: "aprovar" | "rejeitar",
+    motivo?: string,
   ) => {
     try {
       const user = auth.currentUser;
@@ -169,7 +167,7 @@ export function useRifasController() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ numerosRifas, decisao }),
+        body: JSON.stringify({ numerosRifas, decisao, motivo }),
       });
 
       const result = await response.json();
@@ -190,7 +188,7 @@ export function useRifasController() {
     setLoading(true);
     setError(null);
     try {
-      const user = auth.currentUser; // Usando a importação do config
+      const user = auth.currentUser;
       if (!user) throw new Error("Usuário não autenticado.");
 
       const token = await user.getIdToken();
@@ -350,17 +348,13 @@ export function useRifasController() {
       if (!auth.currentUser) throw new Error("Usuário não autenticado");
       const token = await auth.currentUser.getIdToken();
 
-      // Corrigido: Usando a URL direta do emulador
-      const response = await fetch(
-        "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/auditar-lote",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${API_BASE_URL}/rifas/auditar-lote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const data = await response.json();
 
@@ -370,12 +364,52 @@ export function useRifasController() {
         );
       }
 
-      return data; // Retorna { sucesso, mensagem, resultados }
+      return data;
     } catch (error) {
       console.error("Erro na triagem com IA:", error);
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  // =========================================================
+  // BUSCAR E MARCAR NOTIFICAÇÕES (ADERIDO)
+  // =========================================================
+  const buscarNotificacoes = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+      const token = await user.getIdToken();
+
+      const response = await fetch(`${API_BASE_URL}/rifas/notificacoes`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const result = await response.json();
+      return response.ok ? result.notificacoes : [];
+    } catch (error) {
+      console.error("Erro ao buscar notificações:", error);
+      return [];
+    }
+  };
+
+  const marcarNotificacoesLidas = async (ids: string[]) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+      const token = await user.getIdToken();
+
+      await fetch(`${API_BASE_URL}/rifas/notificacoes/ler`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ids }),
+      });
+    } catch (error) {
+      console.error("Erro ao marcar notificações:", error);
     }
   };
 
@@ -393,6 +427,8 @@ export function useRifasController() {
     buscarPremios,
     salvarInfoSorteio,
     anexarComprovante,
+    buscarNotificacoes,
+    marcarNotificacoesLidas,
 
     loading,
     error,

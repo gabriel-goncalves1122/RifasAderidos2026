@@ -1,42 +1,53 @@
 import { Router } from "express";
-import { rifasController } from "../controllers/rifasController";
 import { validateToken } from "../middlewares/authMiddleware";
+
+// Importamos os nossos novos controladores refatorados
+import { rifasController } from "../controllers/rifasController";
+import { auditoriaController } from "../controllers/auditoriaController";
+import { premiosController } from "../controllers/premiosController";
+import { notificacoesController } from "../controllers/notificacoesController";
 
 const router = Router();
 
 // ============================================================================
-// ROTAS DE ADERIDOS (Membros comuns)
+// 1. ROTAS DE RIFAS, VENDAS E RELATÓRIOS (rifasController)
 // ============================================================================
 router.post("/vender", validateToken, rifasController.processarVenda);
 router.get("/minhas-rifas", validateToken, rifasController.getMinhasRifas);
-
-// ============================================================================
-// ROTAS DA TESOURARIA (Admin)
-// ============================================================================
-router.get("/pendentes", validateToken, rifasController.listarPendentes);
-router.post("/avaliar", validateToken, rifasController.avaliarComprovante);
-// Adicione esta linha junto com as suas outras rotas (provavelmente perto do buscarPendentes):
 router.get(
   "/relatorio",
   validateToken,
   rifasController.obterRelatorioTesouraria,
 );
-// Rota para puxar o histórico detalhado grão a grão (Precisa ser Tesouraria)
 router.get(
   "/historico",
   validateToken,
   rifasController.obterHistoricoDetalhado,
 );
 
-// Rotas de Prêmios e Sorteio
-router.get("/premios", rifasController.obterPremios); // Qualquer um pode ver
-router.put("/sorteio", validateToken, rifasController.salvarInfoSorteio); // Só admin logado
-router.post("/premios", validateToken, rifasController.salvarPremio);
-router.delete("/premios/:id", validateToken, rifasController.excluirPremio);
-router.post(
-  "/auditar-lote",
+// ============================================================================
+// 2. ROTAS DE AUDITORIA E INTELIGÊNCIA ARTIFICIAL (auditoriaController)
+// ============================================================================
+router.get("/pendentes", validateToken, auditoriaController.listarPendentes);
+router.post("/avaliar", validateToken, auditoriaController.avaliarManual);
+router.post("/auditar-lote", validateToken, auditoriaController.auditarIA);
+
+// ============================================================================
+// 3. ROTAS DE PRÊMIOS E SORTEIO (premiosController)
+// ============================================================================
+router.get("/premios", premiosController.obter); // Rota Pública (Sem token)
+router.put("/sorteio", validateToken, premiosController.salvarSorteio);
+router.post("/premios", validateToken, premiosController.salvarPremio);
+router.delete("/premios/:id", validateToken, premiosController.excluirPremio);
+
+// ============================================================================
+// 4. ROTAS DE NOTIFICAÇÕES - SIDEBAR (notificacoesController)
+// ============================================================================
+router.get("/notificacoes", validateToken, notificacoesController.obter);
+router.put(
+  "/notificacoes/ler",
   validateToken,
-  rifasController.auditarPendentesEmLote,
+  notificacoesController.marcarLidas,
 );
 
 export default router;

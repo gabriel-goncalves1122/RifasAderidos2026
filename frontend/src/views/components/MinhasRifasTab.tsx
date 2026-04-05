@@ -1,6 +1,5 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/components/MinhasRifasTab.tsx
-// RESPONSABILIDADE: Interface de Cartela de Rifas com Carrinho de Venda Flutuante
 // ============================================================================
 import React, { useState, useEffect } from "react";
 import {
@@ -9,51 +8,73 @@ import {
   Paper,
   CircularProgress,
   Chip,
-  Button,
   Tooltip,
   IconButton,
   Select,
   MenuItem,
   FormControl,
-  Portal,
+  Badge,
 } from "@mui/material";
 
 // Ícones
-import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
+// Sub-componentes
 import { CheckoutModal } from "./CheckoutModal";
+import { NotificacoesSidebar } from "./NotificacoesSidebar";
+import { CarrinhoFlutuante } from "./CarrinhoFlutuante";
+
+// Controladores
 import { useRifasController } from "../../controllers/useRifasController";
 import { useAuthController } from "../../controllers/useAuthController";
 
 export function MinhasRifasTab() {
-  const { buscarMinhasRifas } = useRifasController();
+  const { buscarMinhasRifas, buscarNotificacoes, marcarNotificacoesLidas } =
+    useRifasController();
   const { usuarioAtual } = useAuthController();
 
-  // Estados de Dados
   const [minhasRifas, setMinhasRifas] = useState<any[]>([]);
+  const [notificacoes, setNotificacoes] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
 
-  // Estados da Interface
   const [selecionadas, setSelecionadas] = useState<string[]>([]);
-  const [modalAberto, setModalAberto] = useState(false);
   const [filtro, setFiltro] = useState<string>("todas");
 
-  const carregarRifas = async () => {
+  // Controle de Modais
+  const [modalCheckoutAberto, setModalCheckoutAberto] = useState(false);
+  const [drawerNotificacoesAberto, setDrawerNotificacoesAberto] =
+    useState(false);
+
+  const carregarDadosIniciais = async () => {
     setCarregando(true);
-    const dados = await buscarMinhasRifas();
-    if (dados) setMinhasRifas(dados);
+    const [dadosRifas, dadosNotificacoes] = await Promise.all([
+      buscarMinhasRifas(),
+      buscarNotificacoes(),
+    ]);
+
+    if (dadosRifas) setMinhasRifas(dadosRifas);
+    if (dadosNotificacoes) setNotificacoes(dadosNotificacoes);
     setCarregando(false);
   };
 
-  // Carrega os dados assim que o componente nasce na tela
   useEffect(() => {
-    carregarRifas();
+    carregarDadosIniciais();
   }, []);
 
-  // Seleção e desseleção de rifas disponíveis para vender
+  const abrirSidebarNotificacoes = async () => {
+    setDrawerNotificacoesAberto(true);
+    const naoLidas = notificacoes.filter((n) => !n.lida).map((n) => n.id);
+
+    if (naoLidas.length > 0) {
+      await marcarNotificacoesLidas(naoLidas);
+      setNotificacoes((prev) => prev.map((n) => ({ ...n, lida: true })));
+    }
+  };
+
   const handleToggleSelecao = (numero: string, status: string) => {
-    if (status !== "disponivel") return; // Só pode clicar nas brancas
+    if (status !== "disponivel") return;
     setSelecionadas((prev) =>
       prev.includes(numero)
         ? prev.filter((n) => n !== numero)
@@ -62,44 +83,40 @@ export function MinhasRifasTab() {
   };
 
   const handleVendaSucesso = async () => {
-    setModalAberto(false);
+    setModalCheckoutAberto(false);
     setSelecionadas([]);
-    await carregarRifas(); // Atualiza a cartela para mostrar as recém-vendidas
+    await carregarDadosIniciais();
   };
 
-  // Lógica de Filtro Visual
+  // Cálculos Derivados
   const rifasFiltradas = minhasRifas.filter(
     (r) => filtro === "todas" || r.status === filtro,
   );
   const valorArrecadado =
     minhasRifas.filter((r) => r.status === "pago").length * 10;
-  const valorDaVendaAtual = selecionadas.length * 10;
+  const notificacoesNaoLidas = notificacoes.filter((n) => !n.lida).length;
 
-  // Forçamos o TypeScript a procurar a propriedade 'nome' que vem do seu Banco de Dados
   const nomeCompleto =
     (usuarioAtual as any)?.nome ||
     (usuarioAtual as any)?.displayName ||
     "Aderido";
   const primeiroNome = nomeCompleto.split(" ")[0];
 
-  // ==========================================================================
-  // LEGENDA VISUAL (Corrigida para não quebrar regras do HTML)
-  // ==========================================================================
   const legendaTooltip = (
     <Box sx={{ p: 0.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
       <Typography
-        component="div" // Renderiza como DIV em vez de P
+        component="div"
         variant="body2"
         sx={{ display: "flex", alignItems: "center", gap: 1 }}
       >
         <Box
-          component="span" // Renderiza como SPAN em vez de DIV
+          component="span"
           sx={{
             width: 14,
             height: 14,
             borderRadius: "50%",
             border: "2px solid white",
-            display: "inline-block", // Necessário para o span respeitar width/height
+            display: "inline-block",
           }}
         />{" "}
         Disponível
@@ -158,21 +175,48 @@ export function MinhasRifasTab() {
     </Box>
   );
 
-  if (carregando) {
+  if (carregando)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
         <CircularProgress color="secondary" />
       </Box>
     );
-  }
 
   return (
     <Box sx={{ position: "relative", pb: selecionadas.length > 0 ? 12 : 2 }}>
-      {/* CABEÇALHO FINANCEIRO (Novo Design) */}
-      <Typography variant="h5" mb={3} fontWeight="bold" color="primary.main">
-        Olá, {primeiroNome}!
-      </Typography>
+      {/* 1. CABEÇALHO */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Typography variant="h5" fontWeight="bold" color="primary.main">
+          Olá, {primeiroNome}!
+        </Typography>
+        <Tooltip title="Avisos da Tesouraria">
+          <IconButton
+            onClick={abrirSidebarNotificacoes}
+            color={notificacoesNaoLidas > 0 ? "error" : "primary"}
+          >
+            <Badge
+              badgeContent={notificacoesNaoLidas}
+              color="error"
+              overlap="circular"
+            >
+              {notificacoesNaoLidas > 0 ? (
+                <NotificationsActiveIcon fontSize="large" />
+              ) : (
+                <NotificationsIcon fontSize="large" />
+              )}
+            </Badge>
+          </IconButton>
+        </Tooltip>
+      </Box>
 
+      {/* 2. CARD FINANCEIRO */}
       <Paper
         elevation={4}
         sx={{
@@ -209,7 +253,7 @@ export function MinhasRifasTab() {
         </Box>
       </Paper>
 
-      {/* BARRA DE CONTROLE: Título + Legenda + Caixa Seletora */}
+      {/* 3. BARRA DE CONTROLE E FILTROS */}
       <Box
         sx={{
           display: "flex",
@@ -220,7 +264,6 @@ export function MinhasRifasTab() {
           gap: 2,
         }}
       >
-        {/* Usando component="div" aqui também para não colocar Tooltip dentro de H6 */}
         <Typography
           component="div"
           variant="h6"
@@ -270,7 +313,7 @@ export function MinhasRifasTab() {
         </FormControl>
       </Box>
 
-      {/* GRID DE RIFAS (A grande cartela) */}
+      {/* 4. GRID DE RIFAS */}
       <Box
         display="grid"
         gridTemplateColumns="repeat(auto-fill, minmax(75px, 1fr))"
@@ -280,7 +323,6 @@ export function MinhasRifasTab() {
           rifasFiltradas.map((rifa) => {
             const isSelecionada = selecionadas.includes(rifa.numero);
             let cor: "default" | "primary" | "success" | "warning" = "default";
-
             if (isSelecionada) cor = "primary";
             else if (rifa.status === "pago") cor = "success";
             else if (rifa.status === "pendente") cor = "warning";
@@ -321,65 +363,31 @@ export function MinhasRifasTab() {
             color="text.secondary"
             sx={{ gridColumn: "1 / -1", textAlign: "center", py: 4 }}
           >
-            Nenhuma rifa encontrada nesta categoria.
+            Nenhuma rifa encontrada.
           </Typography>
         )}
       </Box>
 
-      {/* BARRA FLUTUANTE DE CHECKOUT (CARRINHO) */}
-      {selecionadas.length > 0 && !modalAberto && (
-        <Portal>
-          <Paper
-            elevation={10}
-            sx={{
-              position: "fixed",
-              bottom: 24,
-              left: "50%",
-              transform: "translateX(-50%)",
-              p: 2,
-              display: "flex",
-              alignItems: "center",
-              gap: 3,
-              borderRadius: 8,
-              bgcolor: "white",
-              zIndex: 9999,
-              width: { xs: "90%", sm: "auto" },
-              justifyContent: "space-between",
-              border: "3px solid var(--cor-dourado-brilho)",
-            }}
-          >
-            <Box>
-              <Typography
-                variant="body2"
-                fontWeight="bold"
-                color="text.secondary"
-              >
-                {selecionadas.length} rifa(s) selecionada(s)
-              </Typography>
-              <Typography variant="h5" fontWeight="900" color="primary.main">
-                R$ {valorDaVendaAtual},00
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              color="secondary"
-              size="large"
-              startIcon={<ShoppingCartCheckoutIcon />}
-              sx={{ borderRadius: 6, fontWeight: "bold" }}
-              onClick={() => setModalAberto(true)}
-            >
-              Vender
-            </Button>
-          </Paper>
-        </Portal>
+      {/* 5. COMPONENTES EXTERNOS MODULARES */}
+      {!modalCheckoutAberto && (
+        <CarrinhoFlutuante
+          quantidade={selecionadas.length}
+          valorTotal={selecionadas.length * 10}
+          onVenderClick={() => setModalCheckoutAberto(true)}
+        />
       )}
 
-      {/* MODAL DE CHECKOUT OFICIAL */}
       <CheckoutModal
-        open={modalAberto}
-        onClose={() => setModalAberto(false)}
+        open={modalCheckoutAberto}
+        onClose={() => setModalCheckoutAberto(false)}
         onSuccess={handleVendaSucesso}
         numerosRifas={selecionadas}
+      />
+
+      <NotificacoesSidebar
+        open={drawerNotificacoesAberto}
+        onClose={() => setDrawerNotificacoesAberto(false)}
+        notificacoes={notificacoes}
       />
     </Box>
   );

@@ -1,9 +1,8 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/components/HistoricoDetalhadoTab.tsx
-// RESPONSABILIDADE: Buscar transações, agrupar por lote, filtrar e renderizar
-// de forma responsiva (Tabela no PC, Cards no Mobile) sem scroll lateral.
+// RESPONSABILIDADE: Buscar, agrupar, filtrar e exportar o CSV do histórico.
 // ============================================================================
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -32,48 +31,64 @@ import PersonIcon from "@mui/icons-material/Person";
 import BadgeIcon from "@mui/icons-material/Badge";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
-
 import { useRifasController } from "../../controllers/useRifasController";
+
+// Tipagem
+interface TransacaoBase {
+  data_reserva: string;
+  data_pagamento?: string;
+  vendedor_nome: string;
+  vendedor_cpf: string;
+  comprador_nome: string;
+  comprador_email: string;
+  status: "pago" | "pendente" | "disponivel";
+  numero_rifa?: string;
+  numero?: string;
+  valor?: number;
+}
+interface TransacaoAgrupada {
+  data_reserva: string;
+  data_pagamento?: string;
+  vendedor_nome: string;
+  vendedor_cpf: string;
+  comprador_nome: string;
+  comprador_email: string;
+  status: string;
+  bilhetes: string[];
+  valor_total: number;
+}
 
 export function HistoricoDetalhadoTab() {
   const { buscarHistoricoDetalhado } = useRifasController();
   const [carregando, setCarregando] = useState(true);
-  const [historicoTransacoes, setHistoricoTransacoes] = useState<any[]>([]);
-
-  // Estado do Filtro
+  const [historicoTransacoes, setHistoricoTransacoes] = useState<
+    TransacaoBase[]
+  >([]);
   const [termoBusca, setTermoBusca] = useState("");
 
-  // Carrega os dados granulares
   useEffect(() => {
     const carregar = async () => {
       setCarregando(true);
-      const dadosDetalhados = await buscarHistoricoDetalhado();
-
-      // Garante que é um array, mesmo que o Firebase mande um objeto
-      if (Array.isArray(dadosDetalhados)) {
-        setHistoricoTransacoes(dadosDetalhados);
-      } else if (dadosDetalhados && typeof dadosDetalhados === "object") {
-        setHistoricoTransacoes(Object.values(dadosDetalhados));
-      } else {
-        setHistoricoTransacoes([]);
-      }
-
+      const dados = await buscarHistoricoDetalhado();
+      setHistoricoTransacoes(
+        Array.isArray(dados) ? dados : dados ? Object.values(dados) : [],
+      );
       setCarregando(false);
     };
     carregar();
   }, []);
 
   // ==========================================================================
-  // OTIMIZAÇÃO E AGRUPAMENTO (LOTE) - SUA LÓGICA ORIGINAL RESTAURADA
+  // OTIMIZAÇÃO: Agrupamento e Filtro Memorizados
   // ==========================================================================
-  const historicoAgrupado = Object.values(
-    historicoTransacoes.reduce(
+  const historicoFiltrado = useMemo(() => {
+    const agrupado = historicoTransacoes.reduce(
       (acc, curr) => {
-        const chaveAgrupamento = curr.data_reserva + curr.comprador_nome;
+        const chave = curr.data_reserva + curr.comprador_nome;
+        const bilhete = curr.numero_rifa || curr.numero || "00";
 
-        if (!acc[chaveAgrupamento]) {
-          acc[chaveAgrupamento] = {
+        if (!acc[chave]) {
+          acc[chave] = {
             data_reserva: curr.data_reserva,
             data_pagamento: curr.data_pagamento,
             vendedor_nome: curr.vendedor_nome,
@@ -81,46 +96,39 @@ export function HistoricoDetalhadoTab() {
             comprador_nome: curr.comprador_nome,
             comprador_email: curr.comprador_email,
             status: curr.status,
-            bilhetes: [curr.numero_rifa || curr.numero], // Tenta os dois nomes por segurança
+            bilhetes: [bilhete],
             valor_total: curr.valor || 10,
           };
         } else {
-          acc[chaveAgrupamento].bilhetes.push(curr.numero_rifa || curr.numero);
-          acc[chaveAgrupamento].valor_total += curr.valor || 10;
+          acc[chave].bilhetes.push(bilhete);
+          acc[chave].valor_total += curr.valor || 10;
         }
         return acc;
       },
-      {} as Record<string, any>,
-    ),
-  ).sort(
-    (a: any, b: any) =>
-      new Date(b.data_reserva).getTime() - new Date(a.data_reserva).getTime(),
-  );
+      {} as Record<string, TransacaoAgrupada>,
+    );
 
-  // ==========================================================================
-  // FILTRO DE BUSCA (Por Comprador, Vendedor ou Rifa)
-  // ==========================================================================
-  const historicoFiltrado = historicoAgrupado.filter((transacao: any) => {
-    if (!termoBusca) return true;
+    const ordenado = Object.values(agrupado).sort(
+      (a, b) =>
+        new Date(b.data_reserva).getTime() - new Date(a.data_reserva).getTime(),
+    );
+
+    if (!termoBusca) return ordenado;
 
     const termo = termoBusca.toLowerCase();
-    const comprador = (transacao.comprador_nome || "").toLowerCase();
-    const vendedor = (transacao.vendedor_nome || "").toLowerCase();
-    const rifas = transacao.bilhetes.join(", ").toLowerCase();
-
-    return (
-      comprador.includes(termo) ||
-      vendedor.includes(termo) ||
-      rifas.includes(termo)
+    return ordenado.filter(
+      (t) =>
+        (t.comprador_nome || "").toLowerCase().includes(termo) ||
+        (t.vendedor_nome || "").toLowerCase().includes(termo) ||
+        t.bilhetes.join(", ").toLowerCase().includes(termo),
     );
-  });
+  }, [historicoTransacoes, termoBusca]);
 
   // ==========================================================================
-  // EXPORTADOR CSV (Agora exporta a lista filtrada)
+  // EXPORTADOR CSV
   // ==========================================================================
-  const baixarCSVDeralhado = () => {
+  const baixarCSV = () => {
     if (historicoFiltrado.length === 0) return;
-
     const headers = [
       "Data Reserva",
       "Data Pagamento",
@@ -129,18 +137,18 @@ export function HistoricoDetalhadoTab() {
       "Qtd",
       "Valor Total (R$)",
       "Vendedor",
-      "CPF Vendedor",
+      "CPF",
       "Comprador",
       "Email Comprador",
     ];
-    const linhas = historicoFiltrado.map((t: any) => [
+    const linhas = historicoFiltrado.map((t) => [
       t.data_reserva
         ? new Date(t.data_reserva).toLocaleDateString("pt-BR")
         : "-",
       t.data_pagamento && t.data_pagamento !== "-"
         ? new Date(t.data_pagamento).toLocaleDateString("pt-BR")
         : "-",
-      (t.status || "desconhecido").toUpperCase(),
+      (t.status || "N/A").toUpperCase(),
       `"${t.bilhetes.join(", ")}"`,
       t.bilhetes.length,
       t.valor_total,
@@ -150,38 +158,33 @@ export function HistoricoDetalhadoTab() {
       `"${t.comprador_email || ""}"`,
     ]);
 
-    const conteudoCSV = [
-      headers.join(";"),
-      ...linhas.map((linha) => linha.join(";")),
-    ].join("\n");
-    const blob = new Blob(["\uFEFF" + conteudoCSV], {
+    const csv = [headers.join(";"), ...linhas.map((l) => l.join(";"))].join(
+      "\n",
+    );
+    const blob = new Blob(["\uFEFF" + csv], {
       type: "text/csv;charset=utf-8;",
     });
-
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.setAttribute(
-      "download",
-      `Historico_Rifas_Agrupado_${new Date().toISOString().split("T")[0]}.csv`,
-    );
+    link.download = `Historico_Rifas_${new Date().toISOString().split("T")[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  if (carregando) {
+  const getStatusColor = (status: string) =>
+    status === "pago" ? "success" : status === "pendente" ? "warning" : "error";
+
+  if (carregando)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
         <CircularProgress color="secondary" />
       </Box>
     );
-  }
 
   return (
     <Box sx={{ pb: 4 }}>
-      {/* ================================================================== */}
-      {/* CABEÇALHO E CONTROLES (Busca e Exportação)                         */}
-      {/* ================================================================== */}
+      {/* HEADER E CONTROLES */}
       <Box
         sx={{
           display: "flex",
@@ -206,8 +209,6 @@ export function HistoricoDetalhadoTab() {
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             gap: 2,
-            flexGrow: 1,
-            justifyContent: "flex-end",
           }}
         >
           <TextField
@@ -224,19 +225,18 @@ export function HistoricoDetalhadoTab() {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon color="action" />
+                  <SearchIcon />
                 </InputAdornment>
               ),
             }}
           />
-
           <Button
             variant="contained"
             color="success"
             startIcon={<FileDownloadIcon />}
-            onClick={baixarCSVDeralhado}
+            onClick={baixarCSV}
             disabled={historicoFiltrado.length === 0}
-            sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}
+            sx={{ fontWeight: "bold" }}
           >
             Gerar Excel (CSV)
           </Button>
@@ -245,7 +245,6 @@ export function HistoricoDetalhadoTab() {
 
       {historicoFiltrado.length === 0 ? (
         <Paper
-          elevation={0}
           sx={{
             py: 8,
             textAlign: "center",
@@ -260,9 +259,7 @@ export function HistoricoDetalhadoTab() {
         </Paper>
       ) : (
         <>
-          {/* ================================================================== */}
-          {/* MODO DESKTOP / TABLET (Tabela Original)                            */}
-          {/* ================================================================== */}
+          {/* MODO DESKTOP (Tabela) */}
           <TableContainer
             component={Paper}
             elevation={3}
@@ -275,103 +272,52 @@ export function HistoricoDetalhadoTab() {
             <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Data Res.
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Comprador
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Vendedor
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Rifas da Compra
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Status
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Valor
-                  </TableCell>
+                  {[
+                    "Data Res.",
+                    "Comprador",
+                    "Vendedor",
+                    "Rifas da Compra",
+                    "Status",
+                    "Valor",
+                  ].map((h) => (
+                    <TableCell
+                      key={h}
+                      align={
+                        h === "Status"
+                          ? "center"
+                          : h === "Valor"
+                            ? "right"
+                            : "left"
+                      }
+                      sx={{
+                        bgcolor: "primary.main",
+                        color: "white",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {h}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {historicoFiltrado.map((transacao: any, index: number) => (
-                  <TableRow
-                    key={index}
-                    hover
-                    sx={{ "&:hover": { bgcolor: "rgba(0,0,0,0.02)" } }}
-                  >
+                {historicoFiltrado.map((t, i) => (
+                  <TableRow key={i} hover>
                     <TableCell>
-                      {new Date(transacao.data_reserva).toLocaleDateString(
-                        "pt-BR",
-                      )}
+                      {new Date(t.data_reserva).toLocaleDateString("pt-BR")}
                     </TableCell>
-                    <TableCell>{transacao.comprador_nome}</TableCell>
-                    <TableCell>{transacao.vendedor_nome}</TableCell>
+                    <TableCell>{t.comprador_nome}</TableCell>
+                    <TableCell>{t.vendedor_nome}</TableCell>
                     <TableCell>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          maxWidth: "200px",
-                          wordWrap: "break-word",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {transacao.bilhetes.join(", ")}
+                      <Typography variant="body2" fontWeight="bold">
+                        {t.bilhetes.join(", ")}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
                       <Chip
-                        label={(
-                          transacao.status || "desconhecido"
-                        ).toUpperCase()}
+                        label={(t.status || "N/A").toUpperCase()}
                         size="small"
-                        color={
-                          transacao.status === "pago"
-                            ? "success"
-                            : transacao.status === "pendente"
-                              ? "warning"
-                              : "error"
-                        }
+                        color={getStatusColor(t.status)}
                         variant="outlined"
                         sx={{ fontWeight: "bold", fontSize: "0.7rem" }}
                       />
@@ -380,7 +326,7 @@ export function HistoricoDetalhadoTab() {
                       align="right"
                       sx={{ fontWeight: "bold", color: "success.main" }}
                     >
-                      R$ {transacao.valor_total},00
+                      R$ {t.valor_total},00
                     </TableCell>
                   </TableRow>
                 ))}
@@ -388,14 +334,12 @@ export function HistoricoDetalhadoTab() {
             </Table>
           </TableContainer>
 
-          {/* ================================================================== */}
-          {/* MODO MOBILE (Lista de Cards - Resolve o Scroll Lateral)            */}
-          {/* ================================================================== */}
+          {/* MODO MOBILE (Cards) */}
           <Box sx={{ display: { xs: "block", md: "none" } }}>
             <Stack spacing={2}>
-              {historicoFiltrado.map((transacao: any, index: number) => (
+              {historicoFiltrado.map((t, i) => (
                 <Card
-                  key={index}
+                  key={i}
                   elevation={3}
                   sx={{
                     borderRadius: 2,
@@ -412,89 +356,55 @@ export function HistoricoDetalhadoTab() {
                       }}
                     >
                       <Box>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          display="block"
-                        >
+                        <Typography variant="caption" color="text.secondary">
                           Lote de Rifas
                         </Typography>
                         <Typography
                           variant="body1"
                           fontWeight="900"
                           color="primary.main"
-                          sx={{ wordWrap: "break-word", lineHeight: 1.2 }}
                         >
-                          {transacao.bilhetes.join(", ")}
+                          {t.bilhetes.join(", ")}
                         </Typography>
                       </Box>
                       <Chip
-                        label={(
-                          transacao.status || "desconhecido"
-                        ).toUpperCase()}
+                        label={(t.status || "N/A").toUpperCase()}
                         size="small"
-                        color={
-                          transacao.status === "pago"
-                            ? "success"
-                            : transacao.status === "pendente"
-                              ? "warning"
-                              : "error"
-                        }
-                        sx={{ fontWeight: "bold", fontSize: "0.7rem", ml: 1 }}
+                        color={getStatusColor(t.status)}
+                        sx={{ fontWeight: "bold", fontSize: "0.7rem" }}
                       />
                     </Box>
-
                     <Divider sx={{ mb: 1.5 }} />
-
                     <Box
                       sx={{ display: "flex", flexDirection: "column", gap: 1 }}
                     >
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          color: "text.secondary",
-                        }}
-                      >
-                        <CalendarTodayIcon fontSize="small" />
-                        {new Date(transacao.data_reserva).toLocaleDateString(
-                          "pt-BR",
-                        )}
+                      <Typography variant="body2" color="text.secondary">
+                        <CalendarTodayIcon fontSize="small" sx={{ mr: 1 }} />
+                        {new Date(t.data_reserva).toLocaleDateString("pt-BR")}
                       </Typography>
-
-                      <Typography
-                        variant="body2"
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <PersonIcon fontSize="small" color="secondary" />
-                        <strong>Comprador:</strong>{" "}
-                        {transacao.comprador_nome || "-"}
+                      <Typography variant="body2">
+                        <PersonIcon
+                          fontSize="small"
+                          color="secondary"
+                          sx={{ mr: 1 }}
+                        />
+                        <strong>Comprador:</strong> {t.comprador_nome}
                       </Typography>
-
-                      <Typography
-                        variant="body2"
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <BadgeIcon fontSize="small" color="primary" />
-                        <strong>Vendedor:</strong>{" "}
-                        {transacao.vendedor_nome || "-"}
+                      <Typography variant="body2">
+                        <BadgeIcon
+                          fontSize="small"
+                          color="primary"
+                          sx={{ mr: 1 }}
+                        />
+                        <strong>Vendedor:</strong> {t.vendedor_nome}
                       </Typography>
-
                       <Typography
                         variant="body2"
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          mt: 0.5,
-                          color: "success.main",
-                          fontWeight: "bold",
-                        }}
+                        color="success.main"
+                        fontWeight="bold"
                       >
-                        <AttachMoneyIcon fontSize="small" />
-                        Valor Total: R$ {transacao.valor_total},00
+                        <AttachMoneyIcon fontSize="small" sx={{ mr: 1 }} />
+                        R$ {t.valor_total},00
                       </Typography>
                     </Box>
                   </CardContent>

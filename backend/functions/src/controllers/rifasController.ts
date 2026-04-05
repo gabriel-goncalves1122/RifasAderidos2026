@@ -3,148 +3,93 @@ import { AuthRequest } from "../middlewares/authMiddleware";
 import * as admin from "firebase-admin";
 import { enviarEmailRecibo } from "../services/emailService";
 import axios from "axios";
+import { RifasService } from "../services/rifasService"; // NOVO IMPORT
+
+// Função Auxiliar mantida
+function extrairCaminhoStorage(url: string): string | null {
+  try {
+    const partes = url.split("/o/");
+    if (partes.length > 1) {
+      return decodeURIComponent(partes[1].split("?")[0]);
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
 
 export const rifasController = {
   // =========================================================
-  // 1. BUSCAR AS RIFAS DO ADERIDO LOGADO
+  // 1. RIFAS / VENDAS / RELATÓRIOS (REFATORADOS PARA SERVICE)
   // =========================================================
+
   async getMinhasRifas(req: AuthRequest, res: Response) {
     try {
-      const db = admin.firestore();
+      if (!req.user?.email)
+        return res.status(401).json({ error: "Usuário não autenticado." });
 
-      const emailLogado = req.user?.email;
-      if (!emailLogado) {
-        return res
-          .status(401)
-          .json({ error: "Usuário não autenticado ou sem e-mail." });
-      }
-
-      // 1. Busca pelo E-mail que está no nosso CSV
-      const userDocs = await db
-        .collection("usuarios")
-        .where("email", "==", emailLogado)
-        .limit(1)
-        .get();
-
-      if (userDocs.empty) {
+      const bilhetes = await RifasService.buscarPorAderido(req.user.email);
+      return res.status(200).json({ bilhetes });
+    } catch (error: any) {
+      if (error.message === "USER_NOT_FOUND") {
         return res
           .status(404)
           .json({ error: "Você não está na lista de aderidos oficiais." });
       }
-
-      const usuario = userDocs.docs[0].data();
-      const idAderido = usuario.id_aderido;
-
-      // 2. Busca os bilhetes atrelados a este usuário
-      const bilhetesSnapshot = await db
-        .collection("bilhetes")
-        .where("vendedor_id", "==", idAderido)
-        .get();
-
-      const bilhetes = bilhetesSnapshot.docs.map((doc) => doc.data());
-
-      // Ordena numericamente para a tela não ficar bagunçada
-      bilhetes.sort((a, b) => parseInt(a.numero) - parseInt(b.numero));
-
-      return res.json({ bilhetes });
-    } catch (error) {
       console.error("Erro ao buscar rifas:", error);
       return res.status(500).json({ error: "Erro interno ao buscar rifas." });
     }
   },
 
-  // =========================================================
-  // 2. PROCESSAR A VENDA E SALVAR COMPROVANTE (Enriquecido)
-  // =========================================================
   async processarVenda(req: AuthRequest, res: Response) {
     try {
-      const db = admin.firestore();
+      if (!req.user?.uid || !req.user?.email)
+        return res.status(401).json({ error: "Não autorizado." });
 
-      const uid = req.user?.uid;
-      const emailLogado = req.user?.email;
-      const { nome, telefone, email, numerosRifas, comprovanteUrl } = req.body;
+      // Enviando os 3 parâmetros: UID, Email e o Corpo (Body)
+      await RifasService.processarVenda(req.user.uid, req.user.email, req.body);
 
-      if (
-        !uid ||
-        !comprovanteUrl ||
-        !numerosRifas ||
-        numerosRifas.length === 0
-      ) {
+      return res
+        .status(200)
+        .json({
+          sucesso: true,
+          mensagem: "Venda registrada com sucesso! Comprovante em análise.",
+        });
+    } catch (error: any) {
+      if (error.message === "INVALID_DATA") {
         return res
           .status(400)
           .json({ error: "Dados incompletos ou comprovante faltando." });
       }
-
-      // 1. BUSCAR DADOS DO VENDEDOR
-      let vendedorNome = "Nome não registrado";
-      let vendedorCpf = "CPF não registrado";
-
-      if (emailLogado) {
-        const userDocs = await db
-          .collection("usuarios")
-          .where("email", "==", emailLogado)
-          .limit(1)
-          .get();
-
-        if (!userDocs.empty) {
-          const userData = userDocs.docs[0].data();
-          vendedorNome = userData.nome || vendedorNome;
-          vendedorCpf = userData.cpf || vendedorCpf;
-        }
-      }
-
-      // 2. PREPARAR A TRANSAÇÃO ATÔMICA (BATCH)
-      const batch = db.batch();
-
-      // Cria a referência do comprador
-      const compradorRef = db.collection("compradores").doc();
-      batch.set(compradorRef, {
-        id: compradorRef.id,
-        nome,
-        telefone,
-        email: email || null,
-        criado_em: new Date().toISOString(),
-      });
-
-      // Atualiza os bilhetes
-      numerosRifas.forEach((numero: string) => {
-        const bilheteRef = db.collection("bilhetes").doc(numero);
-        batch.set(
-          bilheteRef,
-          {
-            status: "pendente",
-            comprador_id: compradorRef.id,
-            comprador_nome: nome,
-            comprador_email: email || null, // Facilitador para o envio do recibo final
-            vendedor_nome: vendedorNome,
-            vendedor_cpf: vendedorCpf,
-            data_reserva: new Date().toISOString(),
-            comprovante_url: comprovanteUrl,
-          },
-          { merge: true },
-        );
-      });
-
-      // Executa a gravação no banco
-      await batch.commit();
-
-      // 3. ENVIAR E-MAIL DE CONFIRMAÇÃO DO PEDIDO (Background)
-      if (email) {
-        enviarEmailRecibo(email, nome, numerosRifas, "pendente");
-      }
-
-      return res.status(200).json({
-        sucesso: true,
-        mensagem: "Venda registrada com sucesso! Comprovante em análise.",
-      });
-    } catch (error) {
       console.error("Erro ao processar venda:", error);
       return res.status(500).json({ error: "Erro ao processar a venda." });
     }
   },
 
+  async obterRelatorioTesouraria(req: AuthRequest, res: Response) {
+    try {
+      const relatorio = await RifasService.obterRelatorioTesouraria();
+      return res.status(200).json(relatorio);
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
+      return res.status(500).json({ error: "Erro ao gerar relatório." });
+    }
+  },
+
+  async obterHistoricoDetalhado(req: AuthRequest, res: Response) {
+    try {
+      const historico = await RifasService.obterHistoricoDetalhado();
+      return res.status(200).json({ historico });
+    } catch (error) {
+      console.error("Erro ao gerar histórico detalhado:", error);
+      return res
+        .status(500)
+        .json({ error: "Erro ao buscar o histórico de vendas." });
+    }
+  },
+
   // ==========================================================================
-  // [ADMIN] LISTAR RIFAS PENDENTES DE AUDITORIA
+  // [ADMIN] LISTAR RIFAS PENDENTES DE AUDITORIA (MANTIDO)
   // ==========================================================================
   async listarPendentes(req: AuthRequest, res: Response) {
     try {
@@ -167,14 +112,12 @@ export const rifasController = {
   },
 
   // ==========================================================================
-  // [ADMIN] AVALIAR COMPROVANTE EM LOTE (Aprovar ou Rejeitar)
+  // [ADMIN] AVALIAR COMPROVANTE EM LOTE (MANTIDO)
   // ==========================================================================
   async avaliarComprovante(req: AuthRequest, res: Response) {
     try {
       const db = admin.firestore();
-
-      // AGORA RECEBEMOS UM ARRAY: numerosRifas
-      const { numerosRifas, decisao } = req.body;
+      const { numerosRifas, decisao, motivo } = req.body;
 
       if (
         !numerosRifas ||
@@ -189,11 +132,11 @@ export const rifasController = {
 
       const batch = db.batch();
 
-      // Variáveis para guardar os dados do comprador (pegamos do primeiro bilhete do lote)
       let compradorEmail: string | null = null;
       let compradorNome: string | null = null;
+      let vendedorIdParaNotificacao: string | null = null;
+      let urlParaApagarDoStorage: string | null = null;
 
-      // Percorre todos os bilhetes da compra para atualizar juntos
       for (const numero of numerosRifas) {
         const bilheteRef = db.collection("bilhetes").doc(numero);
         const bilheteSnap = await bilheteRef.get();
@@ -201,14 +144,19 @@ export const rifasController = {
         if (!bilheteSnap.exists) continue;
 
         const dadosAtuais = bilheteSnap.data();
-
-        // Evita re-avaliar rifas que já foram processadas
         if (dadosAtuais?.status !== "pendente") continue;
 
-        // Se achou um e-mail, salva para mandar o recibo no final
         if (!compradorEmail && dadosAtuais?.comprador_email) {
           compradorEmail = dadosAtuais.comprador_email;
           compradorNome = dadosAtuais.comprador_nome || "Comprador";
+        }
+
+        if (!vendedorIdParaNotificacao && dadosAtuais?.vendedor_id) {
+          vendedorIdParaNotificacao = dadosAtuais.vendedor_id;
+        }
+
+        if (!urlParaApagarDoStorage && dadosAtuais?.comprovante_url) {
+          urlParaApagarDoStorage = dadosAtuais.comprovante_url;
         }
 
         if (decisao === "aprovar") {
@@ -224,19 +172,50 @@ export const rifasController = {
             comprador_nome: null,
             comprador_email: null,
             comprovante_url: null,
+            motivo_recusa:
+              motivo || "Comprovante não validado pela tesouraria.",
+            log_automacao: null,
           });
         }
       }
 
-      // Executa todas as atualizações no banco de dados DE UMA SÓ VEZ
+      if (decisao === "rejeitar" && vendedorIdParaNotificacao) {
+        const notificacaoRef = db.collection("notificacoes").doc();
+        batch.set(notificacaoRef, {
+          vendedor_id: vendedorIdParaNotificacao,
+          titulo: "Comprovante Recusado ⚠️",
+          mensagem:
+            motivo || "O comprovante enviado não foi aceite pela tesouraria.",
+          rifas: numerosRifas,
+          lida: false,
+          data_criacao: new Date().toISOString(),
+        });
+      }
+
       await batch.commit();
 
-      // MÁGICA FINAL: Dispara APENAS UM e-mail para todo o lote se for aprovado!
+      if (decisao === "rejeitar" && urlParaApagarDoStorage) {
+        const caminhoDoFicheiro = extrairCaminhoStorage(urlParaApagarDoStorage);
+        if (caminhoDoFicheiro) {
+          admin
+            .storage()
+            .bucket()
+            .file(caminhoDoFicheiro)
+            .delete()
+            .catch((err) =>
+              console.error(
+                "Aviso: Falha ao apagar o ficheiro do storage",
+                err,
+              ),
+            );
+        }
+      }
+
       if (decisao === "aprovar" && compradorEmail) {
         enviarEmailRecibo(
           compradorEmail,
           compradorNome || "Comprador",
-          numerosRifas, // Envia o array inteiro para o e-mail agrupar os bilhetes
+          numerosRifas,
           "aprovado",
         );
       }
@@ -249,117 +228,12 @@ export const rifasController = {
       console.error("Erro ao avaliar comprovante em lote:", error);
       return res
         .status(500)
-        .json({ error: "Erro interno ao avaliar comprovante em lote." });
+        .json({ error: "Erro interno ao avaliar comprovante." });
     }
   },
 
   // =========================================================
-  // 4. RELATÓRIO DA TESOURARIA (Dashboard)
-  // =========================================================
-  async obterRelatorioTesouraria(req: AuthRequest, res: Response) {
-    try {
-      const db = admin.firestore();
-
-      const usuariosSnap = await db.collection("usuarios").get();
-
-      const bilhetesSnap = await db
-        .collection("bilhetes")
-        .where("status", "==", "pago")
-        .get();
-
-      const vendasPorCpf: Record<string, number> = {};
-      bilhetesSnap.forEach((doc) => {
-        const data = doc.data();
-        if (data.vendedor_cpf) {
-          vendasPorCpf[data.vendedor_cpf] =
-            (vendasPorCpf[data.vendedor_cpf] || 0) + 1;
-        }
-      });
-
-      let totalArrecadadoGlobal = 0;
-      let rifasPagasGlobal = 0;
-
-      // Filtro para garantir que apenas os aderidos oficiais apareçam no relatório
-      const aderidos = usuariosSnap.docs
-        .filter((doc) => doc.id.startsWith("ADERIDO_"))
-        .map((doc) => {
-          const user = doc.data();
-          const rifasVendidas = vendasPorCpf[user.cpf] || 0;
-          const arrecadado = rifasVendidas * 10;
-
-          totalArrecadadoGlobal += arrecadado;
-          rifasPagasGlobal += rifasVendidas;
-
-          return {
-            id: doc.id,
-            nome: user.nome || "Aderido Sem Nome",
-            cpf: user.cpf,
-            arrecadado: arrecadado,
-            meta: user.meta_vendas || 1200,
-            rifasVendidas: rifasVendidas,
-          };
-        });
-
-      return res.status(200).json({
-        resumoGeral: {
-          totalArrecadado: totalArrecadadoGlobal,
-          rifasPagas: rifasPagasGlobal,
-          aderidosAtivos: aderidos.length,
-        },
-        aderidos,
-      });
-    } catch (error) {
-      console.error("Erro ao gerar relatório:", error);
-      return res.status(500).json({ error: "Erro ao gerar relatório." });
-    }
-  },
-
-  // =========================================================
-  // 5. HISTÓRICO COMPLETO DETALHADO (Para Gráficos e CSV Geral)
-  // =========================================================
-  async obterHistoricoDetalhado(req: AuthRequest, res: Response) {
-    try {
-      const db = admin.firestore();
-
-      // Busca absolutamente todos os bilhetes que já tiveram alguma interação (pagos ou pendentes)
-      const bilhetesSnap = await db
-        .collection("bilhetes")
-        .where("status", "in", ["pago", "pendente"])
-        .get();
-
-      const historico = bilhetesSnap.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          numero_rifa: doc.id,
-          vendedor_nome: data.vendedor_nome || "Desconhecido",
-          vendedor_cpf: data.vendedor_cpf || "-",
-          comprador_nome: data.comprador_nome || "Desconhecido",
-          comprador_email: data.comprador_email || "-",
-          data_reserva: data.data_reserva || "-",
-          data_pagamento: data.data_pagamento || "-",
-          status: data.status,
-          valor: 10, // Valor fixo da rifa
-        };
-      });
-
-      // Ordena do mais recente para o mais antigo (usando a data de reserva como base)
-      historico.sort((a, b) => {
-        const dataA = new Date(a.data_reserva).getTime() || 0;
-        const dataB = new Date(b.data_reserva).getTime() || 0;
-        return dataB - dataA;
-      });
-
-      return res.status(200).json({ historico });
-    } catch (error) {
-      console.error("Erro ao gerar histórico detalhado:", error);
-      return res
-        .status(500)
-        .json({ error: "Erro ao buscar o histórico de vendas." });
-    }
-  },
-
-  // =========================================================
-  // 6. GESTÃO DE PRÊMIOS E SORTEIO (TESOURARIA)
+  // 6. GESTÃO DE PRÊMIOS E SORTEIO (TESOURARIA) (MANTIDO)
   // =========================================================
 
   async obterPremios(req: any, res: any) {
@@ -424,7 +298,6 @@ export const rifasController = {
   async excluirPremio(req: any, res: any) {
     try {
       const db = admin.firestore();
-      // O 'as string' garante ao Firestore que o ID é apenas um texto simples
       await db
         .collection("premios")
         .doc(req.params.id as string)
@@ -436,7 +309,7 @@ export const rifasController = {
   },
 
   // ==========================================================================
-  // [ADMIN] TRIAGEM INTELIGENTE (SALVAMENTO EM TEMPO REAL)
+  // [ADMIN] TRIAGEM INTELIGENTE (MANTIDO)
   // ==========================================================================
   async auditarPendentesEmLote(req: AuthRequest, res: Response) {
     try {
@@ -454,54 +327,150 @@ export const rifasController = {
           .json({ sucesso: true, mensagem: "Nenhum comprovante pendente." });
       }
 
-      let preAprovados = 0;
-      let divergentes = 0;
+      const comprovantesMap = new Map<string, any[]>();
+      let jaAvaliados = 0;
 
-      console.log(
-        `🚀 Iniciando triagem de ${pendentesSnap.size} comprovantes em Tempo Real...`,
-      );
-
-      // 2. Envia um por um e SALVA IMEDIATAMENTE após cada leitura
       for (const doc of pendentesSnap.docs) {
         const dados = doc.data();
-        const urlImagem = dados.comprovante_url;
 
+        if (dados.log_automacao) {
+          jaAvaliados++;
+          continue;
+        }
+
+        const url = dados.comprovante_url;
+        if (!comprovantesMap.has(url)) {
+          comprovantesMap.set(url, []);
+        }
+        comprovantesMap.get(url)!.push(doc);
+      }
+
+      const totalImagensUnicas = comprovantesMap.size;
+      if (totalImagensUnicas === 0) {
+        return res.status(200).json({
+          sucesso: true,
+          mensagem: `Todos os ${jaAvaliados} bilhetes já estavam auditados pela IA.`,
+        });
+      }
+
+      let preAprovados = 0;
+      let divergentes = 0;
+      const batch = db.batch();
+
+      const OCR_API_URL =
+        process.env.OCR_API_URL || "http://127.0.0.1:5000/api/validar-pix";
+
+      for (const [urlImagem, documentos] of comprovantesMap.entries()) {
         try {
-          const respostaOcr = await axios.post(
-            "http://127.0.0.1:5000/api/validar-pix",
-            {
-              comprovanteUrl: urlImagem,
-            },
-          );
+          const respostaOcr = await axios.post(OCR_API_URL, {
+            comprovanteUrl: urlImagem,
+          });
 
-          if (respostaOcr.data.status === "APROVADO") {
-            // Salva na mesma hora no banco!
-            await doc.ref.update({
-              log_automacao: `✅ Pré-aprovado pela IA: ${respostaOcr.data.mensagem}`,
-            });
-            preAprovados++;
+          const status = respostaOcr.data.status;
+          const mensagemIA = respostaOcr.data.mensagem;
+
+          let logParaSalvar = "";
+          if (status === "APROVADO") {
+            logParaSalvar = `✅ Pré-aprovado pela IA: ${mensagemIA}`;
+            preAprovados += documentos.length;
           } else {
-            await doc.ref.update({
-              log_automacao: `⚠️ Divergência: ${respostaOcr.data.mensagem}`,
+            logParaSalvar = `⚠️ Divergência: ${mensagemIA}`;
+            divergentes += documentos.length;
+          }
+
+          for (const doc of documentos) {
+            batch.update(doc.ref, { log_automacao: logParaSalvar });
+          }
+        } catch (err) {
+          console.error(`Erro de IA no URL: ${urlImagem.substring(0, 30)}...`);
+          for (const doc of documentos) {
+            batch.update(doc.ref, {
+              log_automacao: `❌ Erro de comunicação com a IA OCR.`,
             });
             divergentes++;
           }
-        } catch (err) {
-          console.error(`Erro ao comunicar com Python na rifa ${doc.id}`);
-          await doc.ref.update({
-            log_automacao: `❌ Erro de comunicação com o servidor OCR. Verifique manualmente.`,
-          });
-          divergentes++;
         }
       }
 
+      await batch.commit();
+
       return res.status(200).json({
         sucesso: true,
-        mensagem: `Triagem concluída! ${preAprovados} pré-aprovados e ${divergentes} com divergência.`,
+        mensagem: `Triagem inteligente finalizada! ${preAprovados} bilhetes aprovados, ${divergentes} com divergência.`,
       });
     } catch (error) {
       console.error("Erro na triagem em lote:", error);
       return res.status(500).json({ error: "Erro interno durante a triagem." });
+    }
+  },
+
+  // =========================================================
+  // 7. BUSCAR NOTIFICAÇÕES DO ADERIDO (MANTIDO)
+  // =========================================================
+  async obterNotificacoes(req: AuthRequest, res: Response) {
+    try {
+      const db = admin.firestore();
+      const emailLogado = req.user?.email;
+
+      if (!emailLogado)
+        return res.status(401).json({ error: "Não autorizado." });
+
+      const userDocs = await db
+        .collection("usuarios")
+        .where("email", "==", emailLogado)
+        .limit(1)
+        .get();
+
+      if (userDocs.empty) {
+        return res.status(200).json({ notificacoes: [] });
+      }
+
+      const idAderido = userDocs.docs[0].data().id_aderido;
+
+      const notificacoesSnap = await db
+        .collection("notificacoes")
+        .where("vendedor_id", "==", idAderido)
+        .orderBy("data_criacao", "desc")
+        .limit(20)
+        .get();
+
+      const notificacoes = notificacoesSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      return res.status(200).json({ notificacoes });
+    } catch (error) {
+      console.error("Erro ao buscar notificações:", error);
+      return res
+        .status(500)
+        .json({ error: "Erro interno ao buscar notificações." });
+    }
+  },
+
+  // =========================================================
+  // 8. MARCAR NOTIFICAÇÕES COMO LIDAS (MANTIDO)
+  // =========================================================
+  async marcarNotificacoesLidas(req: AuthRequest, res: Response) {
+    try {
+      const db = admin.firestore();
+      const { ids } = req.body;
+
+      if (!ids || !Array.isArray(ids))
+        return res.status(400).json({ error: "IDs inválidos." });
+
+      const batch = db.batch();
+      ids.forEach((id: string) => {
+        const notifRef = db.collection("notificacoes").doc(id);
+        batch.update(notifRef, { lida: true });
+      });
+
+      await batch.commit();
+
+      return res.status(200).json({ sucesso: true });
+    } catch (error) {
+      console.error("Erro ao marcar notificações lidas:", error);
+      return res.status(500).json({ error: "Erro interno." });
     }
   },
 };

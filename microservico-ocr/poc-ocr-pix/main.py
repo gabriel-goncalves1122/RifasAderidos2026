@@ -41,7 +41,7 @@ def processar_arquivo(caminho_arquivo, df_banco):
                 match = row
                 break
     
-    if match is not None:
-        return "APROVADO", f"Banco [{nome_banco}] - ID {id_pix[:8]}... | Titular: {match.get('Pagador', 'N/A')} - R$ {match.get('Valor', 0):.2f}"
-    else:
-        return "DIVERGENTE", f"Banco [{nome_banco}] - ID {id_pix[:8]}... lido, mas NÃO está no extrato!"
+        if match is not None:
+            return "APROVADO", f"Banco [{nome_banco}] - ID {id_pix} | Titular: {match.get('Pagador', 'N/A')} - R$ {match.get('Valor', 0):.2f}"
+        else:
+            return "DIVERGENTE", f"Banco [{nome_banco}] - ID {id_pix} lido, mas NÃO está no extrato!"

@@ -109,3 +109,14 @@ lib-cov
 .lock-wscript
 build/Release
 *.tgz
+
+# ----------------------------------------------------------------------------
+# 8. MICROSERVIÇO OCR (PYTHON) E EMULADORES LOCAIS
+# ----------------------------------------------------------------------------
+# Ignorar ambiente virtual do Python e arquivos de cache compilados
+microservico-ocr/venv/
+microservico-ocr/**/__pycache__/
+*.pyc
+
+# Ignorar o banco de dados local salvo pelo emulador do Firebase
+backend/banco-local/

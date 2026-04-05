@@ -1,8 +1,8 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/components/VisaoGraficaTab.tsx
-// RESPONSABILIDADE: Visão analítica financeira (Evolução de caixa, Status e Metas)
+// RESPONSABILIDADE: Dashboard analítico da tesouraria com métricas e gráficos.
 // ============================================================================
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Box, Typography, Paper, Card, CircularProgress } from "@mui/material";
 
 // Ícones
@@ -10,7 +10,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import GroupIcon from "@mui/icons-material/Group";
 
-// Recharts (Gráficos)
+// Gráficos
 import {
   AreaChart,
   Area,
@@ -24,8 +24,18 @@ import {
   Cell,
   Legend,
 } from "recharts";
-
 import { useRifasController } from "../../controllers/useRifasController";
+
+// Tipagens
+interface AderidoMetrica {
+  arrecadado: number;
+  meta: number;
+}
+interface Transacao {
+  status: string;
+  data_reserva: string;
+  valor: number;
+}
 
 export function VisaoGraficaTab() {
   const { buscarRelatorio, buscarHistoricoDetalhado } = useRifasController();
@@ -37,10 +47,11 @@ export function VisaoGraficaTab() {
     rifasPagas: 0,
     aderidosAtivos: 0,
   });
-  const [aderidos, setAderidos] = useState<any[]>([]);
-  const [historicoTransacoes, setHistoricoTransacoes] = useState<any[]>([]);
+  const [aderidos, setAderidos] = useState<AderidoMetrica[]>([]);
+  const [historicoTransacoes, setHistoricoTransacoes] = useState<Transacao[]>(
+    [],
+  );
 
-  // Carrega os dados agregados e o histórico grão a grão simultaneamente
   useEffect(() => {
     const carregarTudo = async () => {
       setCarregando(true);
@@ -62,21 +73,16 @@ export function VisaoGraficaTab() {
   }, []);
 
   // ==========================================================================
-  // PROCESSAMENTO DE DADOS PARA OS GRÁFICOS
+  // PROCESSAMENTO DE DADOS MEMORIZADO (Evita recalcular a cada render do React)
   // ==========================================================================
 
-  // 1. DADOS DO GRÁFICO DE LINHA DO TEMPO (Receita por Dia)
-  const receitaPorDia = Object.values(
-    historicoTransacoes.reduce(
+  const receitaPorDia = useMemo(() => {
+    const agrupado = historicoTransacoes.reduce(
       (acc, curr) => {
         if (curr.status !== "pago") return acc;
-
         const dataStr = new Date(curr.data_reserva).toLocaleDateString(
           "pt-BR",
-          {
-            day: "2-digit",
-            month: "2-digit",
-          },
+          { day: "2-digit", month: "2-digit" },
         );
 
         if (!acc[dataStr]) acc[dataStr] = { data: dataStr, valor: 0 };
@@ -84,42 +90,63 @@ export function VisaoGraficaTab() {
         return acc;
       },
       {} as Record<string, { data: string; valor: number }>,
-    ),
-  ).reverse();
+    );
 
-  // 2. DADOS DO GRÁFICO DE PIZZA (Status das Rifas: Pagas vs Pendentes)
-  const pagas = historicoTransacoes.filter((t) => t.status === "pago").length;
-  const pendentes = historicoTransacoes.filter(
-    (t) => t.status === "pendente",
-  ).length;
-  const dadosStatus = [
-    { name: "Pagas", value: pagas },
-    { name: "Pendentes (Auditoria)", value: pendentes },
-  ];
+    return Object.values(agrupado).reverse();
+  }, [historicoTransacoes]);
+
+  const dadosStatus = useMemo(() => {
+    const pagas = historicoTransacoes.filter((t) => t.status === "pago").length;
+    const pendentes = historicoTransacoes.filter(
+      (t) => t.status === "pendente",
+    ).length;
+    return [
+      { name: "Pagas", value: pagas },
+      { name: "Pendentes", value: pendentes },
+    ];
+  }, [historicoTransacoes]);
+
+  const dadosMetas = useMemo(() => {
+    const bateramMeta = aderidos.filter((a) => a.arrecadado >= a.meta).length;
+    return [
+      { name: "Bateram a Meta", value: bateramMeta },
+      { name: "Abaixo da Meta", value: aderidos.length - bateramMeta },
+    ];
+  }, [aderidos]);
+
   const CORES_STATUS = ["#2e7d32", "#ed6c02"];
-
-  // 3. DADOS DO GRÁFICO DE PIZZA (Engajamento: Bateram a Meta vs Não Bateram)
-  const bateramMeta = aderidos.filter((a) => a.arrecadado >= a.meta).length;
-  const emProgresso = aderidos.length - bateramMeta;
-  const dadosMetas = [
-    { name: "Bateram a Meta", value: bateramMeta },
-    { name: "Abaixo da Meta", value: emProgresso },
-  ];
   const CORES_METAS = ["#1976d2", "#9e9e9e"];
 
-  if (carregando) {
+  // ==========================================================================
+  // RENDERIZAÇÃO
+  // ==========================================================================
+  if (carregando)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
         <CircularProgress />
       </Box>
     );
-  }
+
+  const CardMetrica = ({ icone, titulo, valor, cor }: any) => (
+    <Paper
+      sx={{ p: 2, borderRadius: 2, borderLeft: "6px solid", borderColor: cor }}
+    >
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+      >
+        {icone} {titulo}
+      </Typography>
+      <Typography variant="h5" fontWeight="bold" mt={1}>
+        {valor}
+      </Typography>
+    </Paper>
+  );
 
   return (
     <Box sx={{ pb: 4 }}>
-      {/* ------------------------------------------------------------------ */}
-      {/* CARDS MACRO DA TESOURARIA                                          */}
-      {/* ------------------------------------------------------------------ */}
+      {/* MACRO MÉTRICAS */}
       <Box
         sx={{
           display: "grid",
@@ -128,75 +155,31 @@ export function VisaoGraficaTab() {
           mb: 4,
         }}
       >
-        <Paper
-          sx={{
-            p: 2,
-            borderRadius: 2,
-            borderLeft: "6px solid",
-            borderColor: "primary.main",
-          }}
-        >
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          >
-            <AttachMoneyIcon fontSize="small" /> Caixa Validado
-          </Typography>
-          <Typography variant="h5" fontWeight="bold" mt={1}>
-            R$ {resumoGeral.totalArrecadado.toLocaleString("pt-BR")},00
-          </Typography>
-        </Paper>
-
-        <Paper
-          sx={{
-            p: 2,
-            borderRadius: 2,
-            borderLeft: "6px solid",
-            borderColor: "success.main",
-          }}
-        >
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          >
-            <TrendingUpIcon fontSize="small" /> Rifas Vendidas
-          </Typography>
-          <Typography variant="h5" fontWeight="bold" mt={1}>
-            {resumoGeral.rifasPagas} bilhetes
-          </Typography>
-        </Paper>
-
-        <Paper
-          sx={{
-            p: 2,
-            borderRadius: 2,
-            borderLeft: "6px solid",
-            borderColor: "warning.main",
-          }}
-        >
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          >
-            <GroupIcon fontSize="small" /> Aderidos Ativos
-          </Typography>
-          <Typography variant="h5" fontWeight="bold" mt={1}>
-            {resumoGeral.aderidosAtivos} alunos
-          </Typography>
-        </Paper>
+        <CardMetrica
+          icone={<AttachMoneyIcon fontSize="small" />}
+          titulo="Caixa Validado"
+          valor={`R$ ${resumoGeral.totalArrecadado.toLocaleString("pt-BR")},00`}
+          cor="primary.main"
+        />
+        <CardMetrica
+          icone={<TrendingUpIcon fontSize="small" />}
+          titulo="Rifas Vendidas"
+          valor={`${resumoGeral.rifasPagas} bilhetes`}
+          cor="success.main"
+        />
+        <CardMetrica
+          icone={<GroupIcon fontSize="small" />}
+          titulo="Aderidos Ativos"
+          valor={`${resumoGeral.aderidosAtivos} alunos`}
+          cor="warning.main"
+        />
       </Box>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* GRÁFICO 1: EVOLUÇÃO TEMPORAL (Largura Total)                       */}
-      {/* ------------------------------------------------------------------ */}
+      {/* GRÁFICO EVOLUÇÃO */}
       <Typography variant="h6" fontWeight="bold" mb={2}>
         Evolução do Faturamento (Aprovado)
       </Typography>
       <Card elevation={1} sx={{ borderRadius: 2, mb: 4, pt: 2, pb: 2 }}>
-        {/* A altura de 300px resolve o problema matemático do Recharts */}
         <Box sx={{ width: "100%", height: 300 }}>
           {receitaPorDia.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -228,15 +211,13 @@ export function VisaoGraficaTab() {
             </ResponsiveContainer>
           ) : (
             <Typography textAlign="center" color="text.secondary" mt={10}>
-              Ainda não há dados de faturamento aprovado para gerar o gráfico.
+              Sem dados de faturamento aprovado.
             </Typography>
           )}
         </Box>
       </Card>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* GRÁFICOS DE PIZZA (Substituindo MUI Grid por CSS Grid Nativo)      */}
-      {/* ------------------------------------------------------------------ */}
+      {/* GRÁFICOS SECUNDÁRIOS */}
       <Box
         sx={{
           display: "grid",
@@ -244,13 +225,12 @@ export function VisaoGraficaTab() {
           gap: 3,
         }}
       >
-        {/* Gráfico 2: Status de Pagamento */}
         <Card elevation={1} sx={{ borderRadius: 2, pt: 2, pb: 2 }}>
           <Typography variant="h6" fontWeight="bold" align="center" mb={1}>
-            Status de Pagamento (Geral)
+            Status de Pagamento
           </Typography>
           <Box sx={{ width: "100%", height: 250 }}>
-            {pagas > 0 || pendentes > 0 ? (
+            {dadosStatus[0].value > 0 || dadosStatus[1].value > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie
@@ -262,15 +242,12 @@ export function VisaoGraficaTab() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {dadosStatus.map((_entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={CORES_STATUS[index % CORES_STATUS.length]}
-                      />
+                    {dadosStatus.map((_, i) => (
+                      <Cell key={`cell-${i}`} fill={CORES_STATUS[i]} />
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: any) => [`${value} rifas`, "Quantidade"]}
+                    formatter={(val: any) => [`${val} rifas`, "Quantidade"]}
                   />
                   <Legend verticalAlign="bottom" height={36} />
                 </PieChart>
@@ -283,7 +260,6 @@ export function VisaoGraficaTab() {
           </Box>
         </Card>
 
-        {/* Gráfico 3: Desempenho da Turma */}
         <Card elevation={1} sx={{ borderRadius: 2, pt: 2, pb: 2 }}>
           <Typography variant="h6" fontWeight="bold" align="center" mb={1}>
             Engajamento: Metas da Turma
@@ -301,25 +277,19 @@ export function VisaoGraficaTab() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {dadosMetas.map((_entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={CORES_METAS[index % CORES_METAS.length]}
-                      />
+                    {dadosMetas.map((_, i) => (
+                      <Cell key={`cell-${i}`} fill={CORES_METAS[i]} />
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: any) => [
-                      `${value} aderidos`,
-                      "Quantidade",
-                    ]}
+                    formatter={(val: any) => [`${val} aderidos`, "Quantidade"]}
                   />
                   <Legend verticalAlign="bottom" height={36} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
               <Typography textAlign="center" color="text.secondary" mt={10}>
-                Sem aderidos para calcular metas.
+                Sem aderidos registrados.
               </Typography>
             )}
           </Box>
