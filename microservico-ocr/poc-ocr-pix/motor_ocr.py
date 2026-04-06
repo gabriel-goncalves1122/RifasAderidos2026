@@ -32,11 +32,14 @@ def extrair_texto_arquivo(caminho_arquivo):
             paginas = convert_from_path(caminho_arquivo, dpi=300)
             for img in paginas:
                 img_limpa = tratar_imagem_para_ocr(img)
-                texto_completo += pytesseract.image_to_string(img_limpa) + "\n"
+                # Adicione este parâmetro na chamada do pytesseract dentro do motor_ocr.py
+                config_ocr = '--psm 6' # Assume um bloco de texto único, melhor para comprovantes
+                texto_completo += pytesseract.image_to_string(img_limpa, config=config_ocr) + "\n"
             return texto_completo
             
         else:
             # É imagem JPG/PNG, vai direto pro OCR
+            
             img = Image.open(caminho_arquivo)
             img_limpa = tratar_imagem_para_ocr(img)
             return pytesseract.image_to_string(img_limpa)
