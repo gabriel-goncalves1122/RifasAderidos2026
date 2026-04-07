@@ -1,9 +1,9 @@
-# Usamos um "mini-Ubuntu" já com Python
-FROM python:3.10-slim
+# Usamos um "mini-Ubuntu" já com Python mais recente (3.12)
+FROM python:3.12-slim
 
-# Instalamos o Tesseract (para ler texto) e o Poppler (para ler PDFs, se precisar)
+# O resto continua igual...
 RUN apt-get update && apt-get install -y tesseract-ocr poppler-utils
-
+# ...
 # Criamos a nossa pasta de trabalho
 WORKDIR /app
 
