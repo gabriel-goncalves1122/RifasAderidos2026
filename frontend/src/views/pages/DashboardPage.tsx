@@ -2,7 +2,7 @@
 // ARQUIVO: frontend/src/views/pages/DashboardPage.tsx
 // RESPONSABILIDADE: Layout base, persistência de abas e proteção de rotas.
 // ============================================================================
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -36,7 +36,7 @@ import { DashboardSidebar } from "../components/DashboardSidebar"; // <-- Nosso 
 type Contexto = "aderido" | "tesouraria";
 
 export function DashboardPage() {
-  const { usuarioAtual, handleLogout } = useAuthController();
+  const { usuarioAtual, handleLogout, loading } = useAuthController();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -100,6 +100,23 @@ export function DashboardPage() {
     sessionStorage.clear(); // Limpa a memória para não logar com a aba antiga depois
     handleLogout();
   };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Typography variant="h5" color="primary">
+          Verificando sessão...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box

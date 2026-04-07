@@ -24,7 +24,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { useRifasController } from "../../controllers/useRifasController";
+import { useTesouraria } from "../../controllers/useTesouraria";
 
 // Tipagens
 interface AderidoMetrica {
@@ -38,7 +38,7 @@ interface Transacao {
 }
 
 export function VisaoGraficaTab() {
-  const { buscarRelatorio, buscarHistoricoDetalhado } = useRifasController();
+  const { buscarRelatorio, buscarHistoricoDetalhado } = useTesouraria();
   const [carregando, setCarregando] = useState(true);
 
   // Estados dos Dados

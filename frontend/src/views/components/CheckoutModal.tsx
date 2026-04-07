@@ -34,7 +34,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
 
-import { useRifasController } from "../../controllers/useRifasController";
+import { useRifas } from "../../controllers/useRifas";
 
 // --------------------------------------------------------------------------
 // MÁSCARA & VALIDAÇÃO (YUP)
@@ -94,7 +94,7 @@ export function CheckoutModal({
   const [showSuccess, setShowSuccess] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  const { finalizarVenda, loading } = useRifasController();
+  const { finalizarVenda, loading } = useRifas();
 
   const {
     register,

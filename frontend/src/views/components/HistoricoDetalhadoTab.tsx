@@ -2,7 +2,7 @@
 // ARQUIVO: frontend/src/views/components/HistoricoDetalhadoTab.tsx
 // RESPONSABILIDADE: Buscar, agrupar, filtrar e exportar o CSV do histórico.
 // ============================================================================
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -31,7 +31,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import BadgeIcon from "@mui/icons-material/Badge";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import { useRifasController } from "../../controllers/useRifasController";
+import { useTesouraria } from "../../controllers/useTesouraria";
 
 // Tipagem
 interface TransacaoBase {
@@ -59,7 +59,7 @@ interface TransacaoAgrupada {
 }
 
 export function HistoricoDetalhadoTab() {
-  const { buscarHistoricoDetalhado } = useRifasController();
+  const { buscarHistoricoDetalhado } = useTesouraria();
   const [carregando, setCarregando] = useState(true);
   const [historicoTransacoes, setHistoricoTransacoes] = useState<
     TransacaoBase[]

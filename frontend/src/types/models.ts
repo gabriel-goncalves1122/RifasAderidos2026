@@ -19,27 +19,25 @@ export type CargoComissao =
 // Coleção: 'usuarios'
 // ----------------------------------------------------------------------------
 export interface Usuario {
+  id?: string; // ID do documento no Firebase (ex: ADERIDO_001)
+  id_aderido?: string; // Identificador interno usado para relações
   cpf: string; // Chave primária de validação
   uid: string | null; // ID gerado pelo Firebase Auth
   nome: string;
   email: string | null;
   telefone: string;
 
-  // O NOVO CAMPO DE HIERARQUIA
   cargo: CargoComissao;
 
-  // Controle do Lote de 120 Rifas
   faixa_rifas: {
     inicio: string; // Ex: "0001"
     fim: string; // Ex: "0120"
   };
 
-  // Financeiro (Resumo para o Dashboard)
   meta_vendas: number; // Geralmente R$ 1.200,00
   total_arrecadado: number; // Valor já aprovado pela Tesouraria
   rifas_vendidas: number; // Quantidade de bilhetes com status 'pago'
 
-  // Máquina de Estados do Aluno
   status: "pendente" | "ativo" | "inativo";
   criado_em: string;
 }
@@ -49,9 +47,9 @@ export interface Usuario {
 // Coleção: 'compradores'
 // ----------------------------------------------------------------------------
 export interface Comprador {
-  id: string; // UID ou ID automático do Firestore
+  id: string;
   nome: string;
-  email?: string;
+  email?: string | null;
   telefone: string;
   criado_em: string;
 }
@@ -67,16 +65,19 @@ export interface Bilhete {
   status: StatusBilhete;
 
   vendedor_cpf: string;
-  vendedor_nome?: string; // <--- NOVO: Metadado do Vendedor
+  vendedor_id?: string; // Usado para disparar as notificações para a pessoa certa
+  vendedor_nome?: string;
 
   comprador_id: string | null;
-  comprador_nome?: string; // <--- NOVO: Metadado do Comprador
+  comprador_nome?: string;
+  comprador_email?: string | null; // Usado para enviar o recibo por e-mail
 
   data_reserva: string | null;
-  log_automacao?: string; // <--- NOVO: Campo para registrar decisões da IA (ex: "IA: Aprovado por parecer positivo no comprovante")
   data_pagamento: string | null;
-
   comprovante_url: string | null;
+
+  log_automacao?: string; // Parecer da Inteligência Artificial
+  motivo_recusa?: string | null; // Motivo preenchido pela tesouraria ao rejeitar
 }
 
 // ----------------------------------------------------------------------------
@@ -85,12 +86,35 @@ export interface Bilhete {
 // ----------------------------------------------------------------------------
 export interface Premio {
   id: string;
-  ordem_sorteio: number;
-  titulo: string;
-  descricao: string;
+  colocacao: number; // Posição (1º Lugar, 2º Lugar, etc.)
+  nome: string; // O que é o prêmio
+  descricao?: string;
   imagem_url?: string;
-  data_sorteio?: string;
   ganhador_numero?: string;
   ganhador_nome?: string;
-  ativo: boolean; // Para a Tesouraria poder ocultar/exibir prêmios
+  ativo: boolean; // Para a Tesouraria poder ocultar/exibir
+}
+
+// ----------------------------------------------------------------------------
+// 5. CONFIGURAÇÕES DO SORTEIO
+// Coleção: 'configuracoes' -> Doc: 'sorteio'
+// ----------------------------------------------------------------------------
+export interface InfoSorteio {
+  titulo: string;
+  data: string;
+  descricao: string;
+}
+
+// ----------------------------------------------------------------------------
+// 6. NOTIFICAÇÕES (Alertas para os Aderidos)
+// Coleção: 'notificacoes'
+// ----------------------------------------------------------------------------
+export interface Notificacao {
+  id: string;
+  vendedor_id: string; // Dono da notificação
+  titulo: string;
+  mensagem: string;
+  rifas: string[]; // Bilhetes associados à notificação
+  lida: boolean;
+  data_criacao: string;
 }

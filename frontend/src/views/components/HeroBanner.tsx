@@ -2,7 +2,6 @@
 // ARQUIVO: frontend/src/views/components/HeroBanner.tsx
 // RESPONSABILIDADE: Exibir o cabeçalho do sorteio com a data e título.
 // ============================================================================
-import React from "react";
 import { Paper, Box, Typography, IconButton } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EditIcon from "@mui/icons-material/Edit";

@@ -1,122 +1,97 @@
 # ============================================================================
-# .GITIGNORE GLOBAL DO PROJETO (Sistema de Rifas)
+# .GITIGNORE GLOBAL ATUALIZADO (Sistema de Rifas + Microserviço OCR)
 # ============================================================================
 
 # ----------------------------------------------------------------------------
-# 1. DEPENDÊNCIAS DO NODE.JS
+# 1. DEPENDÊNCIAS (NODE & PYTHON)
 # ----------------------------------------------------------------------------
-# Ignora as pastas de pacotes instalados em qualquer lugar do projeto 
-# (raiz, frontend ou backend). Nunca devem ir para o GitHub por serem pesadas.
 node_modules/
 bower_components/
+
+# Ambientes Virtuais Python (Cobre todas as pastas venv do projeto)
+venv/
+.venv/
+env/
+**/venv/
+**/env/
 
 # ----------------------------------------------------------------------------
 # 2. VARIÁVEIS DE AMBIENTE E SEGURANÇA (SEGREDO MÁXIMO 🔒)
 # ----------------------------------------------------------------------------
-# Impede que as chaves da sua base de dados, Firebase e API sejam expostas ao público.
 .env
 .env.local
 .env.*.local
 *.local
 backend/.runtimeconfig.json
 
-# Chaves de serviço do Firebase/Google Cloud (Credenciais Administrativas)
-chave-privada.json
-chave-firebase.json
-**/chave-privada.json
-**/chave-firebase.json
+# Chaves de serviço e credenciais JSON
+*.json
+!package.json
+!tsconfig.json
+!firebase.json
+!.firebaserc
+!manifest.json
 
 # ----------------------------------------------------------------------------
-# 3. PASTAS DE BUILD E COMPILAÇÃO (GERADOS AUTOMATICAMENTE)
+# 3. PASTAS DE BUILD E COMPILAÇÃO
 # ----------------------------------------------------------------------------
-# --- Frontend (Vite/React) ---
 dist/
 dist-ssr/
 build/
 frontend/dist/
 frontend/build/
-
-# --- Backend (Firebase Functions / TypeScript) ---
-# Ignora o JavaScript gerado a partir do código TypeScript das functions.
 backend/functions/lib/
 
 # ----------------------------------------------------------------------------
-# 4. CONFIGURAÇÕES DO FIREBASE
+# 4. FIREBASE & EMULADORES
 # ----------------------------------------------------------------------------
-# Cache interno do Firebase CLI e ficheiros do Data Connect
 .firebase/
 .dataconnect/
-
-# Logs de debug gerados pelos emuladores locais do Firebase
 firebase-debug.log*
-firebase-debug.*.log*
 firestore-debug.log*
 ui-debug.log*
-backend/firebase-debug.log*
-backend/firestore-debug.log*
-backend/ui-debug.log*
+# Banco de dados local do emulador
+backend/banco-local/
+**/banco-local/
 
 # ----------------------------------------------------------------------------
-# 5. LOGS GERAIS DO SISTEMA
+# 5. MICROSERVIÇO OCR (ESPECÍFICO)
 # ----------------------------------------------------------------------------
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Python Cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Dados Bancários Sensíveis (Extratos InfinitePay)
+# Nunca subir CSVs com dados reais de transações!
+microservico-ocr/**/*.csv
+extratos/
+**/extratos/*.csv
+
+# Ficheiros Temporários de Processamento (Imagens e PDFs baixados)
+microservico-ocr/**/temp_*
+*.pdf
+*.jpg
+*.jpeg
+*.png
+# Abre uma exceção apenas para imagens de assets do frontend se necessário
+!frontend/src/assets/**/*
 
 # ----------------------------------------------------------------------------
-# 6. CONFIGURAÇÕES DE SISTEMA OPERACIONAL E EDITORES (IDE)
+# 6. SISTEMA & IDE
 # ----------------------------------------------------------------------------
-# macOS
 .DS_Store
-
-# VS Code (Muda de computador para computador)
 .vscode/*
-!.vscode/extensions.json # Permite recomendar extensões úteis para a equipa
-
-# WebStorm / IntelliJ / Visual Studio
+!.vscode/extensions.json
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
 *.sw?
 
 # ----------------------------------------------------------------------------
-# 7. COBERTURA DE TESTES E CACHES (FERRAMENTAS AUXILIARES)
+# 7. TESTES & LOGS
 # ----------------------------------------------------------------------------
-# Pastas geradas por testes (Vitest / Jest)
 coverage/
 frontend/coverage/
 .nyc_output/
-
-# Caches do ecossistema Node/NPM
-.npm
-.eslintcache
-.node_repl_history
-.yarn-integrity
-
-# Dados de tempo de execução e ficheiros temporários
-pids
-*.pid
-*.seed
-*.pid.lock
-lib-cov
-.grunt
-.lock-wscript
-build/Release
-*.tgz
-
-# ----------------------------------------------------------------------------
-# 8. MICROSERVIÇO OCR (PYTHON) E EMULADORES LOCAIS
-# ----------------------------------------------------------------------------
-# Ignorar ambiente virtual do Python e arquivos de cache compilados
-microservico-ocr/venv/
-microservico-ocr/**/__pycache__/
-*.pyc
-
-# Ignorar o banco de dados local salvo pelo emulador do Firebase
-backend/banco-local/
+*.log
+npm-debug.log*

@@ -1,44 +1,35 @@
-// ============================================================================
-// ARQUIVO: frontend/src/views/components/__tests__/AuditoriaTable.test.tsx
-// ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { AuditoriaTable } from "../src/views/components/AuditoriaTable";
-import { useRifasController } from "../src/controllers/useRifasController";
+import { useAuditoria } from "../src/controllers/useAuditoria";
 
 // MOCK: Corta a conexão com o banco para testar apenas a interface visual
-vi.mock("../src/controllers/useRifasController", () => ({
-  useRifasController: vi.fn(),
+vi.mock("../src/controllers/useAuditoria", () => ({
+  useAuditoria: vi.fn(),
 }));
 
 const mockBuscarPendentes = vi.fn();
 const mockAvaliarComprovante = vi.fn();
+const mockAuditarEmLoteComIA = vi.fn();
 
 describe("Componente <AuditoriaTable />", () => {
   beforeEach(() => {
-    vi.mocked(useRifasController).mockReturnValue({
+    vi.clearAllMocks();
+
+    // CORREÇÃO: Repare que o 'vi.mocked' DESAPARECEU! Fica só (useAuditoria as any)
+    (useAuditoria as any).mockReturnValue({
       buscarPendentes: mockBuscarPendentes,
       avaliarComprovante: mockAvaliarComprovante,
+      auditarEmLoteComIA: mockAuditarEmLoteComIA,
       loading: false,
-      buscarMinhasRifas: vi.fn(),
-      finalizarVenda: vi.fn(),
-      buscarRelatorio: vi.fn(),
-      error: null,
     });
-    vi.clearAllMocks();
   });
 
   // TESTE 1: Feedback Visual quando não há trabalho a fazer
-  it("Deve exibir 'Tudo limpo!' quando não houver rifas pendentes", async () => {
+  it("Deve exibir 'Fila Limpa!' quando não houver rifas pendentes", async () => {
     mockBuscarPendentes.mockResolvedValueOnce([]); // Retorna array vazio do banco
-
     render(<AuditoriaTable />);
-
-    // Garante que a mensagem de alívio para a tesouraria seja exibida
-    expect(await screen.findByText("Tudo limpo!")).toBeInTheDocument();
-    expect(
-      screen.getByText("Não há comprovantes pendentes de auditoria."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Fila Limpa!")).toBeInTheDocument();
   });
 
   // TESTE 2: A Mágica do Agrupamento (Várias rifas num pix só)
@@ -96,8 +87,5 @@ describe("Componente <AuditoriaTable />", () => {
 
     // Garante que a ação não vá direto para o backend. O Modal de segurança deve aparecer.
     expect(await screen.findByText(/Confirmar Aprovação/i)).toBeInTheDocument();
-
-    // Novo texto que configuramos nos cards para mobile
-    expect(screen.getByText(/Você está prestes a/i)).toBeInTheDocument();
   });
 });

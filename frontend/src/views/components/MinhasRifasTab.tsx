@@ -27,12 +27,13 @@ import { NotificacoesSidebar } from "./NotificacoesSidebar";
 import { CarrinhoFlutuante } from "./CarrinhoFlutuante";
 
 // Controladores
-import { useRifasController } from "../../controllers/useRifasController";
+import { useRifas } from "../../controllers/useRifas"; // <-- IMPORT CORRIGIDO
 import { useAuthController } from "../../controllers/useAuthController";
+import { useNotificacoes } from "../../controllers/useNotificacoes";
 
 export function MinhasRifasTab() {
-  const { buscarMinhasRifas, buscarNotificacoes, marcarNotificacoesLidas } =
-    useRifasController();
+  const { buscarMinhasRifas } = useRifas();
+  const { buscarNotificacoes, marcarNotificacoesLidas } = useNotificacoes();
   const { usuarioAtual } = useAuthController();
 
   const [minhasRifas, setMinhasRifas] = useState<any[]>([]);

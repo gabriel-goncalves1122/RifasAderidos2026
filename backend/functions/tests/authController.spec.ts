@@ -1,78 +1,112 @@
 // ============================================================================
-// ARQUIVO: authController.spec.ts (Testes de Regra de Negócio de Cadastro)
+// ARQUIVO: tests/authController.spec.ts (Testes de Elegibilidade de Registo)
 // ============================================================================
-import { authController } from "../src/controllers/authController";
 import { Request, Response } from "express";
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
-// 1. Criamos a função espiã fora para podermos controlá-la nos testes
-const mockGet = jest.fn<any>();
+// 1. O Mock do Firebase (Deve vir ANTES de importar o authController)
+let mockGetDaBaseDeDados = jest.fn<any>();
 
 jest.mock("firebase-admin", () => ({
   firestore: jest.fn().mockReturnValue({
-    collection: jest.fn().mockReturnValue({
-      where: jest.fn().mockReturnValue({
-        limit: jest.fn().mockReturnValue({
-          // O TRUQUE DE MESTRE: Uma função que empurra a execução para a nossa
-          // variável mockGet apenas quando ela for realmente chamada. Fuga do Hoisting!
-          get: (...args: any[]) => mockGet(...args),
-        }),
-      }),
+    collection: jest.fn<any>().mockImplementation((nomeColecao: any) => {
+      if (nomeColecao !== "usuarios") {
+        throw new Error(`Coleção não prevista no teste: ${nomeColecao}`);
+      }
+
+      return {
+        where: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        get: mockGetDaBaseDeDados,
+      };
     }),
   }),
 }));
 
-describe("Auth Controller - Verificação de Elegibilidade", () => {
+// Só importamos o controller DEPOIS do mock do Firebase estar montado
+import { authController } from "../src/controllers/authController";
+
+describe("Auth Controller - Verificação de Elegibilidade para Registo", () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
 
   beforeEach(() => {
+    // Restauramos os mocks antes de cada teste para evitar contaminação
+    jest.clearAllMocks();
+
+    // Configuramos objetos falsos (stubs) para os parâmetros do Express
     req = { body: {} };
     res = {
       status: jest.fn<any>().mockReturnThis(),
       json: jest.fn<any>(),
     };
-    jest.clearAllMocks(); // Zera o histórico a cada teste
   });
 
-  // TESTE 1: INTRUSO
-  it("Deve bloquear o cadastro (403) se o e-mail não estiver na base oficial", async () => {
-    // A - ARRANGE
-    req.body.email = "intruso@unifei.edu.br";
+  // ==========================================================================
+  // CENÁRIO 1: O E-MAIL NÃO CONSTA DA BASE DE DADOS (INTRUSO)
+  // ==========================================================================
+  it("Deve bloquear o registo (HTTP 403) se o e-mail fornecido não for de um aderente oficial", async () => {
+    // ARRANGE: Preparamos o cenário
+    req.body.email = "aluno_desconhecido@unifei.edu.br";
 
-    // Configuramos o nosso espião para simular que o banco não achou ninguém (empty: true)
-    mockGet.mockResolvedValueOnce({ empty: true });
+    // Simulamos que a base de dados procurou, mas não encontrou documentos
+    mockGetDaBaseDeDados.mockResolvedValueOnce({ empty: true });
 
-    // A - ACT
+    // ACT: Executamos a função
     await authController.verificarElegibilidade(
       req as Request,
       res as Response,
     );
 
-    // A - ASSERT
+    // ASSERT: Verificamos o resultado
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.stringContaining("não encontrado na lista oficial"),
       }),
     );
+    // Extra: Garantimos que o nosso mock "get" foi realmente chamado
+    expect(mockGetDaBaseDeDados).toHaveBeenCalledTimes(1);
   });
 
-  // TESTE 2: FORMANDO OFICIAL
-  it("Deve permitir o cadastro (200) se o e-mail for de um formando", async () => {
-    // A - ARRANGE
-    req.body.email = "engenheiro@unifei.edu.br";
+  /// ==========================================================================
+  // CENÁRIO 2: O E-MAIL PERTENCE A UM ADERENTE VÁLIDO
+  // ==========================================================================
+  it("Deve permitir o registo (HTTP 200) e devolver a mensagem de sucesso se o e-mail for válido", async () => {
+    // ARRANGE
+    req.body.email = "gabriel.engenheiro@unifei.edu.br";
 
-    // Configuramos o espião para simular que o banco achou a pessoa (empty: false)
-    mockGet.mockResolvedValueOnce({ empty: false });
+    // Simulamos que a base de dados encontrou a pessoa
+    mockGetDaBaseDeDados.mockResolvedValueOnce({ empty: false });
 
-    // A - ACT
+    // ACT
     await authController.verificarElegibilidade(
       req as Request,
       res as Response,
     );
 
-    // A - ASSERT
+    // ASSERT
     expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      sucesso: true,
+      mensagem: "Formando elegível.", // <-- AQUI ESTAVA O ERRO!
+    });
+  });
+  // ==========================================================================
+  // CENÁRIO 3: PROTEÇÃO CONTRA CAMPOS VAZIOS (EDGE CASE)
+  // ==========================================================================
+  it("Deve devolver erro (HTTP 400) se não for enviado nenhum e-mail no corpo do pedido", async () => {
+    // ARRANGE: Corpo vazio de forma intencional
+    req.body = {};
+
+    // ACT
+    await authController.verificarElegibilidade(
+      req as Request,
+      res as Response,
+    );
+
+    // ASSERT: Deve falhar antes mesmo de tentar ir à base de dados
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(mockGetDaBaseDeDados).not.toHaveBeenCalled(); // Garante que poupámos uma ida à base de dados!
   });
 });

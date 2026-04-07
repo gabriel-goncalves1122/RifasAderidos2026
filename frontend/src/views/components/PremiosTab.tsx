@@ -20,7 +20,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 
-import { useRifasController } from "../../controllers/useRifasController";
+import { usePremios } from "../../controllers/usePremios"; // <-- IMPORT CORRIGIDO
 import { HeroBanner } from "./HeroBanner";
 import { PremioCard } from "./PremioCard";
 
@@ -31,7 +31,7 @@ export function PremiosTab({ isAdmin }: { isAdmin: boolean }) {
     salvarPremio,
     excluirPremio,
     uploadImagemPremio,
-  } = useRifasController();
+  } = usePremios();
 
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);

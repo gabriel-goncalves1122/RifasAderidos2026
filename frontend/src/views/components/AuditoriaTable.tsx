@@ -1,3 +1,6 @@
+// ============================================================================
+// ARQUIVO: frontend/src/views/components/AuditoriaTable.tsx
+// ============================================================================
 import { useEffect, useState } from "react";
 import {
   Typography,
@@ -9,7 +12,7 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 
-import { useRifasController } from "../../controllers/useRifasController";
+import { useAuditoria } from "../../controllers/useAuditoria"; // <-- IMPORT CORRIGIDO
 import { Bilhete } from "../../types/models";
 import { AuditoriaCard } from "./AuditoriaCard";
 import { ModalRelatorioIA } from "./ModalRelatorioIA";
@@ -27,8 +30,9 @@ export interface TransacaoAgrupada {
 }
 
 export function AuditoriaTable() {
+  // <-- HOOK CORRIGIDO
   const { buscarPendentes, avaliarComprovante, auditarEmLoteComIA } =
-    useRifasController();
+    useAuditoria();
 
   const [pendentes, setPendentes] = useState<Bilhete[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -39,7 +43,6 @@ export function AuditoriaTable() {
   const [mensagemIA, setMensagemIA] = useState<string | null>(null);
   const [modalResumoIA, setModalResumoIA] = useState(false);
 
-  // Agora guardamos também o motivo da recusa na confirmação
   const [modalConfirmacao, setModalConfirmacao] = useState<{
     open: boolean;
     chaveUnica: string | null;
@@ -96,16 +99,11 @@ export function AuditoriaTable() {
     }
   };
 
-  // Função nova: Passa por todos do lote aprovado e chama a API
   const aprovarEmLoteIA = async (transacoes: TransacaoAgrupada[]) => {
-    setModalResumoIA(false); // Fecha o modal primeiro para ver os loadings
+    setModalResumoIA(false);
     for (const t of transacoes) {
       setProcessandoId(t.comprovante_url || t.bilhetes[0]);
-      // ATENÇÃO: Seu hook precisa aceitar o 'motivo' opcional: avaliarComprovante(num, status, motivo?)
-      await avaliarComprovante(
-        t.bilhetes,
-        "aprovar" /* aqui pode passar o motivo "" se o seu controller exigir */,
-      );
+      await avaliarComprovante(t.bilhetes, "aprovar");
     }
     setProcessandoId(null);
     await carregarLista();
@@ -117,11 +115,8 @@ export function AuditoriaTable() {
 
     setModalConfirmacao({ ...modalConfirmacao, open: false });
     setProcessandoId(chaveUnica || numeros[0]);
-
-    // Opcionalmente, feche o modal da IA se ele estiver aberto
     setModalResumoIA(false);
 
-    // Agora passamos o motivo de verdade (sem comentários)
     await avaliarComprovante(numeros, decisao, motivo);
 
     setProcessandoId(null);
@@ -249,7 +244,6 @@ export function AuditoriaTable() {
         </Stack>
       )}
 
-      {/* COMPONENTES MODAIS */}
       <ModalRelatorioIA
         open={modalResumoIA}
         onClose={() => setModalResumoIA(false)}
@@ -265,12 +259,10 @@ export function AuditoriaTable() {
           })
         }
       />
-
       <ModalImagemPix
         url={comprovanteAtivo}
         onClose={() => setComprovanteAtivo(null)}
       />
-
       <ModalConfirmacaoAuditoria
         open={modalConfirmacao.open}
         decisao={modalConfirmacao.decisao}
