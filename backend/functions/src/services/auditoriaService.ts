@@ -49,6 +49,20 @@ export class AuditoriaService {
         total: pendentesSnap.size,
       };
 
+    // Busca o texto do CSV salvo na base de dados
+    const configSnap = await db
+      .collection("configuracoes")
+      .doc("sistema")
+      .get();
+    const extratoTexto = configSnap.data()?.extrato_csv;
+
+    if (!extratoTexto) {
+      console.error("Nenhum extrato foi enviado pelo tesoureiro.");
+      throw new Error(
+        "O extrato da InfinitePay não foi carregado. Faça o upload no painel primeiro.",
+      );
+    }
+
     let preAprovados = 0;
     let divergentes = 0;
     const batch = db.batch();
@@ -65,6 +79,7 @@ export class AuditoriaService {
       try {
         const respostaOcr = await axios.post(OCR_API_URL, {
           comprovanteUrl: urlImagem,
+          extratoCsv: extratoTexto, // <-- Nova linha enviando o texto para o Python
         });
 
         const { status, mensagem } = respostaOcr.data;

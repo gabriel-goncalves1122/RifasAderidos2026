@@ -15,6 +15,7 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import FileUploadIcon from "@mui/icons-material/FileUpload"; // ÍCONE NOVO
 
 import { useAuditoria } from "../../controllers/useAuditoria";
 import { Bilhete } from "../../types/models";
@@ -22,6 +23,12 @@ import { AuditoriaCard } from "./AuditoriaCard";
 import { ModalRelatorioIA } from "./ModalRelatorioIA";
 import { ModalImagemPix } from "./ModalImagemPix";
 import { ModalConfirmacaoAuditoria } from "./ModalConfirmacaoAuditoria";
+
+// ============================================================================
+// IMPORTS DO FIREBASE PARA SALVAR O CSV NA NUVEM
+// ============================================================================
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../config/firebase"; // <--- Ajustado de ../../../ para ../../
 
 export interface TransacaoAgrupada {
   comprovante_url: string | null;
@@ -50,6 +57,9 @@ export function AuditoriaTable() {
   const [mensagemIA, setMensagemIA] = useState<string | null>(null);
   const [modalResumoIA, setModalResumoIA] = useState(false);
 
+  // ESTADO NOVO PARA O UPLOAD DO CSV
+  const [uploadLoading, setUploadLoading] = useState(false);
+
   const [modalConfirmacao, setModalConfirmacao] = useState<{
     open: boolean;
     chaveUnica: string | null;
@@ -68,6 +78,43 @@ export function AuditoriaTable() {
   useEffect(() => {
     carregarLista();
   }, []);
+
+  // ============================================================================
+  // FUNÇÃO MÁGICA QUE LÊ O CSV DO COMPUTADOR E GUARDA O TEXTO NO FIREBASE
+  // ============================================================================
+  const handleUploadExtrato = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadLoading(true);
+    const reader = new FileReader();
+
+    reader.onload = async (evento) => {
+      try {
+        const textoCsv = evento.target?.result as string;
+
+        // Escreve o ficheiro na base de dados (Documento: configuracoes/sistema)
+        await setDoc(
+          doc(db, "configuracoes", "sistema"),
+          {
+            extrato_csv: textoCsv,
+            atualizado_em: new Date().toISOString(),
+          },
+          { merge: true },
+        );
+
+        alert(
+          "✅ Extrato da InfinitePay guardado na nuvem com sucesso! Já pode rodar a IA.",
+        );
+      } catch (error) {
+        console.error("Erro ao salvar extrato:", error);
+        alert("❌ Falha ao salvar o extrato na base de dados.");
+      } finally {
+        setUploadLoading(false);
+      }
+    };
+    reader.readAsText(file);
+  };
 
   // Agrupamento das transações
   const transacoesAgrupadas = pendentes.reduce<
@@ -210,7 +257,30 @@ export function AuditoriaTable() {
             </Typography>
           )}
         </Box>
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          {/* NOSSO NOVO BOTÃO DE UPLOAD DO CSV */}
+          <Button
+            component="label"
+            variant="outlined"
+            color="secondary"
+            startIcon={
+              uploadLoading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <FileUploadIcon />
+              )
+            }
+            disabled={uploadLoading || carregandoIA}
+          >
+            {uploadLoading ? "A carregar..." : "Carregar Extrato (.csv)"}
+            <input
+              type="file"
+              hidden
+              accept=".csv"
+              onChange={handleUploadExtrato}
+            />
+          </Button>
+
           {listaTransacoes.some((t) => t.ia_resultado || t.log_automacao) && (
             <Button
               variant="outlined"
