@@ -1,3 +1,6 @@
+// ============================================================================
+// ARQUIVO: backend/functions/src/services/auditoriaService.ts
+// ============================================================================
 import * as admin from "firebase-admin";
 import axios from "axios";
 import { NotificacoesService } from "./notificacoesService";
@@ -49,24 +52,34 @@ export class AuditoriaService {
     let preAprovados = 0;
     let divergentes = 0;
     const batch = db.batch();
-    const OCR_API_URL =
-      process.env.OCR_API_URL || "http://127.0.0.1:5000/api/validar-pix";
 
+    // ========================================================================
+    // AQUI ESTÁ A MÁGICA: URL oficial da IA hospedada no Render.com
+    // ========================================================================
+    const OCR_API_URL =
+      process.env.OCR_API_URL ||
+      "https://rifasaderidos2026.onrender.com/api/validar-pix";
+
+    // O loop continua a usar o seu Axios, que funciona perfeitamente!
     for (const [urlImagem, documentos] of comprovantesMap.entries()) {
       try {
         const respostaOcr = await axios.post(OCR_API_URL, {
           comprovanteUrl: urlImagem,
         });
-        const { status, mensagem } = respostaOcr.data;
 
+        const { status, mensagem } = respostaOcr.data;
         const isAprovado = status === "APROVADO";
+
         const logParaSalvar = isAprovado
           ? `✅ Pré-aprovado pela IA: ${mensagem}`
           : `⚠️ Divergência: ${mensagem}`;
 
-        isAprovado
-          ? (preAprovados += documentos.length)
-          : (divergentes += documentos.length);
+        if (isAprovado) {
+          preAprovados += documentos.length;
+        } else {
+          divergentes += documentos.length;
+        }
+
         documentos.forEach((doc) =>
           batch.update(doc.ref, { log_automacao: logParaSalvar }),
         );
@@ -81,6 +94,7 @@ export class AuditoriaService {
     }
 
     await batch.commit();
+
     return {
       preAprovados,
       divergentes,
@@ -166,7 +180,6 @@ export class AuditoriaService {
     }
   }
 
-  // Adicione esta função dentro da classe AuditoriaService
   static async listarPendentes() {
     const db = admin.firestore();
     const pendentesSnapshot = await db
