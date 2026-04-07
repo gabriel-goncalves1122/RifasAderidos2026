@@ -11,8 +11,9 @@ import {
   signOut,
 } from "firebase/auth";
 import { CargoComissao } from "../types/models";
-import { fetchAPI } from "./api"; // A nossa nova função mestra!
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { fetchAPI } from "./api";
+// IMPORTANTE: Trocámos o getDocs pelo onSnapshot para ter atualizações em Tempo Real!
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 
 export interface UsuarioFormatura extends User {
   cargo?: CargoComissao;
@@ -26,39 +27,53 @@ export function useAuthController() {
   );
 
   // ==========================================================================
-  // OBSERVAR ESTADO DO UTILIZADOR
+  // OBSERVAR ESTADO DO UTILIZADOR (AGORA EM TEMPO REAL)
   // ==========================================================================
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    let unsubscribeSnapshot: () => void;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user && user.email) {
-        try {
-          // CORREÇÃO: Como o ID do documento é "ADERIDO_XXX", temos de pesquisar pelo campo email
-          const q = query(
-            collection(db, "usuarios"),
-            where("email", "==", user.email),
-          );
-          const querySnapshot = await getDocs(q);
+        const q = query(
+          collection(db, "usuarios"),
+          where("email", "==", user.email),
+        );
 
-          let cargo: CargoComissao = "membro";
+        // A MÁGICA ACONTECE AQUI: O onSnapshot fica "ouvindo" o banco de dados 24/7
+        unsubscribeSnapshot = onSnapshot(
+          q,
+          (querySnapshot) => {
+            let cargo: CargoComissao = "aderido"; // Padrão seguro
 
-          // Se encontrar a ficha do utilizador, extrai o cargo real
-          if (!querySnapshot.empty) {
-            cargo =
-              (querySnapshot.docs[0].data().cargo as CargoComissao) || "membro";
-          }
+            // Se encontrar a ficha do utilizador, extrai o cargo em tempo real
+            if (!querySnapshot.empty) {
+              cargo =
+                (querySnapshot.docs[0].data().cargo as CargoComissao) ||
+                "aderido";
+            }
 
-          setUsuarioAtual({ ...user, cargo } as UsuarioFormatura);
-        } catch (err) {
-          console.error("Erro ao buscar cargo:", err);
-          setUsuarioAtual({ ...user, cargo: "membro" } as UsuarioFormatura);
-        }
+            setUsuarioAtual({ ...user, cargo } as UsuarioFormatura);
+            setLoading(false); // Só desliga o loading quando tiver a certeza do cargo
+          },
+          (err) => {
+            console.error("Erro ao ouvir cargo em tempo real:", err);
+            setUsuarioAtual({ ...user, cargo: "aderido" } as UsuarioFormatura);
+            setLoading(false);
+          },
+        );
       } else {
+        // Se não houver utilizador logado (ou fez logout)
         setUsuarioAtual(null);
+        setLoading(false);
+        if (unsubscribeSnapshot) unsubscribeSnapshot(); // Desliga a "câmara de vigilância"
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Limpeza quando o componente é destruído
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
   }, []);
 
   // ==========================================================================
@@ -74,7 +89,7 @@ export function useAuthController() {
       setError("E-mail ou senha incorretos.");
       return false;
     } finally {
-      setLoading(false);
+      // Nota: Não desligamos o loading aqui porque o onAuthStateChanged vai assumir o controlo
     }
   };
 
@@ -84,11 +99,13 @@ export function useAuthController() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-    } catch (err) {}
+    } catch (err) {
+      console.error("Erro ao fazer logout:", err);
+    }
   };
 
   // ==========================================================================
-  // REGISTO (Refatorado para usar a API do Backend)
+  // REGISTO (Usando a API do Backend)
   // ==========================================================================
   const handleRegister = async (
     nome: string,
@@ -99,11 +116,10 @@ export function useAuthController() {
     setLoading(true);
     setError(null);
     try {
-      // 1. ANTES DE CRIAR A CONTA: Perguntamos ao nosso Backend se este e-mail é de um aderido oficial
-      // Chamamos a rota pública /auth/elegibilidade do nosso Backend
+      // 1. Pergunta ao Backend se este e-mail é de um aderido oficial
       await fetchAPI("/auth/elegibilidade", "POST", { email }, false);
 
-      // 2. SE O BACKEND AUTORIZOU (não atirou erro): Criamos a conta no Firebase Auth
+      // 2. Se o backend autorizou, cria a conta no Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -111,16 +127,13 @@ export function useAuthController() {
       );
       const user = userCredential.user;
 
-      // 3. AVISAMOS O BACKEND PARA ATUALIZAR A BASE DE DADOS
-      // (O Backend pega no token gerado, descobre o UID e preenche a ficha do utilizador com o CPF)
-      // Nota: Como já fizemos o createUser, o auth.currentUser já existe, então fetchAPI enviará o token!
+      // 3. Avisa o backend para atualizar a base de dados com o CPF e Nome
       await fetchAPI("/auth/completar-registo", "POST", { nome, cpf }, true);
 
       return user;
     } catch (err: any) {
       console.error("Erro no cadastro:", err);
 
-      // Tratamento de mensagens amigáveis
       if (err.message && err.message.includes("elegível")) {
         setError(
           "E-mail não encontrado na base oficial. Use o e-mail exato da Keeper.",

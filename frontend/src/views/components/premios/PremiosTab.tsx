@@ -20,7 +20,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 
-import { usePremios } from "../../controllers/usePremios"; // <-- IMPORT CORRIGIDO
+import { usePremios } from "../../../controllers/usePremios"; // <-- IMPORT CORRIGIDO
 import { HeroBanner } from "./HeroBanner";
 import { PremioCard } from "./PremioCard";
 

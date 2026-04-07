@@ -34,7 +34,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
 
-import { useRifas } from "../../controllers/useRifas";
+import { useRifas } from "../../../controllers/useRifas";
 
 // --------------------------------------------------------------------------
 // MÁSCARA & VALIDAÇÃO (YUP)

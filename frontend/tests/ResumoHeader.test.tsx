@@ -3,7 +3,7 @@
 // ============================================================================
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { ResumoHeader } from "../../frontend/src/views/components/ResumoHeader"; // <-- Caminho correto
+import { ResumoHeader } from "../src/views/components/premios/ResumoHeader";
 
 describe("Componente <ResumoHeader />", () => {
   // ========================================================================

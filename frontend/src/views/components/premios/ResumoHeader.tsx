@@ -2,7 +2,7 @@
 // ARQUIVO: ResumoHeader.tsx (CORRIGIDO)
 // ============================================================================
 import { Paper, Box, Typography } from "@mui/material";
-import { UsuarioFormatura } from "../../controllers/useAuthController";
+import { UsuarioFormatura } from "../../../controllers/useAuthController";
 
 interface ResumoHeaderProps {
   usuario: UsuarioFormatura | null;

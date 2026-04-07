@@ -3,7 +3,7 @@
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ModalRelatorioIA } from "../src/views/components/ModalRelatorioIA";
+import { ModalRelatorioIA } from "../src/views/components/tesouraria/ModalRelatorioIA";
 
 describe("Componente <ModalRelatorioIA />", () => {
   const mockOnClose = vi.fn();

@@ -31,7 +31,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import BadgeIcon from "@mui/icons-material/Badge";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import { useTesouraria } from "../../controllers/useTesouraria";
+import { useTesouraria } from "../../../controllers/useTesouraria";
 
 // Tipagem
 interface TransacaoBase {

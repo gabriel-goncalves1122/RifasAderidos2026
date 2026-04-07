@@ -24,7 +24,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { useTesouraria } from "../../controllers/useTesouraria";
+import { useTesouraria } from "../../../controllers/useTesouraria";
 
 // Tipagens
 interface AderidoMetrica {

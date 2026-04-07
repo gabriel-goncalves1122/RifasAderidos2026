@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { VisaoGraficaTab } from "../src/views/components/VisaoGraficaTab";
+import { VisaoGraficaTab } from "../src/views/components/tesouraria/VisaoGraficaTab";
 import { useTesouraria } from "../src/controllers/useTesouraria";
 
 // 1. Mock do Controller da Tesouraria

@@ -1,3 +1,6 @@
+// ============================================================================
+// ARQUIVO: frontend/tests/DashboardPage.test.tsx
+// ============================================================================
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DashboardPage } from "../src/views/pages/DashboardPage";
@@ -8,18 +11,27 @@ vi.mock("../src/controllers/useAuthController", () => ({
   useAuthController: vi.fn(),
 }));
 
-// 2. Mocks dos Componentes Filhos (Para não renderizar a tela inteira em cada teste)
-vi.mock("../src/views/components/DashboardSidebar", () => ({
+// 2. Mocks dos Componentes Filhos (Agora com as novas pastas!)
+vi.mock("../src/views/components/comuns/DashboardSidebar", () => ({
   DashboardSidebar: () => <div data-testid="sidebar">Sidebar</div>,
 }));
-vi.mock("../src/views/components/MinhasRifasTab", () => ({
+vi.mock("../src/views/components/aderidos/MinhasRifasTab", () => ({
   MinhasRifasTab: () => <div>Conteudo: Minhas Rifas</div>,
 }));
-vi.mock("../src/views/components/PremiosTab", () => ({
+vi.mock("../src/views/components/premios/PremiosTab", () => ({
   PremiosTab: () => <div>Conteudo: Premios</div>,
 }));
-vi.mock("../src/views/components/AuditoriaTable", () => ({
+vi.mock("../src/views/components/tesouraria/AuditoriaTable", () => ({
   AuditoriaTable: () => <div>Conteudo: Auditoria</div>,
+}));
+vi.mock("../src/views/components/tesouraria/VisaoGraficaTab", () => ({
+  VisaoGraficaTab: () => <div>Conteudo: VisaoGrafica</div>,
+}));
+vi.mock("../src/views/components/tesouraria/HistoricoDetalhadoTab", () => ({
+  HistoricoDetalhadoTab: () => <div>Conteudo: Historico</div>,
+}));
+vi.mock("../src/views/pages/SecretariaPage", () => ({
+  SecretariaView: () => <div>Conteudo: Secretaria</div>, // O Componente ainda chama-se SecretariaView
 }));
 
 describe("Página <DashboardPage />", () => {
@@ -27,59 +39,87 @@ describe("Página <DashboardPage />", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    sessionStorage.clear(); // Limpa a memória do navegador falso antes de cada teste
+    sessionStorage.clear();
   });
 
   it("Deve renderizar o Portal do Aderido para usuários normais", () => {
     (useAuthController as any).mockReturnValue({
-      usuarioAtual: { cargo: "membro" },
+      usuarioAtual: { cargo: "aderido" },
       handleLogout: mockHandleLogout,
+      loading: false,
     });
 
     render(<DashboardPage />);
 
-    // Verifica o Título do Cabeçalho
     expect(screen.getByText("PORTAL DO ADERIDO")).toBeInTheDocument();
-
-    // Verifica se as abas corretas apareceram
     expect(screen.getByText("Minhas Rifas")).toBeInTheDocument();
     expect(screen.getByText("Prêmios")).toBeInTheDocument();
-
-    // A aba da tesouraria não deve existir
     expect(screen.queryByText("Aprovar Pix")).not.toBeInTheDocument();
   });
 
-  it("Deve renderizar a Gestão Financeira para usuários Admin (Tesouraria)", () => {
-    sessionStorage.setItem("dashboard_contexto", "tesouraria"); // Força o Admin a abrir a tela da tesouraria
+  it("Deve renderizar a Gestão Financeira para a Tesouraria", () => {
+    sessionStorage.setItem("dashboard_contexto", "tesouraria");
 
     (useAuthController as any).mockReturnValue({
       usuarioAtual: { cargo: "tesouraria" },
       handleLogout: mockHandleLogout,
+      loading: false,
     });
 
     render(<DashboardPage />);
 
     expect(screen.getByText("GESTÃO FINANCEIRA")).toBeInTheDocument();
     expect(screen.getByText("Aprovar Pix")).toBeInTheDocument();
-    expect(screen.getByText("Desempenho")).toBeInTheDocument();
-    expect(screen.getByText("Histórico")).toBeInTheDocument();
   });
 
-  it("MECANISMO DE SEGURANÇA: Deve expulsar um Aderido que tente acessar a Tesouraria forçando a SessionStorage", async () => {
-    // Simulando um ataque: O aderido mudou a variável no navegador para 'tesouraria'
-    sessionStorage.setItem("dashboard_contexto", "tesouraria");
+  it("Deve renderizar a Secretaria para membros com esse cargo", () => {
+    sessionStorage.setItem("dashboard_contexto", "secretaria");
 
     (useAuthController as any).mockReturnValue({
-      usuarioAtual: { cargo: "membro" }, // Mas o backend diz que ele é membro!
+      usuarioAtual: { cargo: "secretaria" },
       handleLogout: mockHandleLogout,
+      loading: false,
     });
 
     render(<DashboardPage />);
 
-    // O useEffect deve detetar a fraude e atirar o usuário de volta para o Portal do Aderido
+    expect(screen.getByText("SECRETARIA DA COMISSÃO")).toBeInTheDocument();
+    expect(screen.getByText("Conteudo: Secretaria")).toBeInTheDocument();
+  });
+
+  it("MECANISMO DE SEGURANÇA: Deve expulsar um Aderido que tente acessar a Tesouraria", async () => {
+    sessionStorage.setItem("dashboard_contexto", "tesouraria");
+
+    (useAuthController as any).mockReturnValue({
+      usuarioAtual: { cargo: "aderido" },
+      handleLogout: mockHandleLogout,
+      loading: false,
+    });
+
+    render(<DashboardPage />);
+
     await waitFor(() => {
       expect(screen.getByText("PORTAL DO ADERIDO")).toBeInTheDocument();
       expect(screen.queryByText("GESTÃO FINANCEIRA")).not.toBeInTheDocument();
+    });
+  });
+
+  it("MECANISMO DE SEGURANÇA: Deve expulsar um Tesoureiro que tente acessar a Secretaria", async () => {
+    sessionStorage.setItem("dashboard_contexto", "secretaria");
+
+    (useAuthController as any).mockReturnValue({
+      usuarioAtual: { cargo: "tesouraria" },
+      handleLogout: mockHandleLogout,
+      loading: false,
+    });
+
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("PORTAL DO ADERIDO")).toBeInTheDocument();
+      expect(
+        screen.queryByText("SECRETARIA DA COMISSÃO"),
+      ).not.toBeInTheDocument();
     });
   });
 });

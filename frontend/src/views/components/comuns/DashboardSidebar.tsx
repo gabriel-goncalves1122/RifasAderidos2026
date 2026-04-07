@@ -12,12 +12,14 @@ import {
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
-
-type Contexto = "aderido" | "tesouraria";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import { Contexto } from "../../pages/DashboardPage";
 
 interface Props {
   open: boolean;
-  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  hasTesourariaAccess: boolean;
+  hasSecretariaAccess: boolean;
   contextoAtual: Contexto;
   onClose: () => void;
   onMudarContexto: (contexto: Contexto) => void;
@@ -26,12 +28,22 @@ interface Props {
 
 export function DashboardSidebar({
   open,
-  isAdmin,
+  isSuperAdmin,
+  hasTesourariaAccess,
+  hasSecretariaAccess,
   contextoAtual,
   onClose,
   onMudarContexto,
   onLogout,
 }: Props) {
+  // Rótulo Dinâmico do Perfil
+  const getCargoLabel = () => {
+    if (isSuperAdmin) return "Administração Geral";
+    if (hasTesourariaAccess) return "Tesouraria";
+    if (hasSecretariaAccess) return "Secretaria";
+    return "Aderido";
+  };
+
   return (
     <Drawer anchor="left" open={open} onClose={onClose}>
       <Box sx={{ width: 280 }} role="presentation">
@@ -65,7 +77,7 @@ export function DashboardSidebar({
             }}
           >
             <AccountCircleIcon fontSize="small" />
-            {isAdmin ? "Acesso Administrativo" : "Aderido"}
+            {getCargoLabel()}
           </Typography>
         </Box>
 
@@ -97,7 +109,37 @@ export function DashboardSidebar({
             </ListItemButton>
           </ListItem>
 
-          {isAdmin && (
+          {hasSecretariaAccess && (
+            <ListItem disablePadding>
+              <ListItemButton
+                selected={contextoAtual === "secretaria"}
+                onClick={() => {
+                  onMudarContexto("secretaria");
+                  onClose();
+                }}
+              >
+                <ListItemIcon>
+                  <GroupAddIcon
+                    sx={{
+                      color:
+                        contextoAtual === "secretaria"
+                          ? "secondary.main"
+                          : "inherit",
+                    }}
+                  />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Painel da Secretaria"
+                  sx={{
+                    fontWeight:
+                      contextoAtual === "secretaria" ? "bold" : "normal",
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          )}
+
+          {hasTesourariaAccess && (
             <ListItem disablePadding>
               <ListItemButton
                 selected={contextoAtual === "tesouraria"}

@@ -23,13 +23,13 @@ import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
 // Sub-componentes
 import { CheckoutModal } from "./CheckoutModal";
-import { NotificacoesSidebar } from "./NotificacoesSidebar";
+import { NotificacoesSidebar } from "../comuns/NotificacoesSidebar";
 import { CarrinhoFlutuante } from "./CarrinhoFlutuante";
 
 // Controladores
-import { useRifas } from "../../controllers/useRifas"; // <-- IMPORT CORRIGIDO
-import { useAuthController } from "../../controllers/useAuthController";
-import { useNotificacoes } from "../../controllers/useNotificacoes";
+import { useRifas } from "../../../controllers/useRifas"; // <-- IMPORT CORRIGIDO
+import { useAuthController } from "../../../controllers/useAuthController";
+import { useNotificacoes } from "../../../controllers/useNotificacoes";
 
 export function MinhasRifasTab() {
   const { buscarMinhasRifas } = useRifas();

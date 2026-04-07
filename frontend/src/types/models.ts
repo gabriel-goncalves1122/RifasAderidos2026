@@ -6,13 +6,15 @@
 // DEFINIÇÕES DE CARGOS (RBAC - Role Based Access Control)
 // ----------------------------------------------------------------------------
 export type CargoComissao =
+  | "admin" // <-- Adicionado para permissão de Super Admin (Chave Mestra)
   | "presidencia"
   | "rh"
   | "tesouraria"
   | "marketing"
   | "eventos"
   | "secretaria"
-  | "membro"; // Aluno aderido comum
+  | "membro"
+  | "aderido"; // <-- Adicionado para alinhar com a lógica do Frontend
 
 // ----------------------------------------------------------------------------
 // 1. USUÁRIO (O Aderido / Formando / Membro da Comissão)

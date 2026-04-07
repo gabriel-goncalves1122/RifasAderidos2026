@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CheckoutModal } from "../src/views/components/CheckoutModal";
+import { CheckoutModal } from "../src/views/components/aderidos/CheckoutModal";
 import { useRifas } from "../src/controllers/useRifas";
 
 // Mock do Controlador de Rifas

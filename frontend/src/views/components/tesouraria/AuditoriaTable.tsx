@@ -17,18 +17,18 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import FileUploadIcon from "@mui/icons-material/FileUpload"; // ÍCONE NOVO
 
-import { useAuditoria } from "../../controllers/useAuditoria";
-import { Bilhete } from "../../types/models";
+import { useAuditoria } from "../../../controllers/useAuditoria";
+import { Bilhete } from "../../../types/models";
 import { AuditoriaCard } from "./AuditoriaCard";
 import { ModalRelatorioIA } from "./ModalRelatorioIA";
-import { ModalImagemPix } from "./ModalImagemPix";
+import { ModalImagemPix } from "../comuns/ModalImagemPix";
 import { ModalConfirmacaoAuditoria } from "./ModalConfirmacaoAuditoria";
 
 // ============================================================================
 // IMPORTS DO FIREBASE PARA SALVAR O CSV NA NUVEM
 // ============================================================================
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "../../config/firebase"; // <--- Ajustado de ../../../ para ../../
+import { db } from "../../../config/firebase"; // <--- Ajustado de ../../../ para ../../
 
 export interface TransacaoAgrupada {
   comprovante_url: string | null;
