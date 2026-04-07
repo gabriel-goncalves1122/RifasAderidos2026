@@ -15,4 +15,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Comando para ligar o garçom (Gunicorn) na porta que o Render escolher
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-10000} api:app"]
+CMD ["sh", "-c", "gunicorn --access-logfile - --bind 0.0.0.0:${PORT:-10000} api:app"]
