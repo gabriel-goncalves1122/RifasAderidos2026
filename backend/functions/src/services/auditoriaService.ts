@@ -68,7 +68,7 @@ export class AuditoriaService {
     const batch = db.batch();
 
     // ========================================================================
-    // AQUI ESTÁ A MÁGICA: URL oficial da IA hospedada no Render.com
+    // MUDANÇA PARA TESTE REMOTO: Apontar para o Python do RENDER
     // ========================================================================
     const OCR_API_URL =
       process.env.OCR_API_URL ||
