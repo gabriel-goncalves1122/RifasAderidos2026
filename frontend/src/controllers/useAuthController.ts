@@ -10,7 +10,6 @@ import {
   User,
   signOut,
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { CargoComissao } from "../types/models";
 import { fetchAPI } from "./api"; // A nossa nova função mestra!
 import { collection, query, where, getDocs } from "firebase/firestore";
