@@ -1,3 +1,6 @@
+// ============================================================================
+// ARQUIVO: frontend/src/views/components/AuditoriaCard.tsx
+// ============================================================================
 import { useState } from "react";
 import {
   Box,
@@ -7,18 +10,19 @@ import {
   CardActions,
   Button,
   Chip,
-  Divider,
   CircularProgress,
   TextField,
   Collapse,
+  Alert,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import PersonIcon from "@mui/icons-material/Person";
-import BadgeIcon from "@mui/icons-material/Badge";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import PersonSearchIcon from "@mui/icons-material/PersonSearch";
+import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 import SendIcon from "@mui/icons-material/Send";
 import { TransacaoAgrupada } from "./AuditoriaTable";
 
@@ -41,16 +45,23 @@ export function AuditoriaCard({
   const [motivo, setMotivo] = useState("");
 
   const dataFormatada = transacao.data_reserva
-    ? new Date(transacao.data_reserva).toLocaleDateString("pt-BR")
-    : "N/A";
-  const valorTotal = (transacao.bilhetes.length * 10)
-    .toFixed(2)
-    .replace(".", ",");
-  const isAprovado = transacao.log_automacao?.includes("✅");
+    ? new Date(transacao.data_reserva).toLocaleString("pt-BR")
+    : "Data Desconhecida";
+
+  const valorTotal = transacao.valor_total.toFixed(2).replace(".", ",");
+
+  const msgIA = transacao.ia_mensagem || transacao.log_automacao;
+  const isAprovadoIA =
+    transacao.ia_resultado === "APROVADO" || msgIA?.includes("✅");
+  const isDivergenteIA =
+    transacao.ia_resultado === "DIVERGENTE" ||
+    transacao.ia_resultado === "ERRO" ||
+    msgIA?.includes("⚠️") ||
+    msgIA?.includes("❌");
 
   const handleRejeitarClick = () => {
     if (!caixaRecusaAberta) {
-      setCaixaRecusaAberta(true); // Abre a caixa de texto
+      setCaixaRecusaAberta(true);
     } else {
       onRejeitar(transacao.comprovante_url, transacao.bilhetes, motivo);
       setCaixaRecusaAberta(false);
@@ -64,51 +75,52 @@ export function AuditoriaCard({
       sx={{
         borderRadius: 2,
         borderLeft: "6px solid",
-        borderColor: isAprovado ? "success.main" : "warning.main",
+        borderColor: isAprovadoIA
+          ? "success.main"
+          : isDivergenteIA
+            ? "warning.main"
+            : "primary.main",
       }}
     >
       <CardContent sx={{ pb: 1 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-          >
-            <CalendarTodayIcon fontSize="small" /> {dataFormatada}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="caption" color="text.secondary">
+            Reserva: {dataFormatada}
           </Typography>
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            color="success.main"
-            sx={{ display: "flex", alignItems: "center" }}
-          >
-            <AttachMoneyIcon /> {valorTotal}
-          </Typography>
+          {msgIA && (
+            <Chip
+              icon={<SmartToyIcon />}
+              label={
+                isAprovadoIA ? "Pré-Aprovado pela IA" : "Divergência Detectada"
+              }
+              color={isAprovadoIA ? "success" : "warning"}
+              size="small"
+              variant="outlined"
+            />
+          )}
         </Box>
 
-        {transacao.log_automacao && (
-          <Box
+        {msgIA && (
+          <Alert
+            severity={isAprovadoIA ? "success" : "warning"}
             sx={{
               mb: 2,
-              p: 1.5,
-              bgcolor: isAprovado ? "#e8f5e9" : "#fff3e0",
-              borderRadius: 1,
-              border: "1px solid",
-              borderColor: isAprovado ? "#c8e6c9" : "#ffe0b2",
+              py: 0,
+              "& .MuiAlert-message": { fontSize: "0.85rem" },
             }}
           >
-            <Typography
-              variant="body2"
-              fontWeight="bold"
-              color={isAprovado ? "success.dark" : "warning.dark"}
-            >
-              {transacao.log_automacao}
-            </Typography>
-          </Box>
+            <strong>Relatório OCR:</strong> {msgIA}
+          </Alert>
         )}
 
-        <Divider sx={{ mb: 2 }} />
-
+        {/* CORREÇÃO: Substituímos o <Grid> que dava erro por <Box display="grid"> */}
         <Box
           sx={{
             display: "grid",
@@ -117,48 +129,115 @@ export function AuditoriaCard({
             mb: 2,
           }}
         >
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Vendido por:
-            </Typography>
+          <Box
+            sx={{ p: 1.5, bgcolor: "#f5f5f5", borderRadius: 2, height: "100%" }}
+          >
             <Typography
-              variant="body2"
-              fontWeight="bold"
-              sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-            >
-              <BadgeIcon fontSize="small" color="primary" />{" "}
-              {transacao.vendedor_nome}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Comprado por:
-            </Typography>
-            <Typography
-              variant="body2"
-              fontWeight="bold"
-              sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-            >
-              <PersonIcon fontSize="small" color="secondary" />{" "}
-              {transacao.comprador_nome}
-            </Typography>
-          </Box>
-        </Box>
-
-        <Typography variant="caption" color="text.secondary">
-          Rifas ({transacao.bilhetes.length}):
-        </Typography>
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}>
-          {transacao.bilhetes.map((num: string) => (
-            <Chip
-              key={num}
-              label={num}
-              size="small"
+              variant="caption"
               color="primary"
-              variant="outlined"
-              sx={{ fontWeight: "bold" }}
-            />
-          ))}
+              fontWeight="bold"
+              sx={{ mb: 1, display: "block" }}
+            >
+              O QUE PROCURAR NA IMAGEM:
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <AttachMoneyIcon color="success" />
+              <Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  lineHeight={1}
+                >
+                  Valor do PIX
+                </Typography>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  color="success.main"
+                  lineHeight={1}
+                >
+                  R$ {valorTotal}
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <PersonSearchIcon color="action" />
+              <Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  lineHeight={1}
+                >
+                  Nome do Titular
+                </Typography>
+                <Typography variant="body2" fontWeight="bold" lineHeight={1}>
+                  {transacao.comprador_nome}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              p: 1.5,
+              border: "1px dashed #e0e0e0",
+              borderRadius: 2,
+              height: "100%",
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              fontWeight="bold"
+              sx={{ mb: 1, display: "block" }}
+            >
+              INFORMAÇÕES DA VENDA:
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <AssignmentIndIcon fontSize="small" color="primary" />
+              <Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  lineHeight={1}
+                >
+                  Vendedor Responsável
+                </Typography>
+                <Typography variant="body2" fontWeight="bold" lineHeight={1}>
+                  {transacao.vendedor_nome}
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+              <ReceiptLongIcon fontSize="small" color="action" />
+              <Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  lineHeight={1}
+                >
+                  Números Reservados ({transacao.bilhetes.length})
+                </Typography>
+                <Box
+                  sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}
+                >
+                  {transacao.bilhetes.map((num: string) => (
+                    <Chip
+                      key={num}
+                      label={num}
+                      size="small"
+                      color="primary"
+                      sx={{ height: 20, fontSize: "0.7rem" }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         </Box>
       </CardContent>
 
@@ -168,12 +247,11 @@ export function AuditoriaCard({
           px: 2,
           pb: 2,
           pt: 1,
-          bgcolor: "#f9f9f9",
+          bgcolor: "#fafafa",
           borderTop: "1px solid #eee",
           gap: 1,
         }}
       >
-        {/* Barra Superior de Ações */}
         <Box
           sx={{
             display: "flex",
@@ -184,13 +262,15 @@ export function AuditoriaCard({
           }}
         >
           <Button
-            variant="outlined"
+            variant="contained"
+            color="info"
             size="small"
+            disableElevation
             startIcon={<VisibilityIcon />}
             disabled={!transacao.comprovante_url}
             onClick={() => onVerPix(transacao.comprovante_url!)}
           >
-            Ver Pix
+            Ver Imagem do PIX
           </Button>
           <Box sx={{ display: "flex", gap: 1 }}>
             {!caixaRecusaAberta && (
@@ -210,7 +290,7 @@ export function AuditoriaCard({
                   )
                 }
               >
-                Aprovar
+                Aprovar Pagamento
               </Button>
             )}
             <Button
@@ -221,23 +301,21 @@ export function AuditoriaCard({
               onClick={handleRejeitarClick}
               startIcon={caixaRecusaAberta ? <SendIcon /> : <CancelIcon />}
             >
-              {caixaRecusaAberta ? "Confirmar Recusa" : "Rejeitar"}
+              {caixaRecusaAberta ? "Confirmar Recusa" : "Reprovar"}
             </Button>
           </Box>
         </Box>
-
-        {/* Caixa de Texto que abre apenas se clicar em Rejeitar */}
         <Collapse in={caixaRecusaAberta} sx={{ width: "100%" }}>
           <Box sx={{ pt: 1 }}>
             <TextField
               fullWidth
               size="small"
-              label="Motivo da Recusa (Mensagem para o aderido)"
+              label="Motivo da Recusa (Obrigatório)"
               variant="outlined"
               color="error"
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
-              placeholder="Ex: O comprovante é de outro banco..."
+              placeholder="Ex: O PIX é de outro banco, imagem muito desfocada..."
             />
             <Button
               size="small"

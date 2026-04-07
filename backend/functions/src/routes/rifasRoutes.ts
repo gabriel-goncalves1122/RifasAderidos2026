@@ -6,8 +6,19 @@ import { rifasController } from "../controllers/rifasController";
 import { auditoriaController } from "../controllers/auditoriaController";
 import { premiosController } from "../controllers/premiosController";
 import { notificacoesController } from "../controllers/notificacoesController";
+import { authController } from "../controllers/authController";
 
 const router = Router();
+
+// ============================================================================
+// 0. ROTAS DE AUTENTICAÇÃO (authController)
+// ============================================================================
+router.post("/auth/elegibilidade", authController.verificarElegibilidade);
+router.post(
+  "/auth/completar-registo",
+  validateToken,
+  authController.completarRegisto,
+);
 
 // ============================================================================
 // 1. ROTAS DE RIFAS, VENDAS E RELATÓRIOS (rifasController)

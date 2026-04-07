@@ -31,7 +31,6 @@ jest.mock("firebase-admin", () => {
 
 import { NotificacoesService } from "../src/services/notificacoesService";
 // Simulamos os tipos do Firebase Batch para o TS não reclamar
-import * as admin from "firebase-admin";
 
 describe("Notificações Service", () => {
   beforeEach(() => {

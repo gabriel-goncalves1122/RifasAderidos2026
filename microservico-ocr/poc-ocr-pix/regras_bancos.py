@@ -48,6 +48,14 @@ def leitor_caixa(texto_bruto):
 def leitor_inter(texto_bruto):
     return extrair_id_base(faxina_extrema(texto_bruto))
 
+# --- ADICIONADOS AGORA: BRADESCO & 99PAY ---
+def leitor_bradesco(texto_bruto):
+    return extrair_id_base(faxina_extrema(texto_bruto))
+
+def leitor_99pay(texto_bruto):
+    # 99Pay costuma quebrar o ID em duas linhas (ex: E2431... \n 3ihR...), a faxina vai unir.
+    return extrair_id_base(faxina_extrema(texto_bruto))
+
 # --- ROTEADOR INTELIGENTE ---
 ROTEADOR_LEITORES = {
     "C6_BANK": leitor_c6_bank,
@@ -59,7 +67,9 @@ ROTEADOR_LEITORES = {
     "PICPAY": leitor_picpay,
     "BANCO_DO_BRASIL": leitor_bb,
     "CAIXA": leitor_caixa,
-    "INTER": leitor_inter
+    "INTER": leitor_inter,
+    "BRADESCO": leitor_bradesco,
+    "99PAY": leitor_99pay
 }
 
 def identificar_banco(texto_bruto):
@@ -74,5 +84,7 @@ def identificar_banco(texto_bruto):
     elif "BANCO DO BRASIL" in texto_upper or "BCO DO BRASIL" in texto_upper: return "BANCO_DO_BRASIL"
     elif "CAIXA" in texto_upper or "CEF" in texto_upper: return "CAIXA"
     elif "INTER" in texto_upper or "SINTER" in texto_upper: return "INTER"
+    elif "BRADESCO" in texto_upper: return "BRADESCO"
+    elif "99PAY" in texto_upper or "99 PAY" in texto_upper: return "99PAY"
     
     return "MERCADO_PAGO"

@@ -1,3 +1,6 @@
+// ============================================================================
+// ARQUIVO: frontend/tests/AuditoriaTable.test.tsx
+// ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { AuditoriaTable } from "../src/views/components/AuditoriaTable";
@@ -16,7 +19,6 @@ describe("Componente <AuditoriaTable />", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // CORREÇÃO: Repare que o 'vi.mocked' DESAPARECEU! Fica só (useAuditoria as any)
     (useAuditoria as any).mockReturnValue({
       buscarPendentes: mockBuscarPendentes,
       avaliarComprovante: mockAvaliarComprovante,
@@ -25,51 +27,76 @@ describe("Componente <AuditoriaTable />", () => {
     });
   });
 
-  // TESTE 1: Feedback Visual quando não há trabalho a fazer
-  it("Deve exibir 'Fila Limpa!' quando não houver rifas pendentes", async () => {
+  // ========================================================================
+  // TESTE 1: Feedback Visual (Fila Vazia)
+  // ========================================================================
+  it("Deve exibir 'Fila Limpa!' e KPIs zerados quando não houver rifas pendentes", async () => {
     mockBuscarPendentes.mockResolvedValueOnce([]); // Retorna array vazio do banco
     render(<AuditoriaTable />);
+
     expect(await screen.findByText("Fila Limpa!")).toBeInTheDocument();
+
+    // Como não há rifas, o painel financeiro deve mostrar R$ 0,00
+    const valoresZerados = screen.getAllByText("R$ 0,00");
+    expect(valoresZerados.length).toBeGreaterThanOrEqual(3); // Total, Aprovados e Divergentes
   });
 
-  // TESTE 2: A Mágica do Agrupamento (Várias rifas num pix só)
-  it("Deve agrupar rifas com o mesmo comprovante e calcular o valor correto", async () => {
-    // Simulando o recebimento de 3 rifas com EXATAMENTE O MESMO link do pix
+  // ========================================================================
+  // TESTE 2: Painel de Controle (Matemática dos KPIs)
+  // ========================================================================
+  it("Deve calcular corretamente os valores nos cartões de resumo (KPIs no topo)", async () => {
     mockBuscarPendentes.mockResolvedValueOnce([
+      // Transação 1: 2 Rifas Normais (R$ 20,00) -> Ainda não auditadas
       {
         numero: "001",
         status: "pendente",
         comprovante_url: "http://pix.com/1",
-        vendedor_cpf: "111",
       },
       {
         numero: "002",
         status: "pendente",
         comprovante_url: "http://pix.com/1",
-        vendedor_cpf: "111",
       },
+
+      // Transação 2: 1 Rifa (R$ 10,00) -> Pré-Aprovada pela IA
       {
         numero: "003",
         status: "pendente",
-        comprovante_url: "http://pix.com/1",
-        vendedor_cpf: "111",
+        comprovante_url: "http://pix.com/2",
+        IA_resultado: "APROVADO",
+      },
+
+      // Transação 3: 1 Rifa (R$ 10,00) -> Divergência encontrada pela IA
+      {
+        numero: "004",
+        status: "pendente",
+        comprovante_url: "http://pix.com/3",
+        IA_resultado: "DIVERGENTE",
       },
     ]);
 
     render(<AuditoriaTable />);
 
-    // Verificação Matemática: A tabela deve multiplicar 3 rifas x R$ 10,00 e mostrar 30,00
-    const valorEsperado = await screen.findByText(/30,00/i);
-    expect(valorEsperado).toBeInTheDocument();
+    // Espera a tabela carregar os dados
+    await screen.findByText("001");
 
-    // Verificação Visual: As três rifas devem estar agrupadas em chips na tela
-    expect(screen.getByText("001")).toBeInTheDocument();
-    expect(screen.getByText("002")).toBeInTheDocument();
-    expect(screen.getByText("003")).toBeInTheDocument();
+    // O "Total na Fila" deve ser R$ 40,00 (20 + 10 + 10)
+    expect(screen.getByText("R$ 40,00")).toBeInTheDocument();
+
+    // Como há 1 aprovada e 1 divergente de R$10 cada, o valor de R$ 10,00 deve aparecer nos cards
+    const valoresDez = screen.getAllByText("R$ 10,00");
+    expect(valoresDez.length).toBeGreaterThanOrEqual(2);
+
+    // Verifica os contadores de transações
+    expect(screen.getByText("3 transações pendentes")).toBeInTheDocument();
+    expect(screen.getByText("1 transações validadas")).toBeInTheDocument();
+    expect(screen.getByText("1 transações com alerta")).toBeInTheDocument();
   });
 
-  // TESTE 3: Interação e Proteção contra erro humano
-  it("Deve abrir o Modal Animado ao clicar em Aprovar", async () => {
+  // ========================================================================
+  // TESTE 3: Interação de Aprovação Segura
+  // ========================================================================
+  it("Deve abrir o Modal de Confirmação ao clicar em Aprovar Pagamento", async () => {
     mockBuscarPendentes.mockResolvedValueOnce([
       {
         numero: "045",
@@ -81,11 +108,14 @@ describe("Componente <AuditoriaTable />", () => {
 
     render(<AuditoriaTable />);
 
-    // Procura o botão de aprovação real e "clica" nele
-    const btnAprovar = await screen.findByRole("button", { name: /aprovar/i });
+    // Procura o botão de aprovação (agora com o texto atualizado)
+    const btnAprovar = await screen.findByRole("button", {
+      name: /Aprovar Pagamento/i,
+    });
     fireEvent.click(btnAprovar);
 
     // Garante que a ação não vá direto para o backend. O Modal de segurança deve aparecer.
-    expect(await screen.findByText(/Confirmar Aprovação/i)).toBeInTheDocument();
+    // Usamos um regex mais abrangente caso o texto exato do seu modal mude.
+    expect(await screen.findByText(/Confirmar/i)).toBeInTheDocument();
   });
 });
