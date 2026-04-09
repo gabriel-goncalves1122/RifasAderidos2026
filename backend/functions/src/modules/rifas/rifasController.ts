@@ -1,6 +1,6 @@
 import { Response } from "express";
-import { AuthRequest } from "../middlewares/authMiddleware";
-import { RifasService } from "../services/rifasService";
+import { AuthRequest } from "../../shared/middlewares/authMiddleware";
+import { RifasService } from "../rifas/rifasService";
 
 export const rifasController = {
   // ==========================================================================

@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/authMiddleware";
+import { validateToken } from "../shared/middlewares/authMiddleware";
 
 // Importamos os nossos novos controladores refatorados
-import { rifasController } from "../controllers/rifasController";
-import { auditoriaController } from "../controllers/auditoriaController";
-import { premiosController } from "../controllers/premiosController";
-import { notificacoesController } from "../controllers/notificacoesController";
-import { authController } from "../controllers/authController";
+import { rifasController } from "../modules/rifas/rifasController";
+import { auditoriaController } from "../modules/auditoria/auditoriaController";
+import { premiosController } from "../modules/premios/premiosController";
+import { notificacoesController } from "../modules/notificacoes/notificacoesController";
+import { authController } from "../modules/auth/authController";
 
 const router = Router();
 

@@ -1,6 +1,6 @@
 import { Response } from "express";
-import { AuthRequest } from "../middlewares/authMiddleware";
-import { AuditoriaService } from "../services/auditoriaService";
+import { AuthRequest } from "../../shared/middlewares/authMiddleware";
+import { AuditoriaService } from "./auditoriaService";
 
 export const auditoriaController = {
   // ==========================================================================

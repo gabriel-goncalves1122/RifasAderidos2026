@@ -3,8 +3,8 @@
 // ============================================================================
 import * as admin from "firebase-admin";
 import axios from "axios";
-import { NotificacoesService } from "./notificacoesService";
-import { enviarEmailRecibo } from "./emailService";
+import { NotificacoesService } from "../notificacoes/notificacoesService";
+import { enviarEmailRecibo } from "../rifas/emailService";
 
 export class AuditoriaService {
   static extrairCaminhoStorage(url: string): string | null {

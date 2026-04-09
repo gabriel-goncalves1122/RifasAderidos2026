@@ -29,7 +29,7 @@ jest.mock("firebase-admin", () => {
   };
 });
 
-import { NotificacoesService } from "../src/services/notificacoesService";
+import { NotificacoesService } from "../src/modules/notificacoes/notificacoesService"; // Ajuste o caminho se necessário
 // Simulamos os tipos do Firebase Batch para o TS não reclamar
 
 describe("Notificações Service", () => {

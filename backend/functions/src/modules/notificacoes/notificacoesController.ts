@@ -1,6 +1,6 @@
 import { Response } from "express";
-import { AuthRequest } from "../middlewares/authMiddleware";
-import { NotificacoesService } from "../services/notificacoesService";
+import { AuthRequest } from "../../shared/middlewares/authMiddleware";
+import { NotificacoesService } from "./notificacoesService";
 
 export const notificacoesController = {
   async obter(req: AuthRequest, res: Response) {

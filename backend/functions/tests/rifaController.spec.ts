@@ -3,7 +3,7 @@
 // ============================================================================
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 import { Response } from "express";
-import { AuthRequest } from "../src/middlewares/authMiddleware";
+import { AuthRequest } from "../src/shared/middlewares/authMiddleware";
 
 // ----------------------------------------------------------------------------
 // 1. MOCK DO SERVIÇO DE RIFAS
@@ -13,7 +13,7 @@ const mockProcessarVenda = jest.fn<any>();
 const mockObterRelatorio = jest.fn<any>();
 const mockObterHistorico = jest.fn<any>();
 
-jest.mock("../src/services/rifasService", () => ({
+jest.mock("../src/modules/rifas/rifasService", () => ({
   RifasService: {
     buscarPorAderido: mockBuscarPorAderido,
     processarVenda: mockProcessarVenda,
@@ -23,7 +23,7 @@ jest.mock("../src/services/rifasService", () => ({
 }));
 
 // Só importamos o controller DEPOIS do mock estar pronto
-import { rifasController } from "../src/controllers/rifasController";
+import { rifasController } from "../src/modules/rifas/rifasController";
 
 describe("Rifas Controller", () => {
   let req: Partial<AuthRequest>;

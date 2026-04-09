@@ -2,43 +2,20 @@
 // ARQUIVO: backend/functions/tests/authController.spec.ts
 // ============================================================================
 import { Request, Response } from "express";
-import { describe, it, expect, jest, beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 
-// 1. Os Mocks do Firebase (Precisam de suportar "get", "update" e "serverTimestamp")
-let mockGetDaBaseDeDados = jest.fn<any>();
-let mockUpdateDaBaseDeDados = jest.fn<any>();
+// 1. Em vez de mockar a base de dados inteira, mockamos apenas o authService!
+jest.mock("../src/modules/auth/authService", () => ({
+  authService: {
+    verificarElegibilidade: jest.fn(),
+    completarRegisto: jest.fn(),
+  },
+}));
 
-jest.mock("firebase-admin", () => {
-  // Criamos o comportamento do banco falso
-  const firestoreMock: any = jest.fn().mockReturnValue({
-    collection: jest.fn<any>().mockImplementation((nomeColecao: any) => {
-      if (nomeColecao !== "usuarios") {
-        throw new Error(`Coleção não prevista no teste: ${nomeColecao}`);
-      }
-      return {
-        where: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        get: mockGetDaBaseDeDados,
-        doc: jest.fn().mockReturnValue({
-          update: mockUpdateDaBaseDeDados,
-        }),
-      };
-    }),
-  });
-
-  // CORREÇÃO: Ensinamos o Mock a simular o relógio do servidor!
-  firestoreMock.FieldValue = {
-    serverTimestamp: jest.fn().mockReturnValue("15_de_outubro_simulado"),
-  };
-
-  return {
-    firestore: firestoreMock,
-    auth: jest.fn(),
-  };
-});
-
-// Importamos só DEPOIS do mock do Firebase estar montado
-import { authController, AuthRequest } from "../src/controllers/authController";
+// Importamos o serviço mockado para podermos alterar o seu comportamento nos testes
+import { authService } from "../src/modules/auth/authService";
+import { authController } from "../src/modules/auth/authController";
+import { AuthRequest } from "../src/shared/middlewares/authMiddleware"; // Certifique-se que a pasta é 'middlewares'
 
 describe("Auth Controller - Verificação e Conclusão de Registo", () => {
   let req: Partial<AuthRequest>;
@@ -59,7 +36,11 @@ describe("Auth Controller - Verificação e Conclusão de Registo", () => {
   describe("Função: verificarElegibilidade", () => {
     it("Deve bloquear o registo (HTTP 403) se o e-mail fornecido não for oficial", async () => {
       req.body.email = "aluno_desconhecido@unifei.edu.br";
-      mockGetDaBaseDeDados.mockResolvedValueOnce({ empty: true });
+
+      // Simulamos que o serviço respondeu que NÃO é elegível (false)
+      jest
+        .mocked(authService.verificarElegibilidade)
+        .mockResolvedValueOnce(false);
 
       await authController.verificarElegibilidade(
         req as Request,
@@ -69,14 +50,20 @@ describe("Auth Controller - Verificação e Conclusão de Registo", () => {
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          error: expect.stringContaining("não encontrado"),
+          error: expect.stringContaining("não encontrado na lista oficial"),
         }),
       );
     });
 
     it("Deve permitir o registo (HTTP 200) se o e-mail for válido", async () => {
       req.body.email = "gabriel.engenheiro@unifei.edu.br";
-      mockGetDaBaseDeDados.mockResolvedValueOnce({ empty: false });
+
+      // Simulamos que o serviço respondeu que É elegível (true)
+      // Substitua: (authService.verificarElegibilidade as jest.Mock).mockResolvedValueOnce(true);
+      // Por isto:
+      jest
+        .mocked(authService.verificarElegibilidade)
+        .mockResolvedValueOnce(true);
 
       await authController.verificarElegibilidade(
         req as Request,
@@ -98,7 +85,7 @@ describe("Auth Controller - Verificação e Conclusão de Registo", () => {
       );
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(mockGetDaBaseDeDados).not.toHaveBeenCalled();
+      expect(authService.verificarElegibilidade).not.toHaveBeenCalled();
     });
   });
 
@@ -114,16 +101,20 @@ describe("Auth Controller - Verificação e Conclusão de Registo", () => {
       );
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ error: "Não autorizado." });
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Sessão inválida ou não autorizado.",
+      });
     });
 
     it("Deve devolver erro (HTTP 404) se a conta Auth for criada, mas o documento Firestore não existir", async () => {
-      // Simula o middleware de auth a passar os dados
       req.user = { uid: "firebase_xyz", email: "hacker@gmail.com" } as any;
       req.body = { nome: "Hacker", cpf: "000", telefone: "000" };
 
-      // O Firestore não encontra ninguém
-      mockGetDaBaseDeDados.mockResolvedValueOnce({ empty: true });
+      // Substitua: (authService.completarRegisto as jest.Mock).mockRejectedValueOnce(new Error("USUARIO_NAO_ENCONTRADO"));
+      // Por isto:
+      jest
+        .mocked(authService.completarRegisto)
+        .mockRejectedValueOnce(new Error("USUARIO_NAO_ENCONTRADO"));
 
       await authController.completarRegisto(
         req as AuthRequest,
@@ -131,10 +122,12 @@ describe("Auth Controller - Verificação e Conclusão de Registo", () => {
       );
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(mockUpdateDaBaseDeDados).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Ficha de aderido não encontrada na base de dados.",
+      });
     });
 
-    it("Deve atualizar o documento no Firestore (HTTP 200) ligando a conta Auth aos dados", async () => {
+    it("Deve retornar sucesso (HTTP 200) chamando o authService corretamente", async () => {
       req.user = { uid: "UID_OFICIAL_123", email: "gabriel@gmail.com" } as any;
       req.body = {
         nome: "Gabriel Sampaio",
@@ -142,23 +135,26 @@ describe("Auth Controller - Verificação e Conclusão de Registo", () => {
         telefone: "3599999999",
       };
 
-      // Simula que o Firestore encontrou o documento criado previamente pela Tesouraria
-      mockGetDaBaseDeDados.mockResolvedValueOnce({
-        empty: false,
-        docs: [{ id: "doc_gabriel_001", data: () => ({ nome: "Gabriel" }) }],
-      });
+      // Substitua: (authService.completarRegisto as jest.Mock).mockResolvedValueOnce(undefined);
+      // Por isto:
+      jest
+        .mocked(authService.completarRegisto)
+        .mockResolvedValueOnce(undefined);
 
       await authController.completarRegisto(
         req as AuthRequest,
         res as Response,
       );
 
-      expect(mockUpdateDaBaseDeDados).toHaveBeenCalledWith(
-        expect.objectContaining({
-          auth_uid: "UID_OFICIAL_123",
+      // Verificamos se o Controller passou os dados corretos para o Service (A regra de ouro!)
+      expect(authService.completarRegisto).toHaveBeenCalledWith(
+        "gabriel@gmail.com",
+        "UID_OFICIAL_123",
+        {
+          nome: "Gabriel Sampaio",
           cpf: "123.456.789-00",
-          status_cadastro: "completo",
-        }),
+          telefone: "3599999999",
+        },
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(

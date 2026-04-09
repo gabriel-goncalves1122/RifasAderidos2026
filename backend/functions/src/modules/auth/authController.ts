@@ -1,0 +1,69 @@
+// ============================================================================
+// ARQUIVO: backend/functions/src/modules/auth/authController.ts
+// ============================================================================
+import { Request, Response } from "express";
+import { AuthRequest } from "../../shared/middlewares/authMiddleware"; // Ajuste o caminho se necessário
+import { authService } from "./authService";
+
+export const authController = {
+  // 1. VERIFICA ELEGIBILIDADE DA KEEPER
+  async verificarElegibilidade(req: Request, res: Response): Promise<any> {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: "E-mail não fornecido." });
+      }
+
+      const ehElegivel = await authService.verificarElegibilidade(email);
+
+      if (!ehElegivel) {
+        return res.status(403).json({
+          error:
+            "E-mail não encontrado na lista oficial da comissão. Utilize o mesmo e-mail da Keeper.",
+        });
+      }
+
+      return res
+        .status(200)
+        .json({ sucesso: true, mensagem: "Formando elegível." });
+    } catch (error) {
+      console.error("Erro ao verificar elegibilidade:", error);
+      return res.status(500).json({ error: "Erro interno do servidor." });
+    }
+  },
+
+  // 2. COMPLETAR O REGISTO (Chama o Firebase Auth e atualiza o DB)
+  async completarRegisto(req: AuthRequest, res: Response): Promise<any> {
+    try {
+      if (!req.user || !req.user.email) {
+        return res
+          .status(401)
+          .json({ error: "Sessão inválida ou não autorizado." });
+      }
+
+      const email = req.user.email;
+      const uid = req.user.uid;
+      const { nome, cpf, telefone } = req.body;
+
+      // Delega a gravação no banco para o authService
+      await authService.completarRegisto(email, uid, { nome, cpf, telefone });
+
+      return res
+        .status(200)
+        .json({ sucesso: true, mensagem: "Registo concluído com sucesso!" });
+    } catch (error: any) {
+      console.error("Erro ao completar registo:", error);
+
+      if (error.message === "USUARIO_NAO_ENCONTRADO") {
+        return res
+          .status(404)
+          .json({ error: "Ficha de aderido não encontrada na base de dados." });
+      }
+
+      return res
+        .status(500)
+        .json({ error: "Falha interna ao gravar dados do formando." });
+    }
+  },
+};

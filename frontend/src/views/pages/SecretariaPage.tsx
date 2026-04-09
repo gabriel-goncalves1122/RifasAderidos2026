@@ -1,5 +1,5 @@
 // ============================================================================
-// ARQUIVO: frontend/src/views/pages/SecretariaView.tsx
+// ARQUIVO: frontend/src/views/pages/SecretariaPage.tsx
 // ============================================================================
 import { useState, useEffect } from "react";
 import {
@@ -21,7 +21,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
 } from "@mui/material";
 
 // Ícones
@@ -53,7 +52,8 @@ export interface Aderido {
 // COMPONENTE PRINCIPAL
 // ============================================================================
 export function SecretariaView() {
-  const { buscarAderidos } = useSecretaria();
+  // 1. Extraímos agora também a nova função 'injetarAderidosCSV'
+  const { buscarAderidos, injetarAderidosCSV } = useSecretaria();
   const [aderidos, setAderidos] = useState<Aderido[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,23 +62,38 @@ export function SecretariaView() {
   const [filtroStatus, setFiltroStatus] = useState("todos"); // 'todos', 'ativo', 'pendente'
   const [filtroCategoria, setFiltroCategoria] = useState("todos"); // 'todos', 'comissao'
 
+  // ==========================================================================
+  // CARREGAMENTO INICIAL
+  // ==========================================================================
+  const carregarLista = async () => {
+    setLoading(true);
+    try {
+      const dados = await buscarAderidos();
+      setAderidos(dados);
+    } catch (error) {
+      alert("Erro ao carregar lista de aderidos.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const carregar = async () => {
-      setLoading(true);
-      try {
-        const dados = await buscarAderidos();
-        setAderidos(dados);
-      } catch (error) {
-        alert("Erro ao carregar lista de aderidos.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    carregar();
+    carregarLista();
   }, []);
 
-  const handleInjetarAderidos = () => {
-    alert("A injeção do CSV será conectada ao useSecretaria na próxima fase!");
+  // ==========================================================================
+  // FUNÇÃO QUE RODA QUANDO O CSV É SELECIONADO
+  // ==========================================================================
+  const handleInjetarAderidos = async (ficheiro: File) => {
+    try {
+      // Atribui 120 rifas a cada novo aluno encontrado no CSV
+      const mensagem = await injetarAderidosCSV(ficheiro, 120);
+      alert(mensagem);
+      // Recarrega a tabela para mostrar os novos aderidos pendentes
+      await carregarLista();
+    } catch (error: any) {
+      alert(`Erro na importação: ${error}`);
+    }
   };
 
   // ==========================================================================
@@ -111,12 +126,12 @@ export function SecretariaView() {
     <Box sx={{ pb: 5 }}>
       <SecretariaHeader />
 
+      {/* Card que recebe a nova função de Injeção */}
       <ImportacaoCard onImportar={handleInjetarAderidos} />
 
       {/* ÁREA DA LISTA E FILTROS */}
       <Paper sx={{ p: 3, borderRadius: 2, border: "1px solid #e0e0e0" }}>
         {/* BARRA DE PESQUISA E FILTROS */}
-        {/* BARRA DE PESQUISA E FILTROS (Refatorado para Box em vez de Grid) */}
         <Box sx={{ mb: 4, display: "flex", flexWrap: "wrap", gap: 2 }}>
           {/* Campo de Pesquisa */}
           <Box sx={{ flex: "1 1 300px" }}>

@@ -18,7 +18,10 @@ jest.mock("firebase-admin", () => ({
 }));
 
 // 2. SÓ AGORA IMPORTAMOS O MIDDLEWARE A TESTAR
-import { validateToken, AuthRequest } from "../src/middlewares/authMiddleware";
+import {
+  validateToken,
+  AuthRequest,
+} from "../lib/src/middlewares/authMiddleware";
 
 // ============================================================================
 // SUÍTE DE TESTES: MIDDLEWARE DE AUTENTICAÇÃO (O "Porteiro" da API)

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PremiosService } from "../services/premiosService";
+import { PremiosService } from "./premiosService";
 
 export const premiosController = {
   async obter(req: Request, res: Response) {

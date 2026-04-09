@@ -3,13 +3,13 @@
 // ============================================================================
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 import { Response } from "express";
-import { AuthRequest } from "../src/middlewares/authMiddleware";
+import { AuthRequest } from "../src/shared/middlewares/authMiddleware";
 
 const mockListarPendentes = jest.fn<any>();
 const mockAuditarLoteIA = jest.fn<any>();
 const mockProcessarDecisaoManual = jest.fn<any>();
 
-jest.mock("../src/services/auditoriaService", () => ({
+jest.mock("../src/modules/auditoria/auditoriaService", () => ({
   AuditoriaService: {
     listarPendentes: mockListarPendentes,
     auditarLoteIA: mockAuditarLoteIA,
@@ -17,7 +17,7 @@ jest.mock("../src/services/auditoriaService", () => ({
   },
 }));
 
-import { auditoriaController } from "../src/controllers/auditoriaController";
+import { auditoriaController } from "../src/modules/auditoria/auditoriaController";
 
 describe("Auditoria Controller", () => {
   let req: Partial<AuthRequest>;

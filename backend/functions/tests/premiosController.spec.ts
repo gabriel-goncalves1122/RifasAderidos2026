@@ -9,7 +9,9 @@ const mockSalvarInfoSorteio = jest.fn<any>();
 const mockSalvarPremio = jest.fn<any>();
 const mockExcluirPremio = jest.fn<any>();
 
-jest.mock("../src/services/premiosService", () => ({
+import { premiosController } from "../src/modules/premios/premiosController";
+
+jest.mock("../src/modules/premios/premiosService", () => ({
   PremiosService: {
     listarTodos: mockListarTodos,
     salvarInfoSorteio: mockSalvarInfoSorteio,
@@ -17,8 +19,6 @@ jest.mock("../src/services/premiosService", () => ({
     excluirPremio: mockExcluirPremio,
   },
 }));
-
-import { premiosController } from "../src/controllers/premiosController";
 
 describe("Prêmios Controller", () => {
   let req: Partial<Request>;
