@@ -9,6 +9,7 @@ import {
   onAuthStateChanged,
   User,
   signOut,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { CargoComissao } from "../types/models";
 import { fetchAPI } from "./api";
@@ -105,6 +106,33 @@ export function useAuthController() {
   };
 
   // ==========================================================================
+  // RECUPERAÇÃO DE SENHA (VIA FIREBASE SDK - NATIVO)
+  // ==========================================================================
+  const handlePasswordReset = async (emailToReset: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // 🚀 RESTAURADO: Envia o e-mail real usando a infraestrutura do Firebase
+      await sendPasswordResetEmail(auth, emailToReset);
+      return true;
+    } catch (err: any) {
+      console.error("Erro na recuperação de senha:", err);
+      // Tratamento amigável de erros do Firebase
+      if (
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/invalid-email"
+      ) {
+        setError("E-mail não encontrado ou formato inválido.");
+      } else {
+        setError("Ocorreu um erro ao enviar o e-mail de recuperação.");
+      }
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==========================================================================
   // REGISTO (Usando a API do Backend)
   // ==========================================================================
   const handleRegister = async (
@@ -158,5 +186,6 @@ export function useAuthController() {
     handleLogin,
     handleRegister,
     handleLogout,
+    handlePasswordReset,
   };
 }

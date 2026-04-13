@@ -66,4 +66,23 @@ export const authController = {
         .json({ error: "Falha interna ao gravar dados do formando." });
     }
   },
+
+  /* 👇 DESATIVADO: Função nativa do Firebase SDK do Frontend é mais eficiente
+  async solicitarRecuperacao(req: Request, res: Response): Promise<any> {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: "E-mail obrigatório." });
+
+      const link = await authService.gerarLinkRecuperacao(email);
+      console.log(`[BACKEND] Link gerado para ${email}: ${link}`);
+
+      return res.status(200).json({ sucesso: true, mensagem: "Processo de recuperação iniciado." });
+    } catch (error: any) {
+      if (error.code === 'auth/user-not-found') {
+        return res.status(404).json({ error: "Utilizador não encontrado." });
+      }
+      return res.status(500).json({ error: "Erro interno." });
+    }
+  },
+  */
 };

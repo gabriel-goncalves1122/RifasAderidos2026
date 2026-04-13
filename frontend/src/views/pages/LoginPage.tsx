@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -16,6 +16,7 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
+  Link,
 } from "@mui/material";
 
 import Visibility from "@mui/icons-material/Visibility";
@@ -23,6 +24,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 import { useAuthController } from "../../controllers/useAuthController";
 import { authStyles } from "./styles/authStyles";
+import { ResetPasswordModal } from "../components/loginRegister/ResetPasswordModal";
 
 const loginSchema = yup
   .object({
@@ -40,11 +42,21 @@ const loginSchema = yup
 type LoginFormData = yup.InferType<typeof loginSchema>;
 
 export function LoginPage() {
-  const { handleLogin, error, loading } = useAuthController();
+  const { handleLogin, handlePasswordReset, error, loading } =
+    useAuthController();
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+  // Controla o nosso próprio estado de carregamento do formulário para não depender só do global
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Estados para o Modal de Recuperação de Senha
+  const [openResetModal, setOpenResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetSuccess, setResetSuccess] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [loadingReset, setLoadingReset] = useState(false);
 
   const {
     register,
@@ -55,13 +67,39 @@ export function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    setIsSubmitting(true);
     const sucesso = await handleLogin(data.email, data.password);
-    if (sucesso) navigate("/dashboard");
+    if (sucesso) {
+      navigate("/dashboard");
+    } else {
+      setIsSubmitting(false); // Liberta o botão se falhar (Resolve o carregamento infinito)
+    }
   };
+
+  const onResetPassword = async () => {
+    if (!resetEmail) return;
+    setLoadingReset(true);
+    setResetError(null);
+
+    const sucesso = await handlePasswordReset(resetEmail);
+    setLoadingReset(false);
+
+    if (sucesso) {
+      setResetSuccess(true);
+      setTimeout(() => {
+        setOpenResetModal(false);
+        setResetSuccess(false);
+        setResetEmail("");
+      }, 3500); // Mais fluido
+    } else {
+      setResetError("Ocorreu um erro ao enviar. Verifique o seu e-mail.");
+    }
+  };
+
+  const isUIBlocked = loading || isSubmitting;
 
   return (
     <Box component="main" sx={authStyles.mainContainer}>
-      {/* COLUNA ESQUERDA: A Imagem da Logo Dourada */}
       <Box sx={authStyles.logoContainer}>
         <Box sx={authStyles.logoWrapper}>
           <img
@@ -75,7 +113,6 @@ export function LoginPage() {
         </Typography>
       </Box>
 
-      {/* COLUNA DIREITA: O Formulário */}
       <Box component={Paper} elevation={6} square sx={authStyles.formContainer}>
         <Box sx={authStyles.formWrapper}>
           <Box sx={authStyles.mobileLogo}>
@@ -103,7 +140,7 @@ export function LoginPage() {
             noValidate
             sx={{ width: "100%" }}
           >
-            {error && (
+            {error && !isSubmitting && (
               <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
                 {error}
               </Alert>
@@ -121,6 +158,7 @@ export function LoginPage() {
               error={!!errors.email}
               helperText={errors.email?.message}
               sx={{ mb: 2 }}
+              disabled={isUIBlocked}
             />
 
             <TextField
@@ -132,6 +170,7 @@ export function LoginPage() {
               {...register("password")}
               error={!!errors.password}
               helperText={errors.password?.message}
+              disabled={isUIBlocked}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -147,15 +186,38 @@ export function LoginPage() {
               }}
             />
 
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
+              <Link
+                component="button"
+                type="button" // <--- ISTO IMPEDE O COMPORTAMENTO DO ENTER
+                variant="body2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenResetModal(true);
+                }}
+                disabled={isUIBlocked}
+                sx={{
+                  color: "text.secondary",
+                  textDecoration: "none",
+                  "&:hover": {
+                    textDecoration: "underline",
+                    color: "primary.main",
+                  },
+                }}
+              >
+                Esqueceu a sua senha?
+              </Link>
+            </Box>
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
               color="primary"
-              disabled={loading}
-              sx={{ mt: 4, mb: 3, py: 1.5, fontSize: "1.1rem" }}
+              disabled={isUIBlocked}
+              sx={{ mt: 3, mb: 3, py: 1.5, fontSize: "1.1rem" }}
             >
-              {loading ? (
+              {isUIBlocked ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
                 "Acessar Sistema"
@@ -165,7 +227,7 @@ export function LoginPage() {
             <Box sx={{ textAlign: "center", mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
                 Ainda não ativou a sua conta?{" "}
-                <Link
+                <RouterLink
                   to="/register"
                   style={{
                     color: "var(--cor-dourado-escuro)",
@@ -174,12 +236,26 @@ export function LoginPage() {
                   }}
                 >
                   Registe-se aqui
-                </Link>
+                </RouterLink>
               </Typography>
             </Box>
           </Box>
         </Box>
       </Box>
+
+      {/* COMPONENTE MODULARIZADO */}
+      <ResetPasswordModal
+        open={openResetModal}
+        onClose={() => {
+          if (!loadingReset) setOpenResetModal(false);
+        }}
+        resetEmail={resetEmail}
+        setResetEmail={setResetEmail}
+        onResetPassword={onResetPassword}
+        loadingReset={loadingReset}
+        resetSuccess={resetSuccess}
+        resetError={resetError}
+      />
     </Box>
   );
 }

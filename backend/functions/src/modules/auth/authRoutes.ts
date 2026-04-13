@@ -13,5 +13,7 @@ router.post(
   validateToken,
   authController.completarRegisto,
 );
+// 👇 DESATIVADO: Deixámos a responsabilidade dos e-mails para o Frontend
+// router.post("/recuperacao", authController.solicitarRecuperacao);
 
 export default router;
