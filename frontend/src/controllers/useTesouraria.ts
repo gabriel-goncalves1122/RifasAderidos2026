@@ -9,7 +9,7 @@ export function useTesouraria() {
     setLoading(true);
     setError(null);
     try {
-      return await fetchAPI("/relatorio");
+      return await fetchAPI("/rifas/relatorio");
     } catch (err: any) {
       setError(err.message);
       return null;
@@ -20,7 +20,7 @@ export function useTesouraria() {
 
   const buscarHistoricoDetalhado = async () => {
     try {
-      const result = await fetchAPI("/historico");
+      const result = await fetchAPI("/rifas/historico");
       return result.historico || [];
     } catch (error) {
       return [];

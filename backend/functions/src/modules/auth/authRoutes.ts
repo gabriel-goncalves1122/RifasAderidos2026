@@ -4,8 +4,10 @@ import { authController } from "./authController";
 
 const router = Router();
 
-// As rotas aqui herdam o prefixo "/auth" do roteador mestre
+// Rota Pública (Não precisa de token para verificar se o e-mail existe)
 router.post("/elegibilidade", authController.verificarElegibilidade);
+
+// Rota Privada (Só passa se a conta no Firebase Auth já tiver sido criada com sucesso)
 router.post(
   "/completar-registo",
   validateToken,

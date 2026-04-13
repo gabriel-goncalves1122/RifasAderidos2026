@@ -1,10 +1,10 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { usePremios } from "../src/controllers/usePremios";
-import { fetchAPI } from "../src/controllers/api";
+import { usePremios } from "../../src/controllers/usePremios";
+import { fetchAPI } from "../../src/controllers/api";
 
 // Mock da API
-vi.mock("../src/controllers/api", () => ({ fetchAPI: vi.fn() }));
+vi.mock("../../src/controllers/api", () => ({ fetchAPI: vi.fn() }));
 
 // Mock do Firebase Storage
 vi.mock("firebase/storage", () => ({

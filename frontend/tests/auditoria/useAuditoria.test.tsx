@@ -1,9 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useAuditoria } from "../src/controllers/useAuditoria";
-import { fetchAPI } from "../src/controllers/api";
+import { useAuditoria } from "../../src/controllers/useAuditoria";
+import { fetchAPI } from "../../src/controllers/api";
 
-vi.mock("../src/controllers/api", () => ({ fetchAPI: vi.fn() }));
+vi.mock("../../src/controllers/api", () => ({ fetchAPI: vi.fn() }));
 global.alert = vi.fn();
 
 describe("Hook: useAuditoria", () => {
@@ -18,7 +18,8 @@ describe("Hook: useAuditoria", () => {
       pendentes = await result.current.buscarPendentes();
     });
 
-    expect(fetchAPI).toHaveBeenCalledWith("/pendentes");
+    // Correção: "/auditorias/pendentes"
+    expect(fetchAPI).toHaveBeenCalledWith("/auditorias/pendentes");
     expect(pendentes).toHaveLength(1);
     expect(result.current.loading).toBe(false);
   });
@@ -37,7 +38,8 @@ describe("Hook: useAuditoria", () => {
     });
 
     expect(sucesso).toBe(true);
-    expect(fetchAPI).toHaveBeenCalledWith("/avaliar", "POST", {
+    // Correção: "/auditorias/avaliar"
+    expect(fetchAPI).toHaveBeenCalledWith("/auditorias/avaliar", "POST", {
       numerosRifas: ["001"],
       decisao: "rejeitar",
       motivo: "Pix Inválido",
@@ -53,7 +55,8 @@ describe("Hook: useAuditoria", () => {
       resposta = await result.current.auditarEmLoteComIA();
     });
 
-    expect(fetchAPI).toHaveBeenCalledWith("/auditar-lote", "POST");
+    // Correção: "/auditorias/auditar-lote"
+    expect(fetchAPI).toHaveBeenCalledWith("/auditorias/auditar-lote", "POST");
     expect(resposta).toEqual({ mensagem: "IA executada" });
   });
 });

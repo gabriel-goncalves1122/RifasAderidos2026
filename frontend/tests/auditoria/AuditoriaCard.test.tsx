@@ -3,7 +3,7 @@
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AuditoriaCard } from "../src/views/components/tesouraria/AuditoriaCard";
+import { AuditoriaCard } from "../../src/views/components/tesouraria/AuditoriaCard";
 
 describe("Componente <AuditoriaCard />", () => {
   const mockOnAprovar = vi.fn();

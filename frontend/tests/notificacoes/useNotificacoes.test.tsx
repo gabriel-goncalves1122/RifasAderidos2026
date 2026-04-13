@@ -1,9 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useNotificacoes } from "../src/controllers/useNotificacoes";
-import { fetchAPI } from "../src/controllers/api";
+import { useNotificacoes } from "../../src/controllers/useNotificacoes";
+import { fetchAPI } from "../../src/controllers/api";
 
-vi.mock("../src/controllers/api", () => ({ fetchAPI: vi.fn() }));
+vi.mock("../../src/controllers/api", () => ({ fetchAPI: vi.fn() }));
 
 describe("Hook: useNotificacoes", () => {
   beforeEach(() => vi.clearAllMocks());

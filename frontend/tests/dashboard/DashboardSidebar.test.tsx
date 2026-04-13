@@ -3,7 +3,7 @@
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { DashboardSidebar } from "../src/views/components/comuns/DashboardSidebar";
+import { DashboardSidebar } from "../../src/views/components/comuns/DashboardSidebar";
 
 describe("Componente <DashboardSidebar />", () => {
   const mockOnClose = vi.fn();

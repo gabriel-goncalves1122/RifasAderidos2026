@@ -1,38 +1,44 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useAuthController } from "../src/controllers/useAuthController";
-import { fetchAPI } from "../src/controllers/api";
+import { useAuthController } from "../../src/controllers/useAuthController";
+import { fetchAPI } from "../../src/controllers/api";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 
-// 1. Mocks do Firebase Auth e Firestore (Agora com getAuth, getFirestore e getStorage!)
-vi.mock("../src/config/firebase", () => ({ auth: {}, db: {} }));
+// 1. Mocks dos caminhos internos (CORRIGIDO PARA DOIS PONTOS: ../../)
+vi.mock("../../src/config/firebase", () => ({ auth: {}, db: {} }));
+vi.mock("../../src/controllers/api", () => ({ fetchAPI: vi.fn() }));
 
-vi.mock("firebase/auth", () => ({
-  getAuth: vi.fn(), // <-- A correção está aqui!
-  signInWithEmailAndPassword: vi.fn(),
-  createUserWithEmailAndPassword: vi
-    .fn()
-    .mockResolvedValue({ user: { uid: "123" } }),
-  signOut: vi.fn(),
-  onAuthStateChanged: vi.fn(() => vi.fn()),
-}));
+// 2. Mocks dos módulos do Firebase
+vi.mock("firebase/auth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("firebase/auth")>();
+  return {
+    ...actual,
+    getAuth: vi.fn(),
+    signInWithEmailAndPassword: vi.fn(),
+    createUserWithEmailAndPassword: vi
+      .fn()
+      .mockResolvedValue({ user: { uid: "123" } }),
+    signOut: vi.fn(),
+    onAuthStateChanged: vi.fn(() => vi.fn()),
+    connectAuthEmulator: vi.fn(),
+  };
+});
 
 vi.mock("firebase/firestore", () => ({
-  getFirestore: vi.fn(), // <-- Prevenção de erros
+  getFirestore: vi.fn(),
   collection: vi.fn(),
   query: vi.fn(),
   where: vi.fn(),
   getDocs: vi.fn().mockResolvedValue({ empty: true }),
   doc: vi.fn(),
   getDoc: vi.fn(),
+  connectFirestoreEmulator: vi.fn(),
 }));
 
 vi.mock("firebase/storage", () => ({
-  getStorage: vi.fn(), // <-- Prevenção de erros
+  getStorage: vi.fn(),
+  connectStorageEmulator: vi.fn(), // <-- CORRIGIDO PARA STORAGE!
 }));
-
-vi.mock("../src/controllers/api", () => ({ fetchAPI: vi.fn() }));
-
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 describe("Hook: useAuthController", () => {
   beforeEach(() => vi.clearAllMocks());

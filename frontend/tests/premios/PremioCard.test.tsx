@@ -3,7 +3,7 @@
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { PremioCard } from "../src/views/components/premios/PremioCard"; // <-- Caminho correto
+import { PremioCard } from "../../src/views/components/premios/PremioCard"; // <-- Caminho correto
 
 describe("Componente <PremioCard />", () => {
   const mockOnEditClick = vi.fn();

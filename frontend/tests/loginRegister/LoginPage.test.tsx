@@ -1,24 +1,24 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DashboardPage } from "../src/views/pages/DashboardPage";
-import { useAuthController } from "../src/controllers/useAuthController";
+import { DashboardPage } from "../../src/views/pages/DashboardPage";
+import { useAuthController } from "../../src/controllers/useAuthController";
 
 // 1. Mock do Auth Controller
-vi.mock("../src/controllers/useAuthController", () => ({
+vi.mock("../../src/controllers/useAuthController", () => ({
   useAuthController: vi.fn(),
 }));
 
 // 2. Mocks dos Componentes Filhos (Para não renderizar a tela inteira em cada teste)
-vi.mock("../src/views/components/DashboardSidebar", () => ({
+vi.mock("../../src/views/components/DashboardSidebar", () => ({
   DashboardSidebar: () => <div data-testid="sidebar">Sidebar</div>,
 }));
-vi.mock("../src/views/components/MinhasRifasTab", () => ({
+vi.mock("../../src/views/components/MinhasRifasTab", () => ({
   MinhasRifasTab: () => <div>Conteudo: Minhas Rifas</div>,
 }));
-vi.mock("../src/views/components/PremiosTab", () => ({
+vi.mock("../../src/views/components/PremiosTab", () => ({
   PremiosTab: () => <div>Conteudo: Premios</div>,
 }));
-vi.mock("../src/views/components/AuditoriaTable", () => ({
+vi.mock("../../src/views/components/AuditoriaTable", () => ({
   AuditoriaTable: () => <div>Conteudo: Auditoria</div>,
 }));
 

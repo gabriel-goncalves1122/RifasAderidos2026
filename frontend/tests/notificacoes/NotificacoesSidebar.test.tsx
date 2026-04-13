@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { NotificacoesSidebar } from "../src/views/components/comuns/NotificacoesSidebar"; // <-- Caminho correto
+import { NotificacoesSidebar } from "../../src/views/components/comuns/NotificacoesSidebar"; // <-- Caminho correto
 
 describe("Componente <NotificacoesSidebar />", () => {
   const mockOnClose = vi.fn();

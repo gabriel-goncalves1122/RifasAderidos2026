@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { VisaoGraficaTab } from "../src/views/components/tesouraria/VisaoGraficaTab";
-import { useTesouraria } from "../src/controllers/useTesouraria";
+import { VisaoGraficaTab } from "../../src/views/components/tesouraria/VisaoGraficaTab";
+import { useTesouraria } from "../../src/controllers/useTesouraria";
 
 // 1. Mock do Controller da Tesouraria
-vi.mock("../src/controllers/useTesouraria", () => ({
+vi.mock("../../src/controllers/useTesouraria", () => ({
   useTesouraria: vi.fn(),
 }));
 

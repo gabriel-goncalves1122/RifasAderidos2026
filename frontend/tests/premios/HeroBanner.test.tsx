@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { HeroBanner } from "../src/views/components/premios/HeroBanner"; // <-- Caminho correto
+import { HeroBanner } from "../../src/views/components/premios/HeroBanner"; // <-- Caminho correto
 
 describe("Componente <HeroBanner />", () => {
   const mockOnEditClick = vi.fn();

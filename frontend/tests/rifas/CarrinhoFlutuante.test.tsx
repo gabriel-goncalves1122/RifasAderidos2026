@@ -3,7 +3,7 @@
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { CarrinhoFlutuante } from "../src/views/components/aderidos/CarrinhoFlutuante";
+import { CarrinhoFlutuante } from "../../src/views/components/aderidos/CarrinhoFlutuante";
 
 describe("Componente <CarrinhoFlutuante />", () => {
   const mockOnVenderClick = vi.fn();

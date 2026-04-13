@@ -1,10 +1,10 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useTesouraria } from "../src/controllers/useTesouraria";
-import { fetchAPI } from "../src/controllers/api";
+import { useTesouraria } from "../../src/controllers/useTesouraria";
+import { fetchAPI } from "../../src/controllers/api";
 
-// Falsificamos o nosso motor de API
-vi.mock("../src/controllers/api", () => ({
+// Adicione isto no topo do arquivo!
+vi.mock("../../src/controllers/api", () => ({
   fetchAPI: vi.fn(),
 }));
 
@@ -30,7 +30,7 @@ describe("Hook: useTesouraria", () => {
       relatorio = await result.current.buscarRelatorio();
     });
 
-    expect(fetchAPI).toHaveBeenCalledWith("/relatorio");
+    expect(fetchAPI).toHaveBeenCalledWith("/rifas/relatorio");
     expect(relatorio).toEqual(mockResposta);
     expect(result.current.loading).toBe(false); // O loading volta a false no finally
     expect(result.current.error).toBeNull();

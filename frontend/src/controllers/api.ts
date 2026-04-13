@@ -1,9 +1,9 @@
 import { auth } from "../config/firebase";
 
 const API_BASE_URL = import.meta.env.PROD
-  ? "https://us-central1-rifasaderidos2026.cloudfunctions.net/api/rifas"
-  : "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas";
-
+  ? "https://us-central1-rifasaderidos2026.cloudfunctions.net/api"
+  : "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api";
+  
 export async function fetchAPI(
   endpoint: string,
   method = "GET",

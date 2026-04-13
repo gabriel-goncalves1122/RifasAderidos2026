@@ -3,8 +3,8 @@
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { RifaGrid } from "../src/views/components/aderidos/RifaGrid";
-import { Bilhete } from "../src/types/models";
+import { RifaGrid } from "../../src/views/components/aderidos/RifaGrid";
+import { Bilhete } from "../../src/types/models";
 
 describe("Componente <RifaGrid />", () => {
   const mockOnToggleRifa = vi.fn();

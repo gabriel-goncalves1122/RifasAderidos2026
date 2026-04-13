@@ -3,11 +3,14 @@
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { AuditoriaTable } from "../src/views/components/tesouraria/AuditoriaTable";
-import { useAuditoria } from "../src/controllers/useAuditoria";
+import { AuditoriaTable } from "../../src/views/components/tesouraria/AuditoriaTable";
+import { useAuditoria } from "../../src/controllers/useAuditoria";
 
-// MOCK: Corta a conexão com o banco para testar apenas a interface visual
-vi.mock("../src/controllers/useAuditoria", () => ({
+vi.mock("../../src/controllers/useAuthController", () => ({
+  useAuthController: vi.fn(),
+}));
+
+vi.mock("../../src/controllers/useAuditoria", () => ({
   useAuditoria: vi.fn(),
 }));
 

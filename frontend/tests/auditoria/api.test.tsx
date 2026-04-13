@@ -2,11 +2,11 @@
 // ARQUIVO: frontend/tests/api.test.ts
 // ============================================================================
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { fetchAPI } from "../src/controllers/api";
-import { auth } from "../src/config/firebase";
+import { fetchAPI } from "../../src/controllers/api";
+import { auth } from "../../src/config/firebase";
 
 // Mock do Firebase Auth
-vi.mock("../src/config/firebase", () => ({
+vi.mock("../../src/config/firebase", () => ({
   auth: {
     currentUser: {
       getIdToken: vi.fn().mockResolvedValue("fake-token-123"),
@@ -95,7 +95,7 @@ describe("Função Mestra: fetchAPI", () => {
       json: async () => ({ error: "Acesso Negado pela Tesouraria" }),
     });
 
-    await expect(fetchAPI("/admin")).rejects.toThrow(
+    await expect(fetchAPI("/admin", "GET", undefined, false)).rejects.toThrow(
       "Acesso Negado pela Tesouraria",
     );
   });

@@ -12,7 +12,7 @@ export function usePremios() {
   };
 
   const salvarInfoSorteio = async (dados: any) => {
-    await fetchAPI("/sorteio", "PUT", dados);
+    await fetchAPI("/premios/sorteio", "PUT", dados);
   };
 
   const salvarPremio = async (dados: any) => {

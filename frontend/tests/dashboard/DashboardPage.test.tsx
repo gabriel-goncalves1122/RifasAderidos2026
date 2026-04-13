@@ -3,34 +3,33 @@
 // ============================================================================
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DashboardPage } from "../src/views/pages/DashboardPage";
-import { useAuthController } from "../src/controllers/useAuthController";
+import { DashboardPage } from "../../src/views/pages/DashboardPage";
+import { useAuthController } from "../../src/controllers/useAuthController";
 
-// 1. Mock do Auth Controller
-vi.mock("../src/controllers/useAuthController", () => ({
+vi.mock("../../src/controllers/useAuthController", () => ({
   useAuthController: vi.fn(),
 }));
 
 // 2. Mocks dos Componentes Filhos (Agora com as novas pastas!)
-vi.mock("../src/views/components/comuns/DashboardSidebar", () => ({
+vi.mock("../../src/views/components/comuns/DashboardSidebar", () => ({
   DashboardSidebar: () => <div data-testid="sidebar">Sidebar</div>,
 }));
-vi.mock("../src/views/components/aderidos/MinhasRifasTab", () => ({
+vi.mock("../../src/views/components/aderidos/MinhasRifasTab", () => ({
   MinhasRifasTab: () => <div>Conteudo: Minhas Rifas</div>,
 }));
-vi.mock("../src/views/components/premios/PremiosTab", () => ({
+vi.mock("../../src/views/components/premios/PremiosTab", () => ({
   PremiosTab: () => <div>Conteudo: Premios</div>,
 }));
-vi.mock("../src/views/components/tesouraria/AuditoriaTable", () => ({
+vi.mock("../../src/views/components/tesouraria/AuditoriaTable", () => ({
   AuditoriaTable: () => <div>Conteudo: Auditoria</div>,
 }));
-vi.mock("../src/views/components/tesouraria/VisaoGraficaTab", () => ({
+vi.mock("../../src/views/components/tesouraria/VisaoGraficaTab", () => ({
   VisaoGraficaTab: () => <div>Conteudo: VisaoGrafica</div>,
 }));
-vi.mock("../src/views/components/tesouraria/HistoricoDetalhadoTab", () => ({
+vi.mock("../../src/views/components/tesouraria/HistoricoDetalhadoTab", () => ({
   HistoricoDetalhadoTab: () => <div>Conteudo: Historico</div>,
 }));
-vi.mock("../src/views/pages/SecretariaPage", () => ({
+vi.mock("../../src/views/pages/SecretariaPage", () => ({
   SecretariaView: () => <div>Conteudo: Secretaria</div>, // O Componente ainda chama-se SecretariaView
 }));
 

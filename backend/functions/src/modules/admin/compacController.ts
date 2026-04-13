@@ -33,34 +33,42 @@ export const compacController = {
         await compacService.gerarContainerCompactado(dadosParaProcessar);
 
       // 4. Enviar o ficheiro para o navegador do utilizador
-      res.download(caminhoFicheiroGerado, `${nomePacote}.zip`, (err) => {
-        if (err) {
-          console.error(
-            "[Controller] Erro ao enviar ficheiro ao cliente:",
-            err,
-          );
-          if (!res.headersSent) {
-            return res
-              .status(500)
-              .json({ error: "Falha na transferência do ficheiro gerado." });
-          }
-        }
-
-        // 5. Limpeza do Servidor: Apaga o ficheiro ZIP logo após o download terminar
-        // Isto é muito importante no Firebase Functions para não esgotar a memória/disco
-        fs.unlink(caminhoFicheiroGerado, (unlinkErr) => {
-          if (unlinkErr) {
+      return res.download(
+        caminhoFicheiroGerado,
+        `${nomePacote}.zip`,
+        (err: any) => {
+          if (err) {
             console.error(
-              "[Controller] Erro ao limpar o ficheiro temporário:",
-              unlinkErr,
+              "[Controller] Erro ao enviar ficheiro ao cliente:",
+              err,
             );
-          } else {
-            console.log(
-              `[Controller] Ficheiro temporário removido: ${caminhoFicheiroGerado}`,
-            );
+            if (!res.headersSent) {
+              res
+                .status(500)
+                .json({ error: "Falha na transferência do ficheiro gerado." });
+            }
+            // Garante que sai da função caso dê erro na resposta
+            return;
           }
-        });
-      });
+
+          // 5. Limpeza do Servidor: Apaga o ficheiro ZIP logo após o download terminar
+          fs.unlink(caminhoFicheiroGerado, (unlinkErr) => {
+            if (unlinkErr) {
+              console.error(
+                "[Controller] Erro ao limpar o ficheiro temporário:",
+                unlinkErr,
+              );
+            } else {
+              console.log(
+                `[Controller] Ficheiro temporário removido: ${caminhoFicheiroGerado}`,
+              );
+            }
+          });
+
+          // Retorno explícito para satisfazer o TypeScript no caminho de sucesso do callback
+          return;
+        },
+      );
     } catch (error) {
       console.error("[Controller] Falha ao processar compactação:", error);
       if (!res.headersSent) {

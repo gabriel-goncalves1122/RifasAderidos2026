@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { PremiosTab } from "../src/views/components/premios/PremiosTab";
-import { usePremios } from "../src/controllers/usePremios"; // <-- Novo Controller
+import { PremiosTab } from "../../src/views/components/premios/PremiosTab";
+import { usePremios } from "../../src/controllers/usePremios"; // <-- Novo Controller
 
 // Mock do Controller
-vi.mock("../src/controllers/usePremios", () => ({
+vi.mock("../../src/controllers/usePremios", () => ({
   usePremios: vi.fn(),
 }));
 

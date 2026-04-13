@@ -14,7 +14,7 @@ export function useRifas() {
   const buscarMinhasRifas = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchAPI("/minhas-rifas");
+      const result = await fetchAPI("/rifas/minhas-rifas");
       return result.bilhetes || [];
     } catch (err) {
       return [];
@@ -53,7 +53,7 @@ export function useRifas() {
       );
       const comprovanteUrl = await getDownloadURL(snapshot.ref);
 
-      await fetchAPI("/vender", "POST", {
+      await fetchAPI("/rifas/vender", "POST", {
         nome: dados.nome,
         telefone: dados.telefone,
         email: dados.email,
@@ -78,7 +78,7 @@ export function useRifas() {
       await uploadBytes(storageRef, arquivo);
       const urlDaImagem = await getDownloadURL(storageRef);
 
-      await fetchAPI(`/${rifaId}/comprovante`, "PUT", {
+      await fetchAPI(`/rifas/${rifaId}/comprovante`, "PUT", {
         comprovante_url: urlDaImagem,
       });
       return true;

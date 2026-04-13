@@ -1,10 +1,10 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
-import { RegisterPage } from "../src/views/pages/RegisterPage";
-import { useAuthController } from "../src/controllers/useAuthController";
+import { RegisterPage } from "../../src/views/pages/RegisterPage";
+import { useAuthController } from "../../src/controllers/useAuthController";
 
-vi.mock("../src/controllers/useAuthController", () => ({
+vi.mock("../../src/controllers/useAuthController", () => ({
   useAuthController: vi.fn(),
 }));
 

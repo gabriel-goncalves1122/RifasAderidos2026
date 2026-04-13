@@ -7,7 +7,7 @@ export function useAuditoria() {
   const buscarPendentes = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchAPI("/pendentes");
+      const result = await fetchAPI("/auditorias/pendentes");
       return result.bilhetes || [];
     } catch (err) {
       return [];
@@ -22,7 +22,11 @@ export function useAuditoria() {
     motivo?: string,
   ) => {
     try {
-      await fetchAPI("/avaliar", "POST", { numerosRifas, decisao, motivo });
+      await fetchAPI("/auditorias/avaliar", "POST", {
+        numerosRifas,
+        decisao,
+        motivo,
+      });
       return true;
     } catch (error) {
       alert("Falha ao processar a avaliação manual.");
@@ -33,7 +37,7 @@ export function useAuditoria() {
   const auditarEmLoteComIA = async () => {
     setLoading(true);
     try {
-      return await fetchAPI("/auditar-lote", "POST");
+      return await fetchAPI("/auditorias/auditar-lote", "POST");
     } finally {
       setLoading(false);
     }

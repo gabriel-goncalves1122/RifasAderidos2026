@@ -33,7 +33,7 @@ app.get("/status", (req, res) => {
 
 // Entrega TODAS as outras chamadas da API ao nosso Roteador Mestre
 // Tudo o que não for "/status", passa a ser acedido por "/api/..."
-app.use("/api", masterRouter);
+app.use("/", masterRouter);
 
 // ============================================================================
 // 5. EXPORTAÇÃO PARA CLOUD FUNCTIONS (FIREBASE V2)
