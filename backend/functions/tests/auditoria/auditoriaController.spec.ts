@@ -8,12 +8,14 @@ import { AuthRequest } from "../../src/shared/middlewares/authMiddleware";
 const mockListarPendentes = jest.fn<any>();
 const mockAuditarLoteIA = jest.fn<any>();
 const mockProcessarDecisaoManual = jest.fn<any>();
+const mockSalvarExtratoCsv = jest.fn<any>();
 
 jest.mock("../../src/modules/auditoria/auditoriaService", () => ({
   AuditoriaService: {
     listarPendentes: mockListarPendentes,
     auditarLoteIA: mockAuditarLoteIA,
     processarDecisaoManual: mockProcessarDecisaoManual,
+    salvarExtratoCsv: mockSalvarExtratoCsv,
   },
 }));
 
@@ -96,6 +98,54 @@ describe("Auditoria Controller", () => {
         "Falso",
       );
       expect(res.status).toHaveBeenCalledWith(200);
+    });
+  });
+
+  describe("salvarExtrato()", () => {
+    it("Deve retornar 400 se o extrato CSV não for enviado", async () => {
+      req.body = {}; // Corpo vazio, sem extratoCsv
+
+      await auditoriaController.salvarExtrato(
+        req as AuthRequest,
+        res as Response,
+      );
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Extrato não enviado.",
+      });
+      expect(mockSalvarExtratoCsv).not.toHaveBeenCalled();
+    });
+
+    it("Deve repassar o extrato para o Service e retornar 200 em caso de sucesso", async () => {
+      req.body = { extratoCsv: "linha1,linha2" };
+      mockSalvarExtratoCsv.mockResolvedValueOnce(undefined);
+
+      await auditoriaController.salvarExtrato(
+        req as AuthRequest,
+        res as Response,
+      );
+
+      expect(mockSalvarExtratoCsv).toHaveBeenCalledWith("linha1,linha2");
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ sucesso: true });
+    });
+
+    it("Deve retornar 500 se o Service atirar um erro", async () => {
+      req.body = { extratoCsv: "linha1,linha2" };
+      const erroSimulado = new Error("Erro no Firebase");
+      mockSalvarExtratoCsv.mockRejectedValueOnce(erroSimulado);
+
+      await auditoriaController.salvarExtrato(
+        req as AuthRequest,
+        res as Response,
+      );
+
+      expect(console.error).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Erro interno ao salvar o extrato.",
+      });
     });
   });
 });

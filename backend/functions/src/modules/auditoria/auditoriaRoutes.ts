@@ -26,5 +26,11 @@ router.post(
   requireTesourariaOrAdmin,
   auditoriaController.auditarIA,
 );
+router.post(
+  "/extrato",
+  validateToken,
+  requireTesourariaOrAdmin,
+  auditoriaController.salvarExtrato,
+);
 
 export default router;

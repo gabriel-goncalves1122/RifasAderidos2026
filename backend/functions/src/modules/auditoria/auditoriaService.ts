@@ -77,10 +77,16 @@ export class AuditoriaService {
     // O loop continua a usar o seu Axios, que funciona perfeitamente!
     for (const [urlImagem, documentos] of comprovantesMap.entries()) {
       try {
-        const respostaOcr = await axios.post(OCR_API_URL, {
-          comprovanteUrl: urlImagem,
-          extratoCsv: extratoTexto, // <-- Nova linha enviando o texto para o Python
-        });
+        const respostaOcr = await axios.post(
+          OCR_API_URL,
+          {
+            comprovanteUrl: urlImagem,
+            extratoCsv: extratoTexto,
+          },
+          {
+            timeout: 60000, // OBRIGA O EXPRESS A ESPERAR ATÉ 60 SEGUNDOS PELO RENDER
+          },
+        );
 
         const { status, mensagem } = respostaOcr.data;
         const isAprovado = status === "APROVADO";
@@ -203,5 +209,17 @@ export class AuditoriaService {
       .get();
 
     return pendentesSnapshot.docs.map((doc) => doc.data());
+  }
+
+  static async salvarExtratoCsv(extratoTexto: string) {
+    const db = admin.firestore();
+
+    await db.collection("configuracoes").doc("sistema").set(
+      {
+        extrato_csv: extratoTexto,
+        atualizado_em: new Date().toISOString(),
+      },
+      { merge: true },
+    );
   }
 }

@@ -1,32 +1,39 @@
 // ============================================================================
-// ARQUIVO: frontend/tests/api.test.ts
+// ARQUIVO: frontend/tests/api.test.ts (ou auditoria/api.test.tsx)
 // ============================================================================
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fetchAPI } from "../../src/controllers/api";
 import { auth } from "../../src/config/firebase";
 
-// Mock do Firebase Auth
+// Mock do Firebase Auth ATUALIZADO para incluir o signOut
 vi.mock("../../src/config/firebase", () => ({
   auth: {
     currentUser: {
       getIdToken: vi.fn().mockResolvedValue("fake-token-123"),
     },
+    signOut: vi.fn().mockResolvedValue(true), // <- CORREÇÃO: Adicionamos o mock do signOut
   },
 }));
 
 describe("Função Mestra: fetchAPI", () => {
+  const originalLocation = window.location;
+
   beforeEach(() => {
-    // Intercepta o "fetch" nativo do navegador para não bater na internet de verdade
+    // Intercepta o "fetch" nativo do navegador
     global.fetch = vi.fn();
     vi.clearAllMocks();
+
+    // Mock do window.location para testar o redirecionamento sem recarregar a página de testes
+    delete (window as any).location;
+    window.location = { href: "" } as any;
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    window.location = originalLocation;
   });
 
   it("Deve fazer uma requisição GET com autenticação por defeito", async () => {
-    // Simula o backend respondendo "OK"
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ sucesso: true }),
@@ -34,7 +41,6 @@ describe("Função Mestra: fetchAPI", () => {
 
     const resposta = await fetchAPI("/teste");
 
-    // Verifica se montou o cabeçalho Authorization corretamente
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/teste"),
       {
@@ -54,7 +60,6 @@ describe("Função Mestra: fetchAPI", () => {
     });
 
     const body = { nome: "Teste" };
-    // Passamos `false` no último parâmetro para rotas públicas
     const resposta = await fetchAPI("/publico", "POST", body, false);
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -71,32 +76,51 @@ describe("Função Mestra: fetchAPI", () => {
   });
 
   it("Deve atirar um erro de segurança se a rota exigir auth mas o usuário estiver deslogado", async () => {
-    // Escondemos o usuário temporariamente
     const backupUser = auth.currentUser;
     (auth as any).currentUser = null;
 
-    // Tenta fazer a requisição, o nosso api.ts deve barrar imediatamente
     await expect(fetchAPI("/secreto")).rejects.toThrow(
       "Usuário não autenticado no sistema.",
     );
 
-    // Confirma que não chegou sequer a ir à internet
     expect(global.fetch).not.toHaveBeenCalled();
 
-    // Restaura o usuário para os próximos testes
     (auth as any).currentUser = backupUser;
   });
 
-  it("Deve capturar e repassar o erro enviado pelo Backend (ex: 403 Forbidden)", async () => {
-    // Simula o backend atirando um erro (ex: Tentativa de fraude)
+  it("Deve capturar e repassar erros normais (ex: 400 Bad Request)", async () => {
+    // Simulamos um erro 400 normal (dados inválidos), que NÃO desloga o usuário
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: "Erro de validação nos campos." }),
+    });
+
+    await expect(
+      fetchAPI("/validacao", "POST", undefined, false),
+    ).rejects.toThrow("Erro de validação nos campos.");
+
+    // Confirma que não tentou deslogar ninguém num erro 400
+    expect(auth.signOut).not.toHaveBeenCalled();
+  });
+
+  it("MECANISMO DE SEGURANÇA: Deve forçar Logout e Redirecionar em caso de erro 401 ou 403", async () => {
+    // Simulamos o backend atirando 403 (Sessão Expirada ou Acesso Negado)
     (global.fetch as any).mockResolvedValueOnce({
       ok: false,
       status: 403,
       json: async () => ({ error: "Acesso Negado pela Tesouraria" }),
     });
 
+    // Como o fetchAPI vai atirar erro de sessão expirada, testamos a nova mensagem
     await expect(fetchAPI("/admin", "GET", undefined, false)).rejects.toThrow(
-      "Acesso Negado pela Tesouraria",
+      "A sua sessão expirou. Por favor, faça login novamente.",
     );
+
+    // Verifica se a função de logout foi chamada
+    expect(auth.signOut).toHaveBeenCalled();
+
+    // Verifica se forçou o navegador a ir para a página de Login
+    expect(window.location.href).toBe("/login");
   });
 });

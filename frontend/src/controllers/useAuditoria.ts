@@ -34,6 +34,19 @@ export function useAuditoria() {
     }
   };
 
+  const salvarExtratoCsv = async (extratoCsv: string) => {
+    setLoading(true);
+    try {
+      await fetchAPI("/auditorias/extrato", "POST", { extratoCsv });
+      return true;
+    } catch (error) {
+      alert("Falha ao salvar o extrato no servidor.");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const auditarEmLoteComIA = async () => {
     setLoading(true);
     try {
@@ -43,5 +56,11 @@ export function useAuditoria() {
     }
   };
 
-  return { buscarPendentes, avaliarComprovante, auditarEmLoteComIA, loading };
+  return {
+    buscarPendentes,
+    avaliarComprovante,
+    auditarEmLoteComIA,
+    salvarExtratoCsv,
+    loading,
+  };
 }

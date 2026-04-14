@@ -1,7 +1,6 @@
 import { AuditoriaService } from "../../src/modules/auditoria/auditoriaService";
 import { NotificacoesService } from "../../src/modules/notificacoes/notificacoesService";
 import { enviarEmailRecibo } from "../../src/modules/rifas/emailService";
-import * as admin from "firebase-admin";
 import axios from "axios";
 import {
   jest,
@@ -26,11 +25,12 @@ jest.mock("../../src/modules/rifas/emailService", () => ({
 }));
 
 // ============================================================================
-// MOCK BLINDADO DO FIRESTORE (CADEIAS .where().get() SEGURAS)
+// MOCK BLINDADO DO FIRESTORE
 // ============================================================================
 const mockBatchUpdate: any = jest.fn();
 const mockBatchCommit: any = jest.fn();
-const mockFileDelete: any = jest.fn().mockResolvedValue(true as any);
+const mockFileDelete: any = jest.fn<any>().mockResolvedValue(true as any); // Corrigido o tipo 'never'
+const mockDocSet: any = jest.fn();
 
 // Funções de leitura que vamos manipular dentro de cada teste
 const mockCollectionGet: any = jest.fn();
@@ -42,9 +42,11 @@ collectionMock.where = jest.fn().mockReturnValue(collectionMock);
 collectionMock.orderBy = jest.fn().mockReturnValue(collectionMock);
 collectionMock.limit = jest.fn().mockReturnValue(collectionMock);
 collectionMock.get = mockCollectionGet;
+collectionMock.set = mockDocSet;
 collectionMock.doc = jest.fn().mockReturnValue({
   get: mockDocGet,
-  ref: "mock-ref", // Necessário para o batch.update()
+  set: mockDocSet,
+  ref: "mock-ref",
 });
 
 jest.mock("firebase-admin", () => ({
@@ -69,6 +71,7 @@ describe("Service: auditoriaService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Apenas deixamos o mock do console error, o db já não é necessário!
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -97,7 +100,6 @@ describe("Service: auditoriaService", () => {
         { data: () => ({ numero: "00002", status: "pendente" }) },
       ];
 
-      // Controlamos apenas o Get Global
       mockCollectionGet.mockResolvedValueOnce({ docs: mockDocs });
 
       const resultado = await AuditoriaService.listarPendentes();
@@ -128,13 +130,11 @@ describe("Service: auditoriaService", () => {
         ref: "ref1",
       };
 
-      // 1º Get: As rifas
       mockCollectionGet.mockResolvedValueOnce({
         empty: false,
         docs: [mockDocRifa],
         size: 1,
       });
-      // 2º Get: A tabela de configurações (sem extrato_csv)
       mockDocGet.mockResolvedValueOnce({ data: () => ({}) });
 
       await expect(AuditoriaService.auditarLoteIA()).rejects.toThrow(
@@ -238,6 +238,23 @@ describe("Service: auditoriaService", () => {
 
       expect(mockFileDelete).toHaveBeenCalled();
       expect(enviarEmailRecibo).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("salvarExtratoCsv()", () => {
+    it("Deve salvar o texto do extrato na base de dados", async () => {
+      const textoTeste = "DATA,VALOR\n14/04/2026,10.00";
+
+      await AuditoriaService.salvarExtratoCsv(textoTeste);
+
+      // Focamos apenas na validação do SET final, que é o que realmente importa
+      expect(mockDocSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          extrato_csv: textoTeste,
+          atualizado_em: expect.any(String), // Garante que guardou uma data
+        }),
+        { merge: true },
+      );
     });
   });
 });

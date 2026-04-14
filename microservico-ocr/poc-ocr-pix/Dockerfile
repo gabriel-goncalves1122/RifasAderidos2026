@@ -14,5 +14,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiamos o resto do código da IA
 COPY . .
 
-# Comando para ligar o garçom (Gunicorn) na porta que o Render escolher
-CMD ["sh", "-c", "gunicorn --access-logfile - --bind 0.0.0.0:${PORT:-10000} api:app"]
+# Limitamos a 1 worker (para não estourar a RAM), usamos threads para concorrência
+# e damos 120 segundos de timeout (o Tesseract pode demorar no plano free)
+CMD ["sh", "-c", "gunicorn --workers 1 --threads 2 --timeout 120 --access-logfile - --bind 0.0.0.0:${PORT:-10000} api:app"]

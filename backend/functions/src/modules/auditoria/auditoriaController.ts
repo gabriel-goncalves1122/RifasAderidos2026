@@ -71,4 +71,25 @@ export const auditoriaController = {
         .json({ error: "Erro interno ao avaliar comprovante." });
     }
   },
+  async salvarExtrato(req: AuthRequest, res: Response): Promise<any> {
+    try {
+      const { extratoCsv } = req.body;
+
+      // 1. Validação simples no Controller
+      if (!extratoCsv) {
+        return res.status(400).json({ error: "Extrato não enviado." });
+      }
+
+      // 2. Passa a bola para o Service (onde a mágica do banco de dados acontece)
+      await AuditoriaService.salvarExtratoCsv(extratoCsv);
+
+      // 3. Devolve sucesso
+      return res.status(200).json({ sucesso: true });
+    } catch (error: any) {
+      console.error("[Auditoria Controller] Erro ao salvar extrato:", error);
+      return res
+        .status(500)
+        .json({ error: "Erro interno ao salvar o extrato." });
+    }
+  },
 };

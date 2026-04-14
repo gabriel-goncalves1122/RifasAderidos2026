@@ -15,7 +15,7 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import FileUploadIcon from "@mui/icons-material/FileUpload"; // ÍCONE NOVO
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 import { useAuditoria } from "../../../controllers/useAuditoria";
 import { Bilhete } from "../../../types/models";
@@ -23,12 +23,6 @@ import { AuditoriaCard } from "./AuditoriaCard";
 import { ModalRelatorioIA } from "./ModalRelatorioIA";
 import { ModalImagemPix } from "../comuns/ModalImagemPix";
 import { ModalConfirmacaoAuditoria } from "./ModalConfirmacaoAuditoria";
-
-// ============================================================================
-// IMPORTS DO FIREBASE PARA SALVAR O CSV NA NUVEM
-// ============================================================================
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "../../../config/firebase"; // <--- Ajustado de ../../../ para ../../
 
 export interface TransacaoAgrupada {
   comprovante_url: string | null;
@@ -45,8 +39,13 @@ export interface TransacaoAgrupada {
 }
 
 export function AuditoriaTable() {
-  const { buscarPendentes, avaliarComprovante, auditarEmLoteComIA } =
-    useAuditoria();
+  // ADICIONADO: Extraímos o salvarExtratoCsv do hook
+  const {
+    buscarPendentes,
+    avaliarComprovante,
+    auditarEmLoteComIA,
+    salvarExtratoCsv,
+  } = useAuditoria();
 
   const [pendentes, setPendentes] = useState<Bilhete[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -57,7 +56,6 @@ export function AuditoriaTable() {
   const [mensagemIA, setMensagemIA] = useState<string | null>(null);
   const [modalResumoIA, setModalResumoIA] = useState(false);
 
-  // ESTADO NOVO PARA O UPLOAD DO CSV
   const [uploadLoading, setUploadLoading] = useState(false);
 
   const [modalConfirmacao, setModalConfirmacao] = useState<{
@@ -80,7 +78,7 @@ export function AuditoriaTable() {
   }, []);
 
   // ============================================================================
-  // FUNÇÃO MÁGICA QUE LÊ O CSV DO COMPUTADOR E GUARDA O TEXTO NO FIREBASE
+  // FUNÇÃO MÁGICA ATUALIZADA - AGORA PASSA PELO BACKEND (EXPRESS)
   // ============================================================================
   const handleUploadExtrato = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,29 +91,24 @@ export function AuditoriaTable() {
       try {
         const textoCsv = evento.target?.result as string;
 
-        // Escreve o ficheiro na base de dados (Documento: configuracoes/sistema)
-        await setDoc(
-          doc(db, "configuracoes", "sistema"),
-          {
-            extrato_csv: textoCsv,
-            atualizado_em: new Date().toISOString(),
-          },
-          { merge: true },
-        );
+        // NOVA LÓGICA: Envia para a API via Hook
+        const sucesso = await salvarExtratoCsv(textoCsv);
 
-        alert(
-          "✅ Extrato da InfinitePay guardado na nuvem com sucesso! Já pode rodar a IA.",
-        );
+        if (sucesso) {
+          alert(
+            "✅ Extrato da InfinitePay guardado na nuvem com sucesso! Já pode rodar a IA.",
+          );
+        }
       } catch (error) {
-        console.error("Erro ao salvar extrato:", error);
-        alert("❌ Falha ao salvar o extrato na base de dados.");
+        console.error("Erro crítico ao processar extrato:", error);
       } finally {
         setUploadLoading(false);
+        // Limpa o input para permitir subir o mesmo ficheiro de novo, se necessário
+        e.target.value = "";
       }
     };
     reader.readAsText(file);
   };
-
   // Agrupamento das transações
   const transacoesAgrupadas = pendentes.reduce<
     Record<string, TransacaoAgrupada>

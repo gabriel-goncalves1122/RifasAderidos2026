@@ -13,6 +13,8 @@ jest.mock("../../src/modules/auditoria/auditoriaController", () => ({
       res.status(200).json({ acao: "avaliar_manual" }),
     auditarIA: (req: any, res: any) =>
       res.status(200).json({ acao: "auditar_ia" }),
+    salvarExtrato: (req: any, res: any) =>
+      res.status(200).json({ acao: "salvar_extrato" }), // <- ADICIONAR ESTA LINHA
   },
 }));
 
@@ -47,5 +49,11 @@ describe("Rotas: /auditoria", () => {
     const response = await request(app).post("/auditoria/auditar-lote");
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("auditar_ia");
+  });
+
+  it("POST /auditoria/extrato -> deve chamar salvarExtrato", async () => {
+    const response = await request(app).post("/auditoria/extrato");
+    expect(response.status).toBe(200);
+    expect(response.body.acao).toBe("salvar_extrato");
   });
 });
