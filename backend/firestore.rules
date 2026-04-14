@@ -3,24 +3,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    match /usuarios/{documentId} {
-      // LEITURA: Libera se o UID bater OU se o e-mail logado for igual ao e-mail do documento
-      allow read: if request.auth != null && 
-                  (request.auth.uid == resource.data.uid || request.auth.token.email == resource.data.email);
-      
-      // ATUALIZAÇÃO:
-      allow update: if request.auth != null 
-                    && request.auth.token.email == resource.data.email
-                    && (!request.resource.data.keys().hasAny(['cargo']) || request.resource.data.cargo == resource.data.cargo)
-                    && (!request.resource.data.keys().hasAny(['total_arrecadado']) || request.resource.data.total_arrecadado == resource.data.total_arrecadado);
-
-      allow create, delete: if false; 
+    // Ninguém (nenhum telemóvel ou browser) pode escrever diretamente no banco de dados.
+    // Todas as escritas têm de passar pela sua API segura (Express.js).
+    match /{document=**} {
+      allow write: if false; 
     }
 
-    match /{document=**} {
-      // Temporariamente, para o seu sistema funcionar em desenvolvimento, precisamos deixar 
-      // as outras coleções (bilhetes, notificacoes, compradores) abertas para usuários logados.
-      allow read, write: if request.auth != null; 
+    // LEITURAS (Opcionais, dependendo de como o seu Frontend lê os dados)
+    
+    // Se o seu Frontend lê os bilhetes usando a fetchAPI do backend, feche isto também:
+    match /bilhetes/{document=**} {
+      allow read: if false; 
+    }
+
+    // Se o seu Frontend ainda usa onSnapshot() ou getDocs() do SDK Web para os bilhetes:
+    // match /bilhetes/{document=**} {
+    //   allow read: if request.auth != null; 
+    // }
+
+    // NOTA: A coleção "usuarios" precisa de ficar aberta para leitura porque 
+    // o seu Frontend na página de Secretaria usa 'getDocs(collection(db, "usuarios"))'
+    match /usuarios/{documentId} {
+      allow read: if request.auth != null;
     }
   }
 }

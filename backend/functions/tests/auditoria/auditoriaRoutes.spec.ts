@@ -19,6 +19,7 @@ jest.mock("../../src/modules/auditoria/auditoriaController", () => ({
 // 2. MOCK DO MIDDLEWARE
 jest.mock("../../src/shared/middlewares/authMiddleware", () => ({
   validateToken: (req: any, res: any, next: any) => next(), // Deixa passar
+  requireTesourariaOrAdmin: (req: any, res: any, next: any) => next(), // ADICIONE ESTA LINHA
 }));
 
 describe("Rotas: /auditoria", () => {

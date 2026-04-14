@@ -21,6 +21,7 @@ jest.mock("../../src/modules/admin/adminController", () => ({
 // 2. MOCK DO MIDDLEWARE DE AUTENTICAÇÃO
 jest.mock("../../src/shared/middlewares/authMiddleware", () => ({
   validateToken: (req: any, res: any, next: any) => next(), // Deixa passar direto
+  requireTesourariaOrAdmin: (req: any, res: any, next: any) => next(), // ADICIONE ESTA LINHA
 }));
 
 describe("Rotas: /admin", () => {

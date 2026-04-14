@@ -1,10 +1,16 @@
 rules_version = '2';
-
-// Permite leitura e escrita no Storage para qualquer usuário que tenha feito login no sistema
 service firebase.storage {
   match /b/{bucket}/o {
+    
+    // Todos os logados podem ver os comprovativos (para a Tesouraria poder validar)
+    match /comprovantes/{allPaths=**} {
+      allow read: if request.auth != null;
+    }
+
+    // NINGUÉM pode escrever, editar ou apagar ficheiros diretamente pelo Browser/App.
+    // Todas as escritas são feitas pelo Backend (que usa o Admin SDK e ignora estas regras).
     match /{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow write: if false;
     }
   }
 }
