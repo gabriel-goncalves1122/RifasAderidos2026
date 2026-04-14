@@ -31,13 +31,13 @@ jest.mock("firebase-admin", () => {
 });
 
 // Simulamos o serviço de email para não enviar e-mails de verdade durante o teste
-jest.mock("../src/modules/rifas/emailService", () => ({
+jest.mock("../../src/modules/rifas/emailService", () => ({
   enviarEmailRecibo: jest.fn(),
 }));
 
 // Só importamos os nossos arquivos DEPOIS dos mocks estarem montados
-import { RifasService } from "../src/modules/rifas/rifasService";
-import { enviarEmailRecibo } from "../src/modules/rifas/emailService";
+import { RifasService } from "../../src/modules/rifas/rifasService";
+import { enviarEmailRecibo } from "../../src/modules/rifas/emailService";
 
 describe("Rifas Service - Lógica de Negócio", () => {
   beforeEach(() => {

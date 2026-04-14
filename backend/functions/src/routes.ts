@@ -18,7 +18,7 @@ const router = Router();
 // ============================================================================
 router.use("/auth", authRoutes);
 router.use("/rifas", rifasRoutes);
-router.use("/auditoria", auditoriaRoutes);
+router.use("/auditorias", auditoriaRoutes);
 router.use("/premios", premiosRoutes);
 router.use("/notificacoes", notificacoesRoutes);
 router.use("/admin", adminRoutes);

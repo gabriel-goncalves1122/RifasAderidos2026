@@ -5,7 +5,7 @@ import { Request, Response } from "express";
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 
 // 1. Em vez de mockar a base de dados inteira, mockamos apenas o authService!
-jest.mock("../src/modules/auth/authService", () => ({
+jest.mock("../../src/modules/auth/authService", () => ({
   authService: {
     verificarElegibilidade: jest.fn(),
     completarRegisto: jest.fn(),
@@ -13,9 +13,9 @@ jest.mock("../src/modules/auth/authService", () => ({
 }));
 
 // Importamos o serviço mockado para podermos alterar o seu comportamento nos testes
-import { authService } from "../src/modules/auth/authService";
-import { authController } from "../src/modules/auth/authController";
-import { AuthRequest } from "../src/shared/middlewares/authMiddleware"; // Certifique-se que a pasta é 'middlewares'
+import { authService } from "../../src/modules/auth/authService";
+import { authController } from "../../src/modules/auth/authController";
+import { AuthRequest } from "../../src/shared/middlewares/authMiddleware"; // Certifique-se que a pasta é 'middlewares'
 
 describe("Auth Controller - Verificação e Conclusão de Registo", () => {
   let req: Partial<AuthRequest>;

@@ -35,7 +35,7 @@ jest.mock("firebase-admin", () => {
 });
 
 // Importamos a classe após o mock estar pronto (Note o ../src/services/)
-import { PremiosService } from "../src/modules/premios/premiosService";
+import { PremiosService } from "../../src/modules/premios/premiosService";
 
 describe("Prêmios Service", () => {
   beforeEach(() => {

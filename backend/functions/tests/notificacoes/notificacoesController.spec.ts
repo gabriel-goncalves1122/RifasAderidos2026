@@ -3,19 +3,19 @@
 // ============================================================================
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 import { Response } from "express";
-import { AuthRequest } from "../src/shared/middlewares/authMiddleware";
+import { AuthRequest } from "../../src/shared/middlewares/authMiddleware";
 
 const mockBuscarPorEmailAderido = jest.fn<any>();
 const mockMarcarComoLidas = jest.fn<any>();
 
-jest.mock("../src/modules/notificacoes/notificacoesService", () => ({
+jest.mock("../../src/modules/notificacoes/notificacoesService", () => ({
   NotificacoesService: {
     buscarPorEmailAderido: mockBuscarPorEmailAderido,
     marcarComoLidas: mockMarcarComoLidas,
   },
 }));
 
-import { notificacoesController } from "../src/modules/notificacoes/notificacoesController";
+import { notificacoesController } from "../../src/modules/notificacoes/notificacoesController";
 
 describe("Notificações Controller", () => {
   let req: Partial<AuthRequest>;

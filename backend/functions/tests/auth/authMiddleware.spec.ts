@@ -21,7 +21,7 @@ jest.mock("firebase-admin", () => ({
 import {
   validateToken,
   AuthRequest,
-} from "../src/shared/middlewares/authMiddleware";
+} from "../../src/shared/middlewares/authMiddleware";
 
 // ============================================================================
 // SUÍTE DE TESTES: MIDDLEWARE DE AUTENTICAÇÃO (O "Porteiro" da API)
