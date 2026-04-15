@@ -296,7 +296,9 @@ export function AuditoriaTable() {
               )
             }
           >
-            {carregandoIA ? "Analisando Fila..." : "Rodar Triagem IA"}
+            {carregandoIA
+              ? "Analisando Fila (pode demorar alguns minutos)..."
+              : "Rodar Triagem IA"}
           </Button>
         </Box>
       </Box>

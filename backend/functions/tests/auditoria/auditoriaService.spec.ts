@@ -1,7 +1,7 @@
 import { AuditoriaService } from "../../src/modules/auditoria/auditoriaService";
 import { NotificacoesService } from "../../src/modules/notificacoes/notificacoesService";
 import { enviarEmailRecibo } from "../../src/modules/rifas/emailService";
-import axios from "axios";
+import { OcrService } from "../../src/modules/auditoria/ocrLogic/OcrService"; // Importamos o novo serviço
 import {
   jest,
   describe,
@@ -12,9 +12,10 @@ import {
 } from "@jest/globals";
 
 // ============================================================================
-// MOCKS DE DEPENDÊNCIAS EXTERNAS
+// MOCKS DE DEPENDÊNCIAS EXTERNAS E SERVIÇOS
 // ============================================================================
-jest.mock("axios");
+
+// 1. Mock do serviço de notificações e emails
 jest.mock("../../src/modules/notificacoes/notificacoesService", () => ({
   NotificacoesService: {
     criarNotificacaoRecusa: jest.fn(),
@@ -24,19 +25,27 @@ jest.mock("../../src/modules/rifas/emailService", () => ({
   enviarEmailRecibo: jest.fn(),
 }));
 
+// 2. MOCK DO OCR: Evita carregar o Tesseract e o pdf-parse no Jest, resolvendo o erro do DOMMatrix!
+jest.mock("../../src/modules/auditoria/ocrLogic/OcrService", () => ({
+  OcrService: {
+    processarComprovante: jest.fn(),
+  },
+}));
+
+// Mock extra global para bibliotecas conflituosas com o Jest (Garante blindagem total)
+jest.mock("pdf-parse", () => jest.fn());
+
 // ============================================================================
 // MOCK BLINDADO DO FIRESTORE
 // ============================================================================
 const mockBatchUpdate: any = jest.fn();
 const mockBatchCommit: any = jest.fn();
-const mockFileDelete: any = jest.fn<any>().mockResolvedValue(true as any); // Corrigido o tipo 'never'
+const mockFileDelete: any = jest.fn<any>().mockResolvedValue(true as any);
 const mockDocSet: any = jest.fn();
 
-// Funções de leitura que vamos manipular dentro de cada teste
 const mockCollectionGet: any = jest.fn();
 const mockDocGet: any = jest.fn();
 
-// O objeto da Coleção que se devolve a si mesmo para permitir o encadeamento
 const collectionMock: any = {};
 collectionMock.where = jest.fn().mockReturnValue(collectionMock);
 collectionMock.orderBy = jest.fn().mockReturnValue(collectionMock);
@@ -71,7 +80,6 @@ describe("Service: auditoriaService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Apenas deixamos o mock do console error, o db já não é necessário!
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -121,7 +129,8 @@ describe("Service: auditoriaService", () => {
         jaAvaliados: 0,
         total: 0,
       });
-      expect(axios.post).not.toHaveBeenCalled();
+      // Verificamos o OcrService em vez do axios
+      expect(OcrService.processarComprovante).not.toHaveBeenCalled();
     });
 
     it("Deve atirar erro se o extrato CSV não estiver configurado no sistema", async () => {
@@ -142,7 +151,7 @@ describe("Service: auditoriaService", () => {
       );
     });
 
-    it("Deve processar lote, chamar IA e atualizar rifas como pré-aprovadas", async () => {
+    it("Deve processar lote, chamar OCR Local e atualizar rifas como pré-aprovadas", async () => {
       const mockDocRifa = {
         data: () => ({ comprovante_url: "url_imagem" }),
         ref: "ref_bilhete",
@@ -157,15 +166,22 @@ describe("Service: auditoriaService", () => {
         data: () => ({ extrato_csv: "linha1,linha2" }),
       });
 
-      (axios.post as any).mockResolvedValueOnce({
-        data: { status: "APROVADO", mensagem: "Valor exato." },
+      // Configuramos a resposta simulada (mock) do nosso novo serviço local
+      (OcrService.processarComprovante as any).mockResolvedValueOnce({
+        status: "APROVADO",
+        mensagem: "Validado por ID e Valor.",
       });
 
       const resultado = await AuditoriaService.auditarLoteIA();
 
-      expect(axios.post).toHaveBeenCalled();
+      // Verificamos se o motor OCR foi chamado
+      expect(OcrService.processarComprovante).toHaveBeenCalledWith(
+        "url_imagem",
+        "linha1,linha2",
+      );
+
       expect(mockBatchUpdate).toHaveBeenCalledWith("ref_bilhete", {
-        log_automacao: "✅ Pré-aprovado pela IA: Valor exato.",
+        log_automacao: "✅ Pré-aprovado pela IA: Validado por ID e Valor.",
       });
       expect(mockBatchCommit).toHaveBeenCalled();
       expect(resultado.preAprovados).toBe(1);
@@ -247,11 +263,10 @@ describe("Service: auditoriaService", () => {
 
       await AuditoriaService.salvarExtratoCsv(textoTeste);
 
-      // Focamos apenas na validação do SET final, que é o que realmente importa
       expect(mockDocSet).toHaveBeenCalledWith(
         expect.objectContaining({
           extrato_csv: textoTeste,
-          atualizado_em: expect.any(String), // Garante que guardou uma data
+          atualizado_em: expect.any(String),
         }),
         { merge: true },
       );

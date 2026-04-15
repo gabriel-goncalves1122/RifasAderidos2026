@@ -1,5 +1,5 @@
 // ============================================================================
-// ARQUIVO: frontend/src/views/components/ModalRelatorioIA.tsx
+// ARQUIVO: frontend/src/views/components/tesouraria/ModalRelatorioIA.tsx
 // ============================================================================
 import { useState } from "react";
 import {
@@ -14,26 +14,17 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  IconButton,
-  TextField,
-  Alert,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import PersonSearchIcon from "@mui/icons-material/PersonSearch";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import CloseIcon from "@mui/icons-material/Close";
-import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
-import SendIcon from "@mui/icons-material/Send";
 import { TransacaoAgrupada } from "./AuditoriaTable";
+import { CardAuditoriaIA } from "./CardAuditoriaIA";
+import { ModalInspecaoIA } from "./ModalInspecaoIA";
 
-// Função para tentar extrair os dados da string que a API Python nos envia
-const extrairDadosIA = (log: string | undefined) => {
+// Função utilitária para fatiar as strings
+export const extrairDadosIA = (log: string | undefined) => {
   if (!log) return null;
   const bancoMatch = log.match(/Banco \[(.*?)\]/);
   const idMatch = log.match(/- ID (.*?)(?: \| lido|$)/);
@@ -99,223 +90,6 @@ export function ModalRelatorioIA({
     setMotivos((prev) => ({ ...prev, [idIdentificador]: "" }));
   };
 
-  const renderCardDetalhe = (t: TransacaoAgrupada, sucesso: boolean) => {
-    const msgReal = t.ia_mensagem || t.log_automacao;
-    const dados = extrairDadosIA(msgReal);
-    const idIdentificador = t.comprovante_url || t.bilhetes[0];
-    const valor = (t.bilhetes.length * 10).toFixed(2).replace(".", ",");
-
-    return (
-      <Box
-        key={idIdentificador}
-        sx={{
-          mb: 3,
-          p: 2,
-          border: "1px solid",
-          borderColor: sucesso ? "success.light" : "warning.light",
-          borderRadius: 2,
-          bgcolor: sucesso ? "#fcfdfc" : "#fffcf2",
-        }}
-      >
-        {/* CABEÇALHO DO CARD */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            mb: 1.5,
-            flexWrap: "wrap",
-            gap: 1,
-          }}
-        >
-          <Box>
-            <Typography
-              variant="subtitle2"
-              fontWeight="bold"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-                color: "text.primary",
-              }}
-            >
-              <AssignmentIndIcon fontSize="small" color="primary" /> Vendedor:{" "}
-              {t.vendedor_nome}
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}
-            >
-              <PersonSearchIcon fontSize="small" color="action" /> Comprador
-              Esperado: <strong>{t.comprador_nome}</strong>
-            </Typography>
-          </Box>
-          <Box sx={{ textAlign: "right" }}>
-            <Typography variant="h6" fontWeight="bold" color="success.main">
-              R$ {valor}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {t.bilhetes.length} rifas
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* ALERTA DA IA */}
-        <Alert severity={sucesso ? "success" : "warning"} sx={{ mb: 2, py: 0 }}>
-          {msgReal || "Sem parecer da IA"}
-        </Alert>
-
-        {/* DADOS EXTRAÍDOS (Substituído o Grid por Box display="grid" seguro) */}
-        {dados && (dados.banco || dados.idTransacao) && (
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 2fr" },
-              gap: 1.5,
-              mb: 2,
-            }}
-          >
-            {dados.banco && (
-              <Box
-                sx={{
-                  p: 1,
-                  bgcolor: "white",
-                  borderRadius: 1,
-                  border: "1px solid #eee",
-                  height: "100%",
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="block"
-                >
-                  Banco de Origem
-                </Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  {dados.banco}
-                </Typography>
-              </Box>
-            )}
-            {dados.titularLido && (
-              <Box
-                sx={{
-                  p: 1,
-                  bgcolor: "white",
-                  borderRadius: 1,
-                  border: "1px solid #eee",
-                  height: "100%",
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="block"
-                >
-                  Titular Lido no Comprovante
-                </Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  {dados.titularLido}
-                </Typography>
-              </Box>
-            )}
-            {dados.idTransacao && (
-              <Box
-                sx={{
-                  gridColumn: "1 / -1",
-                  p: 1,
-                  bgcolor: "white",
-                  borderRadius: 1,
-                  border: "1px solid #eee",
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="block"
-                >
-                  ID da Transação Extraído
-                </Typography>
-                <Typography
-                  variant="body2"
-                  fontWeight="bold"
-                  sx={{ wordBreak: "break-all", fontFamily: "monospace" }}
-                >
-                  {dados.idTransacao}
-                </Typography>
-              </Box>
-            )}
-          </Box>
-        )}
-
-        {/* ÁREA DE AÇÕES */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            gap: 2,
-            alignItems: { sm: "center" },
-            justifyContent: "space-between",
-            mt: 2,
-            pt: 2,
-            borderTop: "1px dashed #e0e0e0",
-          }}
-        >
-          <Button
-            size="small"
-            variant="outlined"
-            color="primary"
-            startIcon={<VisibilityIcon />}
-            disabled={!t.comprovante_url}
-            onClick={() => setTransacaoComparacao(t)}
-          >
-            Inspecionar Imagem
-          </Button>
-
-          {!sucesso && (
-            <Box
-              sx={{ display: "flex", flex: 1, gap: 1, maxWidth: { sm: "60%" } }}
-            >
-              <TextField
-                fullWidth
-                size="small"
-                label="Motivo da Recusa"
-                variant="outlined"
-                color="error"
-                placeholder="Ex: Não encontrei o ID no sistema..."
-                value={motivos[idIdentificador] || ""}
-                onChange={(e) =>
-                  setMotivos((prev) => ({
-                    ...prev,
-                    [idIdentificador]: e.target.value,
-                  }))
-                }
-              />
-              <Button
-                variant="contained"
-                color="error"
-                sx={{ minWidth: "130px" }}
-                endIcon={<SendIcon />}
-                onClick={() =>
-                  handleRecusar(idIdentificador, t.comprovante_url, t.bilhetes)
-                }
-              >
-                Recusar
-              </Button>
-            </Box>
-          )}
-        </Box>
-      </Box>
-    );
-  };
-
-  const dadosComparacao = transacaoComparacao
-    ? extrairDadosIA(
-        transacaoComparacao.ia_mensagem || transacaoComparacao.log_automacao,
-      )
-    : null;
-
   return (
     <>
       <Dialog
@@ -345,12 +119,7 @@ export function ModalRelatorioIA({
 
           <Accordion
             defaultExpanded
-            sx={{
-              borderLeft: "5px solid",
-              borderColor: "success.main",
-              mb: 2,
-              overflow: "hidden",
-            }}
+            sx={{ borderLeft: "5px solid", borderColor: "success.main", mb: 2 }}
           >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
@@ -361,7 +130,7 @@ export function ModalRelatorioIA({
                 Pré-Aprovados com Sucesso ({aprovadas.length})
               </Typography>
             </AccordionSummary>
-            <AccordionDetails sx={{ bgcolor: "white" }}>
+            <AccordionDetails sx={{ bgcolor: "white", p: { xs: 1, sm: 2 } }}>
               {aprovadas.length === 0 ? (
                 <Typography
                   variant="body2"
@@ -385,15 +154,32 @@ export function ModalRelatorioIA({
                     <Button
                       variant="contained"
                       color="success"
-                      size="large"
                       onClick={() => onAprovarLote(aprovadas)}
                       startIcon={<CheckCircleIcon />}
+                      sx={{ width: { xs: "100%", sm: "auto" } }}
                     >
-                      Carimbar e Aprovar todos os {aprovadas.length}{" "}
-                      comprovantes
+                      Aprovar todos os {aprovadas.length}
                     </Button>
                   </Box>
-                  {aprovadas.map((t) => renderCardDetalhe(t, true))}
+                  {aprovadas.map((t) => (
+                    <CardAuditoriaIA
+                      key={t.comprovante_url || t.bilhetes[0]}
+                      transacao={t}
+                      sucesso={true}
+                      dadosExtraidos={extrairDadosIA(
+                        t.ia_mensagem || t.log_automacao,
+                      )}
+                      motivo={motivos[t.comprovante_url || t.bilhetes[0]] || ""}
+                      onMotivoChange={(m) =>
+                        setMotivos((prev) => ({
+                          ...prev,
+                          [t.comprovante_url || t.bilhetes[0]]: m,
+                        }))
+                      }
+                      onInspecionar={() => setTransacaoComparacao(t)}
+                      onRecusar={() => {}}
+                    />
+                  ))}
                 </>
               )}
             </AccordionDetails>
@@ -401,11 +187,7 @@ export function ModalRelatorioIA({
 
           <Accordion
             defaultExpanded
-            sx={{
-              borderLeft: "5px solid",
-              borderColor: "warning.main",
-              overflow: "hidden",
-            }}
+            sx={{ borderLeft: "5px solid", borderColor: "warning.main" }}
           >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
@@ -416,7 +198,7 @@ export function ModalRelatorioIA({
                 Requerem Auditoria Manual ({divergentes.length})
               </Typography>
             </AccordionSummary>
-            <AccordionDetails sx={{ bgcolor: "white" }}>
+            <AccordionDetails sx={{ bgcolor: "white", p: { xs: 1, sm: 2 } }}>
               {divergentes.length === 0 ? (
                 <Typography
                   variant="body2"
@@ -426,7 +208,31 @@ export function ModalRelatorioIA({
                   A IA não encontrou nenhuma divergência! O lote foi perfeito.
                 </Typography>
               ) : (
-                divergentes.map((t) => renderCardDetalhe(t, false))
+                divergentes.map((t) => (
+                  <CardAuditoriaIA
+                    key={t.comprovante_url || t.bilhetes[0]}
+                    transacao={t}
+                    sucesso={false}
+                    dadosExtraidos={extrairDadosIA(
+                      t.ia_mensagem || t.log_automacao,
+                    )}
+                    motivo={motivos[t.comprovante_url || t.bilhetes[0]] || ""}
+                    onMotivoChange={(m) =>
+                      setMotivos((prev) => ({
+                        ...prev,
+                        [t.comprovante_url || t.bilhetes[0]]: m,
+                      }))
+                    }
+                    onInspecionar={() => setTransacaoComparacao(t)}
+                    onRecusar={() =>
+                      handleRecusar(
+                        t.comprovante_url || t.bilhetes[0],
+                        t.comprovante_url,
+                        t.bilhetes,
+                      )
+                    }
+                  />
+                ))
               )}
             </AccordionDetails>
           </Accordion>
@@ -436,217 +242,19 @@ export function ModalRelatorioIA({
           sx={{ p: 2, bgcolor: "#fff", borderTop: "1px solid #eee" }}
         >
           <Button onClick={onClose} variant="outlined" color="primary">
-            Fechar e Voltar à Fila Principal
+            Fechar
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={!!transacaoComparacao}
+      <ModalInspecaoIA
+        transacao={transacaoComparacao}
+        dadosOcr={extrairDadosIA(
+          transacaoComparacao?.ia_mensagem ||
+            transacaoComparacao?.log_automacao,
+        )}
         onClose={() => setTransacaoComparacao(null)}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 2 } }}
-      >
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            bgcolor: "#111",
-            color: "white",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <CompareArrowsIcon /> Inspetor de Comprovativo (Acareação)
-          </Box>
-          <IconButton
-            onClick={() => setTransacaoComparacao(null)}
-            sx={{ color: "white" }}
-            size="small"
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent
-          dividers
-          sx={{
-            p: 0,
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            bgcolor: "#eee",
-          }}
-        >
-          <Box
-            sx={{
-              flex: { md: 7 },
-              bgcolor: "#222",
-              minHeight: "50vh",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              p: 2,
-            }}
-          >
-            {transacaoComparacao?.comprovante_url && (
-              <img
-                src={transacaoComparacao.comprovante_url}
-                alt="Comprovante Pix"
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "80vh",
-                  objectFit: "contain",
-                  borderRadius: "4px",
-                }}
-              />
-            )}
-          </Box>
-
-          <Box
-            sx={{
-              flex: { md: 5 },
-              p: 3,
-              display: "flex",
-              flexDirection: "column",
-              gap: 3,
-              bgcolor: "white",
-            }}
-          >
-            <Typography
-              variant="h6"
-              fontWeight="bold"
-              color="primary.main"
-              sx={{
-                borderBottom: "2px solid",
-                borderColor: "primary.main",
-                pb: 1,
-              }}
-            >
-              Dados Extraídos (OCR)
-            </Typography>
-
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                display="flex"
-                alignItems="center"
-                gap={0.5}
-              >
-                <ReceiptLongIcon fontSize="small" /> ID da Transação Pix:
-              </Typography>
-              <Box
-                sx={{
-                  p: 1.5,
-                  bgcolor: "#f8f9fa",
-                  borderRadius: 1,
-                  border: "1px solid #ddd",
-                  mt: 0.5,
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  fontWeight="bold"
-                  sx={{
-                    wordBreak: "break-all",
-                    fontFamily: "monospace",
-                    color: dadosComparacao?.idTransacao
-                      ? "text.primary"
-                      : "error.main",
-                  }}
-                >
-                  {dadosComparacao?.idTransacao || "NÃO LOCALIZADO NA IMAGEM"}
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* O segundo Box seguro no lugar do Grid */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                gap: 2,
-              }}
-            >
-              <Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="flex"
-                  alignItems="center"
-                  gap={0.5}
-                >
-                  <PersonSearchIcon fontSize="small" /> Titular (Lido):
-                </Typography>
-                <Typography
-                  variant="body1"
-                  fontWeight="bold"
-                  mt={0.5}
-                  color={
-                    dadosComparacao?.titularLido
-                      ? "text.primary"
-                      : "text.secondary"
-                  }
-                >
-                  {dadosComparacao?.titularLido || "Desconhecido"}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="flex"
-                  alignItems="center"
-                  gap={0.5}
-                >
-                  <AccountBalanceIcon fontSize="small" /> Banco (Lido):
-                </Typography>
-                <Typography
-                  variant="body1"
-                  fontWeight="bold"
-                  mt={0.5}
-                  color={
-                    dadosComparacao?.banco ? "text.primary" : "text.secondary"
-                  }
-                >
-                  {dadosComparacao?.banco || "Desconhecido"}
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                mt: "auto",
-                p: 2,
-                bgcolor: "#fffdf5",
-                borderRadius: 2,
-                border: "1px dashed #ffc107",
-              }}
-            >
-              <Typography
-                variant="caption"
-                color="warning.dark"
-                fontWeight="bold"
-                display="block"
-                mb={1}
-              >
-                EXPECTATIVA DO SISTEMA:
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                O aderente informou que o titular da conta pagadora seria:
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                fontWeight="bold"
-                color="text.primary"
-              >
-                {transacaoComparacao?.comprador_nome}
-              </Typography>
-            </Box>
-          </Box>
-        </DialogContent>
-      </Dialog>
+      />
     </>
   );
 }

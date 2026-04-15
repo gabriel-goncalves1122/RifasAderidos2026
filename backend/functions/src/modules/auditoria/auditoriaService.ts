@@ -1,10 +1,12 @@
 // ============================================================================
-// ARQUIVO: backend/functions/src/services/auditoriaService.ts
+// ARQUIVO: backend/functions/src/modules/auditoria/auditoriaService.ts
 // ============================================================================
 import * as admin from "firebase-admin";
-import axios from "axios";
 import { NotificacoesService } from "../notificacoes/notificacoesService";
 import { enviarEmailRecibo } from "../rifas/emailService";
+import { OcrService } from "./ocrLogic/OcrService"; // IMPORTANTE: Nova importação do serviço local!
+
+// Removemos a importação do axios, pois não vamos mais fazer requisições externas para o OCR
 
 export class AuditoriaService {
   static extrairCaminhoStorage(url: string): string | null {
@@ -67,51 +69,52 @@ export class AuditoriaService {
     let divergentes = 0;
     const batch = db.batch();
 
-    // ========================================================================
-    // MUDANÇA PARA TESTE REMOTO: Apontar para o Python do RENDER
-    // ========================================================================
-    const OCR_API_URL =
-      process.env.OCR_API_URL ||
-      "https://rifasaderidos2026.onrender.com/api/validar-pix";
+    // Converte o Map para um array para podermos fatiar (processamento em lotes)
+    const transacoes = Array.from(comprovantesMap.entries());
 
-    // O loop continua a usar o seu Axios, que funciona perfeitamente!
-    for (const [urlImagem, documentos] of comprovantesMap.entries()) {
-      try {
-        const respostaOcr = await axios.post(
-          OCR_API_URL,
-          {
-            comprovanteUrl: urlImagem,
-            extratoCsv: extratoTexto,
-          },
-          {
-            timeout: 60000, // OBRIGA O EXPRESS A ESPERAR ATÉ 60 SEGUNDOS PELO RENDER
-          },
-        );
+    // Podemos aumentar a concorrência agora que estamos no Node/Firebase
+    // O Firebase lidará com as threads nativamente. Vamos processar 3 ou 4 de cada vez.
+    const LIMITE_CONCORRENCIA = 3;
 
-        const { status, mensagem } = respostaOcr.data;
-        const isAprovado = status === "APROVADO";
+    for (let i = 0; i < transacoes.length; i += LIMITE_CONCORRENCIA) {
+      const loteAtual = transacoes.slice(i, i + LIMITE_CONCORRENCIA);
 
-        const logParaSalvar = isAprovado
-          ? `✅ Pré-aprovado pela IA: ${mensagem}`
-          : `⚠️ Divergência: ${mensagem}`;
+      // Dispara as validações locais em simultâneo
+      await Promise.all(
+        loteAtual.map(async ([urlImagem, documentos]) => {
+          try {
+            // ADEUS AXIOS, OLA PROCESSAMENTO LOCAL!
+            const respostaOcr = await OcrService.processarComprovante(
+              urlImagem,
+              extratoTexto,
+            );
 
-        if (isAprovado) {
-          preAprovados += documentos.length;
-        } else {
-          divergentes += documentos.length;
-        }
+            const { status, mensagem } = respostaOcr;
+            const isAprovado = status === "APROVADO";
 
-        documentos.forEach((doc) =>
-          batch.update(doc.ref, { log_automacao: logParaSalvar }),
-        );
-      } catch (err) {
-        documentos.forEach((doc) =>
-          batch.update(doc.ref, {
-            log_automacao: `❌ Erro de comunicação com a IA OCR.`,
-          }),
-        );
-        divergentes += documentos.length;
-      }
+            const logParaSalvar = isAprovado
+              ? `✅ Pré-aprovado pela IA: ${mensagem}`
+              : `⚠️ Divergência: ${mensagem}`;
+
+            if (isAprovado) {
+              preAprovados += documentos.length;
+            } else {
+              divergentes += documentos.length;
+            }
+
+            documentos.forEach((doc) =>
+              batch.update(doc.ref, { log_automacao: logParaSalvar }),
+            );
+          } catch (err) {
+            documentos.forEach((doc) =>
+              batch.update(doc.ref, {
+                log_automacao: `❌ Erro de comunicação com o motor OCR local.`,
+              }),
+            );
+            divergentes += documentos.length;
+          }
+        }),
+      );
     }
 
     await batch.commit();
