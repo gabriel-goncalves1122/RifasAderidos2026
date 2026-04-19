@@ -12,6 +12,7 @@ const mockBuscarPorAderido = jest.fn<any>();
 const mockProcessarVenda = jest.fn<any>();
 const mockObterRelatorio = jest.fn<any>();
 const mockObterHistorico = jest.fn<any>();
+const mockCorrigirRifasRecusadas = jest.fn<any>(); // <-- NOVO MOCK
 
 jest.mock("../../src/modules/rifas/rifasService", () => ({
   RifasService: {
@@ -19,6 +20,7 @@ jest.mock("../../src/modules/rifas/rifasService", () => ({
     processarVenda: mockProcessarVenda,
     obterRelatorioTesouraria: mockObterRelatorio,
     obterHistoricoDetalhado: mockObterHistorico,
+    corrigirRifasRecusadas: mockCorrigirRifasRecusadas, // <-- REGISTO DO MOCK
   },
 }));
 
@@ -140,6 +142,91 @@ describe("Rifas Controller", () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         historico: [{ status: "pago" }],
+      });
+    });
+  });
+
+  // ========================================================================
+  // NOVOS TESTES PARA A ROTA DE CORREÇÃO DE RECUSADAS
+  // ========================================================================
+  describe("5. corrigirRecusadas()", () => {
+    it("Deve retornar 401 se o utilizador não tiver e-mail no token", async () => {
+      req.user = { uid: "123" } as any; // Token válido, mas sem e-mail
+      await rifasController.corrigirRecusadas(
+        req as AuthRequest,
+        res as Response,
+      );
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Utilizador não autenticado.",
+      });
+    });
+
+    it("Deve retornar 400 se faltarem dados obrigatórios (ex: array vazio ou sem URL)", async () => {
+      req.body = { numerosRifas: [] }; // Inválido
+      await rifasController.corrigirRecusadas(
+        req as AuthRequest,
+        res as Response,
+      );
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Dados incompletos para correção.",
+      });
+    });
+
+    it("Deve chamar o serviço de correção e retornar 200 em caso de sucesso", async () => {
+      req.body = {
+        numerosRifas: ["010"],
+        nome: "Novo Nome",
+        telefone: "11999999999",
+        email: "novo@teste.com",
+        comprovanteUrl: "https://minha-url.com/novo.pdf",
+      };
+
+      mockCorrigirRifasRecusadas.mockResolvedValueOnce(true);
+
+      await rifasController.corrigirRecusadas(
+        req as AuthRequest,
+        res as Response,
+      );
+
+      expect(mockCorrigirRifasRecusadas).toHaveBeenCalledWith(
+        "teste@teste.com",
+        ["010"],
+        {
+          nome: "Novo Nome",
+          telefone: "11999999999",
+          email: "novo@teste.com",
+          comprovanteUrl: "https://minha-url.com/novo.pdf",
+        },
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        sucesso: true,
+        mensagem: "Rifas reenviadas para análise com sucesso!",
+      });
+    });
+
+    it("Deve capturar erros atirados pelo serviço e retornar 500", async () => {
+      req.body = {
+        numerosRifas: ["010"],
+        comprovanteUrl: "https://minha-url.com",
+      };
+
+      mockCorrigirRifasRecusadas.mockRejectedValueOnce(
+        new Error("Falha no Banco"),
+      );
+
+      await rifasController.corrigirRecusadas(
+        req as AuthRequest,
+        res as Response,
+      );
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Erro interno ao processar correção.",
       });
     });
   });

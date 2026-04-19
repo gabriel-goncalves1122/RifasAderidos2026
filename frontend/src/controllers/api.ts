@@ -1,6 +1,6 @@
 import { auth } from "../config/firebase";
 
-const API_BASE_URL = import.meta.env.PROD
+const API_BASE_URL = (import.meta as any).env.PROD
   ? "https://us-central1-rifasaderidos2026.cloudfunctions.net/api"
   : "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api";
 
@@ -24,14 +24,29 @@ export async function fetchAPI(
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const options: RequestInit = { method, headers };
+    const options: RequestInit = { method, headers, cache: "no-store" };
     if (body) options.body = JSON.stringify(body);
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-    const data = await response.json();
+
+    // ========================================================================
+    // CORREÇÃO: Lemos como texto primeiro para não estoirar se o servidor devolver HTML (Ex: 404 ou 502)
+    // ========================================================================
+    const rawText = await response.text();
+    let data;
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch (parseError) {
+      console.warn(
+        "Aviso: A resposta da API não é um JSON válido. Retorno bruto:",
+        rawText,
+      );
+      data = {
+        error: `Resposta inesperada do servidor (HTML/Texto) - Status: ${response.status}`,
+      };
+    }
 
     if (!response.ok) {
-      // NOVA LÓGICA DE PROTEÇÃO AQUI:
       if (response.status === 401 || response.status === 403) {
         await auth.signOut();
         window.location.href = "/login"; // Força o utilizador a voltar ao início

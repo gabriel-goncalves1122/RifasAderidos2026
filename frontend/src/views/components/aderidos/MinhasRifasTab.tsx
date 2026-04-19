@@ -1,38 +1,42 @@
 // ============================================================================
-// ARQUIVO: frontend/src/views/components/MinhasRifasTab.tsx
+// ARQUIVO: frontend/src/views/components/aderidos/MinhasRifasTab.tsx
 // ============================================================================
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  Paper,
   CircularProgress,
-  Chip,
   Tooltip,
   IconButton,
   Select,
   MenuItem,
   FormControl,
+  Button,
   Badge,
 } from "@mui/material";
 
-// Ícones
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 
 // Sub-componentes
 import { CheckoutModal } from "./CheckoutModal";
 import { NotificacoesSidebar } from "../comuns/NotificacoesSidebar";
 import { CarrinhoFlutuante } from "./CarrinhoFlutuante";
+import { EstatisticasAderido } from "./EstatiticasAderidos";
+import { AbaRecusadas } from "./AbaRecusadas";
+import { ModalCorrecaoRecusa } from "./ModalCorrecaoRecusa";
+import { ModalDetalhesRifa } from "./ModalDetalhesRifas";
+import { GrelhaRifas } from "./GrelhasRifas"; // <-- NOVO IMPORT
 
 // Controladores
-import { useRifas } from "../../../controllers/useRifas"; // <-- IMPORT CORRIGIDO
+import { useRifas } from "../../../controllers/useRifas";
 import { useAuthController } from "../../../controllers/useAuthController";
 import { useNotificacoes } from "../../../controllers/useNotificacoes";
 
+type VisaoType = "geral" | "recusadas";
+
 export function MinhasRifasTab() {
-  const { buscarMinhasRifas } = useRifas();
+  const { buscarMinhasRifas, corrigirRifasRecusadas } = useRifas();
   const { buscarNotificacoes, marcarNotificacoesLidas } = useNotificacoes();
   const { usuarioAtual } = useAuthController();
 
@@ -40,13 +44,19 @@ export function MinhasRifasTab() {
   const [notificacoes, setNotificacoes] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
 
+  const [visaoAtual, setVisaoAtual] = useState<VisaoType>("geral");
   const [selecionadas, setSelecionadas] = useState<string[]>([]);
   const [filtro, setFiltro] = useState<string>("todas");
 
-  // Controle de Modais
+  // Modais
   const [modalCheckoutAberto, setModalCheckoutAberto] = useState(false);
   const [drawerNotificacoesAberto, setDrawerNotificacoesAberto] =
     useState(false);
+  const [modalCorrecaoAberto, setModalCorrecaoAberto] = useState(false);
+
+  // Dados Selecionados
+  const [grupoParaCorrigir, setGrupoParaCorrigir] = useState<any>(null);
+  const [rifaParaDetalhes, setRifaParaDetalhes] = useState<any>(null);
 
   const carregarDadosIniciais = async () => {
     setCarregando(true);
@@ -67,7 +77,6 @@ export function MinhasRifasTab() {
   const abrirSidebarNotificacoes = async () => {
     setDrawerNotificacoesAberto(true);
     const naoLidas = notificacoes.filter((n) => !n.lida).map((n) => n.id);
-
     if (naoLidas.length > 0) {
       await marcarNotificacoesLidas(naoLidas);
       setNotificacoes((prev) => prev.map((n) => ({ ...n, lida: true })));
@@ -89,7 +98,23 @@ export function MinhasRifasTab() {
     await carregarDadosIniciais();
   };
 
-  // Cálculos Derivados
+  const handleReenviarComprovante = async (
+    numeros: string[],
+    novoComprovante: File,
+    dadosAtualizados: any,
+  ) => {
+    const sucesso = await corrigirRifasRecusadas(
+      numeros,
+      novoComprovante,
+      dadosAtualizados,
+    );
+    if (sucesso) {
+      await carregarDadosIniciais();
+      setVisaoAtual("geral");
+    }
+  };
+
+  // Processamento de Dados
   const rifasFiltradas = minhasRifas.filter(
     (r) => filtro === "todas" || r.status === filtro,
   );
@@ -97,280 +122,138 @@ export function MinhasRifasTab() {
     minhasRifas.filter((r) => r.status === "pago").length * 10;
   const notificacoesNaoLidas = notificacoes.filter((n) => !n.lida).length;
 
-  const nomeCompleto =
-    (usuarioAtual as any)?.nome ||
-    (usuarioAtual as any)?.displayName ||
-    "Aderido";
-  const primeiroNome = nomeCompleto.split(" ")[0];
+  const rifasRecusadas = minhasRifas.filter((r) => r.status === "recusado");
+  const gruposRecusados = Object.values(
+    rifasRecusadas.reduce((acc: any, rifa) => {
+      const dataBase = rifa.data_reserva
+        ? rifa.data_reserva.split("T")[0]
+        : "sem-data";
+      const key = `${rifa.comprador_nome}-${dataBase}-${rifa.motivo_recusa}`;
+      if (!acc[key]) {
+        acc[key] = {
+          comprador: rifa.comprador_nome || "Desconhecido",
+          email: rifa.comprador_email || "",
+          telefone: rifa.comprador_telefone || "",
+          data: rifa.data_reserva,
+          motivo: rifa.motivo_recusa || "Sem motivo informado",
+          bilhetes: [],
+        };
+      }
+      acc[key].bilhetes.push(rifa.numero);
+      return acc;
+    }, {}),
+  ) as any[];
 
-  const legendaTooltip = (
-    <Box sx={{ p: 0.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <Typography
-        component="div"
-        variant="body2"
-        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-      >
-        <Box
-          component="span"
-          sx={{
-            width: 14,
-            height: 14,
-            borderRadius: "50%",
-            border: "2px solid white",
-            display: "inline-block",
-          }}
-        />{" "}
-        Disponível
-      </Typography>
-      <Typography
-        component="div"
-        variant="body2"
-        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-      >
-        <Box
-          component="span"
-          sx={{
-            width: 14,
-            height: 14,
-            borderRadius: "50%",
-            bgcolor: "var(--cor-verde-fundo)",
-            display: "inline-block",
-          }}
-        />{" "}
-        Selecionada
-      </Typography>
-      <Typography
-        component="div"
-        variant="body2"
-        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-      >
-        <Box
-          component="span"
-          sx={{
-            width: 14,
-            height: 14,
-            borderRadius: "50%",
-            bgcolor: "warning.main",
-            display: "inline-block",
-          }}
-        />{" "}
-        Em Análise
-      </Typography>
-      <Typography
-        component="div"
-        variant="body2"
-        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-      >
-        <Box
-          component="span"
-          sx={{
-            width: 14,
-            height: 14,
-            borderRadius: "50%",
-            bgcolor: "success.main",
-            display: "inline-block",
-          }}
-        />{" "}
-        Pago
-      </Typography>
-    </Box>
-  );
-
-  if (carregando)
+  if (carregando) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
         <CircularProgress color="secondary" />
       </Box>
     );
+  }
 
   return (
     <Box sx={{ position: "relative", pb: selecionadas.length > 0 ? 12 : 2 }}>
-      {/* 1. CABEÇALHO */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-        }}
-      >
-        <Typography variant="h5" fontWeight="bold" color="primary.main">
-          Olá, {primeiroNome}!
-        </Typography>
-        <Tooltip title="Avisos da Tesouraria">
-          <IconButton
-            onClick={abrirSidebarNotificacoes}
-            color={notificacoesNaoLidas > 0 ? "error" : "primary"}
-          >
-            <Badge
-              badgeContent={notificacoesNaoLidas}
-              color="error"
-              overlap="circular"
-            >
-              {notificacoesNaoLidas > 0 ? (
-                <NotificationsActiveIcon fontSize="large" />
-              ) : (
-                <NotificationsIcon fontSize="large" />
-              )}
-            </Badge>
-          </IconButton>
-        </Tooltip>
-      </Box>
+      <EstatisticasAderido
+        primeiroNome={(usuarioAtual as any)?.nome?.split(" ")[0] || "Aderido"}
+        valorArrecadado={valorArrecadado}
+        notificacoesNaoLidas={notificacoesNaoLidas}
+        onAbrirNotificacoes={abrirSidebarNotificacoes}
+      />
 
-      {/* 2. CARD FINANCEIRO */}
-      <Paper
-        elevation={4}
-        sx={{
-          p: 3,
-          mb: 4,
-          display: "flex",
-          gap: 4,
-          borderRadius: 3,
-          background:
-            "linear-gradient(135deg, var(--cor-verde-fundo) 0%, #1a3c2f 100%)",
-          color: "white",
-          borderLeft: "6px solid var(--cor-dourado-brilho)",
-        }}
-      >
+      {visaoAtual === "geral" ? (
         <Box>
-          <Typography
-            variant="body2"
+          <Box
             sx={{
-              opacity: 0.8,
-              fontWeight: "bold",
-              textTransform: "uppercase",
-              letterSpacing: 1,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+              flexWrap: "wrap",
+              gap: 2,
             }}
           >
-            Arrecadação Confirmada
-          </Typography>
-          <Typography
-            variant="h3"
-            fontWeight="900"
-            sx={{ mt: 1, color: "var(--cor-dourado-brilho)" }}
-          >
-            R$ {valorArrecadado},00
-          </Typography>
-        </Box>
-      </Paper>
-
-      {/* 3. BARRA DE CONTROLE E FILTROS */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 3,
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
-        <Typography
-          component="div"
-          variant="h6"
-          fontWeight="bold"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            color: "primary.main",
-          }}
-        >
-          Bloco de Vendas
-          <Tooltip
-            title={<React.Fragment>{legendaTooltip}</React.Fragment>}
-            arrow
-            placement="top"
-            enterTouchDelay={0}
-          >
-            <IconButton
-              size="small"
-              sx={{
-                bgcolor: "rgba(212, 175, 55, 0.2)",
-                color: "secondary.main",
-              }}
-            >
-              <HelpOutlineIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Typography>
-
-        <FormControl size="small" sx={{ minWidth: 160, bgcolor: "white" }}>
-          <Select
-            value={filtro}
-            onChange={(e) => setFiltro(e.target.value)}
-            displayEmpty
-            sx={{
-              borderRadius: 2,
-              fontWeight: "bold",
-              color: "text.secondary",
-            }}
-          >
-            <MenuItem value="todas">Todas as Rifas</MenuItem>
-            <MenuItem value="disponivel">Disponíveis</MenuItem>
-            <MenuItem value="pendente">Em Análise</MenuItem>
-            <MenuItem value="pago">Pagas</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-
-      {/* 4. GRID DE RIFAS */}
-      <Box
-        display="grid"
-        gridTemplateColumns="repeat(auto-fill, minmax(75px, 1fr))"
-        gap={1.5}
-      >
-        {rifasFiltradas.length > 0 ? (
-          rifasFiltradas.map((rifa) => {
-            const isSelecionada = selecionadas.includes(rifa.numero);
-            let cor: "default" | "primary" | "success" | "warning" = "default";
-            if (isSelecionada) cor = "primary";
-            else if (rifa.status === "pago") cor = "success";
-            else if (rifa.status === "pendente") cor = "warning";
-
-            return (
-              <Chip
-                key={rifa.numero}
-                label={rifa.numero}
-                color={cor}
-                variant={
-                  rifa.status === "disponivel" && !isSelecionada
-                    ? "outlined"
-                    : "filled"
-                }
-                onClick={() => handleToggleSelecao(rifa.numero, rifa.status)}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Typography
+                component="div"
+                variant="h6"
+                fontWeight="bold"
                 sx={{
-                  fontWeight: "bold",
-                  fontSize: "1rem",
-                  height: "40px",
-                  borderRadius: "8px",
-                  borderWidth:
-                    rifa.status === "disponivel" && !isSelecionada
-                      ? "2px"
-                      : "0px",
-                  cursor:
-                    rifa.status === "disponivel" ? "pointer" : "not-allowed",
-                  transition: "all 0.2s",
-                  "&:hover": {
-                    transform:
-                      rifa.status === "disponivel" ? "scale(1.05)" : "none",
-                  },
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  color: "primary.main",
                 }}
-              />
-            );
-          })
-        ) : (
-          <Typography
-            color="text.secondary"
-            sx={{ gridColumn: "1 / -1", textAlign: "center", py: 4 }}
-          >
-            Nenhuma rifa encontrada.
-          </Typography>
-        )}
-      </Box>
+              >
+                Bloco de Vendas
+                <Tooltip
+                  title="Disponível (Branco), Selecionada (Verde Claro), Análise (Laranja), Pago (Verde Forte), Negada (Vermelho)."
+                  arrow
+                  placement="top"
+                >
+                  <IconButton
+                    size="small"
+                    sx={{
+                      bgcolor: "rgba(212, 175, 55, 0.2)",
+                      color: "secondary.main",
+                    }}
+                  >
+                    <HelpOutlineIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Typography>
 
-      {/* 5. COMPONENTES EXTERNOS MODULARES */}
-      {!modalCheckoutAberto && (
+              {gruposRecusados.length > 0 && (
+                <Badge badgeContent={gruposRecusados.length} color="error">
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="small"
+                    startIcon={<ReportGmailerrorredIcon />}
+                    onClick={() => setVisaoAtual("recusadas")}
+                  >
+                    Ver Rifas Negadas
+                  </Button>
+                </Badge>
+              )}
+            </Box>
+
+            <FormControl size="small" sx={{ minWidth: 160, bgcolor: "white" }}>
+              <Select
+                value={filtro}
+                onChange={(e) => setFiltro(e.target.value)}
+                displayEmpty
+                sx={{ borderRadius: 2, fontWeight: "bold" }}
+              >
+                <MenuItem value="todas">Todas as Rifas</MenuItem>
+                <MenuItem value="disponivel">Disponíveis</MenuItem>
+                <MenuItem value="pendente">Em Análise</MenuItem>
+                <MenuItem value="pago">Pagas</MenuItem>
+                <MenuItem value="recusado">Negadas</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* O COMPONENTE EXTRAÍDO ENTRA AQUI */}
+          <GrelhaRifas
+            rifas={rifasFiltradas}
+            selecionadas={selecionadas}
+            onToggleSelecao={handleToggleSelecao}
+            onAbrirDetalhes={setRifaParaDetalhes}
+          />
+        </Box>
+      ) : (
+        <AbaRecusadas
+          gruposRecusados={gruposRecusados}
+          onVoltar={() => setVisaoAtual("geral")}
+          onAbrirCorrecao={(grupo) => {
+            setGrupoParaCorrigir(grupo);
+            setModalCorrecaoAberto(true);
+          }}
+        />
+      )}
+
+      {!modalCheckoutAberto && visaoAtual === "geral" && (
         <CarrinhoFlutuante
           quantidade={selecionadas.length}
           valorTotal={selecionadas.length * 10}
@@ -378,17 +261,28 @@ export function MinhasRifasTab() {
         />
       )}
 
+      {/* MODAIS DA PÁGINA */}
       <CheckoutModal
         open={modalCheckoutAberto}
         onClose={() => setModalCheckoutAberto(false)}
         onSuccess={handleVendaSucesso}
         numerosRifas={selecionadas}
       />
-
       <NotificacoesSidebar
         open={drawerNotificacoesAberto}
         onClose={() => setDrawerNotificacoesAberto(false)}
         notificacoes={notificacoes}
+      />
+      <ModalCorrecaoRecusa
+        open={modalCorrecaoAberto}
+        onClose={() => setModalCorrecaoAberto(false)}
+        grupoRecusado={grupoParaCorrigir}
+        onReenviar={handleReenviarComprovante}
+      />
+      <ModalDetalhesRifa
+        open={Boolean(rifaParaDetalhes)}
+        onClose={() => setRifaParaDetalhes(null)}
+        rifa={rifaParaDetalhes}
       />
     </Box>
   );

@@ -157,17 +157,17 @@ export class AuditoriaService {
         batch.update(docRef, {
           status: "pago",
           data_pagamento: new Date().toISOString(),
+          motivo_recusa: null, // Limpa o motivo caso tivesse sido recusada e corrigida
+          log_automacao: null,
         });
       } else {
         batch.update(docRef, {
-          status: "disponivel",
-          comprador_id: null,
-          data_reserva: null,
-          comprador_nome: null,
-          comprador_email: null,
-          comprovante_url: null,
-          motivo_recusa: motivo,
-          log_automacao: null,
+          status: "recusado", // Altera para recusado para a aba vermelha funcionar
+          motivo_recusa: motivo, // Salva o porquê para o aderido ver
+          log_automacao: null, // Limpa o rastro da IA antiga
+          // ATENÇÃO: NÃO apagamos mais o comprador_nome, email ou data_reserva!
+          // O aderido vai precisar deles na hora de corrigir.
+          comprovante_url: null, // Apagamos a URL do comprovante porque ele é inválido e será apagado do Storage
         });
       }
     }
@@ -183,6 +183,7 @@ export class AuditoriaService {
 
     await batch.commit();
 
+    // Deleta fisicamente o arquivo falso/errado do Firebase Storage
     if (decisao === "rejeitar" && urlStorage) {
       const path = this.extrairCaminhoStorage(urlStorage);
       if (path)

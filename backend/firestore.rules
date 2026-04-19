@@ -3,28 +3,69 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Ninguém (nenhum telemóvel ou browser) pode escrever diretamente no banco de dados.
-    // Todas as escritas têm de passar pela sua API segura (Express.js).
-    match /{document=**} {
+    // ========================================================================
+    // 1. USUÁRIOS
+    // ========================================================================
+    match /usuarios/{documentId} {
+      // Qualquer usuário logado pode ler a lista de usuários (necessário para a aba da Secretaria)
+      allow read: if request.auth != null;
+      
+      // ATUALIZAÇÃO (Cadastro inicial): Permite que o usuário insira o próprio CPF/UID
+      // Bloqueia tentativas de hackear cargo ou saldo.
+      allow update: if request.auth != null 
+                    && request.auth.token.email == resource.data.email
+                    && (!request.resource.data.keys().hasAny(['cargo']) || request.resource.data.cargo == resource.data.cargo)
+                    && (!request.resource.data.keys().hasAny(['total_arrecadado']) || request.resource.data.total_arrecadado == resource.data.total_arrecadado);
+
+      allow create, delete: if false;
+    }
+
+    // ========================================================================
+    // 2. BILHETES (A Grelha de Rifas)
+    // ========================================================================
+    match /bilhetes/{document=**} {
+      // PERMISSÃO DE LEITURA: Essencial para o RifaGrid conseguir mostrar os quadradinhos!
+      allow read: if request.auth != null; 
+      
+      // BLOQUEIO DE ESCRITA: Ninguém compra rifas pelo frontend direto. Tudo passa pela sua API Node.js!
       allow write: if false; 
     }
 
-    // LEITURAS (Opcionais, dependendo de como o seu Frontend lê os dados)
+    // ========================================================================
+    // 3. PRÊMIOS E CONFIGURAÇÕES
+    // ========================================================================
+    match /premios/{document=**} {
+      // O aderido precisa ler os prêmios para a aba "Prêmios"
+      allow read: if request.auth != null;
+      allow write: if false; 
+    }
     
-    // Se o seu Frontend lê os bilhetes usando a fetchAPI do backend, feche isto também:
-    match /bilhetes/{document=**} {
-      allow read: if false; 
+    match /configuracoes/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false; 
     }
 
-    // Se o seu Frontend ainda usa onSnapshot() ou getDocs() do SDK Web para os bilhetes:
-    // match /bilhetes/{document=**} {
-    //   allow read: if request.auth != null; 
-    // }
+    // ========================================================================
+    // 4. NOTIFICAÇÕES (O Sininho)
+    // ========================================================================
+    match /notificacoes/{notificacaoId} {
+      // Lê apenas as suas próprias notificações
+      allow read: if request.auth != null && resource.data.vendedor_id == request.auth.uid;
+      
+      // Permite atualizar APENAS para marcar como lida
+      allow update: if request.auth != null 
+                    && resource.data.vendedor_id == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lida']);
+                    
+      allow create, delete: if false;
+    }
 
-    // NOTA: A coleção "usuarios" precisa de ficar aberta para leitura porque 
-    // o seu Frontend na página de Secretaria usa 'getDocs(collection(db, "usuarios"))'
-    match /usuarios/{documentId} {
-      allow read: if request.auth != null;
+    // ========================================================================
+    // 5. BLOQUEIO GERAL (Segurança Máxima)
+    // ========================================================================
+    // Qualquer outra coleção não especificada acima (ex: compradores, logs, etc) fica 100% trancada.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

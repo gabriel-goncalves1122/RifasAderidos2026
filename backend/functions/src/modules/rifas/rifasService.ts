@@ -1,3 +1,6 @@
+// ============================================================================
+// ARQUIVO: backend/functions/src/modules/rifas/rifasService.ts
+// ============================================================================
 import * as admin from "firebase-admin";
 import { enviarEmailRecibo } from "./emailService";
 
@@ -18,7 +21,7 @@ export class RifasService {
       throw new Error("USER_NOT_FOUND");
     }
 
-    const idAderido = userDocs.docs[0].data().id_aderido;
+    const idAderido = userDocs.docs[0].data().id_aderido || userDocs.docs[0].id;
 
     const bilhetesSnapshot = await db
       .collection("bilhetes")
@@ -26,7 +29,7 @@ export class RifasService {
       .get();
     const bilhetes = bilhetesSnapshot.docs.map((doc) => doc.data());
 
-    // Ordena numericamente
+    // Ordena numericamente para a grelha ficar organizada
     bilhetes.sort((a, b) => parseInt(a.numero) - parseInt(b.numero));
     return bilhetes;
   }
@@ -48,7 +51,9 @@ export class RifasService {
 
     let vendedorNome = "Nome não registado";
     let vendedorCpf = "CPF não registado";
+    let idAderido = ""; // <-- CORREÇÃO: Variável para guardar o ADERIDO_XXX
 
+    // 1. Vai buscar os dados oficiais do aderido à coleção 'usuarios'
     if (emailLogado) {
       const userDocs = await db
         .collection("usuarios")
@@ -59,20 +64,25 @@ export class RifasService {
         const userData = userDocs.docs[0].data();
         vendedorNome = userData.nome || vendedorNome;
         vendedorCpf = userData.cpf || vendedorCpf;
+        idAderido = userData.id_aderido; // <-- Guarda o ID interno (Ex: ADERIDO_030)
       }
     }
 
     const batch = db.batch();
     const compradorRef = db.collection("compradores").doc();
 
+    const momentoExatoDaReserva = new Date().toISOString();
+
+    // 2. Regista o comprador na base de dados
     batch.set(compradorRef, {
       id: compradorRef.id,
       nome,
       telefone,
       email: email || null,
-      criado_em: new Date().toISOString(),
+      criado_em: momentoExatoDaReserva,
     });
 
+    // 3. Atualiza cada bilhete selecionado
     numerosRifas.forEach((numero: string) => {
       const bilheteRef = db.collection("bilhetes").doc(numero);
       batch.set(
@@ -84,7 +94,8 @@ export class RifasService {
           comprador_email: email || null,
           vendedor_nome: vendedorNome,
           vendedor_cpf: vendedorCpf,
-          data_reserva: new Date().toISOString(),
+          vendedor_id: idAderido, // <-- CORREÇÃO: Grava o ADERIDO_XXX e não o UID do Google!
+          data_reserva: momentoExatoDaReserva,
           comprovante_url: comprovanteUrl,
         },
         { merge: true },
@@ -93,8 +104,77 @@ export class RifasService {
 
     await batch.commit();
 
+    // 4. Envia o email se o comprador tiver fornecido um
     if (email) {
       enviarEmailRecibo(email, nome, numerosRifas, "pendente");
+    }
+  }
+
+  // ==========================================================================
+  // CORRIGIR RIFAS RECUSADAS
+  // ==========================================================================
+  /**
+   * Corrige rifas que foram recusadas, anexando um novo comprovativo e voltando o status para "pendente"
+   */
+  static async corrigirRifasRecusadas(
+    emailLogado: string, // <-- CORREÇÃO: Recebe o email em vez do UID
+    numerosRifas: string[],
+    dadosAtualizados: {
+      nome: string;
+      telefone: string;
+      email: string;
+      comprovanteUrl: string;
+    },
+  ) {
+    const db = admin.firestore();
+
+    // 1. Descobre quem é o aderido internamente (ADERIDO_XXX) usando o email
+    const userDocs = await db
+      .collection("usuarios")
+      .where("email", "==", emailLogado)
+      .limit(1)
+      .get();
+    if (userDocs.empty) throw new Error("USER_NOT_FOUND");
+
+    const idAderido = userDocs.docs[0].data().id_aderido;
+    const batch = db.batch();
+
+    try {
+      for (const numero of numerosRifas) {
+        const bilheteRef = db.collection("bilhetes").doc(numero);
+        const bilheteSnap = await bilheteRef.get();
+
+        if (bilheteSnap.exists) {
+          const dadosBilhete = bilheteSnap.data();
+
+          // 2. Medida de segurança: Garante que só o dono (ADERIDO_XXX) pode corrigir e que está recusada
+          if (
+            dadosBilhete?.vendedor_id === idAderido && // <-- CORREÇÃO: Usa idAderido
+            dadosBilhete?.status === "recusado"
+          ) {
+            batch.update(bilheteRef, {
+              status: "pendente", // Volta para a fila de auditoria da tesouraria
+              comprador_nome: dadosAtualizados.nome,
+              comprador_telefone: dadosAtualizados.telefone || null,
+              comprador_email: dadosAtualizados.email || null,
+              comprovante_url: dadosAtualizados.comprovanteUrl,
+
+              // Limpa o histórico negativo para que a IA avalie como novo
+              motivo_recusa: null,
+              log_automacao: null,
+              ia_resultado: null,
+              ia_mensagem: null,
+              data_reserva: new Date().toISOString(),
+            });
+          }
+        }
+      }
+
+      await batch.commit();
+      return true;
+    } catch (error) {
+      console.error("[RifasService] Erro ao corrigir rifas:", error);
+      throw new Error("Falha ao salvar a correção no banco de dados.");
     }
   }
 

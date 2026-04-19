@@ -1,3 +1,6 @@
+// ============================================================================
+// ARQUIVO: backend/functions/src/modules/rifas/rifasRoutes.ts
+// ============================================================================
 import { Router } from "express";
 import { validateToken } from "../../shared/middlewares/authMiddleware";
 import { rifasController } from "./rifasController";
@@ -17,5 +20,10 @@ router.get(
   validateToken,
   rifasController.obterHistoricoDetalhado,
 );
+
+// ==========================================================================
+// NOVA ROTA: Correção de rifas recusadas pelo aderido
+// ==========================================================================
+router.post("/corrigir", validateToken, rifasController.corrigirRecusadas);
 
 export default router;

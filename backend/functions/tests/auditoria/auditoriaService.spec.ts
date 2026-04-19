@@ -239,8 +239,9 @@ describe("Service: auditoriaService", () => {
       expect(mockBatchUpdate).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          status: "disponivel",
-          comprador_id: null,
+          status: "recusado", // <--- CORREÇÃO AQUI
+          comprovante_url: null,
+          log_automacao: null,
           motivo_recusa: "Comprovativo Falso",
         }),
       );

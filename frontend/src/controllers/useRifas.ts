@@ -1,3 +1,6 @@
+// ============================================================================
+// ARQUIVO: frontend/src/controllers/useRifas.ts
+// ============================================================================
 import { useState, useCallback } from "react";
 import { storage, auth } from "../config/firebase";
 import {
@@ -69,6 +72,57 @@ export function useRifas() {
     }
   };
 
+  // ==========================================================================
+  // NOVA FUNÇÃO: Reenviar Rifas Negadas
+  // ==========================================================================
+  const corrigirRifasRecusadas = async (
+    numerosRifas: string[],
+    comprovante: File,
+    dadosAtualizados: { nome: string; email: string; telefone: string },
+  ) => {
+    setLoading(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não logado");
+
+      // 1. Upload do novo comprovante
+      const extensao = comprovante.name.split(".").pop();
+      const nomeArquivo = `comprovantes/${user.uid}_correcao_${Date.now()}.${extensao}`;
+      const storageRef = ref(storage, nomeArquivo);
+      const metadata = {
+        contentType: comprovante.type,
+        customMetadata: {
+          vendedorId: user.uid,
+          tipo: "correcao_tesouraria",
+          bilhetesCorrigidos: numerosRifas.join(","),
+        },
+      };
+
+      const snapshot = await uploadBytesResumable(
+        storageRef,
+        comprovante,
+        metadata,
+      );
+      const comprovanteUrl = await getDownloadURL(snapshot.ref);
+
+      // 2. Enviar para a API atualizar no banco
+      await fetchAPI("/rifas/corrigir", "POST", {
+        numerosRifas,
+        nome: dadosAtualizados.nome,
+        telefone: dadosAtualizados.telefone,
+        email: dadosAtualizados.email,
+        comprovanteUrl,
+      });
+
+      return true;
+    } catch (error) {
+      alert("Erro ao reenviar correção. Tente novamente.");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const anexarComprovante = async (rifaId: string, arquivo: File) => {
     try {
       const storageRef = ref(
@@ -87,5 +141,11 @@ export function useRifas() {
     }
   };
 
-  return { buscarMinhasRifas, finalizarVenda, anexarComprovante, loading };
+  return {
+    buscarMinhasRifas,
+    finalizarVenda,
+    corrigirRifasRecusadas, // <-- Exportando a nova função
+    anexarComprovante,
+    loading,
+  };
 }

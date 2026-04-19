@@ -1,3 +1,6 @@
+// ============================================================================
+// ARQUIVO: backend/functions/src/modules/rifas/rifasController.ts
+// ============================================================================
 import { Response } from "express";
 import { AuthRequest } from "../../shared/middlewares/authMiddleware";
 import { RifasService } from "../rifas/rifasService";
@@ -76,6 +79,44 @@ export const rifasController = {
       return res
         .status(500)
         .json({ error: "Erro ao buscar o histórico de vendas." });
+    }
+  },
+
+  // ==========================================================================
+  // 5. CORRIGIR RIFAS RECUSADAS PELA TESOURARIA
+  // ==========================================================================
+  async corrigirRecusadas(req: AuthRequest, res: Response): Promise<any> {
+    try {
+      const emailLogado = req.user?.email; // <-- CORREÇÃO: Usamos o email
+      const { numerosRifas, nome, telefone, email, comprovanteUrl } = req.body;
+
+      if (!emailLogado) {
+        return res.status(401).json({ error: "Utilizador não autenticado." });
+      }
+
+      if (!numerosRifas || numerosRifas.length === 0 || !comprovanteUrl) {
+        return res
+          .status(400)
+          .json({ error: "Dados incompletos para correção." });
+      }
+
+      // Passamos o emailLogado para o Service
+      await RifasService.corrigirRifasRecusadas(emailLogado, numerosRifas, {
+        nome,
+        telefone,
+        email,
+        comprovanteUrl,
+      });
+
+      return res.status(200).json({
+        sucesso: true,
+        mensagem: "Rifas reenviadas para análise com sucesso!",
+      });
+    } catch (error: any) {
+      console.error("[RifasController] Erro ao corrigir rifas:", error);
+      return res
+        .status(500)
+        .json({ error: "Erro interno ao processar correção." });
     }
   },
 };

@@ -2,15 +2,20 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // Todos os logados podem ver os comprovativos (para a Tesouraria poder validar)
-    match /comprovantes/{allPaths=**} {
-      allow read: if request.auth != null;
+    // Regra padrão: bloqueia tudo o que não for explicitamente permitido
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
 
-    // NINGUÉM pode escrever, editar ou apagar ficheiros diretamente pelo Browser/App.
-    // Todas as escritas são feitas pelo Backend (que usa o Admin SDK e ignora estas regras).
-    match /{allPaths=**} {
-      allow write: if false;
+    // Regra para a pasta de comprovantes
+    match /comprovantes/{fileName} {
+      // Qualquer utilizador autenticado (aderidos ou tesouraria) pode ver o comprovante
+      allow read: if request.auth != null;
+      
+      // Qualquer utilizador autenticado pode enviar um ficheiro
+      // Regra extra de segurança: Limita o tamanho a 10MB para não estourar o limite gratuito
+      allow write: if request.auth != null 
+                   && request.resource.size < 10 * 1024 * 1024; 
     }
   }
 }

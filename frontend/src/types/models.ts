@@ -60,7 +60,14 @@ export interface Comprador {
 // 3. NÚMERO (O Bilhete da Rifa)
 // Coleção: 'bilhetes'
 // ----------------------------------------------------------------------------
-export type StatusBilhete = "disponivel" | "reservado" | "pendente" | "pago";
+
+// AQUI ESTÁ A CORREÇÃO: Adicionado o "recusado" à lista de tipos permitidos!
+export type StatusBilhete =
+  | "disponivel"
+  | "reservado"
+  | "pendente"
+  | "pago"
+  | "recusado";
 
 export interface Bilhete {
   numero: string;
