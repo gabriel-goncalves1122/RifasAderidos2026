@@ -25,7 +25,11 @@ export async function fetchAPI(
     }
 
     const options: RequestInit = { method, headers, cache: "no-store" };
-    if (body) options.body = JSON.stringify(body);
+
+    // CORREÇÃO: Se for FormData (arquivo), envia puro. Se for objeto normal, converte para JSON.
+    if (body) {
+      options.body = body instanceof FormData ? body : JSON.stringify(body);
+    }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
 
