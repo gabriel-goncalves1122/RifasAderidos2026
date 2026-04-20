@@ -4,9 +4,8 @@
 import * as admin from "firebase-admin";
 import { NotificacoesService } from "../notificacoes/notificacoesService";
 import { enviarEmailRecibo } from "../rifas/emailService";
-import { OcrService } from "./ocrLogic/OcrService"; // IMPORTANTE: Nova importação do serviço local!
-
-// Removemos a importação do axios, pois não vamos mais fazer requisições externas para o OCR
+import { OcrService } from "./ocrLogic/OcrService";
+import { Bilhete } from "../types/models"; // <-- IMPORTAÇÃO DA TIPAGEM
 
 export class AuditoriaService {
   static extrairCaminhoStorage(url: string): string | null {
@@ -17,7 +16,12 @@ export class AuditoriaService {
     }
   }
 
-  static async auditarLoteIA() {
+  static async auditarLoteIA(): Promise<{
+    preAprovados: number;
+    divergentes: number;
+    jaAvaliados: number;
+    total: number;
+  }> {
     const db = admin.firestore();
     const pendentesSnap = await db
       .collection("bilhetes")
@@ -28,19 +32,26 @@ export class AuditoriaService {
     if (pendentesSnap.empty)
       return { preAprovados: 0, divergentes: 0, jaAvaliados: 0, total: 0 };
 
-    const comprovantesMap = new Map<string, any[]>();
+    // Tipagem rígida para o Map guardando as referências do Firestore
+    const comprovantesMap = new Map<
+      string,
+      admin.firestore.QueryDocumentSnapshot[]
+    >();
     let jaAvaliados = 0;
 
     for (const doc of pendentesSnap.docs) {
-      const dados = doc.data();
+      const dados = doc.data() as Bilhete; // <-- CASTING PARA A INTERFACE BILHETE
+
       if (dados.log_automacao) {
         jaAvaliados++;
         continue;
       }
 
       const url = dados.comprovante_url;
-      if (!comprovantesMap.has(url)) comprovantesMap.set(url, []);
-      comprovantesMap.get(url)!.push(doc);
+      if (url) {
+        if (!comprovantesMap.has(url)) comprovantesMap.set(url, []);
+        comprovantesMap.get(url)!.push(doc);
+      }
     }
 
     if (comprovantesMap.size === 0)
@@ -51,7 +62,6 @@ export class AuditoriaService {
         total: pendentesSnap.size,
       };
 
-    // Busca o texto do CSV salvo na base de dados
     const configSnap = await db
       .collection("configuracoes")
       .doc("sistema")
@@ -69,21 +79,15 @@ export class AuditoriaService {
     let divergentes = 0;
     const batch = db.batch();
 
-    // Converte o Map para um array para podermos fatiar (processamento em lotes)
     const transacoes = Array.from(comprovantesMap.entries());
-
-    // Podemos aumentar a concorrência agora que estamos no Node/Firebase
-    // O Firebase lidará com as threads nativamente. Vamos processar 3 ou 4 de cada vez.
     const LIMITE_CONCORRENCIA = 3;
 
     for (let i = 0; i < transacoes.length; i += LIMITE_CONCORRENCIA) {
       const loteAtual = transacoes.slice(i, i + LIMITE_CONCORRENCIA);
 
-      // Dispara as validações locais em simultâneo
       await Promise.all(
         loteAtual.map(async ([urlImagem, documentos]) => {
           try {
-            // ADEUS AXIOS, OLA PROCESSAMENTO LOCAL!
             const respostaOcr = await OcrService.processarComprovante(
               urlImagem,
               extratoTexto,
@@ -102,15 +106,16 @@ export class AuditoriaService {
               divergentes += documentos.length;
             }
 
-            documentos.forEach((doc) =>
-              batch.update(doc.ref, { log_automacao: logParaSalvar }),
-            );
+            documentos.forEach((doc) => {
+              // Utilizamos Partial<Bilhete> implícito no update do Firebase
+              batch.update(doc.ref, { log_automacao: logParaSalvar });
+            });
           } catch (err) {
-            documentos.forEach((doc) =>
+            documentos.forEach((doc) => {
               batch.update(doc.ref, {
                 log_automacao: `❌ Erro de comunicação com o motor OCR local.`,
-              }),
-            );
+              });
+            });
             divergentes += documentos.length;
           }
         }),
@@ -131,7 +136,7 @@ export class AuditoriaService {
     numerosRifas: string[],
     decisao: "aprovar" | "rejeitar",
     motivo: string,
-  ) {
+  ): Promise<void> {
     const db = admin.firestore();
     const batch = db.batch();
 
@@ -145,29 +150,28 @@ export class AuditoriaService {
       const snap = await docRef.get();
       if (!snap.exists) continue;
 
-      const dados = snap.data();
+      const dados = snap.data() as Bilhete; // <-- CASTING RÍGIDO AQUI
+
       if (dados?.status !== "pendente") continue;
 
-      compradorEmail = compradorEmail || dados?.comprador_email;
-      compradorNome = compradorNome || dados?.comprador_nome;
-      vendedorId = vendedorId || dados?.vendedor_id;
-      urlStorage = urlStorage || dados?.comprovante_url;
+      compradorEmail = compradorEmail || dados?.comprador_email || null;
+      compradorNome = compradorNome || dados?.comprador_nome || null;
+      vendedorId = vendedorId || dados?.vendedor_id || null;
+      urlStorage = urlStorage || dados?.comprovante_url || null;
 
       if (decisao === "aprovar") {
         batch.update(docRef, {
           status: "pago",
           data_pagamento: new Date().toISOString(),
-          motivo_recusa: null, // Limpa o motivo caso tivesse sido recusada e corrigida
+          motivo_recusa: null,
           log_automacao: null,
         });
       } else {
         batch.update(docRef, {
-          status: "recusado", // Altera para recusado para a aba vermelha funcionar
-          motivo_recusa: motivo, // Salva o porquê para o aderido ver
-          log_automacao: null, // Limpa o rastro da IA antiga
-          // ATENÇÃO: NÃO apagamos mais o comprador_nome, email ou data_reserva!
-          // O aderido vai precisar deles na hora de corrigir.
-          comprovante_url: null, // Apagamos a URL do comprovante porque ele é inválido e será apagado do Storage
+          status: "recusado",
+          motivo_recusa: motivo,
+          log_automacao: null,
+          comprovante_url: null,
         });
       }
     }
@@ -183,7 +187,6 @@ export class AuditoriaService {
 
     await batch.commit();
 
-    // Deleta fisicamente o arquivo falso/errado do Firebase Storage
     if (decisao === "rejeitar" && urlStorage) {
       const path = this.extrairCaminhoStorage(urlStorage);
       if (path)
@@ -205,17 +208,18 @@ export class AuditoriaService {
     }
   }
 
-  static async listarPendentes() {
+  static async listarPendentes(): Promise<Bilhete[]> {
+    // <-- RETORNO TIPADO
     const db = admin.firestore();
     const pendentesSnapshot = await db
       .collection("bilhetes")
       .where("status", "==", "pendente")
       .get();
 
-    return pendentesSnapshot.docs.map((doc) => doc.data());
+    return pendentesSnapshot.docs.map((doc) => doc.data() as Bilhete); // <-- MAPEAMENTO TIPADO
   }
 
-  static async salvarExtratoCsv(extratoTexto: string) {
+  static async salvarExtratoCsv(extratoTexto: string): Promise<void> {
     const db = admin.firestore();
 
     await db.collection("configuracoes").doc("sistema").set(

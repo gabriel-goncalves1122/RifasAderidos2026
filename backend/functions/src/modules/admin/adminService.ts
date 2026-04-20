@@ -1,7 +1,21 @@
+// ============================================================================
+// ARQUIVO: backend/functions/src/modules/admin/adminService.ts
+// ============================================================================
 import { db } from "../../shared/config/firebaseAdmin";
+import { Usuario, Bilhete, CargoComissao } from "../types/models";
+
+// 1. Tipagem Forte para os dados que chegam da requisição
+export interface DadosNovoAderido {
+  email: string;
+  nome?: string;
+  curso?: string;
+  dataNascimento?: string;
+  telefone?: string;
+  cargo?: CargoComissao;
+}
 
 export const adminService = {
-  async adicionarAderido(dadosNovos: any) {
+  async adicionarAderido(dadosNovos: DadosNovoAderido) {
     const BILHETES_POR_PESSOA = 120;
     const emailLimpo = dadosNovos.email.toLowerCase().trim();
 
@@ -24,7 +38,8 @@ export const adminService = {
       .get();
 
     if (!usersSnap.empty) {
-      const ultimaPosicao = usersSnap.docs[0].data().posicao_adesao;
+      const dadosUltimo = usersSnap.docs[0].data();
+      const ultimaPosicao = dadosUltimo.posicao_adesao;
       if (typeof ultimaPosicao === "number") proximaPosicao = ultimaPosicao + 1;
     }
 
@@ -44,40 +59,65 @@ export const adminService = {
     // ==============================================================
     // INÍCIO DA TRANSAÇÃO (BATCH) NO SERVIDOR
     // ==============================================================
-    const batch = db.batch(); // No Admin SDK é db.batch() em vez de writeBatch(db)
+    const batch = db.batch();
 
-    // A. CRIAR O NOVO USUÁRIO
+    // A. CRIAR O NOVO USUÁRIO FORTEMENTE TIPADO
     const idAderido = `ADERIDO_${String(proximaPosicao).padStart(3, "0")}`;
     const userRef = db.collection("usuarios").doc(idAderido);
 
-    batch.set(userRef, {
+    // Definir a faixa de rifas para a interface
+    const numeroInicio = String(proximoNumeroBilhete).padStart(5, "0");
+    const numeroFim = String(
+      proximoNumeroBilhete + BILHETES_POR_PESSOA - 1,
+    ).padStart(5, "0");
+
+    // Construímos o objeto garantindo que ele cumpre a Interface 'Usuario'
+    const novoUsuario: Usuario & {
+      posicao_adesao: number;
+      curso?: string;
+      data_nascimento?: string;
+    } = {
+      id: idAderido,
       id_aderido: idAderido,
-      posicao_adesao: proximaPosicao,
+      posicao_adesao: proximaPosicao, // Campo extra do admin
+      uid: null,
+      cpf: "", // Será preenchido pelo aderido no primeiro acesso
       email: emailLimpo,
       nome: dadosNovos.nome ? String(dadosNovos.nome).toUpperCase() : "",
       curso: dadosNovos.curso ? String(dadosNovos.curso).toUpperCase() : "",
       data_nascimento: dadosNovos.dataNascimento || "",
       telefone: dadosNovos.telefone || "",
       cargo: dadosNovos.cargo || "aderido",
-      status: "Aderido",
-      cadastrado_em: new Date().toISOString(),
-      uid: null, // Indica que é pendente (ainda não ativou a conta com password)
-    });
+      faixa_rifas: {
+        inicio: numeroInicio,
+        fim: numeroFim,
+      },
+      meta_vendas: 1200,
+      total_arrecadado: 0,
+      rifas_vendidas: 0,
+      status: "pendente", // Ajustado para obedecer à interface (em vez de "Aderido")
+      criado_em: new Date().toISOString(),
+    };
 
-    // B. GERAR OS NOVOS 120 BILHETES PARA ESTE ALUNO
+    batch.set(userRef, novoUsuario);
+
+    // B. GERAR OS NOVOS 120 BILHETES FORTEMENTE TIPADOS
     for (let b = 0; b < BILHETES_POR_PESSOA; b++) {
       const numeroString = String(proximoNumeroBilhete).padStart(5, "0");
       const bilheteRef = db.collection("bilhetes").doc(numeroString);
 
-      batch.set(bilheteRef, {
+      const novoBilhete: Bilhete = {
         numero: numeroString,
         status: "disponivel",
+        vendedor_cpf: "", // Fica vazio até o usuário registrar o CPF
         vendedor_id: idAderido,
         comprador_id: null,
-        comprovante_url: null,
         data_reserva: null,
-      });
+        data_pagamento: null,
+        comprovante_url: null,
+      };
 
+      batch.set(bilheteRef, novoBilhete);
       proximoNumeroBilhete++;
     }
 

@@ -3,12 +3,21 @@
 // ============================================================================
 import * as admin from "firebase-admin";
 import { enviarEmailRecibo } from "./emailService";
+import { Bilhete, Usuario, Comprador } from "../types/models"; // <-- IMPORTAÇÃO DE TIPOS
+
+export interface DadosVenda {
+  nome: string;
+  telefone: string;
+  email?: string;
+  numerosRifas: string[];
+  comprovanteUrl: string;
+}
 
 export class RifasService {
   /**
    * Busca todas as rifas que pertencem a um aderido específico (pelo e-mail).
    */
-  static async buscarPorAderido(emailLogado: string) {
+  static async buscarPorAderido(emailLogado: string): Promise<Bilhete[]> {
     const db = admin.firestore();
 
     const userDocs = await db
@@ -21,13 +30,15 @@ export class RifasService {
       throw new Error("USER_NOT_FOUND");
     }
 
-    const idAderido = userDocs.docs[0].data().id_aderido || userDocs.docs[0].id;
+    const userData = userDocs.docs[0].data() as Usuario;
+    const idAderido = userData.id_aderido || userDocs.docs[0].id;
 
     const bilhetesSnapshot = await db
       .collection("bilhetes")
       .where("vendedor_id", "==", idAderido)
       .get();
-    const bilhetes = bilhetesSnapshot.docs.map((doc) => doc.data());
+
+    const bilhetes = bilhetesSnapshot.docs.map((doc) => doc.data() as Bilhete);
 
     // Ordena numericamente para a grelha ficar organizada
     bilhetes.sort((a, b) => parseInt(a.numero) - parseInt(b.numero));
@@ -40,8 +51,8 @@ export class RifasService {
   static async processarVenda(
     uid: string,
     emailLogado: string,
-    dadosVenda: any,
-  ) {
+    dadosVenda: DadosVenda, // <-- TIPADO AQUI
+  ): Promise<void> {
     const db = admin.firestore();
     const { nome, telefone, email, numerosRifas, comprovanteUrl } = dadosVenda;
 
@@ -51,7 +62,7 @@ export class RifasService {
 
     let vendedorNome = "Nome não registado";
     let vendedorCpf = "CPF não registado";
-    let idAderido = ""; // <-- CORREÇÃO: Variável para guardar o ADERIDO_XXX
+    let idAderido = "";
 
     // 1. Vai buscar os dados oficiais do aderido à coleção 'usuarios'
     if (emailLogado) {
@@ -61,45 +72,45 @@ export class RifasService {
         .limit(1)
         .get();
       if (!userDocs.empty) {
-        const userData = userDocs.docs[0].data();
+        const userData = userDocs.docs[0].data() as Usuario; // <-- TIPADO AQUI
         vendedorNome = userData.nome || vendedorNome;
         vendedorCpf = userData.cpf || vendedorCpf;
-        idAderido = userData.id_aderido; // <-- Guarda o ID interno (Ex: ADERIDO_030)
+        idAderido = userData.id_aderido || "";
       }
     }
 
     const batch = db.batch();
     const compradorRef = db.collection("compradores").doc();
-
     const momentoExatoDaReserva = new Date().toISOString();
 
-    // 2. Regista o comprador na base de dados
-    batch.set(compradorRef, {
+    // 2. Regista o comprador na base de dados garantindo o modelo Comprador
+    const novoComprador: Comprador = {
       id: compradorRef.id,
       nome,
       telefone,
       email: email || null,
       criado_em: momentoExatoDaReserva,
-    });
+    };
+    batch.set(compradorRef, novoComprador);
 
     // 3. Atualiza cada bilhete selecionado
     numerosRifas.forEach((numero: string) => {
       const bilheteRef = db.collection("bilhetes").doc(numero);
-      batch.set(
-        bilheteRef,
-        {
-          status: "pendente",
-          comprador_id: compradorRef.id,
-          comprador_nome: nome,
-          comprador_email: email || null,
-          vendedor_nome: vendedorNome,
-          vendedor_cpf: vendedorCpf,
-          vendedor_id: idAderido, // <-- CORREÇÃO: Grava o ADERIDO_XXX e não o UID do Google!
-          data_reserva: momentoExatoDaReserva,
-          comprovante_url: comprovanteUrl,
-        },
-        { merge: true },
-      );
+
+      // O TypeScript garante que não enviamos chaves inválidas (Partial<Bilhete>)
+      const updateBilhete: Partial<Bilhete> = {
+        status: "pendente",
+        comprador_id: compradorRef.id,
+        comprador_nome: nome,
+        comprador_email: email || null,
+        vendedor_nome: vendedorNome,
+        vendedor_cpf: vendedorCpf,
+        vendedor_id: idAderido,
+        data_reserva: momentoExatoDaReserva,
+        comprovante_url: comprovanteUrl,
+      };
+
+      batch.set(bilheteRef, updateBilhete, { merge: true });
     });
 
     await batch.commit();
@@ -113,11 +124,8 @@ export class RifasService {
   // ==========================================================================
   // CORRIGIR RIFAS RECUSADAS
   // ==========================================================================
-  /**
-   * Corrige rifas que foram recusadas, anexando um novo comprovativo e voltando o status para "pendente"
-   */
   static async corrigirRifasRecusadas(
-    emailLogado: string, // <-- CORREÇÃO: Recebe o email em vez do UID
+    emailLogado: string,
     numerosRifas: string[],
     dadosAtualizados: {
       nome: string;
@@ -125,18 +133,19 @@ export class RifasService {
       email: string;
       comprovanteUrl: string;
     },
-  ) {
+  ): Promise<boolean> {
     const db = admin.firestore();
 
-    // 1. Descobre quem é o aderido internamente (ADERIDO_XXX) usando o email
     const userDocs = await db
       .collection("usuarios")
       .where("email", "==", emailLogado)
       .limit(1)
       .get();
+
     if (userDocs.empty) throw new Error("USER_NOT_FOUND");
 
-    const idAderido = userDocs.docs[0].data().id_aderido;
+    const userData = userDocs.docs[0].data() as Usuario;
+    const idAderido = userData.id_aderido;
     const batch = db.batch();
 
     try {
@@ -145,27 +154,29 @@ export class RifasService {
         const bilheteSnap = await bilheteRef.get();
 
         if (bilheteSnap.exists) {
-          const dadosBilhete = bilheteSnap.data();
+          const dadosBilhete = bilheteSnap.data() as Bilhete;
 
-          // 2. Medida de segurança: Garante que só o dono (ADERIDO_XXX) pode corrigir e que está recusada
           if (
-            dadosBilhete?.vendedor_id === idAderido && // <-- CORREÇÃO: Usa idAderido
+            dadosBilhete?.vendedor_id === idAderido &&
             dadosBilhete?.status === "recusado"
           ) {
-            batch.update(bilheteRef, {
-              status: "pendente", // Volta para a fila de auditoria da tesouraria
+            // Forçamos o Partial para aceitar `null` nos campos que queremos limpar
+            const updateBilhete: Partial<Bilhete> & Record<string, any> = {
+              status: "pendente",
               comprador_nome: dadosAtualizados.nome,
-              comprador_telefone: dadosAtualizados.telefone || null,
               comprador_email: dadosAtualizados.email || null,
               comprovante_url: dadosAtualizados.comprovanteUrl,
-
-              // Limpa o histórico negativo para que a IA avalie como novo
               motivo_recusa: null,
               log_automacao: null,
-              ia_resultado: null,
-              ia_mensagem: null,
               data_reserva: new Date().toISOString(),
-            });
+            };
+
+            // O campo 'comprador_telefone' não existe nativamente no modelo Bilhete atual.
+            // Para mantermos a lógica do front, injetamo-lo via Record.
+            updateBilhete.comprador_telefone =
+              dadosAtualizados.telefone || null;
+
+            batch.update(bilheteRef, updateBilhete);
           }
         }
       }
@@ -192,7 +203,7 @@ export class RifasService {
 
     const vendasPorCpf: Record<string, number> = {};
     bilhetesSnap.forEach((doc) => {
-      const data = doc.data();
+      const data = doc.data() as Bilhete;
       if (data.vendedor_cpf) {
         vendasPorCpf[data.vendedor_cpf] =
           (vendasPorCpf[data.vendedor_cpf] || 0) + 1;
@@ -205,7 +216,7 @@ export class RifasService {
     const aderidos = usuariosSnap.docs
       .filter((doc) => doc.id.startsWith("ADERIDO_"))
       .map((doc) => {
-        const user = doc.data();
+        const user = doc.data() as Usuario;
         const rifasVendidas = vendasPorCpf[user.cpf] || 0;
         const arrecadado = rifasVendidas * 10;
 
@@ -243,7 +254,7 @@ export class RifasService {
       .get();
 
     const historico = bilhetesSnap.docs.map((doc) => {
-      const data = doc.data();
+      const data = doc.data() as Bilhete;
       return {
         numero_rifa: doc.id,
         vendedor_nome: data.vendedor_nome || "Desconhecido",
@@ -258,8 +269,8 @@ export class RifasService {
     });
 
     historico.sort((a, b) => {
-      const dataA = new Date(a.data_reserva).getTime() || 0;
-      const dataB = new Date(b.data_reserva).getTime() || 0;
+      const dataA = new Date(a.data_reserva || 0).getTime() || 0;
+      const dataB = new Date(b.data_reserva || 0).getTime() || 0;
       return dataB - dataA;
     });
 
