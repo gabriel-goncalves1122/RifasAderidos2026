@@ -31,6 +31,7 @@ export class RifasService {
     }
 
     const userData = userDocs.docs[0].data() as Usuario;
+    // BLINDAGEM: Se não houver id_aderido, usa o ID do documento (UID)
     const idAderido = userData.id_aderido || userDocs.docs[0].id;
 
     const bilhetesSnapshot = await db
@@ -40,8 +41,13 @@ export class RifasService {
 
     const bilhetes = bilhetesSnapshot.docs.map((doc) => doc.data() as Bilhete);
 
-    // Ordena numericamente para a grelha ficar organizada
-    bilhetes.sort((a, b) => parseInt(a.numero) - parseInt(b.numero));
+    // BLINDAGEM: Ordena numericamente com segurança contra campos vazios ou nulos
+    bilhetes.sort((a, b) => {
+      const numA = parseInt(a.numero || "0") || 0;
+      const numB = parseInt(b.numero || "0") || 0;
+      return numA - numB;
+    });
+
     return bilhetes;
   }
 
@@ -51,9 +57,10 @@ export class RifasService {
   static async processarVenda(
     uid: string,
     emailLogado: string,
-    dadosVenda: DadosVenda, // <-- TIPADO AQUI
+    dadosVenda: DadosVenda,
   ): Promise<void> {
     const db = admin.firestore();
+
     const { nome, telefone, email, numerosRifas, comprovanteUrl } = dadosVenda;
 
     if (!comprovanteUrl || !numerosRifas || numerosRifas.length === 0) {
@@ -71,11 +78,13 @@ export class RifasService {
         .where("email", "==", emailLogado)
         .limit(1)
         .get();
+
       if (!userDocs.empty) {
-        const userData = userDocs.docs[0].data() as Usuario; // <-- TIPADO AQUI
+        const userData = userDocs.docs[0].data() as Usuario;
         vendedorNome = userData.nome || vendedorNome;
         vendedorCpf = userData.cpf || vendedorCpf;
-        idAderido = userData.id_aderido || "";
+        // BLINDAGEM: Fallback para o ID do documento
+        idAderido = userData.id_aderido || userDocs.docs[0].id;
       }
     }
 
@@ -97,11 +106,12 @@ export class RifasService {
     numerosRifas.forEach((numero: string) => {
       const bilheteRef = db.collection("bilhetes").doc(numero);
 
-      // O TypeScript garante que não enviamos chaves inválidas (Partial<Bilhete>)
-      const updateBilhete: Partial<Bilhete> = {
+      // CORREÇÃO: Forçamos o tipo para incluir o telefone diretamente no bilhete
+      const updateBilhete: Partial<Bilhete> & Record<string, any> = {
         status: "pendente",
         comprador_id: compradorRef.id,
         comprador_nome: nome,
+        comprador_telefone: telefone || null, // <-- AGORA O TELEFONE É SALVO AQUI TAMBÉM!
         comprador_email: email || null,
         vendedor_nome: vendedorNome,
         vendedor_cpf: vendedorCpf,
@@ -145,7 +155,8 @@ export class RifasService {
     if (userDocs.empty) throw new Error("USER_NOT_FOUND");
 
     const userData = userDocs.docs[0].data() as Usuario;
-    const idAderido = userData.id_aderido;
+    // BLINDAGEM: Fallback para o ID do documento
+    const idAderido = userData.id_aderido || userDocs.docs[0].id;
     const batch = db.batch();
 
     try {
@@ -160,7 +171,6 @@ export class RifasService {
             dadosBilhete?.vendedor_id === idAderido &&
             dadosBilhete?.status === "recusado"
           ) {
-            // Forçamos o Partial para aceitar `null` nos campos que queremos limpar
             const updateBilhete: Partial<Bilhete> & Record<string, any> = {
               status: "pendente",
               comprador_nome: dadosAtualizados.nome,
@@ -171,8 +181,6 @@ export class RifasService {
               data_reserva: new Date().toISOString(),
             };
 
-            // O campo 'comprador_telefone' não existe nativamente no modelo Bilhete atual.
-            // Para mantermos a lógica do front, injetamo-lo via Record.
             updateBilhete.comprador_telefone =
               dadosAtualizados.telefone || null;
 
@@ -214,7 +222,15 @@ export class RifasService {
     let rifasPagasGlobal = 0;
 
     const aderidos = usuariosSnap.docs
-      .filter((doc) => doc.id.startsWith("ADERIDO_"))
+      // BLINDAGEM: Checa pelo cargo em vez de depender de doc.id começar com "ADERIDO_"
+      .filter((doc) => {
+        const data = doc.data();
+        return (
+          data.role === "aderido" ||
+          data.cargo === "aderido" ||
+          (!data.role && !data.cargo)
+        );
+      })
       .map((doc) => {
         const user = doc.data() as Usuario;
         const rifasVendidas = vendasPorCpf[user.cpf] || 0;
@@ -226,7 +242,7 @@ export class RifasService {
         return {
           id: doc.id,
           nome: user.nome || "Aderido Sem Nome",
-          cpf: user.cpf,
+          cpf: user.cpf || "-",
           arrecadado: arrecadado,
           meta: user.meta_vendas || 1200,
           rifasVendidas: rifasVendidas,
@@ -254,12 +270,14 @@ export class RifasService {
       .get();
 
     const historico = bilhetesSnap.docs.map((doc) => {
-      const data = doc.data() as Bilhete;
+      // Cast relaxado para poder ler o comprador_telefone sem o TypeScript reclamar
+      const data = doc.data() as Bilhete & Record<string, any>;
       return {
         numero_rifa: doc.id,
         vendedor_nome: data.vendedor_nome || "Desconhecido",
         vendedor_cpf: data.vendedor_cpf || "-",
         comprador_nome: data.comprador_nome || "Desconhecido",
+        comprador_telefone: data.comprador_telefone || "-", // <-- ADICIONADO NO HISTÓRICO
         comprador_email: data.comprador_email || "-",
         data_reserva: data.data_reserva || "-",
         data_pagamento: data.data_pagamento || "-",

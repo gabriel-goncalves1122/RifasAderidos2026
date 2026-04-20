@@ -1,12 +1,29 @@
 {
   "name": "sistema-rifas",
   "version": "1.0.0",
-  "description": "Orquestrador do Monorepo da Comissão",
+  "description": "Orquestrador do Monorepo - Comissão de Formatura 2026",
   "private": true,
   "scripts": {
+    "// --- Instalação ---": "",
+    "install:all": "npm install --prefix backend/functions && npm install --prefix frontend",
+
+    "// --- Desenvolvimento ---": "",
+    "dev:back": "npm run serve --prefix backend/functions",
+    "dev:front": "npm run dev --prefix frontend",
+    "dev": "npm run dev:back & npm run dev:front",
+
+    "// --- Testes ---": "",
     "test:backend": "npm run test --prefix backend/functions",
     "test:frontend": "npm run test --prefix frontend",
     "test": "npm run test:backend && npm run test:frontend",
-    "dev": "npm run serve --prefix backend/functions & npm run dev --prefix frontend"
+
+    "// --- Build e Deploy ---": "",
+    "build:front": "npm run build --prefix frontend",
+    "build:back": "npm run build --prefix backend/functions",
+    "build:all": "npm run build:back && npm run build:front",
+    "deploy:all": "npm run build:all && firebase deploy"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

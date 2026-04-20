@@ -1,5 +1,5 @@
 // ============================================================================
-// ARQUIVO: backend/functions/src/modules/auditoria/extratorTextoService.ts
+// ARQUIVO: backend/functions/src/modules/auditoria/ocrLogic/extratorTextoService.ts
 // ============================================================================
 import axios from "axios";
 import Tesseract from "tesseract.js";
@@ -15,7 +15,7 @@ if (typeof global !== "undefined") {
 }
 
 // Agora sim, importamos em segurança!
-const pdfParse = require("pdf-parse");
+import * as pdfParse from "pdf-parse";
 
 export class ExtratorTextoService {
   /**
@@ -35,8 +35,20 @@ export class ExtratorTextoService {
         contentType.includes("application/pdf") ||
         urlArquivo.toLowerCase().includes(".pdf")
       ) {
+        // ====================================================================
+        // BLINDAGEM DO PDF-PARSE: Encontra a função correta após a compilação
+        // ====================================================================
+        const parseFunction =
+          typeof pdfParse === "function" ? pdfParse : (pdfParse as any).default;
+
+        if (typeof parseFunction !== "function") {
+          throw new Error(
+            "A biblioteca pdf-parse não foi exportada como função.",
+          );
+        }
+
         // Leitura nativa e instantânea de PDFs gerados por bancos
-        const dadosPdf = await pdfParse(bufferArquivo);
+        const dadosPdf = await parseFunction(bufferArquivo);
         return dadosPdf.text;
       } else {
         // Leitura via Inteligência Artificial (OCR) para imagens/prints
