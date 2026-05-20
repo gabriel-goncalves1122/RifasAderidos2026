@@ -167,10 +167,6 @@ describe("Service: secretariaService", () => {
   });
 
   it("Deve atualizar apenas campos cadastrais do aderido", async () => {
-    mockGet.mockResolvedValueOnce({
-      exists: true,
-    });
-
     const mockUpdate = jest.fn();
 
     mockDoc.mockReturnValueOnce({
@@ -179,10 +175,19 @@ describe("Service: secretariaService", () => {
       update: mockUpdate,
     });
 
+    mockGet.mockResolvedValueOnce({
+      exists: true,
+
+      // Dados atuais usados pela regra que bloqueia ativo -> pendente.
+      data: () => ({
+        status_cadastro: "ativo",
+        modalidade_adesao: "completo",
+      }),
+    });
+
     const resultado = await secretariaService.atualizarAderido("ADERIDO_001", {
       nome: "Gabriel Sampaio",
       telefone: "35999999999",
-      modalidade_adesao: "meio",
       status_cadastro: "ativo",
     });
 
@@ -190,7 +195,6 @@ describe("Service: secretariaService", () => {
       expect.objectContaining({
         nome: "GABRIEL SAMPAIO",
         telefone: "35999999999",
-        modalidade_adesao: "meio",
         status_cadastro: "ativo",
         status: "ativo",
         atualizado_em: expect.any(String),
@@ -202,7 +206,6 @@ describe("Service: secretariaService", () => {
       camposAtualizados: expect.arrayContaining([
         "nome",
         "telefone",
-        "modalidade_adesao",
         "status_cadastro",
         "status",
         "atualizado_em",

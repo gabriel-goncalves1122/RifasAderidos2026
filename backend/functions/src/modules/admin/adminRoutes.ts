@@ -4,11 +4,16 @@
 import { Router } from "express";
 
 import secretariaRoutes from "./secretaria/secretariaRoutes";
+import compacRoutes from "./compac/compacRoutes";
 
 const router = Router();
 
-// Rotas administrativas da secretaria.
-// Exemplo final: /admin/aderidos e /admin/aderidos/:id
+// Agrega rotas administrativas da secretaria.
+// Exemplo final: /admin/aderidos
 router.use("/", secretariaRoutes);
+
+// Agrega rotas administrativas de compactação.
+// Exemplo final: /admin/compactar
+router.use("/", compacRoutes);
 
 export default router;
