@@ -21,8 +21,8 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-import { useAuthController } from "../../controllers/useAuthController";
-import { authStyles } from "./styles/authStyles";
+import { useAuthController } from "../../features/auth/hooks/useAuthController";
+import { authStyles } from "../../features/auth/styles/authStyles";
 
 const aplicarMascaraCPF = (valor: string) => {
   return valor

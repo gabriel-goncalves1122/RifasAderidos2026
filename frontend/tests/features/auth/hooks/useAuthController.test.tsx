@@ -1,6 +1,6 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useAuthController } from "@/controllers/useAuthController";
+import { useAuthController } from "@/features/auth/hooks/useAuthController";
 import { fetchAPI } from "@/controllers/api";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 

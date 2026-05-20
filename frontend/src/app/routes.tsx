@@ -4,9 +4,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { Box, CircularProgress } from "@mui/material";
 
 import { auth } from "../shared/config/firebase";
-import { LoginPage } from "../views/pages/LoginPage";
 import { DashboardPage } from "../views/pages/DashboardPage";
-import { RegisterPage } from "../views/pages/RegisterPage";
+import { LoginPage } from "@/features/auth/pages/LoginPage";
+import { RegisterPage } from "@/features/auth/pages/RegisterPage";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);

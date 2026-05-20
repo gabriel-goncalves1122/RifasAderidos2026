@@ -1,73 +1,168 @@
+// ============================================================================
+// ARQUIVO: frontend/src/app/theme.ts
+// ============================================================================
 import { createTheme } from "@mui/material/styles";
 
-// Cores exatas extraídas da sua identidade visual
-const verdeEscuro = "#0B1B15";
-const verdeMedio = "#143026";
-const douradoPrincipal = "#D4AF37"; // Dourado da engrenagem
-const douradoHover = "#F3E5AB"; // Dourado mais claro para quando passar o rato
-
+// Paleta central do sistema.
+// Mantém o visual institucional em verde escuro, branco e preto suave.
 export const theme = createTheme({
-  typography: {
-    fontFamily: '"Montserrat", "Roboto", "Helvetica", "Arial", sans-serif',
-    button: {
-      fontWeight: 600, // Botões com texto mais gordinho
-      textTransform: "none", // Impede que todos os botões fiquem EM MAIÚSCULAS
-    },
-    h4: { fontWeight: 700 },
-    h5: { fontWeight: 600 },
-    h6: { fontWeight: 600 },
-  },
   palette: {
+    mode: "light",
+
     primary: {
-      main: verdeEscuro,
-      light: verdeMedio,
-      contrastText: "#ffffff",
+      main: "#0B2F24",
+      light: "#17483A",
+      dark: "#061C15",
+      contrastText: "#FFFFFF",
     },
+
     secondary: {
-      main: douradoPrincipal,
-      light: douradoHover,
-      contrastText: verdeEscuro, // Texto escuro sobre botão dourado fica incrível
+      main: "#1F3D34",
+      light: "#2F5A4D",
+      dark: "#10241E",
+      contrastText: "#FFFFFF",
     },
+
     background: {
-      default: "#f5f7fa", // Um cinzento muito clarinho para o fundo do app
-      paper: "#ffffff", // Cards e menus brancos para dar contraste
+      default: "#F6F8F7",
+      paper: "#FFFFFF",
+    },
+
+    text: {
+      primary: "#081411",
+      secondary: "#5D6A66",
+      disabled: "#9AA3A0",
+    },
+
+    divider: "rgba(8, 20, 17, 0.10)",
+
+    success: {
+      main: "#1F6B4A",
+      light: "#DDEDE5",
+      dark: "#12412D",
+      contrastText: "#FFFFFF",
+    },
+
+    warning: {
+      main: "#9A7A2F",
+      light: "#F4ECD6",
+      dark: "#5F4817",
+      contrastText: "#081411",
+    },
+
+    error: {
+      main: "#8F2F2F",
+      light: "#F2DADA",
+      dark: "#5D1D1D",
+      contrastText: "#FFFFFF",
+    },
+
+    info: {
+      main: "#315A66",
+      light: "#DCE9EC",
+      dark: "#203D45",
+      contrastText: "#FFFFFF",
     },
   },
-  shape: {
-    borderRadius: 12, // Arredonda os cantos de todos os cards e botões para um visual moderno
+
+  typography: {
+    fontFamily: ["Inter", "Roboto", "Arial", "sans-serif"].join(","),
+
+    h4: {
+      fontWeight: 800,
+      letterSpacing: "-0.03em",
+    },
+
+    h5: {
+      fontWeight: 800,
+      letterSpacing: "-0.02em",
+    },
+
+    button: {
+      fontWeight: 700,
+      textTransform: "none",
+    },
   },
+
+  shape: {
+    borderRadius: 14,
+  },
+
   components: {
-    // Customização automática de todos os Botões do app
-    MuiButton: {
+    MuiCssBaseline: {
       styleOverrides: {
-        root: {
-          borderRadius: "8px",
-          padding: "8px 24px",
+        body: {
+          backgroundColor: "#F6F8F7",
+          color: "#081411",
         },
-        containedPrimary: {
-          background: `linear-gradient(45deg, ${verdeEscuro} 30%, ${verdeMedio} 90%)`,
-        },
-        containedSecondary: {
-          background: `linear-gradient(45deg, #AA8222 30%, ${douradoPrincipal} 90%)`,
-          color: "#fff",
+
+        ":root": {
+          "--cor-verde-principal": "#0B2F24",
+          "--cor-verde-escuro": "#061C15",
+          "--cor-verde-medio": "#17483A",
+          "--cor-branco": "#FFFFFF",
+          "--cor-preto-suave": "#081411",
+          "--cor-cinza-fundo": "#F6F8F7",
+          "--cor-cinza-texto": "#5D6A66",
+          "--cor-dourado-discreto": "#9A7A2F",
+          "--cor-dourado-escuro": "#7A6022",
         },
       },
     },
-    // Customização das Abas (Tabs)
-    MuiTab: {
+
+    MuiButton: {
       styleOverrides: {
         root: {
-          fontWeight: 600,
-          "&.Mui-selected": {
-            color: douradoPrincipal, // A aba ativa fica dourada
+          borderRadius: 12,
+          boxShadow: "none",
+        },
+
+        containedPrimary: {
+          backgroundColor: "#0B2F24",
+          "&:hover": {
+            backgroundColor: "#061C15",
+            boxShadow: "0 10px 24px rgba(11, 47, 36, 0.22)",
           },
         },
       },
     },
-    MuiTabs: {
+
+    MuiTextField: {
       styleOverrides: {
-        indicator: {
-          backgroundColor: douradoPrincipal, // O risquinho debaixo da aba fica dourado
+        root: {
+          "& .MuiOutlinedInput-root": {
+            borderRadius: 12,
+            backgroundColor: "#FFFFFF",
+
+            "& fieldset": {
+              borderColor: "rgba(8, 20, 17, 0.18)",
+            },
+
+            "&:hover fieldset": {
+              borderColor: "#17483A",
+            },
+
+            "&.Mui-focused fieldset": {
+              borderColor: "#0B2F24",
+              borderWidth: 2,
+            },
+          },
+        },
+      },
+    },
+
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: "none",
+        },
+      },
+    },
+
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
         },
       },
     },

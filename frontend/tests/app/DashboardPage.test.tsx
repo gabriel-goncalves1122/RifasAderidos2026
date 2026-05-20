@@ -4,9 +4,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DashboardPage } from "@/views/pages/DashboardPage";
-import { useAuthController } from "@/controllers/useAuthController";
+import { useAuthController } from "@/features/auth/hooks/useAuthController";
 
-vi.mock("@/controllers/useAuthController", () => ({
+vi.mock("@/features/auth/hooks/useAuthController", () => ({
   useAuthController: vi.fn(),
 }));
 

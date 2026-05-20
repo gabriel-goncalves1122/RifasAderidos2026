@@ -31,7 +31,7 @@ vi.mock("@/controllers/useNotificacoes", () => ({
   }),
 }));
 
-vi.mock("@/controllers/useAuthController", () => ({
+vi.mock("@/features/auth/hooks/useAuthController", () => ({
   useAuthController: () => ({
     usuarioAtual: { nome: "Gabriel Gonçalves" }, // Nome do utilizador logado
   }),

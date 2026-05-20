@@ -30,7 +30,7 @@ import { GrelhaRifas } from "./GrelhasRifas"; // <-- NOVO IMPORT
 
 // Controladores
 import { useRifas } from "../../controllers/useRifas";
-import { useAuthController } from "../../controllers/useAuthController";
+import { useAuthController } from "../auth/hooks/useAuthController";
 import { useNotificacoes } from "../../controllers/useNotificacoes";
 
 type VisaoType = "geral" | "recusadas";

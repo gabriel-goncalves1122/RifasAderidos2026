@@ -24,7 +24,7 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 
-import { useAuthController } from "../../controllers/useAuthController";
+import { useAuthController } from "../../features/auth/hooks/useAuthController";
 import { AuditoriaTable } from "../../features/tesouraria/AuditoriaTable";
 import { MinhasRifasTab } from "../../features/aderidos/MinhasRifasTab";
 import { VisaoGraficaTab } from "../../features/tesouraria/VisaoGraficaTab";

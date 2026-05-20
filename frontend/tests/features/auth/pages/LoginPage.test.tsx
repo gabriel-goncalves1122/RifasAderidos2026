@@ -1,85 +1,109 @@
-import { render, screen, waitFor } from "@testing-library/react";
+// ============================================================================
+// ARQUIVO: frontend/tests/features/auth/pages/LoginPage.test.tsx
+// ============================================================================
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DashboardPage } from "@/views/pages/DashboardPage";
-import { useAuthController } from "@/controllers/useAuthController";
+import { MemoryRouter } from "react-router-dom";
 
-// 1. Mock do Auth Controller
-vi.mock("@/controllers/useAuthController", () => ({
+import { LoginPage } from "@/features/auth/pages/LoginPage";
+import { useAuthController } from "@/features/auth/hooks/useAuthController";
+
+vi.mock("@/features/auth/hooks/useAuthController", () => ({
   useAuthController: vi.fn(),
 }));
 
-// 2. Mocks dos Componentes Filhos (Para não renderizar a tela inteira em cada teste)
-vi.mock("@/views/components/DashboardSidebar", () => ({
-  DashboardSidebar: () => <div data-testid="sidebar">Sidebar</div>,
-}));
-vi.mock("@/views/components/MinhasRifasTab", () => ({
-  MinhasRifasTab: () => <div>Conteudo: Minhas Rifas</div>,
-}));
-vi.mock("@/views/components/PremiosTab", () => ({
-  PremiosTab: () => <div>Conteudo: Premios</div>,
-}));
-vi.mock("@/views/components/AuditoriaTable", () => ({
-  AuditoriaTable: () => <div>Conteudo: Auditoria</div>,
-}));
+const mockNavigate = vi.fn();
 
-describe("Página <DashboardPage />", () => {
-  const mockHandleLogout = vi.fn();
+vi.mock("react-router-dom", async () => {
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
+
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
+describe("Página <LoginPage />", () => {
+  const mockHandleLogin = vi.fn();
+  const mockHandlePasswordReset = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    sessionStorage.clear(); // Limpa a memória do navegador falso antes de cada teste
+
+    vi.mocked(useAuthController).mockReturnValue({
+      handleLogin: mockHandleLogin,
+      handlePasswordReset: mockHandlePasswordReset,
+      handleRegister: vi.fn(),
+      handleLogout: vi.fn(),
+      usuarioAtual: null,
+      loading: false,
+      error: null,
+    });
   });
 
-  it("Deve renderizar o Portal do Aderido para usuários normais", () => {
-    (useAuthController as any).mockReturnValue({
-      usuarioAtual: { cargo: "membro" },
-      handleLogout: mockHandleLogout,
+  it("Deve realizar login e navegar para o dashboard", async () => {
+    mockHandleLogin.mockResolvedValueOnce(true);
+
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByLabelText(/^E-mail/i), {
+      target: { value: "gabriel@unifei.br" },
     });
 
-    render(<DashboardPage />);
-
-    // Verifica o Título do Cabeçalho
-    expect(screen.getByText("PORTAL DO ADERIDO")).toBeInTheDocument();
-
-    // Verifica se as abas corretas apareceram
-    expect(screen.getByText("Minhas Rifas")).toBeInTheDocument();
-    expect(screen.getByText("Prêmios")).toBeInTheDocument();
-
-    // A aba da tesouraria não deve existir
-    expect(screen.queryByText("Aprovar Pix")).not.toBeInTheDocument();
-  });
-
-  it("Deve renderizar a Gestão Financeira para usuários Admin (Tesouraria)", () => {
-    sessionStorage.setItem("dashboard_contexto", "tesouraria"); // Força o Admin a abrir a tela da tesouraria
-
-    (useAuthController as any).mockReturnValue({
-      usuarioAtual: { cargo: "tesouraria" },
-      handleLogout: mockHandleLogout,
+    fireEvent.change(screen.getByLabelText(/^Senha/i, { selector: "input" }), {
+      target: { value: "senha123" },
     });
 
-    render(<DashboardPage />);
+    fireEvent.click(screen.getByRole("button", { name: /Acessar sistema/i }));
 
-    expect(screen.getByText("GESTÃO FINANCEIRA")).toBeInTheDocument();
-    expect(screen.getByText("Aprovar Pix")).toBeInTheDocument();
-    expect(screen.getByText("Desempenho")).toBeInTheDocument();
-    expect(screen.getByText("Histórico")).toBeInTheDocument();
-  });
-
-  it("MECANISMO DE SEGURANÇA: Deve expulsar um Aderido que tente acessar a Tesouraria forçando a SessionStorage", async () => {
-    // Simulando um ataque: O aderido mudou a variável no navegador para 'tesouraria'
-    sessionStorage.setItem("dashboard_contexto", "tesouraria");
-
-    (useAuthController as any).mockReturnValue({
-      usuarioAtual: { cargo: "membro" }, // Mas o backend diz que ele é membro!
-      handleLogout: mockHandleLogout,
-    });
-
-    render(<DashboardPage />);
-
-    // O useEffect deve detetar a fraude e atirar o usuário de volta para o Portal do Aderido
     await waitFor(() => {
-      expect(screen.getByText("PORTAL DO ADERIDO")).toBeInTheDocument();
-      expect(screen.queryByText("GESTÃO FINANCEIRA")).not.toBeInTheDocument();
+      expect(mockHandleLogin).toHaveBeenCalledWith(
+        "gabriel@unifei.br",
+        "senha123",
+      );
+
+      expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
     });
+  });
+
+  it("Deve exibir erro quando o controller retornar erro", () => {
+    vi.mocked(useAuthController).mockReturnValue({
+      handleLogin: mockHandleLogin,
+      handlePasswordReset: mockHandlePasswordReset,
+      handleRegister: vi.fn(),
+      handleLogout: vi.fn(),
+      usuarioAtual: null,
+      loading: false,
+      error: "E-mail ou senha incorretos.",
+    });
+
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("E-mail ou senha incorretos.")).toBeInTheDocument();
+  });
+
+  it("Deve abrir o modal de recuperação de senha", () => {
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Esqueceu sua senha/i }),
+    );
+
+    expect(screen.getByText(/Recuperar senha/i)).toBeInTheDocument();
   });
 });
