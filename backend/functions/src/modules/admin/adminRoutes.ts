@@ -1,24 +1,14 @@
+// ============================================================================
+// ARQUIVO: backend/functions/src/modules/admin/adminRoutes.ts
+// ============================================================================
 import { Router } from "express";
-import {
-  requireTesourariaOrAdmin,
-  validateToken,
-} from "../../shared/middlewares/authMiddleware";
-import { compacController } from "./compacController";
-import { adminController } from "./adminController";
+
+import secretariaRoutes from "./secretaria/secretariaRoutes";
 
 const router = Router();
 
-// As rotas aqui herdam o prefixo "/admin" do roteador mestre
-router.post(
-  "/compactar",
-  validateToken,
-  requireTesourariaOrAdmin,
-  compacController.compactarArquivos,
-);
-router.post(
-  "/aderidos",
-  validateToken,
-  requireTesourariaOrAdmin,
-  adminController.adicionarAderido,
-);
+// Rotas administrativas da secretaria.
+// Exemplo final: /admin/aderidos e /admin/aderidos/:id
+router.use("/", secretariaRoutes);
+
 export default router;

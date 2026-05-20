@@ -1,36 +1,37 @@
 // ============================================================================
-// ARQUIVO: frontend/src/views/components/secretaria/ModalDetalhesAderido.tsx
+// ARQUIVO: frontend/src/features/secretaria/components/ModalDetalhesAderido.tsx
 // ============================================================================
 import { useEffect, useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Avatar,
+  Box,
   Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   Stack,
   Typography,
-  Divider,
-  TextField,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  Box,
-  CircularProgress,
 } from "@mui/material";
 
-import {
-  CARGOS_COMISSAO,
-  CURSOS_UNIFEI,
-} from "../../../shared/types/constants";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import CloseIcon from "@mui/icons-material/Close";
+import PersonIcon from "@mui/icons-material/Person";
+
+import { formatarCpf, formatarTelefone } from "../utils/formatadoresSecretaria";
+
 import {
   AderidoSecretaria,
   FormEditarAderido,
-  ModalidadeAdesao,
-  StatusCadastro,
 } from "../../../shared/types/secretaria";
+
 import { useSecretaria } from "../hooks/useSecretaria";
+import { InfoItem } from "./detalhesAderido/InfoItem";
+import { ResumoOperacionalAderido } from "./detalhesAderido/ResumoOperacionaAderido";
+import { FormEditarAderidoComponent } from "./detalhesAderido/FormEditarAderido";
 
 interface ModalDetalhesAderidoProps {
   open: boolean;
@@ -49,28 +50,8 @@ function montarFormEdicao(aderido: AderidoSecretaria): FormEditarAderido {
     genero: aderido.genero || "",
     data_nascimento: aderido.data_nascimento || "",
     cargo: aderido.cargo || "aderido",
-    modalidade_adesao: aderido.modalidade_adesao || "completo",
     status_cadastro: aderido.status_cadastro || "pendente",
   };
-}
-
-function LinhaDetalhe({
-  label,
-  valor,
-}: {
-  label: string;
-  valor?: string | number | null;
-}) {
-  return (
-    <Box>
-      <Typography variant="caption" color="text.secondary">
-        {label}
-      </Typography>
-      <Typography variant="body2" fontWeight={500}>
-        {valor || "Não informado"}
-      </Typography>
-    </Box>
-  );
 }
 
 export function ModalDetalhesAderido({
@@ -86,13 +67,16 @@ export function ModalDetalhesAderido({
   const [form, setForm] = useState<FormEditarAderido | null>(null);
 
   useEffect(() => {
-    if (aderido) {
-      setForm(montarFormEdicao(aderido));
-      setEditando(false);
-    }
+    if (!aderido) return;
+
+    setForm(montarFormEdicao(aderido));
+    setEditando(false);
   }, [aderido]);
 
   if (!aderido || !form) return null;
+
+  const nomeExibicao = aderido.nome || "Nome não definido";
+  const inicialAvatar = aderido.nome?.charAt(0).toUpperCase() || "?";
 
   const handleChange = (campo: keyof FormEditarAderido, valor: string) => {
     setForm((prev) => {
@@ -103,6 +87,16 @@ export function ModalDetalhesAderido({
         [campo]: valor,
       };
     });
+  };
+
+  const handleFechar = () => {
+    setEditando(false);
+    onClose();
+  };
+
+  const handleCancelarEdicao = () => {
+    setForm(montarFormEdicao(aderido));
+    setEditando(false);
   };
 
   const handleSalvar = async () => {
@@ -122,213 +116,124 @@ export function ModalDetalhesAderido({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: "bold", color: "primary.main" }}>
-        Dados do Aderido
-      </DialogTitle>
+    <Dialog open={open} onClose={handleFechar} maxWidth="md" fullWidth>
+      <DialogTitle
+        sx={{
+          p: 3,
+          bgcolor: "grey.50",
+          borderBottom: "1px solid",
+          borderColor: "grey.200",
+        }}
+      >
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Avatar
+            sx={{
+              width: 52,
+              height: 52,
+              bgcolor: "primary.main",
+              fontWeight: 700,
+            }}
+          >
+            {inicialAvatar}
+          </Avatar>
 
-      <DialogContent dividers>
-        {!editando ? (
-          <Stack spacing={3}>
-            <Box>
-              <Typography variant="h6" fontWeight="bold">
-                {aderido.nome || "Nome não definido"}
-              </Typography>
-
-              <Typography variant="body2" color="text.secondary">
-                {aderido.email}
-              </Typography>
-            </Box>
-
-            <Divider />
-
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-                gap: 2,
-              }}
-            >
-              <LinhaDetalhe label="ID do documento" valor={aderido.id} />
-              <LinhaDetalhe label="ID do aderido" valor={aderido.id_aderido} />
-              <LinhaDetalhe label="CPF" valor={aderido.cpf} />
-              <LinhaDetalhe label="Telefone" valor={aderido.telefone} />
-              <LinhaDetalhe label="Curso" valor={aderido.curso} />
-              <LinhaDetalhe label="Gênero" valor={aderido.genero} />
-              <LinhaDetalhe
-                label="Data de nascimento"
-                valor={aderido.data_nascimento}
-              />
-              <LinhaDetalhe label="Cargo" valor={aderido.cargo} />
-              <LinhaDetalhe
-                label="Modalidade"
-                valor={
-                  aderido.modalidade_adesao === "meio"
-                    ? "Meio-aderido"
-                    : "Aderido completo"
-                }
-              />
-              <LinhaDetalhe label="Status" valor={aderido.status_cadastro} />
-              <LinhaDetalhe
-                label="Faixa de rifas"
-                valor={
-                  aderido.faixa_rifas
-                    ? `${aderido.faixa_rifas.inicio || "-"} até ${
-                        aderido.faixa_rifas.fim || "-"
-                      }`
-                    : "Não informada"
-                }
-              />
-              <LinhaDetalhe
-                label="Rifas vendidas"
-                valor={aderido.rifas_vendidas}
-              />
-              <LinhaDetalhe
-                label="Total arrecadado"
-                valor={
-                  aderido.total_arrecadado !== undefined
-                    ? `R$ ${aderido.total_arrecadado.toFixed(2)}`
-                    : "R$ 0,00"
-                }
-              />
-            </Box>
-          </Stack>
-        ) : (
-          <Stack spacing={3}>
-            <Typography variant="body2" color="text.secondary">
-              Edite apenas dados cadastrais. Campos operacionais como UID, faixa
-              de rifas, vendas e arrecadação são preservados.
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h6" fontWeight={800}>
+              Dados do Aderido
             </Typography>
 
-            <TextField
-              label="Nome"
-              value={form.nome}
-              onChange={(e) => handleChange("nome", e.target.value)}
-              fullWidth
-            />
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {nomeExibicao} • {aderido.email || "E-mail não informado"}
+            </Typography>
+          </Box>
+        </Stack>
+      </DialogTitle>
 
-            <TextField
-              label="E-mail"
-              value={form.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-              fullWidth
-            />
+      <DialogContent sx={{ p: 3 }}>
+        <Stack spacing={3}>
+          <ResumoOperacionalAderido aderido={aderido} />
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                label="CPF"
-                value={form.cpf}
-                onChange={(e) => handleChange("cpf", e.target.value)}
-                fullWidth
-              />
+          {!editando ? (
+            <>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <PersonIcon color="primary" />
 
-              <TextField
-                label="Telefone"
-                value={form.telefone}
-                onChange={(e) => handleChange("telefone", e.target.value)}
-                fullWidth
-              />
-            </Stack>
+                <Typography variant="subtitle1" fontWeight={800}>
+                  Informações cadastrais
+                </Typography>
+              </Stack>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <FormControl fullWidth>
-                <InputLabel>Curso</InputLabel>
-                <Select
-                  value={form.curso}
-                  label="Curso"
-                  onChange={(e) => handleChange("curso", e.target.value)}
-                >
-                  <MenuItem value="">Não informado</MenuItem>
-                  {CURSOS_UNIFEI.map((curso) => (
-                    <MenuItem key={curso} value={curso.toUpperCase()}>
-                      {curso}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <TextField
-                label="Data de nascimento"
-                value={form.data_nascimento}
-                onChange={(e) =>
-                  handleChange("data_nascimento", e.target.value)
-                }
-                fullWidth
-              />
-            </Stack>
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <FormControl fullWidth>
-                <InputLabel>Cargo</InputLabel>
-                <Select
-                  value={form.cargo}
-                  label="Cargo"
-                  onChange={(e) => handleChange("cargo", e.target.value)}
-                >
-                  {CARGOS_COMISSAO.map((cargo) => (
-                    <MenuItem key={cargo.id} value={cargo.id}>
-                      {cargo.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth>
-                <InputLabel>Modalidade</InputLabel>
-                <Select
-                  value={form.modalidade_adesao}
-                  label="Modalidade"
-                  onChange={(e) =>
-                    handleChange(
-                      "modalidade_adesao",
-                      e.target.value as ModalidadeAdesao,
-                    )
-                  }
-                >
-                  <MenuItem value="completo">Aderido completo</MenuItem>
-                  <MenuItem value="meio">Meio-aderido</MenuItem>
-                </Select>
-              </FormControl>
-            </Stack>
-
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={form.status_cadastro}
-                label="Status"
-                onChange={(e) =>
-                  handleChange(
-                    "status_cadastro",
-                    e.target.value as StatusCadastro,
-                  )
-                }
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, minmax(0, 1fr))",
+                  },
+                  gap: 2,
+                }}
               >
-                <MenuItem value="ativo">Ativo</MenuItem>
-                <MenuItem value="pendente">Pendente</MenuItem>
-                <MenuItem value="inativo">Inativo</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
-        )}
+                <InfoItem label="ID do documento" valor={aderido.id} />
+                <InfoItem label="ID do aderido" valor={aderido.id_aderido} />
+                <InfoItem label="CPF" valor={formatarCpf(aderido.cpf)} />
+                <InfoItem
+                  label="Telefone"
+                  valor={formatarTelefone(aderido.telefone)}
+                />
+                <InfoItem label="Curso" valor={aderido.curso} />
+                <InfoItem label="Gênero" valor={aderido.genero} />
+                <InfoItem
+                  label="Data de nascimento"
+                  valor={aderido.data_nascimento}
+                />
+                <InfoItem label="Cargo" valor={aderido.cargo} />
+              </Box>
+            </>
+          ) : (
+            <>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <EditIcon color="primary" />
+
+                <Typography variant="subtitle1" fontWeight={800}>
+                  Editar dados cadastrais
+                </Typography>
+              </Stack>
+
+              <FormEditarAderidoComponent
+                aderido={aderido}
+                form={form}
+                onChange={handleChange}
+              />
+            </>
+          )}
+        </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} color="inherit" disabled={salvando}>
+      <Divider />
+
+      <DialogActions sx={{ p: 2.5 }}>
+        <Button
+          onClick={handleFechar}
+          color="inherit"
+          disabled={salvando}
+          startIcon={<CloseIcon />}
+        >
           Fechar
         </Button>
 
         {!editando ? (
-          <Button variant="contained" onClick={() => setEditando(true)}>
+          <Button
+            variant="contained"
+            onClick={() => setEditando(true)}
+            startIcon={<EditIcon />}
+          >
             Editar Dados
           </Button>
         ) : (
           <>
             <Button
               color="inherit"
-              onClick={() => {
-                setForm(montarFormEdicao(aderido));
-                setEditando(false);
-              }}
+              onClick={handleCancelarEdicao}
               disabled={salvando}
             >
               Cancelar edição
@@ -338,8 +243,11 @@ export function ModalDetalhesAderido({
               variant="contained"
               onClick={handleSalvar}
               disabled={salvando}
+              startIcon={
+                salvando ? <CircularProgress size={18} /> : <SaveIcon />
+              }
             >
-              {salvando ? <CircularProgress size={22} /> : "Salvar alterações"}
+              {salvando ? "Salvando..." : "Salvar alterações"}
             </Button>
           </>
         )}

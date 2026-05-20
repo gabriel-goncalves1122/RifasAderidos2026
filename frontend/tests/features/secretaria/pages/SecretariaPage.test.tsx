@@ -13,6 +13,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SecretariaView } from "@/features/secretaria/pages/SecretariaPage";
 import { useSecretaria } from "@/features/secretaria/hooks/useSecretaria";
 
+function textoExatoNormalizado(textoEsperado: string) {
+  return (_: string, element: Element | null) => {
+    const textoElemento = element?.textContent?.replace(/\s+/g, " ").trim();
+
+    return textoElemento === textoEsperado;
+  };
+}
+
 // O mock precisa apontar para o mesmo caminho importado pela página.
 vi.mock("@/features/secretaria/hooks/useSecretaria", () => ({
   useSecretaria: vi.fn(),
@@ -191,7 +199,12 @@ describe("Página <SecretariaView />", () => {
     const modal = screen.getByRole("dialog", { name: /Dados do Aderido/i });
 
     expect(modal).toBeInTheDocument();
-    expect(within(modal).getByText("gabriel@teste.com")).toBeInTheDocument();
+    expect(
+      within(modal).getByText(
+        textoExatoNormalizado("Gabriel Silva • gabriel@teste.com"),
+      ),
+    ).toBeInTheDocument();
+
     expect(within(modal).getByText("Editar Dados")).toBeInTheDocument();
   });
 });

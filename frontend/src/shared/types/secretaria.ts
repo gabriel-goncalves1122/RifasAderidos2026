@@ -64,6 +64,5 @@ export interface FormEditarAderido {
   genero: string;
   data_nascimento: string;
   cargo: string;
-  modalidade_adesao: ModalidadeAdesao;
   status_cadastro: StatusCadastro;
 }
