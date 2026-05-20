@@ -1,4 +1,4 @@
-import { storage } from "../config/firebase";
+import { storage } from "../shared/config/firebase";
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { fetchAPI } from "./api";
 

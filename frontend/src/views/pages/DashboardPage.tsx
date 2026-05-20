@@ -25,13 +25,13 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 
 import { useAuthController } from "../../controllers/useAuthController";
-import { AuditoriaTable } from "../components/tesouraria/AuditoriaTable";
-import { MinhasRifasTab } from "../components/aderidos/MinhasRifasTab";
-import { VisaoGraficaTab } from "../components/tesouraria/VisaoGraficaTab";
-import { HistoricoDetalhadoTab } from "../components/tesouraria/HistoricoDetalhadoTab";
-import { PremiosTab } from "../components/premios/PremiosTab";
-import { SecretariaView } from "./SecretariaPage";
-import { DashboardSidebar } from "../components/comuns/DashboardSidebar";
+import { AuditoriaTable } from "../../features/tesouraria/AuditoriaTable";
+import { MinhasRifasTab } from "../../features/aderidos/MinhasRifasTab";
+import { VisaoGraficaTab } from "../../features/tesouraria/VisaoGraficaTab";
+import { HistoricoDetalhadoTab } from "../../features/tesouraria/HistoricoDetalhadoTab";
+import { PremiosTab } from "../../features/premios/PremiosTab";
+import { SecretariaView } from "../../features/secretaria/pages/SecretariaPage";
+import { DashboardSidebar } from "../../features/DashboardSidebar";
 
 export type Contexto = "aderido" | "tesouraria" | "secretaria";
 

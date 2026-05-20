@@ -2,7 +2,7 @@
 // ARQUIVO: frontend/src/controllers/useCompactacao.ts
 // ============================================================================
 import { useState } from "react";
-import { auth } from "../config/firebase";
+import { auth } from "../shared/config/firebase";
 
 // Altere este URL quando fizer o deploy para o Render (ex: https://sua-api.onrender.com/api/compactar)
 const API_URL = "http://localhost:3001/api/compactar";

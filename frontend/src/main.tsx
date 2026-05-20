@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
+import App from "../src/app/App";
 
 // 1. Importar o nosso novo CSS Global
 import "./assets/styles/global.css";
@@ -8,7 +8,7 @@ import "./assets/styles/global.css";
 // 2. Importar o Tema e o Provider do Material UI
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { theme } from "./styles/theme.ts";
+import { theme } from "./app/theme.ts";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

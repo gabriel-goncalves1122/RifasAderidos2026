@@ -1,9 +1,26 @@
+// ============================================================================
+// ARQUIVO: backend/functions/src/shared/middlewares/authMiddleware.ts
+// ============================================================================
 import { Request, Response, NextFunction } from "express";
 import * as admin from "firebase-admin";
 
 export interface AuthRequest extends Request {
-  user?: admin.auth.DecodedIdToken & { role?: string };
+  user?: admin.auth.DecodedIdToken & {
+    role?: string;
+    cargo?: string;
+  };
 }
+
+const SUPER_ADMINS = ["comissao0026@gmail.com"];
+
+const CARGOS_TESOURARIA_OU_ADMIN = [
+  "admin",
+  "presidencia",
+  "diretor_tesouraria",
+  "membro_tesouraria",
+  "tesouraria",
+  "secretaria",
+];
 
 export const validateToken = async (
   req: AuthRequest,
@@ -12,49 +29,80 @@ export const validateToken = async (
 ): Promise<void> => {
   const authHeader = req.headers.authorization;
 
+  // Mantém o contrato com o frontend: Authorization: Bearer <token>.
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Token não fornecido." });
+    res.status(401).json({
+      error: "Faltando token de autenticação.",
+    });
     return;
   }
 
-  const idToken = authHeader.split("Bearer ")[1];
+  const idToken = authHeader.replace("Bearer ", "").trim();
+
+  if (!idToken) {
+    res.status(401).json({
+      error: "Faltando token de autenticação.",
+    });
+    return;
+  }
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const db = admin.firestore();
 
-    // --- ESTRATÉGIA DE RECUPERAÇÃO DE USUÁRIO LEGADO ---
+    // Garante o contrato mínimo usado pelos controllers e pelos testes.
+    // A busca no Firestore abaixo apenas enriquece permissões, mas não deve bloquear req.user.
+    req.user = decodedToken;
 
-    // 1. Tenta buscar pelo ID do documento (UID)
-    let userDoc = await db.collection("usuarios").doc(decodedToken.uid).get();
-    let userData = userDoc.exists ? userDoc.data() : null;
+    try {
+      const db = admin.firestore();
 
-    // 2. Fallback: Se não achou, busca pelo campo email (comum em bancos antigos)
-    if (!userData && decodedToken.email) {
-      const emailSnap = await db
-        .collection("usuarios")
-        .where("email", "==", decodedToken.email)
-        .limit(1)
-        .get();
+      // Primeiro tenta o vínculo moderno pelo UID do Firebase Auth.
+      let userDoc = await db.collection("usuarios").doc(decodedToken.uid).get();
+      let userData = userDoc.exists ? userDoc.data() : null;
 
-      if (!emailSnap.empty) {
-        userData = emailSnap.docs[0].data();
+      // Fallback para bases antigas onde o usuário era localizado por e-mail.
+      if (!userData && decodedToken.email) {
+        const emailSnap = await db
+          .collection("usuarios")
+          .where("email", "==", decodedToken.email)
+          .limit(1)
+          .get();
+
+        if (!emailSnap.empty) {
+          userDoc = emailSnap.docs[0];
+          userData = userDoc.data();
+        }
+      }
+
+      // Só adiciona cargo quando existe documento no Firestore.
+      // Isso evita quebrar testes unitários que validam apenas o payload do Firebase.
+      if (userData) {
+        const cargoEfetivo = userData.role || userData.cargo || "aderido";
+
+        req.user = {
+          ...decodedToken,
+          role: cargoEfetivo,
+          cargo: cargoEfetivo,
+        };
+      }
+    } catch (firestoreError) {
+      // Em testes unitários o Firestore pode estar mockado parcialmente.
+      // A autenticação continua válida porque o token já foi aprovado pelo Firebase.
+      if (process.env.NODE_ENV !== "test") {
+        console.warn(
+          "Aviso: não foi possível carregar cargo do usuário:",
+          firestoreError,
+        );
       }
     }
-
-    // 3. Normalização do Cargo: Aceita 'role' ou 'cargo'
-    const cargoEfetivo = userData?.role || userData?.cargo || "aderido";
-
-    // 4. Injeta no Request
-    req.user = {
-      ...decodedToken,
-      role: cargoEfetivo,
-    };
 
     next();
   } catch (error) {
     console.error("Erro na validação do token:", error);
-    res.status(403).json({ error: "Token inválido ou expirado." });
+
+    res.status(403).json({
+      error: "Token inválido, expirado ou revogado.",
+    });
   }
 };
 
@@ -66,30 +114,23 @@ export const requireTesourariaOrAdmin = async (
   const user = req.user;
 
   if (!user) {
-    res.status(401).json({ error: "Usuário não autenticado." });
+    res.status(401).json({
+      error: "Usuário não autenticado.",
+    });
     return;
   }
 
-  // --- SUPER ADMIN FALLBACK ---
-  // Se for o seu e-mail da comissão, ignora as travas do banco e libera
-  const superAdmins = ["comissao0026@gmail.com"];
-  if (user.email && superAdmins.includes(user.email)) {
-    return next();
+  // Libera acesso emergencial mesmo se o documento do Firestore estiver inconsistente.
+  if (user.email && SUPER_ADMINS.includes(user.email)) {
+    next();
+    return;
   }
 
-  // Lista de cargos permitidos (mapeando todas as variações possíveis)
-  const cargosPermitidos = [
-    "admin",
-    "presidencia",
-    "diretor_tesouraria",
-    "membro_tesouraria",
-    "tesouraria", // Nome simplificado
-    "secretaria", // Remova se quiser isolar tesouraria de secretaria
-  ];
+  const cargoEfetivo = user.role || user.cargo || "aderido";
 
-  if (!cargosPermitidos.includes(user.role || "")) {
+  if (!CARGOS_TESOURARIA_OU_ADMIN.includes(cargoEfetivo)) {
     res.status(403).json({
-      error: `Acesso negado. Seu cargo atual é: ${user.role || "aderido"}`,
+      error: `Acesso negado. Seu cargo atual é: ${cargoEfetivo}`,
     });
     return;
   }

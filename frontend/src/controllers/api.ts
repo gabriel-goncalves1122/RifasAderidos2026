@@ -1,8 +1,13 @@
-import { auth } from "../config/firebase";
+import { auth } from "../shared/config/firebase";
 
-const API_BASE_URL = (import.meta as any).env.PROD
-  ? "https://us-central1-rifasaderidos2026.cloudfunctions.net/api" // Voltou para us-central1
+const API_BASE_URL = import.meta.env.PROD
+  ? "https://us-central1-rifasaderidos2026.cloudfunctions.net/api"
   : "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api";
+
+if (import.meta.env.DEV) {
+  console.log("🔥 Frontend em modo DEV");
+  console.log("🔗 API_BASE_URL:", API_BASE_URL);
+}
 
 export async function fetchAPI(
   endpoint: string,
@@ -19,45 +24,61 @@ export async function fetchAPI(
 
     if (precisaAutenticacao) {
       const user = auth.currentUser;
-      if (!user) throw new Error("Usuário não autenticado no sistema.");
+
+      if (!user) {
+        throw new Error("Usuário não autenticado no sistema.");
+      }
+
       const token = await user.getIdToken();
+
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const options: RequestInit = { method, headers, cache: "no-store" };
+    const options: RequestInit = {
+      method,
+      headers,
+      cache: "no-store",
+    };
 
-    // CORREÇÃO: Se for FormData (arquivo), envia puro. Se for objeto normal, converte para JSON.
     if (body) {
       options.body = body instanceof FormData ? body : JSON.stringify(body);
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+    const url = `${API_BASE_URL}${endpoint}`;
 
-    // ========================================================================
-    // CORREÇÃO: Lemos como texto primeiro para não estoirar se o servidor devolver HTML (Ex: 404 ou 502)
-    // ========================================================================
+    if (import.meta.env.DEV) {
+      console.log(`[API DEV] ${method} ${url}`);
+    }
+
+    const response = await fetch(url, options);
+
     const rawText = await response.text();
+
     let data;
+
     try {
       data = rawText ? JSON.parse(rawText) : {};
-    } catch (parseError) {
+    } catch {
       console.warn(
         "Aviso: A resposta da API não é um JSON válido. Retorno bruto:",
         rawText,
       );
+
       data = {
-        error: `Resposta inesperada do servidor (HTML/Texto) - Status: ${response.status}`,
+        error: `Resposta inesperada do servidor - Status: ${response.status}`,
       };
     }
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
         await auth.signOut();
-        window.location.href = "/login"; // Força o utilizador a voltar ao início
+        window.location.href = "/login";
+
         throw new Error(
           "A sua sessão expirou. Por favor, faça login novamente.",
         );
       }
+
       throw new Error(data.error || `Erro HTTP ${response.status}`);
     }
 

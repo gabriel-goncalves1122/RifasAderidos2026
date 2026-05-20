@@ -24,7 +24,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 import { useAuthController } from "../../controllers/useAuthController";
 import { authStyles } from "./styles/authStyles";
-import { ResetPasswordModal } from "../components/loginRegister/ResetPasswordModal";
+import { ResetPasswordModal } from "../../features/loginRegister/ResetPasswordModal";
 
 const loginSchema = yup
   .object({

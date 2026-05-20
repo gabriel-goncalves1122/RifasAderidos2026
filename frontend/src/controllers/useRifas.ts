@@ -2,7 +2,7 @@
 // ARQUIVO: frontend/src/controllers/useRifas.ts
 // ============================================================================
 import { useState, useCallback } from "react";
-import { storage, auth } from "../config/firebase";
+import { storage, auth } from "../shared/config/firebase";
 import {
   ref,
   uploadBytesResumable,

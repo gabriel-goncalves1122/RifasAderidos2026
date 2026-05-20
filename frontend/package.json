@@ -6,10 +6,27 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+
+    "lint": "eslint src tests --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+
+    "test:app": "vitest run tests/app",
+    "test:shared": "vitest run tests/shared",
+    "test:features": "vitest run tests/features",
+
+    "test:secretaria": "vitest run tests/features/secretaria",
+    "test:rifas": "vitest run tests/features/rifas",
+    "test:tesouraria": "vitest run tests/features/tesouraria",
+    "test:auditoria": "vitest run tests/features/auditoria",
+    "test:premios": "vitest run tests/features/premios",
+    "test:auth": "vitest run tests/features/auth",
+
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -35,10 +52,12 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^25.9.1",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.3.3",
+    "@vitest/coverage-v8": "^4.1.6",
     "eslint": "^9.13.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",

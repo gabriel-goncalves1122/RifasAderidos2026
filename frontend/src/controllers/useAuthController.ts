@@ -2,7 +2,7 @@
 // ARQUIVO: frontend/src/controllers/useAuthController.ts
 // ============================================================================
 import { useEffect, useState } from "react";
-import { auth, db } from "../config/firebase";
+import { auth, db } from "../shared/config/firebase";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -11,7 +11,7 @@ import {
   signOut,
   sendPasswordResetEmail,
 } from "firebase/auth";
-import { CargoComissao } from "../types/models";
+import { CargoComissao } from "../shared/types/models";
 import { fetchAPI } from "./api";
 // IMPORTANTE: Trocámos o getDocs pelo onSnapshot para ter atualizações em Tempo Real!
 import { collection, query, where, onSnapshot } from "firebase/firestore";
