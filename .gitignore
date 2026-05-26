@@ -96,3 +96,15 @@ frontend/coverage/
 .nyc_output/
 *.log
 npm-debug.log*
+# ----------------------------------------------------------------------------
+# 8. BACKEND FUNCTIONS - BUILD, CACHE E ARQUIVOS LOCAIS
+# ----------------------------------------------------------------------------
+backend/functions/lib/
+backend/functions/coverage/
+backend/functions/.runtimeconfig.json
+
+# Arquivos sensíveis/locais dentro de scripts
+backend/functions/src/scripts/*chave*.json
+backend/functions/src/scripts/*credential*.json
+backend/functions/src/scripts/*secret*.json
+backend/functions/src/scripts/*.csv
