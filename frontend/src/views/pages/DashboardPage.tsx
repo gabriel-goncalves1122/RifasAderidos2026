@@ -31,7 +31,7 @@ import { VisaoGraficaTab } from "../../features/tesouraria/VisaoGraficaTab";
 import { HistoricoDetalhadoTab } from "../../features/tesouraria/HistoricoDetalhadoTab";
 import { PremiosTab } from "../../features/premios/PremiosTab";
 import { SecretariaView } from "../../features/secretaria/pages/SecretariaPage";
-import { DashboardSidebar } from "../../features/DashboardSidebar";
+import { DashboardSidebar } from "@/shared/components/DashboardSidebar";
 
 export type Contexto = "aderido" | "tesouraria" | "secretaria";
 

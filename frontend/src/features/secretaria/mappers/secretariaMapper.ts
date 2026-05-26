@@ -10,12 +10,21 @@ import {
 function normalizarTexto(valor: unknown): string {
   if (valor === null || valor === undefined) return "";
 
-  return String(valor);
+  return String(valor).trim();
+}
+
+function obterPrimeiroTextoValido(...valores: unknown[]): string {
+  // Centraliza fallback de campos legados do Firestore, como Nome, E-mail e Cargo.
+  const valorEncontrado = valores.find(
+    (valor) => normalizarTexto(valor).length > 0,
+  );
+
+  return normalizarTexto(valorEncontrado);
 }
 
 function normalizarStatus(data: any): StatusCadastro {
-  const statusCadastro = String(data.status_cadastro || "").toLowerCase();
-  const statusLegado = String(data.status || "").toLowerCase();
+  const statusCadastro = normalizarTexto(data.status_cadastro).toLowerCase();
+  const statusLegado = normalizarTexto(data.status).toLowerCase();
 
   if (statusCadastro === "ativo") return "ativo";
   if (statusCadastro === "pendente") return "pendente";
@@ -37,6 +46,37 @@ export function normalizarAderidoSecretaria(
   idDocumento: string,
   data: any,
 ): AderidoSecretaria {
+  const nome = obterPrimeiroTextoValido(
+    data.nome,
+    data.Nome,
+    data["Nome Completo"],
+  );
+
+  const email = obterPrimeiroTextoValido(
+    data.email,
+    data.Email,
+    data["E-mail"],
+    idDocumento,
+  );
+
+  const telefone = obterPrimeiroTextoValido(data.telefone, data.Telefone);
+
+  const cpf = obterPrimeiroTextoValido(data.cpf, data.CPF);
+
+  const curso = obterPrimeiroTextoValido(data.curso, data.Curso);
+
+  const genero = obterPrimeiroTextoValido(
+    data.genero,
+    data.Genero,
+    data.Gênero,
+  );
+
+  const dataNascimento = obterPrimeiroTextoValido(
+    data.dataNascimento,
+    data.data_nascimento,
+    data["Data de Nascimento"],
+  );
+
   return {
     ...data,
 
@@ -46,22 +86,18 @@ export function normalizarAderidoSecretaria(
     // Mantém compatibilidade com documentos antigos e novos.
     id_aderido: data.id_aderido || data.id || idDocumento,
 
-    nome: normalizarTexto(data.nome),
-    email: normalizarTexto(data.email || data["E-mail"] || idDocumento),
-    telefone: normalizarTexto(data.telefone),
-    cpf: normalizarTexto(data.cpf),
-    curso: normalizarTexto(data.curso),
-    genero: normalizarTexto(data.genero),
+    nome,
+    email,
+    telefone,
+    cpf,
+    curso,
+    genero,
 
     // O banco tem registros com os dois formatos.
-    data_nascimento: normalizarTexto(
-      data.data_nascimento || data.dataNascimento,
-    ),
-    dataNascimento: normalizarTexto(
-      data.dataNascimento || data.data_nascimento,
-    ),
+    data_nascimento: dataNascimento,
+    dataNascimento,
 
-    cargo: data.cargo || data.Cargo || "aderido",
+    cargo: obterPrimeiroTextoValido(data.cargo, data.Cargo) || "aderido",
     modalidade_adesao: normalizarModalidade(data),
 
     status_cadastro: normalizarStatus(data),

@@ -1,288 +1,108 @@
 // ============================================================================
-// ARQUIVO: frontend/src/views/components/aderidos/MinhasRifasTab.tsx
+// ARQUIVO: frontend/src/features/aderidos/MinhasRifasTab.tsx
 // ============================================================================
-import { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  CircularProgress,
-  Tooltip,
-  IconButton,
-  Select,
-  MenuItem,
-  FormControl,
-  Button,
-  Badge,
-} from "@mui/material";
+import { Box } from "@mui/material";
 
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
+import { NotificacoesSidebar } from "@/shared/components/NotificacoesSidebar";
 
-// Sub-componentes
-import { CheckoutModal } from "./CheckoutModal";
-import { NotificacoesSidebar } from "../../shared/components/NotificacoesSidebar";
-import { CarrinhoFlutuante } from "./CarrinhoFlutuante";
-import { EstatisticasAderido } from "./EstatiticasAderidos";
 import { AbaRecusadas } from "./AbaRecusadas";
+import { CarrinhoFlutuante } from "./CarrinhoFlutuante";
+import { CheckoutModal } from "./CheckoutModal";
+import { EstatisticasAderido } from "./EstatisticasAderido";
 import { ModalCorrecaoRecusa } from "./ModalCorrecaoRecusa";
-import { ModalDetalhesRifa } from "./ModalDetalhesRifas";
-import { GrelhaRifas } from "./GrelhasRifas"; // <-- NOVO IMPORT
+import { ModalDetalhesRifa } from "./ModalDetalhesRifa";
 
-// Controladores
-import { useRifas } from "../../controllers/useRifas";
-import { useAuthController } from "../auth/hooks/useAuthController";
-import { useNotificacoes } from "../../controllers/useNotificacoes";
+import { BlocoVendasHeader } from "./components/BlocoVendasHeader";
+import { FiltrosRifas } from "./components/FiltrosRifas";
+import { GrelhaRifas } from "./components/GrelhaRifas";
+import { LoadingRifasState } from "./components/LoadingRifasState";
 
-type VisaoType = "geral" | "recusadas";
+import { usePainelAderido } from "./hooks/usePainelAderido";
+import { painelAderidoStyles } from "./styles/painelAderidoStyles";
 
 export function MinhasRifasTab() {
-  const { buscarMinhasRifas, corrigirRifasRecusadas } = useRifas();
-  const { buscarNotificacoes, marcarNotificacoesLidas } = useNotificacoes();
-  const { usuarioAtual } = useAuthController();
+  const painel = usePainelAderido();
+  const possuiSelecao = painel.selecionadas.length > 0;
 
-  const [minhasRifas, setMinhasRifas] = useState<any[]>([]);
-  const [notificacoes, setNotificacoes] = useState<any[]>([]);
-  const [carregando, setCarregando] = useState(true);
-
-  const [visaoAtual, setVisaoAtual] = useState<VisaoType>("geral");
-  const [selecionadas, setSelecionadas] = useState<string[]>([]);
-  const [filtro, setFiltro] = useState<string>("todas");
-
-  // Modais
-  const [modalCheckoutAberto, setModalCheckoutAberto] = useState(false);
-  const [drawerNotificacoesAberto, setDrawerNotificacoesAberto] =
-    useState(false);
-  const [modalCorrecaoAberto, setModalCorrecaoAberto] = useState(false);
-
-  // Dados Selecionados
-  const [grupoParaCorrigir, setGrupoParaCorrigir] = useState<any>(null);
-  const [rifaParaDetalhes, setRifaParaDetalhes] = useState<any>(null);
-
-  const carregarDadosIniciais = async () => {
-    setCarregando(true);
-    const [dadosRifas, dadosNotificacoes] = await Promise.all([
-      buscarMinhasRifas(),
-      buscarNotificacoes(),
-    ]);
-
-    if (dadosRifas) setMinhasRifas(dadosRifas);
-    if (dadosNotificacoes) setNotificacoes(dadosNotificacoes);
-    setCarregando(false);
-  };
-
-  useEffect(() => {
-    carregarDadosIniciais();
-  }, []);
-
-  const abrirSidebarNotificacoes = async () => {
-    setDrawerNotificacoesAberto(true);
-    const naoLidas = notificacoes.filter((n) => !n.lida).map((n) => n.id);
-    if (naoLidas.length > 0) {
-      await marcarNotificacoesLidas(naoLidas);
-      setNotificacoes((prev) => prev.map((n) => ({ ...n, lida: true })));
-    }
-  };
-
-  const handleToggleSelecao = (numero: string, status: string) => {
-    if (status !== "disponivel") return;
-    setSelecionadas((prev) =>
-      prev.includes(numero)
-        ? prev.filter((n) => n !== numero)
-        : [...prev, numero],
-    );
-  };
-
-  const handleVendaSucesso = async () => {
-    setModalCheckoutAberto(false);
-    setSelecionadas([]);
-    await carregarDadosIniciais();
-  };
-
-  const handleReenviarComprovante = async (
-    numeros: string[],
-    novoComprovante: File,
-    dadosAtualizados: any,
-  ) => {
-    const sucesso = await corrigirRifasRecusadas(
-      numeros,
-      novoComprovante,
-      dadosAtualizados,
-    );
-    if (sucesso) {
-      await carregarDadosIniciais();
-      setVisaoAtual("geral");
-    }
-  };
-
-  // Processamento de Dados
-  const rifasFiltradas = minhasRifas.filter(
-    (r) => filtro === "todas" || r.status === filtro,
-  );
-  const valorArrecadado =
-    minhasRifas.filter((r) => r.status === "pago").length * 10;
-  const notificacoesNaoLidas = notificacoes.filter((n) => !n.lida).length;
-
-  const rifasRecusadas = minhasRifas.filter((r) => r.status === "recusado");
-  const gruposRecusados = Object.values(
-    rifasRecusadas.reduce((acc: any, rifa) => {
-      const dataBase = rifa.data_reserva
-        ? rifa.data_reserva.split("T")[0]
-        : "sem-data";
-      const key = `${rifa.comprador_nome}-${dataBase}-${rifa.motivo_recusa}`;
-      if (!acc[key]) {
-        acc[key] = {
-          comprador: rifa.comprador_nome || "Desconhecido",
-          email: rifa.comprador_email || "",
-          telefone: rifa.comprador_telefone || "",
-          data: rifa.data_reserva,
-          motivo: rifa.motivo_recusa || "Sem motivo informado",
-          bilhetes: [],
-        };
-      }
-      acc[key].bilhetes.push(rifa.numero);
-      return acc;
-    }, {}),
-  ) as any[];
-
-  if (carregando) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress color="secondary" />
-      </Box>
-    );
+  if (painel.carregando) {
+    return <LoadingRifasState />;
   }
 
   return (
-    <Box sx={{ position: "relative", pb: selecionadas.length > 0 ? 12 : 2 }}>
+    <Box
+      sx={{
+        ...painelAderidoStyles.root,
+        pb: possuiSelecao ? { xs: 17, sm: 15 } : 3,
+      }}
+    >
       <EstatisticasAderido
-        primeiroNome={(usuarioAtual as any)?.nome?.split(" ")[0] || "Aderido"}
-        valorArrecadado={valorArrecadado}
-        notificacoesNaoLidas={notificacoesNaoLidas}
-        onAbrirNotificacoes={abrirSidebarNotificacoes}
+        primeiroNome={painel.primeiroNome}
+        valorArrecadado={painel.valorArrecadado}
+        notificacoesNaoLidas={painel.notificacoesNaoLidas}
+        totalPendencias={painel.gruposRecusados.length}
+        onAbrirNotificacoes={painel.abrirSidebarNotificacoes}
+        onAbrirRecusadas={() => painel.setVisaoAtual("recusadas")}
       />
 
-      {visaoAtual === "geral" ? (
-        <Box>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 3,
-              flexWrap: "wrap",
-              gap: 2,
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Typography
-                component="div"
-                variant="h6"
-                fontWeight="bold"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  color: "primary.main",
-                }}
-              >
-                Bloco de Vendas
-                <Tooltip
-                  title="Disponível (Branco), Selecionada (Verde Claro), Análise (Laranja), Pago (Verde Forte), Negada (Vermelho)."
-                  arrow
-                  placement="top"
-                >
-                  <IconButton
-                    size="small"
-                    sx={{
-                      bgcolor: "rgba(212, 175, 55, 0.2)",
-                      color: "secondary.main",
-                    }}
-                  >
-                    <HelpOutlineIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Typography>
+      {painel.visaoAtual === "geral" ? (
+        <Box sx={painelAderidoStyles.blocoVendasArea}>
+          <BlocoVendasHeader />
 
-              {gruposRecusados.length > 0 && (
-                <Badge badgeContent={gruposRecusados.length} color="error">
-                  <Button
-                    variant="contained"
-                    color="error"
-                    size="small"
-                    startIcon={<ReportGmailerrorredIcon />}
-                    onClick={() => setVisaoAtual("recusadas")}
-                  >
-                    Ver Rifas Negadas
-                  </Button>
-                </Badge>
-              )}
-            </Box>
+          <FiltrosRifas
+            filtro={painel.filtro}
+            onChangeFiltro={painel.setFiltro}
+          />
 
-            <FormControl size="small" sx={{ minWidth: 160, bgcolor: "white" }}>
-              <Select
-                value={filtro}
-                onChange={(e) => setFiltro(e.target.value)}
-                displayEmpty
-                sx={{ borderRadius: 2, fontWeight: "bold" }}
-              >
-                <MenuItem value="todas">Todas as Rifas</MenuItem>
-                <MenuItem value="disponivel">Disponíveis</MenuItem>
-                <MenuItem value="pendente">Em Análise</MenuItem>
-                <MenuItem value="pago">Pagas</MenuItem>
-                <MenuItem value="recusado">Negadas</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-
-          {/* O COMPONENTE EXTRAÍDO ENTRA AQUI */}
           <GrelhaRifas
-            rifas={rifasFiltradas}
-            selecionadas={selecionadas}
-            onToggleSelecao={handleToggleSelecao}
-            onAbrirDetalhes={setRifaParaDetalhes}
+            rifas={painel.rifasFiltradas}
+            selecionadas={painel.selecionadas}
+            onToggleSelecao={painel.alternarSelecaoRifa}
+            onAbrirDetalhes={painel.setRifaParaDetalhes}
           />
         </Box>
       ) : (
         <AbaRecusadas
-          gruposRecusados={gruposRecusados}
-          onVoltar={() => setVisaoAtual("geral")}
+          gruposRecusados={painel.gruposRecusados}
+          onVoltar={() => painel.setVisaoAtual("geral")}
           onAbrirCorrecao={(grupo) => {
-            setGrupoParaCorrigir(grupo);
-            setModalCorrecaoAberto(true);
+            painel.setGrupoParaCorrigir(grupo);
+            painel.setModalCorrecaoAberto(true);
           }}
         />
       )}
 
-      {!modalCheckoutAberto && visaoAtual === "geral" && (
+      {possuiSelecao && painel.visaoAtual === "geral" && (
         <CarrinhoFlutuante
-          quantidade={selecionadas.length}
-          valorTotal={selecionadas.length * 10}
-          onVenderClick={() => setModalCheckoutAberto(true)}
+          quantidade={painel.selecionadas.length}
+          valorTotal={painel.selecionadas.length * 10}
+          onVenderClick={() => painel.setModalCheckoutAberto(true)}
         />
       )}
 
-      {/* MODAIS DA PÁGINA */}
       <CheckoutModal
-        open={modalCheckoutAberto}
-        onClose={() => setModalCheckoutAberto(false)}
-        onSuccess={handleVendaSucesso}
-        numerosRifas={selecionadas}
+        open={painel.modalCheckoutAberto}
+        onClose={() => painel.setModalCheckoutAberto(false)}
+        onSuccess={painel.finalizarVendaComSucesso}
+        numerosRifas={painel.selecionadas}
       />
+
       <NotificacoesSidebar
-        open={drawerNotificacoesAberto}
-        onClose={() => setDrawerNotificacoesAberto(false)}
-        notificacoes={notificacoes}
+        open={painel.drawerNotificacoesAberto}
+        onClose={() => painel.setDrawerNotificacoesAberto(false)}
+        notificacoes={painel.notificacoes}
       />
+
       <ModalCorrecaoRecusa
-        open={modalCorrecaoAberto}
-        onClose={() => setModalCorrecaoAberto(false)}
-        grupoRecusado={grupoParaCorrigir}
-        onReenviar={handleReenviarComprovante}
+        open={painel.modalCorrecaoAberto}
+        onClose={() => painel.setModalCorrecaoAberto(false)}
+        grupoRecusado={painel.grupoParaCorrigir}
+        onReenviar={painel.reenviarComprovanteRecusado}
       />
+
       <ModalDetalhesRifa
-        open={Boolean(rifaParaDetalhes)}
-        onClose={() => setRifaParaDetalhes(null)}
-        rifa={rifaParaDetalhes}
+        open={Boolean(painel.rifaParaDetalhes)}
+        onClose={() => painel.setRifaParaDetalhes(null)}
+        rifa={painel.rifaParaDetalhes}
       />
     </Box>
   );

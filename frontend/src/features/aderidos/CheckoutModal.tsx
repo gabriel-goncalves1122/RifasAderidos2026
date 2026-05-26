@@ -1,82 +1,34 @@
 // ============================================================================
-// ARQUIVO: frontend/src/views/components/CheckoutModal.tsx
-// RESPONSABILIDADE: Modal de Finalização de Venda com PIX (QR Code e Chave)
+// ARQUIVO: frontend/src/features/aderidos/CheckoutModal.tsx
 // ============================================================================
-import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Typography,
-  Box,
-  Divider,
-  IconButton,
-  InputAdornment,
-  Paper,
-  Chip,
-  CircularProgress,
-  Fade,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-
 import CloseIcon from "@mui/icons-material/Close";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import PersonIcon from "@mui/icons-material/Person";
-import PhoneIcon from "@mui/icons-material/Phone";
-import EmailIcon from "@mui/icons-material/Email";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  IconButton,
+  Snackbar,
+  Stack,
+  Typography,
+} from "@mui/material";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 
-import { useRifas } from "../../controllers/useRifas";
+import { useRifas } from "@/features/rifas/hooks/useRifas";
 
-// --------------------------------------------------------------------------
-// MÁSCARA & VALIDAÇÃO (YUP)
-// --------------------------------------------------------------------------
-const aplicarMascaraTelefone = (valor: string) => {
-  return valor
-    .replace(/\D/g, "")
-    .replace(/(\d{2})(\d)/, "($1) $2")
-    .replace(/(\d{4,5})(\d{4})$/, "$1-$2")
-    .slice(0, 15);
-};
-
-const schema = yup
-  .object({
-    nome: yup.string().required("O nome completo é obrigatório"),
-    telefone: yup
-      .string()
-      .required("O WhatsApp é obrigatório")
-      .min(14, "Telefone incompleto (Ex: (35) 99999-9999)"),
-    email: yup
-      .string()
-      .optional()
-      .test(
-        "is-valid-email",
-        "Formato de e-mail inválido",
-        (value) =>
-          !value ||
-          value.trim() === "" ||
-          yup.string().email().isValidSync(value),
-      ),
-    comprovante: yup
-      .mixed<File>()
-      .required("Você precisa anexar o comprovante do PIX"),
-  })
-  .required();
-
-export interface CheckoutFormData {
-  nome: string;
-  telefone: string;
-  email?: string;
-  comprovante: File;
-}
+import {
+  CheckoutFormData,
+  checkoutSchema,
+} from "./components/checkout/checkoutSchema";
+import { CHAVE_PIX_COMISSAO } from "./components/checkout/utils/checkoutUtils";
+import { CheckoutDadosCompradorForm } from "./components/checkout/CheckoutDadosCompradorForm";
+import { CheckoutPixBox } from "./components/checkout/CheckoutPixBox";
+import { CheckoutResumoVenda } from "./components/checkout/CheckoutResumoVenda";
+import { CheckoutUploadComprovante } from "./components/checkout/CheckoutUploadComprovante";
 
 interface CheckoutModalProps {
   open: boolean;
@@ -85,16 +37,55 @@ interface CheckoutModalProps {
   numerosRifas: string[];
 }
 
+const CHECKOUT_DRAFT_KEY = "checkout_venda_rifas_draft";
+
+interface CheckoutDraft {
+  nome: string;
+  telefone: string;
+  email: string;
+}
+
+function carregarDraftCheckout(): CheckoutDraft {
+  try {
+    const draft = sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
+
+    if (!draft) {
+      return {
+        nome: "",
+        telefone: "",
+        email: "",
+      };
+    }
+
+    return JSON.parse(draft) as CheckoutDraft;
+  } catch {
+    return {
+      nome: "",
+      telefone: "",
+      email: "",
+    };
+  }
+}
+
+function salvarDraftCheckout(dados: CheckoutDraft) {
+  sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(dados));
+}
+
+function limparDraftCheckout() {
+  sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+}
+
 export function CheckoutModal({
   open,
   onClose,
   onSuccess,
   numerosRifas,
 }: CheckoutModalProps) {
-  const [showSuccess, setShowSuccess] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const { finalizarVenda, loading } = useRifas();
+
+  const defaultValues = useMemo(() => carregarDraftCheckout(), []);
 
   const {
     register,
@@ -104,389 +95,232 @@ export function CheckoutModal({
     reset,
     formState: { errors },
   } = useForm<CheckoutFormData>({
-    resolver: yupResolver(schema) as any,
+    resolver: yupResolver(checkoutSchema) as any,
     mode: "onChange",
+    shouldUnregister: false,
+    defaultValues: {
+      nome: defaultValues.nome,
+      telefone: defaultValues.telefone,
+      email: defaultValues.email,
+      comprovante: undefined as any,
+    },
   });
 
+  const nome = watch("nome");
+  const telefone = watch("telefone");
+  const email = watch("email");
   const comprovanteAnexado = watch("comprovante");
 
   useEffect(() => {
-    if (!open) {
-      reset();
-      setShowSuccess(false);
-    }
-  }, [open, reset]);
+    salvarDraftCheckout({
+      nome: nome || "",
+      telefone: telefone || "",
+      email: email || "",
+    });
+  }, [nome, telefone, email]);
 
-  // DADOS DA CONTA PIX
-  const chavePixComissao = "comissao0026@gmail.com";
-  const PRECO_RIFA = 10.0;
-  const valorTotal = numerosRifas.length * PRECO_RIFA;
-  const valorFormatado = valorTotal.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-
-  const handleCopiarPix = () => {
-    navigator.clipboard.writeText(chavePixComissao);
+  const copiarChavePix = async () => {
+    await navigator.clipboard.writeText(CHAVE_PIX_COMISSAO);
     setSnackbarOpen(true);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setValue("comprovante", event.target.files[0], { shouldValidate: true });
-    }
+  const fecharModal = () => {
+    if (loading) return;
+
+    // Não limpa os campos ao fechar. Assim, se o Safari suspender a aba,
+    // os dados digitados continuam preservados.
+    onClose();
   };
 
-  const onSubmit = async (data: CheckoutFormData) => {
+  const enviarVenda = async (dados: CheckoutFormData) => {
     const sucesso = await finalizarVenda({
-      nome: data.nome,
-      telefone: data.telefone,
-      email: data.email || "",
+      nome: dados.nome,
+      telefone: dados.telefone,
+      email: dados.email || "",
       numerosRifas,
-      comprovante: data.comprovante,
+      comprovante: dados.comprovante,
     });
 
-    if (sucesso) {
-      setShowSuccess(true);
-      setTimeout(() => onSuccess(), 3000);
-    }
+    if (!sucesso) return;
+
+    limparDraftCheckout();
+    reset();
+
+    onSuccess();
   };
 
   return (
     <>
       <Dialog
         open={open}
-        onClose={loading || showSuccess ? undefined : onClose}
+        keepMounted
+        disableEscapeKeyDown={loading}
+        onClose={(_, reason) => {
+          // Evita perder o modal por clique acidental fora dele.
+          if (reason === "backdropClick") return;
+
+          fecharModal();
+        }}
         fullWidth
         maxWidth="sm"
+        PaperProps={{
+          sx: {
+            borderRadius: {
+              xs: "22px 22px 0 0",
+              sm: 5,
+            },
+            m: {
+              xs: 0,
+              sm: 2,
+            },
+            position: {
+              xs: "fixed",
+              sm: "relative",
+            },
+            bottom: {
+              xs: 0,
+              sm: "auto",
+            },
+            width: {
+              xs: "100%",
+              sm: "auto",
+            },
+            bgcolor: "#FBFCFC",
+            overflow: "hidden",
+          },
+        }}
       >
-        {showSuccess ? (
-          <Fade in={showSuccess}>
-            <Box
+        <Box
+          sx={{
+            px: 2.25,
+            py: 2,
+            borderBottom: "1px solid rgba(2, 27, 22, 0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography
+              component="h2"
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                py: 8,
-                px: 4,
-                textAlign: "center",
+                fontWeight: 950,
+                color: "#021B16",
+                fontSize: "1.22rem",
+                lineHeight: 1.15,
               }}
             >
-              <CheckCircleOutlineIcon
-                color="secondary"
-                sx={{ fontSize: 100, mb: 2 }}
+              Finalizar venda
+            </Typography>
+
+            <Typography
+              sx={{
+                color: "#526760",
+                fontSize: "0.86rem",
+                mt: 0.35,
+              }}
+            >
+              Preencha os dados e envie o comprovante para análise.
+            </Typography>
+          </Box>
+
+          <IconButton
+            onClick={fecharModal}
+            disabled={loading}
+            aria-label="Fechar modal de venda"
+            sx={{
+              bgcolor: "#F1F4F3",
+              "&:hover": {
+                bgcolor: "#E8EEEC",
+              },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <DialogContent sx={{ p: 2.25 }}>
+          <Box component="form" onSubmit={handleSubmit(enviarVenda)}>
+            <Stack spacing={2}>
+              <CheckoutResumoVenda numerosRifas={numerosRifas} />
+
+              <CheckoutPixBox onCopiarPix={copiarChavePix} />
+
+              <CheckoutDadosCompradorForm
+                register={register}
+                setValue={setValue}
+                errors={errors}
               />
-              <Typography
-                variant="h4"
-                fontWeight="bold"
-                gutterBottom
-                color="primary.main"
-              >
-                Venda Confirmada!
-              </Typography>
-              <Typography variant="body1" color="text.secondary" mb={4}>
-                O comprovante foi enviado para análise da tesouraria.
-              </Typography>
-              <CircularProgress size={30} color="secondary" />
-            </Box>
-          </Fade>
-        ) : (
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-            {/* CABEÇALHO DOURADO/VERDE */}
-            <DialogTitle
-              sx={{
-                m: 0,
-                p: 2,
-                bgcolor: "primary.main",
-                color: "white",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              Finalizar Venda ({numerosRifas.length} selecionadas)
-              <IconButton
-                aria-label="close"
-                onClick={onClose}
-                disabled={loading}
-                sx={{ color: "white" }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </DialogTitle>
 
-            <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Números selecionados:
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {numerosRifas.map((numero) => (
-                    <Chip
-                      key={numero}
-                      label={numero}
-                      sx={{
-                        bgcolor: "var(--cor-dourado-brilho)",
-                        color: "primary.main",
-                        fontWeight: "bold",
-                      }}
-                      size="small"
-                    />
-                  ))}
-                </Box>
-              </Box>
-              <Divider sx={{ mb: 3 }} />
+              <CheckoutUploadComprovante
+                arquivo={comprovanteAnexado}
+                setValue={setValue}
+                errors={errors}
+              />
 
-              {/* DADOS DO COMPRADOR */}
-              <Typography
-                variant="subtitle1"
-                fontWeight="bold"
-                gutterBottom
-                color="primary.main"
-              >
-                1. Dados do Comprador
-              </Typography>
-              <Box
-                sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 3 }}
-              >
-                <TextField
-                  label="Nome Completo *"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  disabled={loading}
-                  {...register("nome")}
-                  error={!!errors.nome}
-                  helperText={errors.nome?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PersonIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="WhatsApp (com DDD) *"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  disabled={loading}
-                  placeholder="(35) 99999-9999"
-                  {...register("telefone")}
-                  onChange={(e) =>
-                    setValue(
-                      "telefone",
-                      aplicarMascaraTelefone(e.target.value),
-                      { shouldValidate: true },
-                    )
-                  }
-                  error={!!errors.telefone}
-                  helperText={errors.telefone?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PhoneIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  label="E-mail (Opcional)"
-                  variant="outlined"
-                  size="small"
-                  type="email"
-                  fullWidth
-                  disabled={loading}
-                  {...register("email")}
-                  error={!!errors.email}
-                  helperText={
-                    errors.email?.message ||
-                    "Enviaremos o recibo para este e-mail."
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-              <Divider sx={{ mb: 3 }} />
-
-              {/* PAGAMENTO PIX (COM QR CODE) */}
-              <Typography
-                variant="subtitle1"
-                fontWeight="bold"
-                gutterBottom
-                color="primary.main"
-              >
-                2. Pagamento PIX ({valorFormatado})
-              </Typography>
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: 3,
-                  mb: 3,
-                  bgcolor: "grey.50",
-                  textAlign: "center",
-                  border: "2px solid var(--cor-dourado-brilho)",
-                  borderRadius: 3,
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  color="primary.main"
-                  fontWeight="bold"
-                  gutterBottom
-                >
-                  Escaneie o código para pagar:
-                </Typography>
-
-                {/* IMAGEM DO QR CODE */}
-                <Box sx={{ my: 2, display: "flex", justifyContent: "center" }}>
-                  <Box
-                    sx={{
-                      p: 1,
-                      bgcolor: "white",
-                      borderRadius: 2,
-                      boxShadow: 1,
-                      border: "1px dashed #ccc",
-                    }}
-                  >
-                    {/* ATENÇÃO: Coloque a imagem qrcode-pix.png dentro da pasta src/assets/images/ */}
-                    <img
-                      src="/images/qrcode-pix.png"
-                      alt="QR Code PIX da Comissão"
-                      style={{ width: 180, height: 180, objectFit: "contain" }}
-                    />
-                  </Box>
-                </Box>
-
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  gutterBottom
-                  sx={{ mt: 2 }}
-                >
-                  Ou copie a Chave E-mail:
-                </Typography>
-
-                <TextField
-                  value={chavePixComissao}
-                  // REMOVEMOS A PALAVRA "disabled" DAQUI!
-                  fullWidth
-                  size="small"
-                  InputProps={{
-                    readOnly: true, // <-- ADICIONAMOS ISTO AQUI
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="Copiar PIX" // <-- ADICIONAMOS A ETIQUETA AQUI
-                          onClick={handleCopiarPix}
-                          edge="end"
-                          sx={{ color: "primary.main" }}
-                          disabled={loading}
-                        >
-                          <ContentCopyIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ bgcolor: "white" }}
-                />
-              </Paper>
-              <Divider sx={{ mb: 3 }} />
-
-              {/* ANEXAR COMPROVANTE */}
-              <Typography
-                variant="subtitle1"
-                fontWeight="bold"
-                gutterBottom
-                color="primary.main"
-              >
-                3. Enviar Comprovante
-              </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 1,
-                }}
-              >
-                <Button
-                  component="label"
-                  variant={comprovanteAnexado ? "outlined" : "contained"}
-                  color={comprovanteAnexado ? "secondary" : "primary"}
-                  startIcon={<CloudUploadIcon />}
-                  fullWidth
-                  disabled={loading}
-                  sx={{ py: 1.5, borderRadius: 2 }}
-                >
-                  {comprovanteAnexado
-                    ? "Trocar Comprovante"
-                    : "Anexar Imagem ou PDF"}
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*,application/pdf"
-                    onChange={handleFileChange}
-                  />
-                </Button>
-                {comprovanteAnexado && (
-                  <Typography
-                    variant="body2"
-                    color="secondary.main"
-                    fontWeight="bold"
-                  >
-                    ✓ Ficheiro pronto: {comprovanteAnexado.name}
-                  </Typography>
-                )}
-                {errors.comprovante && (
-                  <Typography variant="caption" color="error" fontWeight="bold">
-                    {errors.comprovante.message}
-                  </Typography>
-                )}
-              </Box>
-            </DialogContent>
-
-            <DialogActions sx={{ p: 2, bgcolor: "grey.50" }}>
-              <Button onClick={onClose} color="inherit" disabled={loading}>
-                Cancelar
-              </Button>
               <Button
                 type="submit"
+                fullWidth
                 variant="contained"
-                color="secondary"
                 disabled={loading}
-                sx={{ minWidth: 160, fontWeight: "bold" }}
+                sx={{
+                  mt: 0.5,
+                  minHeight: 52,
+                  borderRadius: 999,
+                  textTransform: "none",
+                  fontWeight: 950,
+                  fontSize: "1rem",
+                  bgcolor: "#063D31",
+                  boxShadow: "0 12px 22px rgba(6, 61, 49, 0.22)",
+                  "&:hover": {
+                    bgcolor: "#052F26",
+                    boxShadow: "0 14px 26px rgba(6, 61, 49, 0.28)",
+                  },
+                }}
               >
                 {loading ? (
-                  <CircularProgress size={24} color="inherit" />
+                  <CircularProgress size={24} sx={{ color: "#FFFFFF" }} />
                 ) : (
-                  "Confirmar Venda"
+                  "Enviar venda para análise"
                 )}
               </Button>
-            </DialogActions>
+
+              {/* {comprovanteAnexado === undefined && (
+                <Typography
+                  sx={{
+                    color: "#7A1F1F",
+                    fontSize: "0.78rem",
+                    textAlign: "center",
+                  }}
+                >
+                  No iPhone, se você trocar de aplicativo, talvez seja
+                  necessário anexar o comprovante novamente.
+                </Typography>
+              )} */}
+            </Stack>
           </Box>
-        )}
+        </DialogContent>
       </Dialog>
 
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={3000}
+        autoHideDuration={2200}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
       >
         <Alert
-          onClose={() => setSnackbarOpen(false)}
           severity="success"
-          sx={{ width: "100%", fontWeight: "bold" }}
+          variant="filled"
+          sx={{
+            borderRadius: 3,
+            fontWeight: 800,
+          }}
         >
-          Chave PIX copiada com sucesso!
+          Chave PIX copiada.
         </Alert>
       </Snackbar>
     </>

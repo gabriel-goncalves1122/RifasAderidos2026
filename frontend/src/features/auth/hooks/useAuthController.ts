@@ -12,6 +12,9 @@ import { authService } from "../services/authService";
 
 export interface UsuarioFormatura extends User {
   cargo?: CargoComissao;
+
+  // Nome vem do documento da coleção "usuarios", não obrigatoriamente do Firebase Auth.
+  nome?: string;
 }
 
 function obterMensagemErroRecuperacao(codigo?: string) {
@@ -32,6 +35,17 @@ function obterMensagemErroRegistro(erro: any) {
   }
 
   return erro.message || "Erro ao criar conta. Verifique os dados.";
+}
+
+function normalizarNomeUsuario(dadosUsuario: any) {
+  // Mantém compatibilidade com documentos novos e possíveis registros antigos.
+  return String(
+    dadosUsuario?.nome || dadosUsuario?.Nome || dadosUsuario?.displayName || "",
+  ).trim();
+}
+
+function normalizarCargoUsuario(dadosUsuario: any): CargoComissao {
+  return (dadosUsuario?.cargo as CargoComissao) || "aderido";
 }
 
 export function useAuthController() {
@@ -55,26 +69,41 @@ export function useAuthController() {
 
       setLoading(true);
 
+      const emailNormalizado = user.email.toLowerCase().trim();
+
       const consultaUsuario = query(
         collection(db, "usuarios"),
-        where("email", "==", user.email),
+        where("email", "==", emailNormalizado),
       );
 
       unsubscribeUsuario = onSnapshot(
         consultaUsuario,
         (querySnapshot) => {
-          const cargo = !querySnapshot.empty
-            ? (querySnapshot.docs[0].data().cargo as CargoComissao) || "aderido"
-            : "aderido";
+          const dadosUsuario = !querySnapshot.empty
+            ? querySnapshot.docs[0].data()
+            : null;
 
-          setUsuarioAtual({ ...user, cargo } as UsuarioFormatura);
+          const cargo = normalizarCargoUsuario(dadosUsuario);
+          const nome = normalizarNomeUsuario(dadosUsuario);
+
+          setUsuarioAtual({
+            ...user,
+            cargo,
+            nome,
+          } as UsuarioFormatura);
+
           setLoading(false);
         },
         (erro) => {
-          console.error("[Auth] Erro ao observar cargo do usuário:", erro);
+          console.error("[Auth] Erro ao observar usuário:", erro);
 
           // Mantém o usuário logado com permissão mínima caso o Firestore falhe.
-          setUsuarioAtual({ ...user, cargo: "aderido" } as UsuarioFormatura);
+          setUsuarioAtual({
+            ...user,
+            cargo: "aderido",
+            nome: user.displayName || "",
+          } as UsuarioFormatura);
+
           setLoading(false);
         },
       );
@@ -93,7 +122,7 @@ export function useAuthController() {
     try {
       await authService.login(email, senha);
 
-      // Mantém loading true até o onAuthStateChanged buscar o cargo do usuário.
+      // Mantém loading true até o onAuthStateChanged buscar nome e cargo.
       return true;
     } catch (erro) {
       console.error("[Auth] Erro ao fazer login:", erro);

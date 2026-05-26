@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { VisaoGraficaTab } from "@/features/tesouraria/VisaoGraficaTab";
-import { useTesouraria } from "@/controllers/useTesouraria";
+import { useTesouraria } from "@/features/tesouraria/hooks/useTesouraria";
 
 // 1. Mock do Controller da Tesouraria
-vi.mock("@/controllers/useTesouraria", () => ({
+vi.mock("@/features/tesouraria/hooks/useTesouraria", () => ({
   useTesouraria: vi.fn(),
 }));
 

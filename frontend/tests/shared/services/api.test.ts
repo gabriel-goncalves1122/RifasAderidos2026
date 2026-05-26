@@ -1,27 +1,57 @@
 // ============================================================================
-// ARQUIVO: frontend/tests/auditoria/api.test.tsx
+// ARQUIVO: frontend/tests/shared/services/api.test.ts
 // ============================================================================
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mocka o mesmo caminho usado pelo fetchAPI após a migração para shared/config.
-vi.mock("@/shared/config/firebase", () => ({
-  auth: {
-    currentUser: {
-      getIdToken: vi.fn().mockResolvedValue("fake-token-123"),
+const mocks = vi.hoisted(() => {
+  const usuarioMock = {
+    getIdToken: vi.fn().mockResolvedValue("fake-token-123"),
+  };
+
+  return {
+    usuarioMock,
+
+    auth: {
+      currentUser: usuarioMock as any,
+      signOut: vi.fn().mockResolvedValue(undefined),
     },
+
+    onAuthStateChanged: vi.fn(),
     signOut: vi.fn().mockResolvedValue(undefined),
-  },
+  };
+});
+
+// Configuração Firebase usada diretamente pelo fetchAPI.
+vi.mock("@/shared/config/firebase", () => ({
+  auth: mocks.auth,
 }));
 
-import { fetchAPI } from "@/controllers/api";
+// O fetchAPI novo aguarda o Firebase resolver a sessão por onAuthStateChanged.
+vi.mock("firebase/auth", () => ({
+  onAuthStateChanged: mocks.onAuthStateChanged,
+  signOut: mocks.signOut,
+}));
+
+import { fetchAPI } from "@/shared/services/api";
 import { auth } from "@/shared/config/firebase";
 
 describe("Função Mestra: fetchAPI", () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
-    global.fetch = vi.fn();
     vi.clearAllMocks();
+
+    mocks.usuarioMock.getIdToken.mockResolvedValue("fake-token-123");
+
+    // Estado padrão dos testes: usuário autenticado.
+    (auth as any).currentUser = mocks.usuarioMock;
+
+    mocks.onAuthStateChanged.mockImplementation((_auth, callback) => {
+      callback(mocks.usuarioMock);
+      return vi.fn();
+    });
+
+    global.fetch = vi.fn();
 
     // Permite testar redirecionamento sem depender do objeto real do jsdom.
     delete (window as any).location;
@@ -29,7 +59,6 @@ describe("Função Mestra: fetchAPI", () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
     (window as any).location = originalLocation;
   });
 
@@ -40,6 +69,8 @@ describe("Função Mestra: fetchAPI", () => {
     });
 
     const resposta = await fetchAPI("/teste");
+
+    expect(mocks.usuarioMock.getIdToken).toHaveBeenCalledTimes(1);
 
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/teste"),
@@ -62,7 +93,10 @@ describe("Função Mestra: fetchAPI", () => {
     });
 
     const body = { nome: "Teste" };
+
     const resposta = await fetchAPI("/publico", "POST", body, false);
+
+    expect(mocks.usuarioMock.getIdToken).not.toHaveBeenCalled();
 
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/publico"),
@@ -80,18 +114,19 @@ describe("Função Mestra: fetchAPI", () => {
   });
 
   it("Deve bloquear rota autenticada quando não houver usuário logado", async () => {
-    const backupUser = auth.currentUser;
-
-    // Simula ausência de sessão no Firebase Auth.
+    // Simula ausência de sessão tanto no estado direto quanto no listener.
     (auth as any).currentUser = null;
+
+    mocks.onAuthStateChanged.mockImplementationOnce((_auth, callback) => {
+      callback(null);
+      return vi.fn();
+    });
 
     await expect(fetchAPI("/secreto")).rejects.toThrow(
       "Usuário não autenticado no sistema.",
     );
 
     expect(global.fetch).not.toHaveBeenCalled();
-
-    (auth as any).currentUser = backupUser;
   });
 
   it("Deve capturar e repassar erros normais, sem deslogar o usuário", async () => {
@@ -107,6 +142,7 @@ describe("Função Mestra: fetchAPI", () => {
     ).rejects.toThrow("Erro de validação nos campos.");
 
     expect(auth.signOut).not.toHaveBeenCalled();
+    expect(mocks.signOut).not.toHaveBeenCalled();
   });
 
   it("Deve forçar logout e redirecionar em caso de 401 ou 403", async () => {
@@ -121,7 +157,9 @@ describe("Função Mestra: fetchAPI", () => {
       "A sua sessão expirou. Por favor, faça login novamente.",
     );
 
+    // Mantém compatibilidade caso o service use auth.signOut().
     expect(auth.signOut).toHaveBeenCalledTimes(1);
+
     expect(window.location.href).toBe("/login");
   });
 });

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { ModalImagemPix } from "@/features/comuns/ModalImagemPix"; // <-- Caminho correto
+import { ModalImagemPix } from "@/shared/components/ModalImagemPix"; // <-- Caminho correto
 
 describe("Componente <ModalImagemPix />", () => {
   const mockOnClose = vi.fn();

@@ -12,7 +12,7 @@ import {
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import FolderZipIcon from "@mui/icons-material/FolderZip";
 import { useRef, useState } from "react";
-import { useCompactacao } from "../../../controllers/useCompactacao";
+import { useCompactacao } from "../../../shared/hooks/useCompactacao";
 
 interface Props {
   onImportar: (ficheiro: File) => Promise<void>;

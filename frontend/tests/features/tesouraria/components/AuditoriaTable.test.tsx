@@ -4,10 +4,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AuditoriaTable } from "@/features/tesouraria/AuditoriaTable";
-import { useAuditoria } from "@/controllers/useAuditoria";
+import { useAuditoria } from "@/features/tesouraria/hooks/useAuditoria";
 
 // Mock do hook useAuditoria
-vi.mock("@/controllers/useAuditoria", () => ({
+vi.mock("@/features/tesouraria/hooks/useAuditoria", () => ({
   useAuditoria: vi.fn(),
 }));
 

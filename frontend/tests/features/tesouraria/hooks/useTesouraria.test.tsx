@@ -1,13 +1,13 @@
 // ============================================================================
-// ARQUIVO: frontend/tests/controllers/useTesouraria.test.ts
+// ARQUIVO: frontend/tests/features/tesouraria/hooks/useTesouraria.test.tsx
 // ============================================================================
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useTesouraria } from "@/controllers/useTesouraria";
-import { fetchAPI } from "@/controllers/api";
+import { useTesouraria } from "@/features/tesouraria/hooks/useTesouraria";
+import { fetchAPI } from "@/shared/services/api";
 
 // Mock da API mestra
-vi.mock("@/controllers/api", () => ({
+vi.mock("@/shared/services/api", () => ({
   fetchAPI: vi.fn(),
 }));
 

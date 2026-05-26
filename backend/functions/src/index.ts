@@ -1,48 +1,100 @@
 // ============================================================================
 // ARQUIVO: backend/functions/src/index.ts
 // ============================================================================
-// 1. INICIALIZAÇÃO GLOBAL (Agora através do ficheiro partilhado)
+
+// Inicializa o Firebase Admin uma única vez para toda a API.
 import "./shared/config/firebaseAdmin";
 
 import express from "express";
 import cors from "cors";
 import { onRequest } from "firebase-functions/v2/https";
 
-// 2. ROTEADOR MESTRE (O "Diretor de Trânsito")
 import masterRouter from "./routes";
 
 // ============================================================================
-// 3. CONFIGURAÇÃO DO EXPRESS (O SERVIDOR)
+// CONFIGURAÇÃO DO EXPRESS
 // ============================================================================
+
 const app = express();
 
-// Segurança e formatação
-app.use(cors({ origin: true }));
-app.use(express.json());
+// ============================================================================
+// CORS DA API EXPRESS
+// ============================================================================
+// Esse CORS vale apenas para a Cloud Function /api.
+// Ele não controla o CORS do Firestore Emulator, Auth Emulator ou Storage Emulator.
+const corsOptions: cors.CorsOptions = {
+  origin(origin, callback) {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    const origensPermitidas = [
+      /^http:\/\/localhost:\d+$/,
+      /^http:\/\/127\.0\.0\.1:\d+$/,
+      /^http:\/\/192\.168\.0\.\d+:\d+$/,
+      /^http:\/\/10\.\d+\.\d+\.\d+:\d+$/,
+      /^http:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+:\d+$/,
+      /^https:\/\/.*\.web\.app$/,
+      /^https:\/\/.*\.firebaseapp\.com$/,
+    ];
+
+    const origemPermitida = origensPermitidas.some((regex) =>
+      regex.test(origin),
+    );
+
+    if (origemPermitida) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`Origem bloqueada pelo CORS: ${origin}`));
+  },
+
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+  ],
+
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+// Aplica CORS antes das rotas.
+// Não use app.options("*") aqui, porque essa versão do Express quebra com "*".
+app.use(cors(corsOptions));
+
+// Libera leitura de JSON.
+app.use(express.json({ limit: "10mb" }));
 
 // ============================================================================
-// 4. DELEGAÇÃO DE ROTAS
+// ROTAS
 // ============================================================================
-// Rota pública de teste para ver se o servidor acordou
-app.get("/status", (req, res) => {
+
+app.get("/status", (_req, res) => {
   res.json({
     status: "API da Comissão Online",
     timestamp: new Date().toISOString(),
   });
 });
 
-// Entrega TODAS as outras chamadas da API ao nosso Roteador Mestre
-// Tudo o que não for "/status", passa a ser acedido por "/api/..."
 app.use("/", masterRouter);
 
 // ============================================================================
-// 5. EXPORTAÇÃO PARA CLOUD FUNCTIONS (FIREBASE V2)
+// CLOUD FUNCTIONS V2
 // ============================================================================
+
 export const api = onRequest(
   {
     timeoutSeconds: 180,
     memory: "512MiB",
-    cors: true, // Já ativámos o cors no app.use, mas é boa prática manter na v2
+
+    // O CORS fica centralizado no Express.
+    cors: false,
   },
   app,
 );

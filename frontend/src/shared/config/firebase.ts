@@ -1,5 +1,5 @@
 // ============================================================================
-// ARQUIVO: src/config/firebase.ts
+// ARQUIVO: frontend/src/shared/config/firebase.ts
 // ============================================================================
 import { initializeApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
@@ -46,19 +46,50 @@ declare global {
   }
 }
 
-if (import.meta.env.DEV && !window.__FIREBASE_EMULATORS_CONNECTED__) {
-  connectAuthEmulator(auth, "http://127.0.0.1:9099", {
+function obterHostEmulador() {
+  const hostname = window.location.hostname;
+
+  // Quando estiver acessando no próprio PC por localhost, use localhost.
+  // Isso evita problemas de CORS/WebChannel do Firestore no navegador do PC.
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return "127.0.0.1";
+  }
+
+  // Quando estiver acessando pelo celular, o hostname será o IP do PC.
+  // Exemplo: 192.168.0.123
+  return hostname;
+}
+
+const deveUsarEmuladores =
+  import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true";
+
+if (deveUsarEmuladores && !window.__FIREBASE_EMULATORS_CONNECTED__) {
+  const emulatorHost = obterHostEmulador();
+
+  const authPort = Number(
+    import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_PORT || 9099,
+  );
+
+  const firestorePort = Number(
+    import.meta.env.VITE_FIRESTORE_EMULATOR_PORT || 8080,
+  );
+
+  const storagePort = Number(
+    import.meta.env.VITE_FIREBASE_STORAGE_EMULATOR_PORT || 9199,
+  );
+
+  connectAuthEmulator(auth, `http://${emulatorHost}:${authPort}`, {
     disableWarnings: true,
   });
 
-  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  connectFirestoreEmulator(db, emulatorHost, firestorePort);
 
-  connectStorageEmulator(storage, "127.0.0.1", 9199);
+  connectStorageEmulator(storage, emulatorHost, storagePort);
 
   window.__FIREBASE_EMULATORS_CONNECTED__ = true;
 
   console.log("🔌 Firebase Client conectado aos Emuladores Locais");
-  console.log("✅ Auth Emulator: http://127.0.0.1:9099");
-  console.log("✅ Firestore Emulator: 127.0.0.1:8080");
-  console.log("✅ Storage Emulator: 127.0.0.1:9199");
+  console.log(`✅ Auth Emulator: http://${emulatorHost}:${authPort}`);
+  console.log(`✅ Firestore Emulator: ${emulatorHost}:${firestorePort}`);
+  console.log(`✅ Storage Emulator: ${emulatorHost}:${storagePort}`);
 }

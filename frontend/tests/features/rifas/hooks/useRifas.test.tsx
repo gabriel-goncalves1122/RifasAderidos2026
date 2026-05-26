@@ -1,146 +1,108 @@
 // ============================================================================
-// ARQUIVO: frontend/tests/rifas/useRifas.test.tsx
+// ARQUIVO: frontend/tests/features/rifas/hooks/useRifas.test.tsx
 // ============================================================================
-import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useRifas } from "@/controllers/useRifas";
-import { fetchAPI } from "@/controllers/api";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-
-// Mocka a ponte HTTP usada pelo hook para falar com o backend.
-vi.mock("@/controllers/api", () => ({
-  fetchAPI: vi.fn(),
+const mocks = vi.hoisted(() => ({
+  buscarMinhasRifas: vi.fn(),
+  finalizarVenda: vi.fn(),
+  corrigirRifasRecusadas: vi.fn(),
+  anexarComprovante: vi.fn(),
 }));
 
-// Mocka o mesmo caminho usado após a migração para shared/config.
-vi.mock("@/shared/config/firebase", () => ({
-  auth: {
-    currentUser: {
-      uid: "user-123",
-    },
+vi.mock("@/features/rifas/services/rifasService", () => ({
+  rifaService: {
+    buscarMinhasRifas: mocks.buscarMinhasRifas,
+    finalizarVenda: mocks.finalizarVenda,
+    corrigirRifasRecusadas: mocks.corrigirRifasRecusadas,
+    anexarComprovante: mocks.anexarComprovante,
   },
-  storage: {},
 }));
 
-// O hook usa Storage para reenviar comprovantes recusados.
-vi.mock("firebase/storage", () => ({
-  getStorage: vi.fn(() => ({})),
-  connectStorageEmulator: vi.fn(),
-  ref: vi.fn(() => "mock-storage-ref"),
-  uploadBytes: vi.fn(),
-  uploadBytesResumable: vi.fn(),
-  getDownloadURL: vi.fn(),
-}));
+import { useRifas } from "@/features/rifas/hooks/useRifas";
+
+function criarArquivoMock(nome = "comprovante.png", tipo = "image/png") {
+  return new File(["comprovante"], nome, {
+    type: tipo,
+  });
+}
 
 describe("Hook: useRifas", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mantém o terminal limpo nos testes que simulam falha.
-    vi.spyOn(console, "error").mockImplementation(() => {});
-  });
+    mocks.buscarMinhasRifas.mockResolvedValue([
+      {
+        numero: "001",
+        status: "disponivel",
+      },
+      {
+        numero: "002",
+        status: "pago",
+      },
+    ]);
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
+    mocks.finalizarVenda.mockResolvedValue(true);
+    mocks.corrigirRifasRecusadas.mockResolvedValue(true);
+    mocks.anexarComprovante.mockResolvedValue(true);
   });
 
   it("Deve buscar minhas rifas com sucesso", async () => {
-    vi.mocked(fetchAPI).mockResolvedValueOnce({
-      bilhetes: [{ numero: "001" }],
-    });
-
     const { result } = renderHook(() => useRifas());
 
-    let rifas;
+    let rifas: Array<{ numero: string; status: string }> = [];
 
     await act(async () => {
       rifas = await result.current.buscarMinhasRifas();
     });
 
-    expect(fetchAPI).toHaveBeenCalledWith("/rifas/minhas-rifas");
-    expect(rifas).toEqual([{ numero: "001" }]);
+    expect(rifas).toHaveLength(2);
+    expect(rifas[0].numero).toBe("001");
   });
 
-  it("Deve corrigir rifas recusadas, enviando novo comprovante e chamando a API", async () => {
-    const mockFile = new File(["dummy_content"], "comprovante_novo.pdf", {
-      type: "application/pdf",
-    });
-
-    // Simula o fluxo completo: cria ref, faz upload e recupera URL pública.
-    vi.mocked(uploadBytesResumable).mockResolvedValueOnce({
-      ref: "fake-ref",
-    } as any);
-
-    vi.mocked(getDownloadURL).mockResolvedValueOnce(
-      "https://fake-url.com/novo-pdf.pdf",
-    );
-
-    vi.mocked(fetchAPI).mockResolvedValueOnce({
-      sucesso: true,
-    });
-
+  it("Deve corrigir rifas recusadas chamando o service", async () => {
     const { result } = renderHook(() => useRifas());
 
-    let sucesso = false;
+    const arquivo = criarArquivoMock("comprovante_novo.pdf", "application/pdf");
 
-    await act(async () => {
-      sucesso = await result.current.corrigirRifasRecusadas(
-        ["015", "016"],
-        mockFile,
-        {
-          nome: "Gabriel Sampaio",
-          email: "gabriel@unifei.edu.br",
-          telefone: "(11) 99999-9999",
-        },
-      );
-    });
+    const sucesso = await act(async () =>
+      result.current.corrigirRifasRecusadas(["003", "004"], arquivo, {
+        nome: "Ana Costa",
+        telefone: "(35) 99999-9999",
+        email: "ana@email.com",
+      }),
+    );
 
     expect(sucesso).toBe(true);
-    expect(ref).toHaveBeenCalled();
-    expect(uploadBytesResumable).toHaveBeenCalled();
-    expect(getDownloadURL).toHaveBeenCalledWith("fake-ref");
 
-    expect(fetchAPI).toHaveBeenCalledWith("/rifas/corrigir", "POST", {
-      numerosRifas: ["015", "016"],
-      nome: "Gabriel Sampaio",
-      telefone: "(11) 99999-9999",
-      email: "gabriel@unifei.edu.br",
-      comprovanteUrl: "https://fake-url.com/novo-pdf.pdf",
+    expect(mocks.corrigirRifasRecusadas).toHaveBeenCalledWith({
+      numerosRifas: ["003", "004"],
+      comprovante: arquivo,
+      nome: "Ana Costa",
+      telefone: "(35) 99999-9999",
+      email: "ana@email.com",
     });
   });
 
-  it("Deve retornar false e alertar quando a correção falhar no upload", async () => {
-    const mockFile = new File(["dummy_content"], "comprovante.png", {
-      type: "image/png",
-    });
-
-    const mockAlert = vi.fn();
-
-    vi.stubGlobal("alert", mockAlert);
-
-    // Garante que falha de Storage não chama o backend.
-    vi.mocked(uploadBytesResumable).mockRejectedValueOnce(
-      new Error("Erro no Storage"),
+  it("Deve retornar false quando a correção falhar", async () => {
+    mocks.corrigirRifasRecusadas.mockRejectedValueOnce(
+      new Error("Falha no upload"),
     );
 
     const { result } = renderHook(() => useRifas());
 
-    let sucesso = true;
+    const arquivo = criarArquivoMock();
 
-    await act(async () => {
-      sucesso = await result.current.corrigirRifasRecusadas(["015"], mockFile, {
-        nome: "Teste",
-        email: "",
-        telefone: "",
-      });
-    });
+    const sucesso = await act(async () =>
+      result.current.corrigirRifasRecusadas(["003"], arquivo, {
+        nome: "Ana Costa",
+        telefone: "(35) 99999-9999",
+        email: "ana@email.com",
+      }),
+    );
 
     expect(sucesso).toBe(false);
-    expect(fetchAPI).not.toHaveBeenCalled();
-    expect(mockAlert).toHaveBeenCalledWith(
-      "Erro ao reenviar correção. Tente novamente.",
-    );
+    expect(mocks.corrigirRifasRecusadas).toHaveBeenCalledTimes(1);
   });
 });

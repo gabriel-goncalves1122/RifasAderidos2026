@@ -17,11 +17,11 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 
-import { useAuditoria } from "../../controllers/useAuditoria";
+import { useAuditoria } from "./hooks/useAuditoria";
 import { Bilhete } from "../../shared/types/models";
 import { AuditoriaCard } from "./AuditoriaCard";
 import { ModalRelatorioIA } from "./ModalRelatorioIA";
-import { ModalImagemPix } from "../comuns/ModalImagemPix";
+import { ModalImagemPix } from "@/shared/components/ModalImagemPix";
 import { ModalConfirmacaoAuditoria } from "./ModalConfirmacaoAuditoria";
 
 export interface TransacaoAgrupada {

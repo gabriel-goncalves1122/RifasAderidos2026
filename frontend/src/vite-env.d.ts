@@ -1,16 +1,29 @@
-// ============================================================================
-// ARQUIVO: frontend/src/vitest.d.ts
-// ============================================================================
+/// <reference types="vite/client" />
 
-/// <reference types="vitest/globals" />
-/// <reference types="@testing-library/jest-dom" />
+interface ImportMetaEnv {
+  readonly VITE_FIREBASE_API_KEY: string;
+  readonly VITE_FIREBASE_AUTH_DOMAIN: string;
+  readonly VITE_FIREBASE_PROJECT_ID: string;
+  readonly VITE_FIREBASE_STORAGE_BUCKET: string;
+  readonly VITE_FIREBASE_MESSAGING_SENDER_ID: string;
+  readonly VITE_FIREBASE_APP_ID: string;
+  readonly VITE_FIREBASE_MEASUREMENT_ID: string;
 
-// Permite imports diretos de CSS com noUncheckedSideEffectImports ativo.
-declare module "*.css";
+  readonly VITE_USE_FIREBASE_EMULATORS: string;
 
-// Permite imports de imagens usadas pela aplicação.
-declare module "*.png";
-declare module "*.jpg";
-declare module "*.jpeg";
-declare module "*.svg";
-declare module "*.webp";
+  readonly VITE_API_BASE_URL_LOCAL: string;
+  readonly VITE_API_BASE_URL_PROD: string;
+
+  readonly VITE_FIREBASE_AUTH_EMULATOR_HOST: string;
+  readonly VITE_FIREBASE_AUTH_EMULATOR_PORT: string;
+
+  readonly VITE_FIRESTORE_EMULATOR_HOST: string;
+  readonly VITE_FIRESTORE_EMULATOR_PORT: string;
+
+  readonly VITE_FIREBASE_STORAGE_EMULATOR_HOST: string;
+  readonly VITE_FIREBASE_STORAGE_EMULATOR_PORT: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

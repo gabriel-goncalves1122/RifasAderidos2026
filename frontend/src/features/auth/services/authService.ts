@@ -9,7 +9,7 @@ import {
 } from "firebase/auth";
 
 import { auth } from "@/shared/config/firebase";
-import { fetchAPI } from "@/controllers/api";
+import { fetchAPI } from "@/shared/services/api";
 
 export const authService = {
   async login(email: string, senha: string) {

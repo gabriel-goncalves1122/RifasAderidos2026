@@ -16,9 +16,9 @@ import {
   CURSOS_UNIFEI,
 } from "../../../../shared/types/constants";
 
-import {
+import type {
   AderidoSecretaria,
-  FormEditarAderido,
+  FormEditarAderido as FormEditarAderidoData,
 } from "../../../../shared/types/secretaria";
 
 import {
@@ -29,8 +29,8 @@ import {
 
 interface FormEditarAderidoProps {
   aderido: AderidoSecretaria;
-  form: FormEditarAderido;
-  onChange: (campo: keyof FormEditarAderido, valor: string) => void;
+  form: FormEditarAderidoData;
+  onChange: (campo: keyof FormEditarAderidoData, valor: string) => void;
 }
 
 function normalizarCursoParaSelect(curso?: string) {
@@ -53,7 +53,7 @@ function obterLabelStatus(status?: string) {
   return "Pendente";
 }
 
-export function FormEditarAderidoComponent({
+export function FormEditarAderido({
   aderido,
   form,
   onChange,

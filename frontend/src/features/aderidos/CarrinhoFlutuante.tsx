@@ -1,7 +1,13 @@
-import { Box, Typography, Paper, Button, Portal } from "@mui/material";
+// ============================================================================
+// ARQUIVO: frontend/src/features/aderidos/CarrinhoFlutuante.tsx
+// ============================================================================
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
+import { Box, Button, Paper, Typography } from "@mui/material";
 
-interface Props {
+import { painelAderidoStyles } from "./styles/painelAderidoStyles";
+import { formatarMoedaBR } from "./utils/formatadoresAderido";
+
+interface CarrinhoFlutuanteProps {
   quantidade: number;
   valorTotal: number;
   onVenderClick: () => void;
@@ -11,49 +17,42 @@ export function CarrinhoFlutuante({
   quantidade,
   valorTotal,
   onVenderClick,
-}: Props) {
-  if (quantidade === 0) return null;
+}: CarrinhoFlutuanteProps) {
+  if (quantidade <= 0) return null;
+
+  const textoQuantidade =
+    quantidade === 1 ? "rifa selecionada" : "rifas selecionadas";
 
   return (
-    <Portal>
-      <Paper
-        elevation={10}
-        sx={{
-          position: "fixed",
-          bottom: 24,
-          left: "50%",
-          transform: "translateX(-50%)",
-          p: 2,
-          display: "flex",
-          alignItems: "center",
-          gap: 3,
-          borderRadius: 8,
-          bgcolor: "white",
-          zIndex: 9999,
-          width: { xs: "90%", sm: "auto" },
-          justifyContent: "space-between",
-          border: "3px solid var(--cor-dourado-brilho)",
-        }}
-      >
-        <Box>
-          <Typography variant="body2" fontWeight="bold" color="text.secondary">
-            {quantidade} rifa(s) selecionada(s)
-          </Typography>
-          <Typography variant="h5" fontWeight="900" color="primary.main">
-            R$ {valorTotal},00
-          </Typography>
+    <Box sx={painelAderidoStyles.carrinhoFixoArea}>
+      <Paper elevation={0} sx={painelAderidoStyles.carrinhoFixoCard}>
+        <Box sx={painelAderidoStyles.carrinhoFixoConteudo}>
+          <Box sx={painelAderidoStyles.carrinhoResumoArea}>
+            <Box sx={painelAderidoStyles.carrinhoQuantidadeChip}>
+              {quantidade}
+            </Box>
+
+            <Box sx={painelAderidoStyles.carrinhoTextoArea}>
+              <Typography sx={painelAderidoStyles.carrinhoFixoTitulo}>
+                {textoQuantidade}
+              </Typography>
+
+              <Typography sx={painelAderidoStyles.carrinhoFixoDescricao}>
+                {formatarMoedaBR(valorTotal)}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Button
+            variant="contained"
+            startIcon={<ShoppingCartCheckoutIcon />}
+            onClick={onVenderClick}
+            sx={painelAderidoStyles.carrinhoFixoBotao}
+          >
+            Vender
+          </Button>
         </Box>
-        <Button
-          variant="contained"
-          color="secondary"
-          size="large"
-          startIcon={<ShoppingCartCheckoutIcon />}
-          sx={{ borderRadius: 6, fontWeight: "bold" }}
-          onClick={onVenderClick}
-        >
-          Vender
-        </Button>
       </Paper>
-    </Portal>
+    </Box>
   );
 }

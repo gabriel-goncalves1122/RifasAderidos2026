@@ -3,7 +3,7 @@
 // ============================================================================
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { ModalInspecaoIA } from "@/features/tesouraria/ModalInspencaoIA";
+import { ModalInspecaoIA } from "@/features/tesouraria/ModalInspecaoIA";
 import { TransacaoAgrupada } from "@/features/tesouraria/AuditoriaTable";
 
 describe("Componente <ModalInspecaoIA />", () => {

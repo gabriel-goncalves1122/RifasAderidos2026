@@ -1,12 +1,12 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useAuthController } from "@/features/auth/hooks/useAuthController";
-import { fetchAPI } from "@/controllers/api";
+import { fetchAPI } from "@/shared/services/api";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 // 1. Mocks dos caminhos internos (CORRIGIDO PARA DOIS PONTOS: ../../)
 vi.mock("@/shared/config/firebase", () => ({ auth: {}, db: {} }));
-vi.mock("@/controllers/api", () => ({ fetchAPI: vi.fn() }));
+vi.mock("@/shared/services/api", () => ({ fetchAPI: vi.fn() }));
 
 // 2. Mocks dos módulos do Firebase
 vi.mock("firebase/auth", async (importOriginal) => {

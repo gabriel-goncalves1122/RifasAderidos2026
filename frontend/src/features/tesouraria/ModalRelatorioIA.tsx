@@ -21,7 +21,7 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { TransacaoAgrupada } from "./AuditoriaTable";
 import { CardAuditoriaIA } from "./CardAuditoriaIA";
-import { ModalInspecaoIA } from "./ModalInspencaoIA";
+import { ModalInspecaoIA } from "./ModalInspecaoIA";
 
 // Função utilitária para fatiar as strings
 export const extrairDadosIA = (log: string | undefined) => {

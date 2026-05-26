@@ -23,15 +23,15 @@ import PersonIcon from "@mui/icons-material/Person";
 
 import { formatarCpf, formatarTelefone } from "../utils/formatadoresSecretaria";
 
-import {
+import type {
   AderidoSecretaria,
-  FormEditarAderido,
+  FormEditarAderido as FormEditarAderidoData,
 } from "../../../shared/types/secretaria";
 
 import { useSecretaria } from "../hooks/useSecretaria";
 import { InfoItem } from "./detalhesAderido/InfoItem";
-import { ResumoOperacionalAderido } from "./detalhesAderido/ResumoOperacionaAderido";
-import { FormEditarAderidoComponent } from "./detalhesAderido/FormEditarAderido";
+import { ResumoOperacionalAderido } from "./detalhesAderido/ResumoOperacionalAderido";
+import { FormEditarAderido } from "./detalhesAderido/FormEditarAderido";
 
 interface ModalDetalhesAderidoProps {
   open: boolean;
@@ -40,7 +40,7 @@ interface ModalDetalhesAderidoProps {
   onAtualizado: () => Promise<void>;
 }
 
-function montarFormEdicao(aderido: AderidoSecretaria): FormEditarAderido {
+function montarFormEdicao(aderido: AderidoSecretaria): FormEditarAderidoData {
   return {
     nome: aderido.nome || "",
     email: aderido.email || "",
@@ -64,7 +64,7 @@ export function ModalDetalhesAderido({
 
   const [editando, setEditando] = useState(false);
   const [salvando, setSalvando] = useState(false);
-  const [form, setForm] = useState<FormEditarAderido | null>(null);
+  const [form, setForm] = useState<FormEditarAderidoData | null>(null);
 
   useEffect(() => {
     if (!aderido) return;
@@ -78,7 +78,7 @@ export function ModalDetalhesAderido({
   const nomeExibicao = aderido.nome || "Nome não definido";
   const inicialAvatar = aderido.nome?.charAt(0).toUpperCase() || "?";
 
-  const handleChange = (campo: keyof FormEditarAderido, valor: string) => {
+  const handleChange = (campo: keyof FormEditarAderidoData, valor: string) => {
     setForm((prev) => {
       if (!prev) return prev;
 
@@ -199,7 +199,7 @@ export function ModalDetalhesAderido({
                 </Typography>
               </Stack>
 
-              <FormEditarAderidoComponent
+              <FormEditarAderido
                 aderido={aderido}
                 form={form}
                 onChange={handleChange}

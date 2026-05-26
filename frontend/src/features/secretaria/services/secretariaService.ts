@@ -4,7 +4,7 @@
 import { collection, getDocs } from "firebase/firestore";
 
 import { db } from "../../../shared/config/firebase";
-import { fetchAPI } from "../../../controllers/api";
+import { fetchAPI } from "@/shared/services/api";
 
 import {
   AderidoSecretaria,
