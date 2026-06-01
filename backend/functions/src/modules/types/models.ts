@@ -1,53 +1,79 @@
 // ============================================================================
-// ARQUIVO: models.ts (A Definição de Dados do Sistema)
+// ARQUIVO: backend/functions/src/modules/types/models.ts
 // ============================================================================
 
 // ----------------------------------------------------------------------------
-// DEFINIÇÕES DE CARGOS (RBAC - Role Based Access Control)
+// CARGOS E PERFIS DO SISTEMA
 // ----------------------------------------------------------------------------
+
 export type CargoComissao =
-  | "admin" // <-- Adicionado para permissão de Super Admin (Chave Mestra)
+  | "admin"
   | "presidencia"
   | "rh"
   | "tesouraria"
   | "marketing"
   | "eventos"
   | "secretaria"
+  | "vice_secretaria"
   | "membro"
-  | "aderido"; // <-- Adicionado para alinhar com a lógica do Frontend
+  | "aderido";
+
+export type StatusCadastro = "ativo" | "pendente" | "inativo";
+
+export type ModalidadeAdesao = "completo" | "meio";
 
 // ----------------------------------------------------------------------------
-// 1. USUÁRIO (O Aderido / Formando / Membro da Comissão)
-// Coleção: 'usuarios'
+// USUÁRIO / ADERIDO / MEMBRO DA COMISSÃO
+// Coleção: usuarios
 // ----------------------------------------------------------------------------
+
+export interface FaixaRifas {
+  inicio?: string;
+  fim?: string;
+}
+
 export interface Usuario {
-  id?: string; // ID do documento no Firebase (ex: ADERIDO_001)
-  id_aderido?: string; // Identificador interno usado para relações
-  cpf: string; // Chave primária de validação
-  uid: string | null; // ID gerado pelo Firebase Auth
-  nome: string;
+  // Identificação principal
+  id?: string;
+  id_aderido?: string;
+  uid?: string | null;
+
+  // Dados pessoais
+  nome?: string;
   email: string | null;
-  telefone: string;
+  telefone?: string;
+  cpf?: string;
+  curso?: string;
+  genero?: string;
+  data_nascimento?: string;
+  dataNascimento?: string;
 
-  cargo: CargoComissao;
+  // Permissões e classificação
+  cargo?: CargoComissao | string | null;
+  role?: CargoComissao | string | null;
+  modalidade_adesao?: ModalidadeAdesao;
 
-  faixa_rifas: {
-    inicio: string; // Ex: "0001"
-    fim: string; // Ex: "0120"
-  };
+  // Status operacional
+  status?: StatusCadastro | string;
+  status_cadastro?: StatusCadastro;
 
-  meta_vendas: number; // Geralmente R$ 1.200,00
-  total_arrecadado: number; // Valor já aprovado pela Tesouraria
-  rifas_vendidas: number; // Quantidade de bilhetes com status 'pago'
+  // Dados comerciais
+  posicao_adesao?: number;
+  faixa_rifas?: FaixaRifas;
+  meta_vendas?: number;
+  total_arrecadado?: number;
+  rifas_vendidas?: number;
 
-  status: "pendente" | "ativo" | "inativo";
-  criado_em: string;
+  // Datas
+  criado_em?: string;
+  cadastrado_em?: string;
 }
 
 // ----------------------------------------------------------------------------
-// 2. COMPRADOR (O Cliente que fez o PIX)
-// Coleção: 'compradores'
+// COMPRADOR
+// Coleção: compradores
 // ----------------------------------------------------------------------------
+
 export interface Comprador {
   id: string;
   nome: string;
@@ -57,11 +83,10 @@ export interface Comprador {
 }
 
 // ----------------------------------------------------------------------------
-// 3. NÚMERO (O Bilhete da Rifa)
-// Coleção: 'bilhetes'
+// BILHETE / RIFA
+// Coleção: bilhetes
 // ----------------------------------------------------------------------------
 
-// AQUI ESTÁ A CORREÇÃO: Adicionado o "recusado" à lista de tipos permitidos!
 export type StatusBilhete =
   | "disponivel"
   | "reservado"
@@ -73,41 +98,48 @@ export interface Bilhete {
   numero: string;
   status: StatusBilhete;
 
-  vendedor_cpf: string;
-  vendedor_id?: string; // Usado para disparar as notificações para a pessoa certa
+  // Dados do vendedor/aderido
+  vendedor_id?: string;
   vendedor_nome?: string;
+  vendedor_cpf?: string;
 
-  comprador_id: string | null;
+  // Dados do comprador
+  comprador_id?: string | null;
   comprador_nome?: string;
-  comprador_email?: string | null; // Usado para enviar o recibo por e-mail
+  comprador_email?: string | null;
+  comprador_telefone?: string | null;
 
-  data_reserva: string | null;
-  data_pagamento: string | null;
-  comprovante_url: string | null;
+  // Datas do fluxo da venda
+  data_reserva?: string | null;
+  data_pagamento?: string | null;
 
-  log_automacao?: string | null; // Parecer da Inteligência Artificial
-  motivo_recusa?: string | null; // Motivo preenchido pela tesouraria ao rejeitar
+  // Comprovante e auditoria
+  comprovante_url?: string | null;
+  log_automacao?: string | null;
+  motivo_recusa?: string | null;
 }
 
 // ----------------------------------------------------------------------------
-// 4. PRÊMIO
-// Coleção: 'premios'
+// PRÊMIO
+// Coleção: premios
 // ----------------------------------------------------------------------------
+
 export interface Premio {
   id: string;
-  colocacao: number; // Posição (1º Lugar, 2º Lugar, etc.)
-  nome: string; // O que é o prêmio
+  colocacao: number;
+  nome: string;
   descricao?: string;
   imagem_url?: string;
   ganhador_numero?: string;
   ganhador_nome?: string;
-  ativo: boolean; // Para a Tesouraria poder ocultar/exibir
+  ativo: boolean;
 }
 
 // ----------------------------------------------------------------------------
-// 5. CONFIGURAÇÕES DO SORTEIO
-// Coleção: 'configuracoes' -> Doc: 'sorteio'
+// CONFIGURAÇÕES DO SORTEIO
+// Coleção: configuracoes/sorteio
 // ----------------------------------------------------------------------------
+
 export interface InfoSorteio {
   titulo: string;
   data: string;
@@ -115,15 +147,16 @@ export interface InfoSorteio {
 }
 
 // ----------------------------------------------------------------------------
-// 6. NOTIFICAÇÕES (Alertas para os Aderidos)
-// Coleção: 'notificacoes'
+// NOTIFICAÇÕES
+// Coleção: notificacoes
 // ----------------------------------------------------------------------------
+
 export interface Notificacao {
   id: string;
-  vendedor_id: string; // Dono da notificação
+  vendedor_id: string;
   titulo: string;
   mensagem: string;
-  rifas: string[]; // Bilhetes associados à notificação
+  rifas: string[];
   lida: boolean;
   data_criacao: string;
 }
