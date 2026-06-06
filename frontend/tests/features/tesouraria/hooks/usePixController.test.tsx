@@ -1,0 +1,71 @@
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { usePixController } from "@/features/tesouraria/hooks/usePixController";
+import { usePixTransacoes } from "@/features/tesouraria/hooks/usePixTransacoes";
+import { RESUMO_PIX_TRANSACOES_VAZIO } from "@/features/tesouraria/utils/pixTransacoesUtils";
+
+vi.mock("@/features/tesouraria/hooks/usePixTransacoes", () => ({
+  usePixTransacoes: vi.fn(),
+}));
+
+const setFiltros = vi.fn();
+const sincronizarBanco = vi.fn();
+
+describe("Hook-controller: usePixController", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    vi.mocked(usePixTransacoes).mockReturnValue({
+      transacoes: [{ id: "tx_001", referenceId: "ref_001" } as any],
+      transacoesFiltradas: [{ id: "tx_filtrada", referenceId: "ref_002" } as any],
+      resumo: RESUMO_PIX_TRANSACOES_VAZIO,
+      filtros: { status: "todas", busca: "" },
+      carregando: false,
+      sincronizando: false,
+      setFiltros,
+      carregarDados: vi.fn(),
+      sincronizarBanco,
+    });
+  });
+
+  it("Deve expor estado e props do contexto Pix/Pix", () => {
+    const { result } = renderHook(() =>
+      usePixController({ variante: "desktop" }),
+    );
+
+    expect(result.current.abaVisivel).toBe("visao-geral");
+    expect(result.current.pixProps.transacoes).toEqual([
+      { id: "tx_filtrada", referenceId: "ref_002" },
+    ]);
+    expect(result.current.pixProps.onChangeFiltros).toBe(setFiltros);
+
+    result.current.onSincronizar();
+
+    expect(sincronizarBanco).toHaveBeenCalledTimes(1);
+  });
+
+  it("Deve permitir trocar abas no desktop", () => {
+    const { result } = renderHook(() =>
+      usePixController({ variante: "desktop" }),
+    );
+
+    act(() => {
+      result.current.setAbaAtual("conciliacao");
+    });
+
+    expect(result.current.abaVisivel).toBe("conciliacao");
+  });
+
+  it("Deve aplicar fallback da aba conciliação no mobile", () => {
+    const { result } = renderHook(() =>
+      usePixController({ variante: "mobile" }),
+    );
+
+    act(() => {
+      result.current.setAbaAtual("conciliacao");
+    });
+
+    expect(result.current.abaVisivel).toBe("visao-geral");
+  });
+});

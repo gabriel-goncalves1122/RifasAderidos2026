@@ -10,27 +10,26 @@ vi.mock("@/features/auth/hooks/useAuthController", () => ({
   useAuthController: vi.fn(),
 }));
 
-// 2. Mocks dos Componentes Filhos (Agora com as novas pastas!)
-vi.mock("@/views/components/comuns/DashboardSidebar", () => ({
+vi.mock("@/shared/components/DashboardSidebar", () => ({
   DashboardSidebar: () => <div data-testid="sidebar">Sidebar</div>,
 }));
-vi.mock("@/views/components/aderidos/MinhasRifasTab", () => ({
+vi.mock("@/features/aderidos/MinhasRifasTab", () => ({
   MinhasRifasTab: () => <div>Conteudo: Minhas Rifas</div>,
 }));
-vi.mock("@/views/components/premios/PremiosTab", () => ({
+vi.mock("@/features/premios/PremiosTab", () => ({
   PremiosTab: () => <div>Conteudo: Premios</div>,
 }));
-vi.mock("@/views/components/tesouraria/AuditoriaTable", () => ({
-  AuditoriaTable: () => <div>Conteudo: Auditoria</div>,
+vi.mock("@/features/tesouraria/pages/TesourariaPixPage", () => ({
+  TesourariaPixPage: () => <div>Conteudo: Pix</div>,
 }));
-vi.mock("@/views/components/tesouraria/VisaoGraficaTab", () => ({
-  VisaoGraficaTab: () => <div>Conteudo: VisaoGrafica</div>,
+vi.mock("@/features/tesouraria/pages/DesempenhoPage", () => ({
+  DesempenhoPage: () => <div>Conteudo: Desempenho</div>,
 }));
-vi.mock("@/views/components/tesouraria/HistoricoDetalhadoTab", () => ({
-  HistoricoDetalhadoTab: () => <div>Conteudo: Historico</div>,
+vi.mock("@/features/tesouraria/pages/AuditoriaComprasPage", () => ({
+  AuditoriaComprasPage: () => <div>Conteudo: Auditoria de compras</div>,
 }));
-vi.mock("@/views/pages/SecretariaPage", () => ({
-  SecretariaView: () => <div>Conteudo: Secretaria</div>, // O Componente ainda chama-se SecretariaView
+vi.mock("@/features/secretaria/pages/SecretariaPage", () => ({
+  SecretariaView: () => <div>Conteudo: Secretaria</div>,
 }));
 
 describe("Página <DashboardPage />", () => {
@@ -50,10 +49,11 @@ describe("Página <DashboardPage />", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByText("PORTAL DO ADERIDO")).toBeInTheDocument();
+    expect(screen.getByText("Portal do aderido")).toBeInTheDocument();
     expect(screen.getByText("Minhas Rifas")).toBeInTheDocument();
     expect(screen.getByText("Prêmios")).toBeInTheDocument();
-    expect(screen.queryByText("Aprovar Pix")).not.toBeInTheDocument();
+    expect(screen.getByText("Conteudo: Minhas Rifas")).toBeInTheDocument();
+    expect(screen.queryByText("Pix")).not.toBeInTheDocument();
   });
 
   it("Deve renderizar a Gestão Financeira para a Tesouraria", () => {
@@ -67,8 +67,12 @@ describe("Página <DashboardPage />", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByText("GESTÃO FINANCEIRA")).toBeInTheDocument();
-    expect(screen.getByText("Aprovar Pix")).toBeInTheDocument();
+    expect(screen.getByText("Gestão financeira")).toBeInTheDocument();
+    expect(screen.getByText("Gestão financeira da comissão")).toBeInTheDocument();
+    expect(screen.getByText("Pix")).toBeInTheDocument();
+    expect(screen.getByText("Desempenho")).toBeInTheDocument();
+    expect(screen.getByText("Histórico")).toBeInTheDocument();
+    expect(screen.getByText("Conteudo: Pix")).toBeInTheDocument();
   });
 
   it("Deve renderizar a Secretaria para membros com esse cargo", () => {
@@ -82,9 +86,10 @@ describe("Página <DashboardPage />", () => {
 
     render(<DashboardPage />);
 
-    expect(screen.getByText("SECRETARIA DA COMISSÃO")).toBeInTheDocument();
-    expect(screen.getByText("Painel da Secretaria")).toBeInTheDocument();
-    expect(screen.getByText("Gestão de Aderidos")).toBeInTheDocument();
+    expect(screen.getByText("Secretaria")).toBeInTheDocument();
+    expect(screen.getByText("Gestão de aderidos")).toBeInTheDocument();
+    expect(screen.getByText("Aderidos")).toBeInTheDocument();
+    expect(screen.getByText("Conteudo: Secretaria")).toBeInTheDocument();
   });
 
   it("MECANISMO DE SEGURANÇA: Deve expulsar um Aderido que tente acessar a Tesouraria", async () => {
@@ -99,8 +104,8 @@ describe("Página <DashboardPage />", () => {
     render(<DashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("PORTAL DO ADERIDO")).toBeInTheDocument();
-      expect(screen.queryByText("GESTÃO FINANCEIRA")).not.toBeInTheDocument();
+      expect(screen.getByText("Portal do aderido")).toBeInTheDocument();
+      expect(screen.queryByText("Gestão financeira")).not.toBeInTheDocument();
     });
   });
 
@@ -116,10 +121,8 @@ describe("Página <DashboardPage />", () => {
     render(<DashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("PORTAL DO ADERIDO")).toBeInTheDocument();
-      expect(
-        screen.queryByText("SECRETARIA DA COMISSÃO"),
-      ).not.toBeInTheDocument();
+      expect(screen.getByText("Portal do aderido")).toBeInTheDocument();
+      expect(screen.queryByText("Secretaria")).not.toBeInTheDocument();
     });
   });
 });
