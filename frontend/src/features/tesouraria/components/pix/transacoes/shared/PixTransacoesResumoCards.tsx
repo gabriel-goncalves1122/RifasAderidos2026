@@ -1,8 +1,8 @@
 
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
 import LinkOffOutlinedIcon from "@mui/icons-material/LinkOffOutlined";
-import PendingActionsIcon from "@mui/icons-material/PendingActions";
+import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
+import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import { Box, Paper, Typography } from "@mui/material";
 
 import { PixTransacoesResumo } from "../../../../types/pixTransacoes";
@@ -98,31 +98,31 @@ export function PixTransacoesResumoCards({ resumo }: PixTransacoesResumoCardsPro
       }}
     >
       <CardResumo
-        titulo="Para validar"
+        titulo="Aguardando validação"
         valor={`${resumo.quantidadeAguardandoValidacao}`}
-        descricao={`${resumo.quantidadePagas} Pix pagos ou legados`}
-        icone={<PendingActionsIcon />}
+        descricao="Transações pendentes de análise"
+        icone={<AccountBalanceWalletIcon />}
       />
 
       <CardResumo
-        titulo="Com rifas"
-        valor={`${resumo.quantidadeComRifas}`}
-        descricao={`${resumo.quantidadePagas} pagamentos confirmados`}
-        icone={<ConfirmationNumberOutlinedIcon />}
+        titulo="Validadas"
+        valor={`${resumo.quantidadeAceitas}`}
+        descricao="Confirmadas e vinculadas a aderido/rifa"
+        icone={<TaskAltOutlinedIcon />}
       />
 
       <CardResumo
-        titulo="Sem vínculo"
+        titulo="Pendências de vínculo"
         valor={`${resumo.quantidadeSemVinculo}`}
-        descricao={`${resumo.quantidadeNaoIdentificadas} não identificada(s)`}
+        descricao="Recebidas mas não associadas a aderido"
         icone={<LinkOffOutlinedIcon />}
       />
 
       <CardResumo
-        titulo="Pendentes do banco"
-        valor={`${resumo.quantidadeSemConfirmacaoBancaria}`}
-        descricao={formatarMoedaPix(resumo.totalPendente)}
-        icone={<AccountBalanceWalletIcon />}
+        titulo="Canceladas/Erros"
+        valor={`${resumo.quantidadeCanceladas + resumo.quantidadeNegadas}`}
+        descricao={formatarMoedaPix(resumo.totalCancelado)}
+        icone={<ReportProblemOutlinedIcon />}
       />
     </Box>
   );
