@@ -22,7 +22,7 @@ export function CheckoutDadosCompradorForm({
   errors,
 }: CheckoutDadosCompradorFormProps) {
   return (
-    <Stack spacing={1.75}>
+    <Stack spacing={2.25}>
       <TextField
         label="Nome completo"
         fullWidth

@@ -31,7 +31,15 @@ export function ModalDetalhesRifa({
   if (!rifa) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{
+        sx: painelAderidoStyles.detalheDialogPaper,
+      }}
+    >
       <DialogTitle sx={painelAderidoStyles.detalheDialogTitle}>
         Rifa #{rifa.numero}
       </DialogTitle>
@@ -59,7 +67,16 @@ export function ModalDetalhesRifa({
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} variant="contained">
+        <Button
+          onClick={onClose}
+          variant="contained"
+          sx={{
+            "&:focus-visible": {
+              outline: "4px solid rgba(6, 61, 49, 0.24)",
+              outlineOffset: "2px",
+            },
+          }}
+        >
           Fechar
         </Button>
       </DialogActions>

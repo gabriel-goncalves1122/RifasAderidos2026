@@ -205,6 +205,10 @@ export function CheckoutPixBox({
                   borderColor: "#063D31",
                   bgcolor: "#EAF3EF",
                 },
+                "&:focus-visible": {
+                  outline: "4px solid rgba(6, 61, 49, 0.24)",
+                  outlineOffset: "2px",
+                },
               }}
             >
               Copiar Pix copia-e-cola
@@ -223,6 +227,10 @@ export function CheckoutPixBox({
                   py: 1,
                   "&:hover": {
                     bgcolor: "#021B16",
+                  },
+                  "&:focus-visible": {
+                    outline: "4px solid rgba(6, 61, 49, 0.24)",
+                    outlineOffset: "2px",
                   },
                 }}
               >

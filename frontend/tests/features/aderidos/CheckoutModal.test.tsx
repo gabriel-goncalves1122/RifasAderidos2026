@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CheckoutModal } from "@/features/aderidos/CheckoutModal";
 import { checkoutPixService } from "@/features/aderidos/services/checkoutPixService";
+import { painelAderidoStyles } from "@/features/aderidos/styles/painelAderidoStyles";
 
 vi.mock("@/features/aderidos/services/checkoutPixService", () => ({
   checkoutPixService: {
@@ -46,6 +47,13 @@ describe("Componente <CheckoutModal />", () => {
     );
 
     expect(screen.getByText(/20,00/i)).toBeInTheDocument();
+  });
+
+  it("Deve compartilhar o PaperProps visual com modal de detalhes", () => {
+    expect(painelAderidoStyles.detalheDialogPaper).toMatchObject({
+      bgcolor: "#F6F8F7",
+      overflow: "hidden",
+    });
   });
 
   it("Deve mostrar erro de validação sem exigir comprovante", async () => {

@@ -28,6 +28,8 @@ import { CheckoutDadosCompradorForm } from "./components/checkout/CheckoutDadosC
 import { CheckoutPixBox } from "./components/checkout/CheckoutPixBox";
 import { CheckoutResumoVenda } from "./components/checkout/CheckoutResumoVenda";
 import { checkoutPixService } from "./services/checkoutPixService";
+import { painelAderidoStyles } from "./styles/painelAderidoStyles";
+import { aderidosColors, aderidosMotion, reduceMotionSx } from "./tokens";
 import { CheckoutPixCobranca } from "./types/checkoutPix";
 
 interface CheckoutModalProps {
@@ -208,30 +210,7 @@ export function CheckoutModal({
         fullWidth
         maxWidth="sm"
         PaperProps={{
-          sx: {
-            borderRadius: {
-              xs: "16px 16px 0 0",
-              sm: 2.25,
-            },
-            m: {
-              xs: 0,
-              sm: 2,
-            },
-            position: {
-              xs: "fixed",
-              sm: "relative",
-            },
-            bottom: {
-              xs: 0,
-              sm: "auto",
-            },
-            width: {
-              xs: "100%",
-              sm: "auto",
-            },
-            bgcolor: "#FBFCFC",
-            overflow: "hidden",
-          },
+          sx: painelAderidoStyles.detalheDialogPaper,
         }}
       >
         <Box
@@ -250,7 +229,7 @@ export function CheckoutModal({
               component="h2"
               sx={{
                 fontWeight: 950,
-                color: "#021B16",
+                color: aderidosColors.greenBlack,
                 fontSize: "1.22rem",
                 lineHeight: 1.15,
               }}
@@ -260,7 +239,7 @@ export function CheckoutModal({
 
             <Typography
               sx={{
-                color: "#526760",
+                color: aderidosColors.textMuted,
                 fontSize: "0.86rem",
                 mt: 0.35,
               }}
@@ -275,6 +254,10 @@ export function CheckoutModal({
             aria-label="Fechar modal de venda"
             sx={{
               bgcolor: "#F1F4F3",
+              "&:focus-visible": {
+                outline: "4px solid rgba(6, 61, 49, 0.24)",
+                outlineOffset: "2px",
+              },
               "&:hover": {
                 bgcolor: "#E8EEEC",
               },
@@ -284,9 +267,9 @@ export function CheckoutModal({
           </IconButton>
         </Box>
 
-        <DialogContent sx={{ p: 2.25 }}>
+        <DialogContent sx={{ p: 3 }}>
           <Box component="form" onSubmit={handleSubmit(gerarCobrancaPix)}>
-            <Stack spacing={2}>
+            <Stack spacing={2.25}>
               <Box
                 sx={{
                   p: 1.5,
@@ -304,7 +287,7 @@ export function CheckoutModal({
                 >
                   <Typography
                     sx={{
-                      color: "#063D31",
+                  color: aderidosColors.greenDark,
                       fontWeight: 900,
                       fontSize: "0.82rem",
                     }}
@@ -314,7 +297,7 @@ export function CheckoutModal({
 
                   <Typography
                     sx={{
-                      color: "#526760",
+                    color: aderidosColors.textMuted,
                       fontWeight: 850,
                       fontSize: "0.78rem",
                     }}
@@ -330,10 +313,13 @@ export function CheckoutModal({
                   sx={{
                     height: 8,
                     borderRadius: 2,
-                    bgcolor: "#EAF3EF",
+                    bgcolor: aderidosColors.greenSoft,
                     "& .MuiLinearProgress-bar": {
                       borderRadius: 2,
-                      bgcolor: "#063D31",
+                      background:
+                        "linear-gradient(90deg, #064532 0%, #0B5136 100%)",
+                      transition: `width ${aderidosMotion.duration.progress} ${aderidosMotion.easing.easeInOut}`,
+                      ...reduceMotionSx,
                     },
                   }}
                 />
@@ -347,14 +333,14 @@ export function CheckoutModal({
                   {cobrancaPix && (
                     <CheckCircleIcon
                       fontSize="small"
-                      sx={{ color: "#063D31" }}
+                      sx={{ color: aderidosColors.greenDark }}
                     />
                   )}
 
                   <Box>
                     <Typography
                       sx={{
-                        color: "#021B16",
+                        color: aderidosColors.greenBlack,
                         fontWeight: 900,
                         lineHeight: 1.2,
                       }}
@@ -363,7 +349,7 @@ export function CheckoutModal({
                     </Typography>
                     <Typography
                       sx={{
-                        color: "#526760",
+                        color: aderidosColors.textMuted,
                         fontSize: "0.84rem",
                         mt: 0.25,
                       }}
@@ -403,8 +389,14 @@ export function CheckoutModal({
                   textTransform: "none",
                   fontWeight: 950,
                   fontSize: "1rem",
-                  bgcolor: "#063D31",
+                  bgcolor: aderidosColors.greenDark,
                   boxShadow: "0 12px 22px rgba(6, 61, 49, 0.22)",
+                  transition: `background-color ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}, box-shadow ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}`,
+                  ...reduceMotionSx,
+                  "&:focus-visible": {
+                    outline: "4px solid rgba(6, 61, 49, 0.24)",
+                    outlineOffset: "2px",
+                  },
                   "&:hover": {
                     bgcolor: "#052F26",
                     boxShadow: "0 14px 26px rgba(6, 61, 49, 0.28)",

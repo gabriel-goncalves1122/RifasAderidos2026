@@ -3,9 +3,10 @@
 // ============================================================================
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Button } from "@mui/material";
 
 import { painelAderidoStyles } from "../../styles/painelAderidoStyles";
+import { ResumoCard } from "./ResumoCard";
 
 interface CardPendenciasAderidoProps {
   totalPendencias: number;
@@ -22,55 +23,31 @@ export function CardPendenciasAderido({
     totalPendencias === 1
       ? "1 correção aberta"
       : `${totalPendencias} correções abertas`;
+  const acaoPendencia = possuiPendencias ? (
+    <Button
+      variant="outlined"
+      size="small"
+      onClick={onAbrirRecusadas}
+      sx={painelAderidoStyles.pendenciaBotao}
+    >
+      Revisar
+    </Button>
+  ) : undefined;
 
   return (
-    <Box sx={painelAderidoStyles.resumoCompactoItem}>
-      <Stack sx={painelAderidoStyles.resumoMetaLinha}>
-        <Box
-          sx={{
-            ...painelAderidoStyles.resumoIconBox,
-            ...(possuiPendencias
-              ? painelAderidoStyles.resumoIconBoxAlerta
-              : painelAderidoStyles.resumoIconBoxOk),
-          }}
-        >
-          {possuiPendencias ? (
-            <ErrorOutlineIcon fontSize="small" />
-          ) : (
-            <TaskAltIcon fontSize="small" />
-          )}
-        </Box>
-
-        <Typography sx={painelAderidoStyles.resumoCardLabel}>
-          Pendências
-        </Typography>
-      </Stack>
-
-      <Box sx={painelAderidoStyles.resumoConteudoLinha}>
-        <Typography
-          sx={{
-            ...painelAderidoStyles.resumoCardValor,
-            color: possuiPendencias ? "#6B4A00" : "#063D31",
-          }}
-        >
-          {possuiPendencias ? totalPendencias : 0}
-        </Typography>
-
-        <Typography sx={painelAderidoStyles.resumoCardDescricao}>
-          {possuiPendencias ? textoPendencia : "Tudo certo agora."}
-        </Typography>
-
-        {possuiPendencias && (
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={onAbrirRecusadas}
-            sx={painelAderidoStyles.pendenciaBotao}
-          >
-            Revisar
-          </Button>
-        )}
-      </Box>
-    </Box>
+    <ResumoCard
+      icon={
+        possuiPendencias ? (
+          <ErrorOutlineIcon fontSize="small" />
+        ) : (
+          <TaskAltIcon fontSize="small" />
+        )
+      }
+      label="Pendências"
+      valor={possuiPendencias ? totalPendencias : 0}
+      descricao={possuiPendencias ? textoPendencia : "Tudo certo agora."}
+      acao={acaoPendencia}
+      variant={possuiPendencias ? "alert" : "success"}
+    />
   );
 }
