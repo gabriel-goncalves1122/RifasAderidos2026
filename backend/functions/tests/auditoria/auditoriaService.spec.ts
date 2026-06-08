@@ -1,7 +1,7 @@
-import { AuditoriaService } from "../../src/modules/auditoria/auditoriaService";
+import { AuditoriaService } from "../../src/modules/tesouraria/legacy/auditoria/auditoriaService";
 import { NotificacoesService } from "../../src/modules/notificacoes/notificacoesService";
 import { enviarEmailRecibo } from "../../src/modules/rifas/emailService";
-import { OcrService } from "../../src/modules/auditoria/ocrLogic/OcrService"; // Importamos o novo serviço
+import { OcrService } from "../../src/modules/tesouraria/legacy/auditoria/ocrLogic/OcrService";
 import {
   jest,
   describe,
@@ -26,7 +26,7 @@ jest.mock("../../src/modules/rifas/emailService", () => ({
 }));
 
 // 2. MOCK DO OCR: Evita carregar o Tesseract e o pdf-parse no Jest, resolvendo o erro do DOMMatrix!
-jest.mock("../../src/modules/auditoria/ocrLogic/OcrService", () => ({
+jest.mock("../../src/modules/tesouraria/legacy/auditoria/ocrLogic/OcrService", () => ({
   OcrService: {
     processarComprovante: jest.fn(),
   },

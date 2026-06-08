@@ -52,8 +52,8 @@ export const enviarEmailRecibo = async (
   nomeComprador: string,
   numerosRifas: string[],
   status: "pendente" | "aprovado",
-) => {
-  if (!emailDestino || numerosRifas.length === 0) return;
+): Promise<boolean> => {
+  if (!emailDestino || numerosRifas.length === 0) return false;
 
   const primeiroNome = nomeComprador.split(" ")[0];
 
@@ -87,6 +87,8 @@ export const enviarEmailRecibo = async (
         subject: assunto,
         html: html,
       });
+
+      return true;
     } else if (status === "aprovado") {
       const assunto = "🎉 Seus bilhetes tão na mão! Pagamento Aprovado";
       const mensagem =
@@ -117,8 +119,14 @@ export const enviarEmailRecibo = async (
         subject: assunto,
         html: html,
       });
+
+      return true;
     }
   } catch (error) {
     console.error("Erro ao enviar e-mail:", error);
+
+    return false;
   }
+
+  return false;
 };

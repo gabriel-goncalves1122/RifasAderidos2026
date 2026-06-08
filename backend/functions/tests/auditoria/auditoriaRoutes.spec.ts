@@ -1,11 +1,10 @@
 import request from "supertest";
 import express from "express";
-// Ajuste o caminho de importação consoante a sua estrutura de pastas
-import auditoriaRoutes from "../../src/modules/auditoria/auditoriaRoutes";
+import auditoriaRoutes from "../../src/modules/tesouraria/legacy/auditoria/auditoriaRoutes";
 import { jest, describe, beforeAll, it, expect } from "@jest/globals";
 
 // 1. MOCK DO CONTROLLER
-jest.mock("../../src/modules/auditoria/auditoriaController", () => ({
+jest.mock("../../src/modules/tesouraria/legacy/auditoria/auditoriaController", () => ({
   auditoriaController: {
     listarPendentes: (req: any, res: any) =>
       res.status(200).json({ acao: "listar_pendentes" }),
