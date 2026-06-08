@@ -13,32 +13,45 @@ describe("Componente: PixTransacoesTable", () => {
       screen.getByRole("columnheader", { name: "Pagador" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("columnheader", { name: "Aderido" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Rifas" })).toBeInTheDocument();
+      screen.queryByRole("columnheader", { name: "Aderido" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Rifas" })).not.toBeInTheDocument();
     expect(
-      screen.getByRole("columnheader", { name: "Situação" }),
+      screen.getByRole("columnheader", { name: "Valor / Status" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Valor" })).toBeInTheDocument();
   });
 
-  it("Deve exibir dados relevantes das últimas transações", () => {
+  it("Deve exibir dados resumidos e abrir detalhes da transação", () => {
     render(<PixTransacoesTable transacoes={pixTransacoesMock} />);
 
     expect(screen.getByText("Engenheiro Rico")).toBeInTheDocument();
-    expect(screen.getByText("Gabriel Sampaio")).toBeInTheDocument();
-
-    expect(screen.getByText("010, 011, 012")).toBeInTheDocument();
 
     expect(screen.getAllByText("Aguardando validação").length).toBeGreaterThan(0);
     expect(screen.getByText(/R\$\s*30,00/)).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /abrir detalhes da transação pix engenheiro rico/i,
+      }),
+    );
+
+    expect(screen.getByText("Detalhes da transação Pix")).toBeInTheDocument();
+    expect(screen.getByText("Gabriel Sampaio")).toBeInTheDocument();
+    expect(screen.getByText("010, 011, 012")).toBeInTheDocument();
   });
 
-  it("Deve mostrar transação sem vínculo local", () => {
+  it("Deve mostrar transação sem vínculo local nos detalhes", () => {
     render(<PixTransacoesTable transacoes={pixTransacoesMock} />);
 
     expect(screen.getByText("Pagador Não Identificado")).toBeInTheDocument();
-    expect(screen.getByText("Sem aderido")).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /abrir detalhes da transação pix pagador não identificado/i,
+      }),
+    );
+
+    expect(screen.getByText("Não vinculado")).toBeInTheDocument();
     expect(screen.getByText("Sem rifas")).toBeInTheDocument();
   });
 

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { PixConciliacaoTab } from "@/features/tesouraria/components/pix/tabs/PixConciliacaoTab";
@@ -18,6 +18,13 @@ describe("Aba: PixConciliacaoTab", () => {
     render(<PixConciliacaoTab transacoes={pixTransacoesMock} />);
 
     expect(screen.getByText("Pagador Não Identificado")).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /abrir detalhes da transação pix pagador não identificado/i,
+      }),
+    );
+
     expect(screen.getByText("Sem rifas")).toBeInTheDocument();
   });
 });
