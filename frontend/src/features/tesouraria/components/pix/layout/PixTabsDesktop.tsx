@@ -1,6 +1,7 @@
-import { Box, Tab, Tabs } from "@mui/material";
+import { Box, Tab, Tabs, Typography } from "@mui/material";
 
 import { ABAS_PIX } from "./pixTabsConfig";
+import { PixTabTooltip } from "./PixTabTooltip";
 import { PixTabsProps } from "./pixTabsTypes";
 
 export function PixTabsDesktop({
@@ -54,7 +55,17 @@ export function PixTabsDesktop({
             value={aba.value}
             icon={aba.icon}
             iconPosition="start"
-            label={aba.label}
+            label={
+              <Box component="span" sx={{ display: "inline-flex", alignItems: "center" }}>
+                <Typography
+                  component="span"
+                  sx={{ fontSize: "inherit", fontWeight: "inherit" }}
+                >
+                  {aba.label}
+                </Typography>
+                <PixTabTooltip descricao={aba.descricao} />
+              </Box>
+            }
             data-testid={`pix-tab-${aba.value}`}
           />
         ))}
