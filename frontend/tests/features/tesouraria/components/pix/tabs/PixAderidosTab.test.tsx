@@ -25,7 +25,11 @@ describe("Aba: PixAderidosTab", () => {
   it("Deve abrir bottom sheet com detalhes de arrecadação ao tocar no card", () => {
     render(<PixAderidosTab transacoes={pixTransacoesMock} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Gabriel Sampaio/i }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /abrir detalhes de arrecadação de Gabriel Sampaio/i,
+      }),
+    );
 
     expect(screen.getByText("Transações relacionadas")).toBeInTheDocument();
     expect(screen.getByText("Engenheiro Rico")).toBeInTheDocument();
