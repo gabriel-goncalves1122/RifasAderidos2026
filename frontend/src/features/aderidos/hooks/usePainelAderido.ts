@@ -2,18 +2,10 @@
 // ARQUIVO: frontend/src/features/aderidos/hooks/usePainelAderido.ts
 // ============================================================================
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { useNotificacoes } from "@/shared/hooks/useNotificacoes";
-import { useAuthController } from "@/features/auth/hooks/useAuthController";
-import { useRifas } from "@/features/rifas/hooks/useRifas";
 
 import {
   DadosCorrecaoRecusa,
   FiltroRifasAderido,
-  GrupoRifasRecusadas,
-  NotificacaoAderido,
-  RifaAderido,
   VisaoPainelAderido,
 } from "../types/painelAderido";
 
@@ -24,121 +16,56 @@ import {
   filtrarRifasPorStatus,
 } from "../utils/calcularResumoRifas";
 import { obterPrimeiroNomeAderido } from "../utils/obterPrimeiroNomeAderido";
-
-const QUERY_STALE_TIME = 60_000;
+import { useCheckoutFlow } from "./useCheckoutFlow";
+import { useModalStack } from "./useModalStack";
+import { useRifasData } from "./useRifasData";
+import { useRifasSelection } from "./useRifasSelection";
 
 export function usePainelAderido() {
-  const { buscarMinhasRifas, corrigirDadosRifasRecusadas } = useRifas();
-  const { buscarNotificacoes, marcarNotificacoesLidas } = useNotificacoes();
-  const { usuarioAtual, loading: authCarregando } = useAuthController();
-  const queryClient = useQueryClient();
-
   const [visaoAtual, setVisaoAtual] = useState<VisaoPainelAderido>("geral");
   const [filtro, setFiltro] = useState<FiltroRifasAderido>("todas");
-  const [selecionadas, setSelecionadas] = useState<string[]>([]);
-
-  const [modalCheckoutAberto, setModalCheckoutAberto] = useState(false);
-  const [drawerNotificacoesAberto, setDrawerNotificacoesAberto] =
-    useState(false);
-  const [modalCorrecaoAberto, setModalCorrecaoAberto] = useState(false);
-
-  const [grupoParaCorrigir, setGrupoParaCorrigir] =
-    useState<GrupoRifasRecusadas | null>(null);
-  const [rifaParaDetalhes, setRifaParaDetalhes] = useState<RifaAderido | null>(
-    null,
-  );
-
-  const usuarioId = usuarioAtual?.uid;
-  const consultasAtivas = !authCarregando && Boolean(usuarioId);
-
-  const rifasQueryKey = useMemo(
-    () => ["aderidos", "minhas-rifas", usuarioId] as const,
-    [usuarioId],
-  );
-
-  const notificacoesQueryKey = useMemo(
-    () => ["aderidos", "notificacoes", usuarioId] as const,
-    [usuarioId],
-  );
-
-  const rifasQuery = useQuery({
-    queryKey: rifasQueryKey,
-    queryFn: async () => (await buscarMinhasRifas()) as RifaAderido[],
-    enabled: consultasAtivas,
-    staleTime: QUERY_STALE_TIME,
-    placeholderData: (dadosAnteriores) => dadosAnteriores ?? [],
+  const dadosPainel = useRifasData();
+  const selecao = useRifasSelection();
+  const modais = useModalStack();
+  const fecharCheckout = useCallback(() => {
+    modais.setModalCheckoutAberto(false);
+  }, [modais.setModalCheckoutAberto]);
+  const { finalizarVendaComSucesso } = useCheckoutFlow({
+    fecharCheckout,
+    limparSelecao: selecao.limparSelecao,
+    invalidarDadosPainel: dadosPainel.invalidarDadosPainel,
   });
-
-  const notificacoesQuery = useQuery({
-    queryKey: notificacoesQueryKey,
-    queryFn: async () => (await buscarNotificacoes()) as NotificacaoAderido[],
-    enabled: consultasAtivas,
-    staleTime: QUERY_STALE_TIME,
-    placeholderData: (dadosAnteriores) => dadosAnteriores ?? [],
-  });
-
-  const minhasRifas = useMemo(
-    () => (usuarioId ? rifasQuery.data || [] : []),
-    [rifasQuery.data, usuarioId],
-  );
-
-  const notificacoes = useMemo(
-    () => (usuarioId ? notificacoesQuery.data || [] : []),
-    [notificacoesQuery.data, usuarioId],
-  );
 
   useEffect(() => {
-    if (!usuarioId) {
-      setSelecionadas([]);
+    if (!dadosPainel.usuarioId) {
+      selecao.limparSelecao();
       setVisaoAtual("geral");
-      setModalCheckoutAberto(false);
-      setDrawerNotificacoesAberto(false);
-      setModalCorrecaoAberto(false);
-      setGrupoParaCorrigir(null);
-      setRifaParaDetalhes(null);
+      modais.reset();
     }
-  }, [usuarioId]);
-
-  const invalidarDadosPainel = useCallback(async () => {
-    if (!usuarioId) return;
-
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: rifasQueryKey }),
-      queryClient.invalidateQueries({ queryKey: notificacoesQueryKey }),
-    ]);
-  }, [notificacoesQueryKey, queryClient, rifasQueryKey, usuarioId]);
-
-  const carregando =
-    authCarregando ||
-    Boolean(
-      usuarioId &&
-        (rifasQuery.isLoading || notificacoesQuery.isLoading) &&
-        minhasRifas.length === 0 &&
-        notificacoes.length === 0,
-    );
+  }, [dadosPainel.usuarioId, modais.reset, selecao.limparSelecao]);
 
   const rifasFiltradas = useMemo(
-    () => filtrarRifasPorStatus(minhasRifas, filtro),
-    [minhasRifas, filtro],
+    () => filtrarRifasPorStatus(dadosPainel.minhasRifas, filtro),
+    [dadosPainel.minhasRifas, filtro],
   );
 
   const gruposRecusados = useMemo(
-    () => agruparRifasRecusadas(minhasRifas),
-    [minhasRifas],
+    () => agruparRifasRecusadas(dadosPainel.minhasRifas),
+    [dadosPainel.minhasRifas],
   );
 
   const valorArrecadado = useMemo(
-    () => calcularValorArrecadado(minhasRifas),
-    [minhasRifas],
+    () => calcularValorArrecadado(dadosPainel.minhasRifas),
+    [dadosPainel.minhasRifas],
   );
 
   const notificacoesNaoLidas = useMemo(
-    () => contarNotificacoesNaoLidas(notificacoes),
-    [notificacoes],
+    () => contarNotificacoesNaoLidas(dadosPainel.notificacoes),
+    [dadosPainel.notificacoes],
   );
 
   const primeiroNome = useMemo(() => {
-    const usuarioComNome = usuarioAtual as
+    const usuarioComNome = dadosPainel.usuarioAtual as
       | {
           nome?: string | null;
           displayName?: string | null;
@@ -147,7 +74,7 @@ export function usePainelAderido() {
       | null
       | undefined;
 
-    const primeiraRifaComVendedor = minhasRifas.find((rifa) =>
+    const primeiraRifaComVendedor = dadosPainel.minhasRifas.find((rifa) =>
       Boolean(rifa.vendedor_nome?.trim()),
     );
 
@@ -156,117 +83,78 @@ export function usePainelAderido() {
       displayName: usuarioComNome?.displayName,
       email: usuarioComNome?.email || primeiraRifaComVendedor?.vendedor_email,
     });
-  }, [usuarioAtual, minhasRifas]);
+  }, [dadosPainel.usuarioAtual, dadosPainel.minhasRifas]);
 
   const abrirSidebarNotificacoes = useCallback(async () => {
-    setDrawerNotificacoesAberto(true);
+    modais.setDrawerNotificacoesAberto(true);
 
-    const naoLidas = notificacoes
+    const naoLidas = dadosPainel.notificacoes
       .filter((notificacao) => !notificacao.lida)
       .map((notificacao) => notificacao.id);
 
-    if (naoLidas.length === 0) return;
-
-    queryClient.setQueryData<NotificacaoAderido[]>(
-      notificacoesQueryKey,
-      (notificacoesAtuais = notificacoes) =>
-        notificacoesAtuais.map((notificacao) => ({
-          ...notificacao,
-          lida: true,
-        })),
-    );
-
-    try {
-      await marcarNotificacoesLidas(naoLidas);
-    } catch {
-      await queryClient.invalidateQueries({ queryKey: notificacoesQueryKey });
-    }
+    await dadosPainel.marcarNotificacoesLidasOtimista(naoLidas);
   }, [
-    marcarNotificacoesLidas,
-    notificacoes,
-    notificacoesQueryKey,
-    queryClient,
+    dadosPainel.marcarNotificacoesLidasOtimista,
+    dadosPainel.notificacoes,
+    modais.setDrawerNotificacoesAberto,
   ]);
-
-  const alternarSelecaoRifa = useCallback((numero: string, status: string) => {
-    if (status !== "disponivel") return;
-
-    setSelecionadas((rifasAtuais) =>
-      rifasAtuais.includes(numero)
-        ? rifasAtuais.filter((rifa) => rifa !== numero)
-        : [...rifasAtuais, numero],
-    );
-  }, []);
-
-  const finalizarVendaComSucesso = useCallback(async () => {
-    setModalCheckoutAberto(false);
-    setSelecionadas([]);
-
-    await invalidarDadosPainel();
-  }, [invalidarDadosPainel]);
 
   const corrigirDadosRecusados = useCallback(
     async (numeros: string[], dadosAtualizados: DadosCorrecaoRecusa) => {
-      const sucesso = await corrigirDadosRifasRecusadas(
+      const sucesso = await dadosPainel.corrigirDadosRecusados(
         numeros,
         dadosAtualizados,
       );
 
       if (!sucesso) return false;
 
-      await invalidarDadosPainel();
+      await dadosPainel.invalidarDadosPainel();
 
       setVisaoAtual("geral");
-      setModalCorrecaoAberto(false);
-      setGrupoParaCorrigir(null);
+      modais.setModalCorrecaoAberto(false);
+      modais.setGrupoParaCorrigir(null);
 
       return true;
     },
-    [corrigirDadosRifasRecusadas, invalidarDadosPainel],
+    [
+      dadosPainel.corrigirDadosRecusados,
+      dadosPainel.invalidarDadosPainel,
+      modais.setGrupoParaCorrigir,
+      modais.setModalCorrecaoAberto,
+    ],
   );
-
-  const setGrupoParaCorrigirSeguro = useCallback(
-    (grupo: GrupoRifasRecusadas | null) => {
-      setGrupoParaCorrigir(grupo);
-    },
-    [],
-  );
-
-  const setRifaParaDetalhesSeguro = useCallback((rifa: RifaAderido | null) => {
-    setRifaParaDetalhes(rifa);
-  }, []);
 
   return {
-    carregando,
+    carregando: dadosPainel.carregando,
     visaoAtual,
     filtro,
-    selecionadas,
+    selecionadas: selecao.selecionadas,
 
-    minhasRifas,
+    minhasRifas: dadosPainel.minhasRifas,
     rifasFiltradas,
     gruposRecusados,
-    notificacoes,
+    notificacoes: dadosPainel.notificacoes,
 
     primeiroNome,
     valorArrecadado,
     notificacoesNaoLidas,
 
-    modalCheckoutAberto,
-    drawerNotificacoesAberto,
-    modalCorrecaoAberto,
-    grupoParaCorrigir,
-    rifaParaDetalhes,
+    modalCheckoutAberto: modais.modalCheckoutAberto,
+    drawerNotificacoesAberto: modais.drawerNotificacoesAberto,
+    modalCorrecaoAberto: modais.modalCorrecaoAberto,
+    grupoParaCorrigir: modais.grupoParaCorrigir,
+    rifaParaDetalhes: modais.rifaParaDetalhes,
 
     setFiltro,
     setVisaoAtual,
-    setModalCheckoutAberto,
-    setDrawerNotificacoesAberto,
-    setModalCorrecaoAberto,
-    setGrupoParaCorrigir: setGrupoParaCorrigirSeguro,
-    setRifaParaDetalhes: setRifaParaDetalhesSeguro,
+    setModalCheckoutAberto: modais.setModalCheckoutAberto,
+    setDrawerNotificacoesAberto: modais.setDrawerNotificacoesAberto,
+    setModalCorrecaoAberto: modais.setModalCorrecaoAberto,
+    setGrupoParaCorrigir: modais.setGrupoParaCorrigir,
+    setRifaParaDetalhes: modais.setRifaParaDetalhes,
 
     abrirSidebarNotificacoes,
-    alternarSelecaoRifa,
+    alternarSelecaoRifa: selecao.alternarSelecaoRifa,
     finalizarVendaComSucesso,
     corrigirDadosRecusados,
   };
