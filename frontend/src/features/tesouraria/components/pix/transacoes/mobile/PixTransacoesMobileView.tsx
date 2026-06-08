@@ -6,6 +6,7 @@ import {
   PixTransacao,
 } from "../../../../types/pixTransacoes";
 import { PixEmptyState } from "../shared/PixEmptyState";
+import { PixStatusLegenda } from "../shared/PixStatusLegenda";
 import { PixTransacoesFiltros } from "../shared/PixTransacoesFiltros";
 import { PixTransacaoCard } from "./PixTransacaoCard";
 
@@ -28,17 +29,7 @@ export function PixTransacoesMobileView({
 }: PixTransacoesMobileViewProps) {
   return (
     <Stack spacing={2}>
-      <Box
-        sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 5,
-          py: 0.75,
-          bgcolor: "background.default",
-        }}
-      >
-        <PixTransacoesFiltros filtros={filtros} onChangeFiltros={onChangeFiltros} />
-      </Box>
+      <PixTransacoesFiltros filtros={filtros} onChangeFiltros={onChangeFiltros} />
 
       <Box>
         <Typography
@@ -49,13 +40,15 @@ export function PixTransacoesMobileView({
             mb: 0.25,
           }}
         >
-          Auditoria Pix
+          Validar transações
         </Typography>
 
         <Typography sx={{ color: "#526760", fontSize: "0.84rem" }}>
           {transacoes.length} transação(ões) encontradas
         </Typography>
       </Box>
+
+      <PixStatusLegenda colapsavel />
 
       {transacoes.length === 0 ? (
         <PixEmptyState />

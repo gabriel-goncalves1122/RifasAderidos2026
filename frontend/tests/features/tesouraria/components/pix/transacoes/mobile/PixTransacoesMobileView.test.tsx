@@ -18,7 +18,8 @@ describe("Componente: PixTransacoesMobileView", () => {
 
     expect(screen.queryByText("Recebido")).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText("Buscar Pix")).toBeInTheDocument();
-    expect(screen.getByText("Auditoria Pix")).toBeInTheDocument();
+    expect(screen.getByText("Validar transações")).toBeInTheDocument();
+    expect(screen.getByText("Legenda de status")).toBeInTheDocument();
 
     expect(screen.getByText("Engenheiro Rico")).toBeInTheDocument();
     expect(screen.getByText("Pagador Não Identificado")).toBeInTheDocument();
