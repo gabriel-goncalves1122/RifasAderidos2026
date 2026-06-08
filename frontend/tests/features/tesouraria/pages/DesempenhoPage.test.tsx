@@ -76,8 +76,9 @@ describe("Página <DesempenhoPage />", () => {
 
     expect(screen.getByText("Receita validada")).toBeInTheDocument();
     expect(screen.getByText(/R\$\s*500,00/i)).toBeInTheDocument();
-    expect(screen.getByText(/50 bilhetes/i)).toBeInTheDocument();
+    expect(screen.getByText(/50 rifas/i)).toBeInTheDocument();
     expect(screen.getByText(/10 alunos/i)).toBeInTheDocument();
+    expect(screen.getByText("Meta atingida")).toBeInTheDocument();
   });
 
   it("deve renderizar carregamento enquanto busca dados", () => {
