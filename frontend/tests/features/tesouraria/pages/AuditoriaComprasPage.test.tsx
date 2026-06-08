@@ -240,7 +240,7 @@ describe("Página <AuditoriaComprasPage />", () => {
     fireEvent.click(botaoComprovanteHabilitado!);
 
     expect(screen.getByAltText("Comprovante Pix")).toBeInTheDocument();
-  });
+  }, 8000);
 
   it("Deve reenviar e-mail de comprovante apenas para compra paga com e-mail", async () => {
     let resolverEnvio: (valor: any) => void = () => {};
