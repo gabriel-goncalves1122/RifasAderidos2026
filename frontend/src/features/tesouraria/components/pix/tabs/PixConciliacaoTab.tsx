@@ -23,7 +23,7 @@ export function PixConciliacaoTab({
         sx={{
           p: 2.5,
           mb: 2,
-          borderRadius: 3,
+          borderRadius: 2.25,
           bgcolor: "#FFFFFF",
           border: "1px solid rgba(2, 27, 22, 0.10)",
         }}

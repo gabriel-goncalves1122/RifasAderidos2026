@@ -12,7 +12,7 @@ export function PixTabsDesktop({
       sx={{
         mb: 3,
         bgcolor: "#FFFFFF",
-        borderRadius: 3,
+        borderRadius: 2.25,
         border: "1px solid rgba(2, 27, 22, 0.10)",
         px: 1,
       }}
@@ -27,7 +27,7 @@ export function PixTabsDesktop({
           minHeight: 54,
           "& .MuiTabs-indicator": {
             height: 3,
-            borderRadius: 3,
+            borderRadius: 2,
             bgcolor: "#063D31",
           },
           "& .MuiTab-root": {
@@ -55,6 +55,7 @@ export function PixTabsDesktop({
             icon={aba.icon}
             iconPosition="start"
             label={aba.label}
+            data-testid={`pix-tab-${aba.value}`}
           />
         ))}
       </Tabs>

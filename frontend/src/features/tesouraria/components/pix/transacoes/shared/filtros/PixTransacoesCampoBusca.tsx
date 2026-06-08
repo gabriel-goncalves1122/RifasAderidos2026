@@ -22,7 +22,7 @@ export function PixTransacoesCampoBusca({ filtros, onChangeFiltros }: PixTransac
       }}
       sx={{
         "& .MuiOutlinedInput-root": {
-          borderRadius: 2.5,
+          borderRadius: 2,
           bgcolor: "#F6F8F7",
         },
       }}

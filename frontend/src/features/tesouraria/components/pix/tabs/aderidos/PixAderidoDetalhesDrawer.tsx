@@ -26,8 +26,8 @@ export function PixAderidoDetalhesDrawer({
       onClose={onClose}
       PaperProps={{
         sx: {
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
           p: 2,
           bgcolor: "#FFFFFF",
         },

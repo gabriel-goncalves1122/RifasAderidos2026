@@ -46,7 +46,7 @@ export function PixVisaoGeralKpisMobile({
           sx={{
             p: 1.35,
             minHeight: 104,
-            borderRadius: 2.5,
+            borderRadius: 2,
             bgcolor: kpi.destaque ? "#063D31" : "#FFFFFF",
             border: kpi.alerta
               ? "1px solid rgba(143, 104, 0, 0.28)"

@@ -44,6 +44,12 @@ const resumoApi: PixTransacoesResumo = {
   quantidadeAguardando: 1,
   quantidadeCanceladas: 0,
   quantidadeNaoIdentificadas: 0,
+  quantidadeAguardandoValidacao: 1,
+  quantidadeAceitas: 0,
+  quantidadeNegadas: 0,
+  quantidadeSemConfirmacaoBancaria: 0,
+  quantidadeComRifas: 0,
+  quantidadeSemVinculo: 1,
   ticketMedio: 33,
 };
 
@@ -203,5 +209,73 @@ describe("Hook: usePixTransacoes", () => {
     });
 
     expect(result.current.transacoesFiltradas).toEqual([transacoes[1]]);
+  });
+
+  it("Deve expor ação local para aceitar Pix confirmado pelo banco", async () => {
+    const transacoes = [
+      criarTransacao({ id: "tx_paga", statusPagamento: "PAID" }),
+      criarTransacao({
+        id: "tx_aguardando",
+        statusPagamento: "WAITING",
+        valorPago: 0,
+      }),
+    ];
+
+    vi.mocked(pixTransacoesService.buscarTransacoes).mockResolvedValueOnce(
+      transacoes,
+    );
+    vi.mocked(pixTransacoesService.buscarResumo).mockResolvedValueOnce(
+      RESUMO_PIX_TRANSACOES_VAZIO,
+    );
+
+    const { result } = renderHook(() => usePixTransacoes());
+
+    await waitFor(() => {
+      expect(result.current.carregando).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.aceitarPixTransacao("tx_paga");
+    });
+
+    await waitFor(() => {
+      expect(result.current.transacoes[0].statusValidacao).toBe("aceita");
+    });
+
+    expect(result.current.resumo.quantidadeAceitas).toBe(1);
+    expect(result.current.resumo.quantidadeAguardandoValidacao).toBe(0);
+    expect(result.current.resumo.quantidadeSemConfirmacaoBancaria).toBe(1);
+  });
+
+  it("Deve bloquear validação local quando Pix ainda não foi confirmado pelo banco", async () => {
+    const transacoes = [
+      criarTransacao({
+        id: "tx_aguardando",
+        statusPagamento: "WAITING",
+        valorPago: 0,
+      }),
+    ];
+
+    vi.mocked(pixTransacoesService.buscarTransacoes).mockResolvedValueOnce(
+      transacoes,
+    );
+    vi.mocked(pixTransacoesService.buscarResumo).mockResolvedValueOnce(
+      RESUMO_PIX_TRANSACOES_VAZIO,
+    );
+
+    const { result } = renderHook(() => usePixTransacoes());
+
+    await waitFor(() => {
+      expect(result.current.carregando).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.negarPixTransacao("tx_aguardando");
+    });
+
+    expect(result.current.transacoes[0].statusValidacao).toBeUndefined();
+    expect(result.current.erroValidacaoPixPorId.tx_aguardando).toMatch(
+      /confirmação bancária/i,
+    );
   });
 });

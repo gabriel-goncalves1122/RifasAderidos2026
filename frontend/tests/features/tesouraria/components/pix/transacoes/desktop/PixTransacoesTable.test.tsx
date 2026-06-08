@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import { PixTransacoesTable } from "@/features/tesouraria/components/pix/transacoes/desktop/PixTransacoesTable";
 import { pixTransacoesMock } from "@/features/tesouraria/mocks/pixTransacoesMock";
@@ -10,17 +10,14 @@ describe("Componente: PixTransacoesTable", () => {
 
     expect(screen.getByRole("columnheader", { name: "Data" })).toBeInTheDocument();
     expect(
-      screen.getByRole("columnheader", { name: "Pagador / Reference ID" }),
+      screen.getByRole("columnheader", { name: "Pagador" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("columnheader", { name: "Aderido" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Rifas" })).toBeInTheDocument();
     expect(
-      screen.getByRole("columnheader", { name: "Status Pix" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("columnheader", { name: "Conciliação" }),
+      screen.getByRole("columnheader", { name: "Situação" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Valor" })).toBeInTheDocument();
   });
@@ -30,14 +27,10 @@ describe("Componente: PixTransacoesTable", () => {
 
     expect(screen.getByText("Engenheiro Rico")).toBeInTheDocument();
     expect(screen.getByText("Gabriel Sampaio")).toBeInTheDocument();
-    expect(screen.getByText("venda-rifas-010-011-012")).toBeInTheDocument();
 
-    expect(screen.getByText("010")).toBeInTheDocument();
-    expect(screen.getByText("011")).toBeInTheDocument();
-    expect(screen.getByText("012")).toBeInTheDocument();
+    expect(screen.getByText("010, 011, 012")).toBeInTheDocument();
 
-    expect(screen.getAllByText("Pago").length).toBeGreaterThan(0);
-    expect(screen.getByText("Conciliada")).toBeInTheDocument();
+    expect(screen.getAllByText("Aguardando validação").length).toBeGreaterThan(0);
     expect(screen.getByText(/R\$\s*30,00/)).toBeInTheDocument();
   });
 
@@ -45,8 +38,27 @@ describe("Componente: PixTransacoesTable", () => {
     render(<PixTransacoesTable transacoes={pixTransacoesMock} />);
 
     expect(screen.getByText("Pagador Não Identificado")).toBeInTheDocument();
-    expect(screen.getByText("pix-sem-venda-local")).toBeInTheDocument();
     expect(screen.getByText("Sem aderido")).toBeInTheDocument();
-    expect(screen.getByText("Não identificada")).toBeInTheDocument();
+    expect(screen.getByText("Sem rifas")).toBeInTheDocument();
+  });
+
+  it("Deve habilitar ações de auditoria para Pix confirmado pelo banco", () => {
+    const onAceitarTransacao = vi.fn();
+    const onNegarTransacao = vi.fn();
+
+    render(
+      <PixTransacoesTable
+        transacoes={pixTransacoesMock}
+        onAceitarTransacao={onAceitarTransacao}
+        onNegarTransacao={onNegarTransacao}
+      />,
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: /aceitar/i })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /negar/i })[0]);
+
+    expect(onAceitarTransacao).toHaveBeenCalledWith("tx_001");
+    expect(onNegarTransacao).toHaveBeenCalledWith("tx_001");
+    expect(screen.queryByText("Aguardando banco")).not.toBeInTheDocument();
   });
 });

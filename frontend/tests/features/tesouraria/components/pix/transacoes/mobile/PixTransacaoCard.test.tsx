@@ -15,13 +15,11 @@ describe("Componente: PixTransacaoCard", () => {
     expect(screen.getByText("Engenheiro Rico")).toBeInTheDocument();
     expect(screen.getByText("Gabriel Sampaio")).toBeInTheDocument();
 
-    expect(screen.getByText("Rifa 010")).toBeInTheDocument();
-    expect(screen.getByText("Rifa 011")).toBeInTheDocument();
-    expect(screen.getByText("Rifa 012")).toBeInTheDocument();
+    expect(screen.getByText("Rifas 010, 011, 012")).toBeInTheDocument();
 
-    expect(screen.getByText("Pago")).toBeInTheDocument();
-    expect(screen.getByText("Conciliada")).toBeInTheDocument();
+    expect(screen.getByText("Aguardando validação")).toBeInTheDocument();
     expect(screen.getByText(/R\$\s*30,00/)).toBeInTheDocument();
+    expect(screen.queryByText("Reference ID")).not.toBeInTheDocument();
   });
 
   it("Deve mostrar fallback quando não houver aderido ou rifas", () => {
@@ -30,23 +28,33 @@ describe("Componente: PixTransacaoCard", () => {
     expect(screen.getByText("Pagador Não Identificado")).toBeInTheDocument();
     expect(screen.getByText("Sem aderido vinculado")).toBeInTheDocument();
     expect(screen.getByText("Sem rifas vinculadas")).toBeInTheDocument();
-    expect(screen.getByText("Não identificada")).toBeInTheDocument();
   });
 
-  it("Deve permitir clicar para copiar o reference ID sem quebrar a tela", () => {
-    const writeText = vi.fn().mockResolvedValue(undefined);
+  it("Deve permitir ações de validação no card mobile para Pix confirmado", () => {
+    const onAceitarTransacao = vi.fn();
+    const onNegarTransacao = vi.fn();
 
-    Object.defineProperty(navigator, "clipboard", {
-      configurable: true,
-      value: {
-        writeText,
-      },
-    });
+    render(
+      <PixTransacaoCard
+        transacao={pixTransacoesMock[0]}
+        onAceitarTransacao={onAceitarTransacao}
+        onNegarTransacao={onNegarTransacao}
+      />,
+    );
 
+    fireEvent.click(screen.getByRole("button", { name: /aceitar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /negar/i }));
+
+    expect(onAceitarTransacao).toHaveBeenCalledWith("tx_001");
+    expect(onNegarTransacao).toHaveBeenCalledWith("tx_001");
+  });
+
+  it("Não deve renderizar reference ID ou botão de cópia", () => {
     render(<PixTransacaoCard transacao={pixTransacoesMock[0]} />);
 
-    fireEvent.click(screen.getByLabelText("Copiar reference ID"));
-
-    expect(writeText).toHaveBeenCalledWith(pixTransacoesMock[0].referenceId);
+    expect(screen.queryByText("Reference ID")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /copiar reference id/i }),
+    ).not.toBeInTheDocument();
   });
 });

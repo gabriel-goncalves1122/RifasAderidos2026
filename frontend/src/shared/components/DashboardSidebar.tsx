@@ -85,6 +85,7 @@ export function DashboardSidebar({
           <ListItem disablePadding>
             <ListItemButton
               selected={contextoAtual === "aderido"}
+              data-testid="dashboard-contexto-aderido"
               onClick={() => {
                 onMudarContexto("aderido");
                 onClose();
@@ -113,6 +114,7 @@ export function DashboardSidebar({
             <ListItem disablePadding>
               <ListItemButton
                 selected={contextoAtual === "secretaria"}
+                data-testid="dashboard-contexto-secretaria"
                 onClick={() => {
                   onMudarContexto("secretaria");
                   onClose();
@@ -143,6 +145,7 @@ export function DashboardSidebar({
             <ListItem disablePadding>
               <ListItemButton
                 selected={contextoAtual === "tesouraria"}
+                data-testid="dashboard-contexto-tesouraria"
                 onClick={() => {
                   onMudarContexto("tesouraria");
                   onClose();

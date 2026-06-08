@@ -8,6 +8,8 @@ interface AuditoriaComprasCardListProps {
   onVerComprovante: (compra: CompraAuditavel) => void;
   onEditar: (compra: CompraAuditavel) => void;
   onVerDetalhes: (compra: CompraAuditavel) => void;
+  onReenviarEmailComprovante: (compra: CompraAuditavel) => void;
+  reenviandoEmailComprovanteId?: string | null;
 }
 
 export function AuditoriaComprasCardList({
@@ -15,6 +17,8 @@ export function AuditoriaComprasCardList({
   onVerComprovante,
   onEditar,
   onVerDetalhes,
+  onReenviarEmailComprovante,
+  reenviandoEmailComprovanteId,
 }: AuditoriaComprasCardListProps) {
   return (
     <Stack spacing={1.5} sx={{ display: { xs: "flex", md: "none" } }}>
@@ -25,6 +29,11 @@ export function AuditoriaComprasCardList({
           onVerComprovante={onVerComprovante}
           onEditar={onEditar}
           onVerDetalhes={onVerDetalhes}
+          onReenviarEmailComprovante={onReenviarEmailComprovante}
+          reenviandoEmailComprovante={
+            Boolean(compra.comprador_id) &&
+            compra.comprador_id === reenviandoEmailComprovanteId
+          }
         />
       ))}
     </Stack>

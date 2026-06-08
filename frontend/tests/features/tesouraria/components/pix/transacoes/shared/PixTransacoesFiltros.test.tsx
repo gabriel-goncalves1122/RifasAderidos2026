@@ -39,19 +39,20 @@ describe("Componente: PixTransacoesFiltros", () => {
     vi.restoreAllMocks();
   });
 
-  it("Deve renderizar somente os filtros essenciais para Pix síncrono", () => {
+  it("Deve renderizar os filtros essenciais para auditoria Pix", () => {
     render(<PixTransacoesFiltros filtros={filtrosBase} onChangeFiltros={vi.fn()} />);
 
     expect(screen.getByPlaceholderText("Buscar Pix")).toBeInTheDocument();
 
     expect(screen.getByText("Todas")).toBeInTheDocument();
-    expect(screen.getByText("Pagas")).toBeInTheDocument();
-    expect(screen.getByText("Não vinculadas")).toBeInTheDocument();
-    expect(screen.getByText("Canceladas")).toBeInTheDocument();
+    expect(screen.getByText("Para validar")).toBeInTheDocument();
+    expect(screen.getByText("Com rifas")).toBeInTheDocument();
+    expect(screen.getByText("Sem vínculo")).toBeInTheDocument();
+    expect(screen.getByText("Pendentes do banco")).toBeInTheDocument();
 
-    expect(screen.queryByText("Autorizados")).not.toBeInTheDocument();
-    expect(screen.queryByText("Em análise")).not.toBeInTheDocument();
-    expect(screen.queryByText("Aguardando")).not.toBeInTheDocument();
+    expect(screen.queryByText("Aceitas")).not.toBeInTheDocument();
+    expect(screen.queryByText("Negadas")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sem confirmação bancária")).not.toBeInTheDocument();
   });
 
   it("Deve atualizar busca ao digitar no campo", () => {
@@ -71,18 +72,18 @@ describe("Componente: PixTransacoesFiltros", () => {
     });
   });
 
-  it("Deve alterar filtro rápido para Pagas", () => {
+  it("Deve alterar filtro rápido para para validar", () => {
     const onChangeFiltros = vi.fn();
 
     render(
       <PixTransacoesFiltros filtros={filtrosBase} onChangeFiltros={onChangeFiltros} />,
     );
 
-    fireEvent.click(screen.getByText("Pagas"));
+    fireEvent.click(screen.getByText("Para validar"));
 
     expect(onChangeFiltros).toHaveBeenCalledWith({
       ...filtrosBase,
-      status: "pagas",
+      status: "para_validar",
     });
   });
 
@@ -114,7 +115,7 @@ describe("Componente: PixTransacoesFiltros", () => {
 
     render(
       <PixTransacoesFiltros
-        filtros={{ status: "pagas", busca: "Gabriel" }}
+        filtros={{ status: "sem_vinculo", busca: "Gabriel" }}
         onChangeFiltros={onChangeFiltros}
       />,
     );

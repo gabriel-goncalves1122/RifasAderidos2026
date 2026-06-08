@@ -11,15 +11,18 @@ describe("Componente: PixTransacoesMobileView", () => {
         filtros={{ status: "todas", busca: "" }}
         transacoes={pixTransacoesMock}
         onChangeFiltros={vi.fn()}
+        onAceitarTransacao={vi.fn()}
+        onNegarTransacao={vi.fn()}
       />,
     );
 
     expect(screen.queryByText("Recebido")).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText("Buscar Pix")).toBeInTheDocument();
-    expect(screen.getByText("Últimas transações Pix")).toBeInTheDocument();
+    expect(screen.getByText("Auditoria Pix")).toBeInTheDocument();
 
     expect(screen.getByText("Engenheiro Rico")).toBeInTheDocument();
     expect(screen.getByText("Pagador Não Identificado")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /aceitar/i }).length).toBe(2);
   });
 
   it("Deve renderizar empty state quando não houver transações", () => {
@@ -28,6 +31,8 @@ describe("Componente: PixTransacoesMobileView", () => {
         filtros={{ status: "todas", busca: "" }}
         transacoes={[]}
         onChangeFiltros={vi.fn()}
+        onAceitarTransacao={vi.fn()}
+        onNegarTransacao={vi.fn()}
       />,
     );
 

@@ -1,4 +1,4 @@
-import { Box, CircularProgress } from "@mui/material";
+import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
 
 import { ModalImagemPix } from "@/shared/components/ModalImagemPix";
 
@@ -21,6 +21,10 @@ export function AuditoriaComprasPage() {
     compraSelecionada,
     compraEdicao,
     comprovanteUrl,
+    salvandoEdicao,
+    erroEdicao,
+    reenviandoEmailComprovanteId,
+    feedbackEmailComprovante,
     filtrosAtivos,
     possuiResultados,
     setFiltros,
@@ -32,6 +36,9 @@ export function AuditoriaComprasPage() {
     fecharDetalhes,
     abrirEdicao,
     fecharEdicao,
+    salvarEdicaoComprador,
+    reenviarEmailComprovante,
+    fecharFeedbackEmailComprovante,
   } = useAuditoriaComprasController();
 
   if (carregando) {
@@ -64,12 +71,16 @@ export function AuditoriaComprasPage() {
             onVerComprovante={abrirComprovante}
             onEditar={abrirEdicao}
             onVerDetalhes={abrirDetalhes}
+            onReenviarEmailComprovante={reenviarEmailComprovante}
+            reenviandoEmailComprovanteId={reenviandoEmailComprovanteId}
           />
           <AuditoriaComprasCardList
             compras={comprasFiltradas}
             onVerComprovante={abrirComprovante}
             onEditar={abrirEdicao}
             onVerDetalhes={abrirDetalhes}
+            onReenviarEmailComprovante={reenviarEmailComprovante}
+            reenviandoEmailComprovanteId={reenviandoEmailComprovanteId}
           />
         </>
       )}
@@ -80,9 +91,29 @@ export function AuditoriaComprasPage() {
       />
       <AuditoriaCompraEdicaoDialog
         compra={compraEdicao}
+        salvando={salvandoEdicao}
+        erro={erroEdicao}
         onClose={fecharEdicao}
+        onSalvar={salvarEdicaoComprador}
       />
       <ModalImagemPix url={comprovanteUrl} onClose={fecharComprovante} />
+      <Snackbar
+        open={Boolean(feedbackEmailComprovante)}
+        autoHideDuration={3600}
+        onClose={fecharFeedbackEmailComprovante}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        {feedbackEmailComprovante ? (
+          <Alert
+            severity={feedbackEmailComprovante.tipo}
+            variant="filled"
+            onClose={fecharFeedbackEmailComprovante}
+            sx={{ borderRadius: 2, fontWeight: 850 }}
+          >
+            {feedbackEmailComprovante.mensagem}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </Box>
   );
 }

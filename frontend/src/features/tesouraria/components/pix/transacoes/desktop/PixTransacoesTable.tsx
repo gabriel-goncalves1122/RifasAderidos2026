@@ -1,6 +1,4 @@
 import {
-  Box,
-  Chip,
   Paper,
   Table,
   TableBody,
@@ -10,26 +8,38 @@ import {
   Typography,
 } from "@mui/material";
 
-import { PixTransacao } from "../../../../types/pixTransacoes";
+import {
+  AcaoValidacaoPix,
+  PixTransacao,
+} from "../../../../types/pixTransacoes";
 import {
   formatarDataPix,
   formatarMoedaPix,
+  formatarRifasPix,
 } from "../../../../utils/pixTransacoesUtils";
-import {
-  StatusConciliacaoChip,
-  StatusPagamentoChip,
-} from "../shared/PixStatusChips";
+import { PixValidacaoActions } from "../shared/PixValidacaoActions";
+import { PixValidacaoChip } from "../shared/PixValidacaoChip";
 
 interface PixTransacoesTableProps {
   transacoes: PixTransacao[];
+  validandoPixPorId?: Record<string, AcaoValidacaoPix | undefined>;
+  onAceitarTransacao?: (transacaoId: string) => void | Promise<unknown>;
+  onNegarTransacao?: (transacaoId: string) => void | Promise<unknown>;
 }
 
-export function PixTransacoesTable({ transacoes }: PixTransacoesTableProps) {
+export function PixTransacoesTable({
+  transacoes,
+  validandoPixPorId = {},
+  onAceitarTransacao,
+  onNegarTransacao,
+}: PixTransacoesTableProps) {
+  const mostrarAcoes = Boolean(onAceitarTransacao || onNegarTransacao);
+
   return (
     <Paper
       elevation={0}
       sx={{
-        borderRadius: 3,
+        borderRadius: 2.25,
         overflow: "hidden",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         bgcolor: "#FFFFFF",
@@ -50,12 +60,12 @@ export function PixTransacoesTable({ transacoes }: PixTransacoesTableProps) {
             }}
           >
             <TableCell>Data</TableCell>
-            <TableCell>Pagador / Reference ID</TableCell>
+            <TableCell>Pagador</TableCell>
             <TableCell>Aderido</TableCell>
             <TableCell>Rifas</TableCell>
-            <TableCell>Status Pix</TableCell>
-            <TableCell>Conciliação</TableCell>
+            <TableCell>Situação</TableCell>
             <TableCell align="right">Valor</TableCell>
+            {mostrarAcoes && <TableCell align="right">Ações</TableCell>}
           </TableRow>
         </TableHead>
 
@@ -64,6 +74,7 @@ export function PixTransacoesTable({ transacoes }: PixTransacoesTableProps) {
             <TableRow
               key={transacao.id}
               hover
+              data-testid={`pix-transacao-${transacao.id}`}
               sx={{
                 "& td": {
                   borderColor: "rgba(2, 27, 22, 0.08)",
@@ -77,15 +88,9 @@ export function PixTransacoesTable({ transacoes }: PixTransacoesTableProps) {
               </TableCell>
 
               <TableCell>
-                <Box>
-                  <Typography sx={{ color: "#021B16", fontWeight: 850 }}>
-                    {transacao.compradorNome || "Pagador não informado"}
-                  </Typography>
-
-                  <Typography sx={{ color: "#526760", fontSize: "0.82rem" }}>
-                    {transacao.referenceId}
-                  </Typography>
-                </Box>
+                <Typography sx={{ color: "#021B16", fontWeight: 850 }}>
+                  {transacao.compradorNome || "Pagador não informado"}
+                </Typography>
               </TableCell>
 
               <TableCell>
@@ -103,37 +108,13 @@ export function PixTransacoesTable({ transacoes }: PixTransacoesTableProps) {
               </TableCell>
 
               <TableCell>
-                <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                  {transacao.rifas && transacao.rifas.length > 0 ? (
-                    transacao.rifas.map((rifa) => (
-                      <Chip
-                        key={rifa.numero}
-                        label={rifa.numero}
-                        size="small"
-                        sx={{
-                          height: 24,
-                          borderRadius: 1.5,
-                          bgcolor: "#EAF3EF",
-                          color: "#063D31",
-                          border: "1px solid rgba(6, 61, 49, 0.18)",
-                          fontWeight: 850,
-                        }}
-                      />
-                    ))
-                  ) : (
-                    <Typography sx={{ color: "#526760", fontSize: "0.82rem" }}>
-                      Sem rifas
-                    </Typography>
-                  )}
-                </Box>
+                <Typography sx={{ color: "#526760", fontSize: "0.82rem" }}>
+                  {formatarRifasPix(transacao)}
+                </Typography>
               </TableCell>
 
               <TableCell>
-                <StatusPagamentoChip status={transacao.statusPagamento} />
-              </TableCell>
-
-              <TableCell>
-                <StatusConciliacaoChip status={transacao.statusConciliacao} />
+                <PixValidacaoChip transacao={transacao} />
               </TableCell>
 
               <TableCell
@@ -150,6 +131,17 @@ export function PixTransacoesTable({ transacoes }: PixTransacoesTableProps) {
                     : transacao.valorBruto,
                 )}
               </TableCell>
+
+              {mostrarAcoes && (
+                <TableCell align="right">
+                  <PixValidacaoActions
+                    transacao={transacao}
+                    acaoEmAndamento={validandoPixPorId[transacao.id]}
+                    onAceitar={onAceitarTransacao}
+                    onNegar={onNegarTransacao}
+                  />
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

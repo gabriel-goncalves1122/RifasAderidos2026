@@ -12,7 +12,7 @@ describe("Componente: PixHeader", () => {
     expect(screen.getByText("Tesouraria")).toBeInTheDocument();
     expect(screen.getByText("Recebimentos Pix")).toBeInTheDocument();
     expect(
-      screen.getByText(/Acompanhe recebimentos, conciliação e aderidos/i),
+      screen.getByText(/Audite confirmações bancárias/i),
     ).toBeInTheDocument();
   });
 

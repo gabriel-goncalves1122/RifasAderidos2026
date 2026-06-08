@@ -14,6 +14,14 @@ export type StatusConciliacaoPix =
   | "divergente"
   | "cancelada";
 
+export type StatusValidacaoPix =
+  | "sem_confirmacao_bancaria"
+  | "pendente_validacao"
+  | "aceita"
+  | "negada";
+
+export type AcaoValidacaoPix = "aceitar" | "negar";
+
 export interface AderidoResumoTransacao {
   id?: string;
   nome: string;
@@ -41,6 +49,7 @@ export interface PixTransacao {
   metodo: "PIX";
   statusPagamento: StatusPagamentoPix;
   statusConciliacao: StatusConciliacaoPix;
+  statusValidacao?: StatusValidacaoPix;
 
   valorBruto: number;
   valorPago: number;
@@ -66,6 +75,9 @@ export interface PixTransacao {
   qrCodeImagemUrl?: string;
 
   observacao?: string;
+  validadoEm?: string | null;
+  validadoPor?: string | null;
+  motivoNegacao?: string | null;
 }
 
 export interface PixTransacoesResumo {
@@ -78,6 +90,12 @@ export interface PixTransacoesResumo {
   quantidadeAguardando: number;
   quantidadeCanceladas: number;
   quantidadeNaoIdentificadas: number;
+  quantidadeAguardandoValidacao: number;
+  quantidadeAceitas: number;
+  quantidadeNegadas: number;
+  quantidadeSemConfirmacaoBancaria: number;
+  quantidadeComRifas: number;
+  quantidadeSemVinculo: number;
 
   ticketMedio: number;
 }
@@ -91,9 +109,10 @@ export interface PixTransacoesSerieTemporal {
 
 export type FiltroRapidoTransacoesPix =
   | "todas"
-  | "pagas"
-  | "nao_vinculadas"
-  | "canceladas";
+  | "para_validar"
+  | "com_rifas"
+  | "sem_vinculo"
+  | "pendentes_banco";
 
 export interface PixTransacoesFiltros {
   status: FiltroRapidoTransacoesPix;

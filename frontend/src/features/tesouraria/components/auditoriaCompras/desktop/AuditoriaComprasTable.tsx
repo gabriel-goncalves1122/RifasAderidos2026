@@ -24,6 +24,8 @@ interface AuditoriaComprasTableProps {
   onVerComprovante: (compra: CompraAuditavel) => void;
   onEditar: (compra: CompraAuditavel) => void;
   onVerDetalhes: (compra: CompraAuditavel) => void;
+  onReenviarEmailComprovante: (compra: CompraAuditavel) => void;
+  reenviandoEmailComprovanteId?: string | null;
 }
 
 export function AuditoriaComprasTable({
@@ -31,13 +33,15 @@ export function AuditoriaComprasTable({
   onVerComprovante,
   onEditar,
   onVerDetalhes,
+  onReenviarEmailComprovante,
+  reenviandoEmailComprovanteId,
 }: AuditoriaComprasTableProps) {
   return (
     <Paper
       elevation={0}
       sx={{
         display: { xs: "none", md: "block" },
-        borderRadius: 3,
+        borderRadius: 2.25,
         overflow: "hidden",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         bgcolor: "#FFFFFF",
@@ -75,6 +79,7 @@ export function AuditoriaComprasTable({
             <TableRow
               key={compra.id}
               hover
+              data-testid={`auditoria-compra-${compra.id}`}
               sx={{
                 "& td": {
                   borderColor: "rgba(2, 27, 22, 0.08)",
@@ -180,6 +185,11 @@ export function AuditoriaComprasTable({
                   onVerComprovante={onVerComprovante}
                   onEditar={onEditar}
                   onVerDetalhes={onVerDetalhes}
+                  onReenviarEmailComprovante={onReenviarEmailComprovante}
+                  reenviandoEmailComprovante={
+                    Boolean(compra.comprador_id) &&
+                    compra.comprador_id === reenviandoEmailComprovanteId
+                  }
                 />
               </TableCell>
             </TableRow>

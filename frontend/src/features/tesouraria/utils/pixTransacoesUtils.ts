@@ -7,6 +7,13 @@ import {
   StatusPagamentoPix,
   PixTransacao,
 } from "../types/pixTransacoes";
+import {
+  obterStatusValidacaoPix,
+  pixPagamentoConfirmadoBanco,
+  pixTransacaoTemPendenciaVinculo,
+  pixTransacaoTemRifas,
+  podeValidarPixTransacao,
+} from "./pixValidacaoUtils";
 
 export const RESUMO_PIX_TRANSACOES_VAZIO: PixTransacoesResumo = {
   totalRecebido: 0,
@@ -17,6 +24,12 @@ export const RESUMO_PIX_TRANSACOES_VAZIO: PixTransacoesResumo = {
   quantidadeAguardando: 0,
   quantidadeCanceladas: 0,
   quantidadeNaoIdentificadas: 0,
+  quantidadeAguardandoValidacao: 0,
+  quantidadeAceitas: 0,
+  quantidadeNegadas: 0,
+  quantidadeSemConfirmacaoBancaria: 0,
+  quantidadeComRifas: 0,
+  quantidadeSemVinculo: 0,
   ticketMedio: 0,
 };
 
@@ -42,15 +55,20 @@ function atendeFiltroRapido(
   status: PixTransacoesFiltros["status"],
 ) {
   if (status === "todas") return true;
-  if (status === "pagas") return transacao.statusPagamento === "PAID";
-  if (status === "nao_vinculadas") {
-    return transacao.statusConciliacao === "nao_identificada";
-  }
-  if (status === "canceladas") {
-    return ["CANCELED", "DECLINED"].includes(transacao.statusPagamento);
-  }
+  if (status === "para_validar") return podeValidarPixTransacao(transacao);
+  if (status === "com_rifas") return pixTransacaoTemRifas(transacao);
+  if (status === "sem_vinculo") return pixTransacaoTemPendenciaVinculo(transacao);
+  if (status === "pendentes_banco") return !pixPagamentoConfirmadoBanco(transacao);
 
   return true;
+}
+
+export function formatarRifasPix(transacao: PixTransacao) {
+  const numeros = (transacao.rifas || [])
+    .map((rifa) => rifa.numero)
+    .filter(Boolean);
+
+  return numeros.length > 0 ? numeros.join(", ") : "Sem rifas";
 }
 
 export function formatarMoedaPix(valor?: number | null) {
@@ -124,6 +142,25 @@ export function calcularResumoPixTransacoes(
     (transacao) => transacao.statusConciliacao === "divergente",
   );
 
+  const aguardandoValidacao = transacoes.filter(
+    (transacao) => obterStatusValidacaoPix(transacao) === "pendente_validacao",
+  );
+
+  const aceitas = transacoes.filter(
+    (transacao) => obterStatusValidacaoPix(transacao) === "aceita",
+  );
+
+  const negadas = transacoes.filter(
+    (transacao) => obterStatusValidacaoPix(transacao) === "negada",
+  );
+
+  const semConfirmacaoBancaria = transacoes.filter(
+    (transacao) =>
+      obterStatusValidacaoPix(transacao) === "sem_confirmacao_bancaria",
+  );
+  const comRifas = transacoes.filter(pixTransacaoTemRifas);
+  const semVinculo = transacoes.filter(pixTransacaoTemPendenciaVinculo);
+
   const totalRecebido = pagas.reduce(
     (acc, transacao) => acc + transacao.valorPago,
     0,
@@ -153,6 +190,12 @@ export function calcularResumoPixTransacoes(
     quantidadeAguardando: aguardando.length,
     quantidadeCanceladas: canceladas.length,
     quantidadeNaoIdentificadas: naoIdentificadas.length,
+    quantidadeAguardandoValidacao: aguardandoValidacao.length,
+    quantidadeAceitas: aceitas.length,
+    quantidadeNegadas: negadas.length,
+    quantidadeSemConfirmacaoBancaria: semConfirmacaoBancaria.length,
+    quantidadeComRifas: comRifas.length,
+    quantidadeSemVinculo: semVinculo.length,
     ticketMedio: pagas.length > 0 ? totalRecebido / pagas.length : 0,
   };
 }
@@ -173,9 +216,6 @@ export function filtrarPixTransacoes(
       transacao.compradorTelefone,
       transacao.aderido?.nome,
       transacao.aderido?.cpf,
-      transacao.referenceId,
-      transacao.pixOrderId,
-      transacao.pixChargeId,
       ...(transacao.rifas || []).map((rifa) => rifa.numero),
     ];
 

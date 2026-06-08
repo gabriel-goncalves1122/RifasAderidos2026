@@ -51,10 +51,14 @@ describe("Utils: pixTransacoesUtils", () => {
     expect(resumo.totalRecebido).toBe(50);
     expect(resumo.quantidadePagas).toBe(2);
     expect(resumo.quantidadeNaoIdentificadas).toBe(1);
+    expect(resumo.quantidadeAguardandoValidacao).toBe(2);
+    expect(resumo.quantidadeSemConfirmacaoBancaria).toBe(1);
+    expect(resumo.quantidadeComRifas).toBe(2);
+    expect(resumo.quantidadeSemVinculo).toBe(2);
     expect(resumo.ticketMedio).toBe(25);
   });
 
-  it("Deve filtrar por CPF, documento do comprador, aderido, referenceId e rifas", () => {
+  it("Deve filtrar por CPF, documento do comprador, aderido e rifas", () => {
     const transacoes = [
       criarTransacao({
         id: "tx_001",
@@ -98,15 +102,86 @@ describe("Utils: pixTransacoesUtils", () => {
     expect(
       filtrarPixTransacoes(transacoes, {
         status: "todas",
-        busca: "pedido_ana",
+        busca: "099",
       }),
-    ).toEqual([transacoes[0]]);
+    ).toEqual([transacoes[1]]);
+  });
+
+  it("Não deve usar reference ID como campo de busca da auditoria Pix", () => {
+    const transacoes = [
+      criarTransacao({
+        id: "tx_001",
+        referenceId: "pedido_ana",
+        compradorNome: "Cliente Ana",
+      }),
+    ];
 
     expect(
       filtrarPixTransacoes(transacoes, {
         status: "todas",
-        busca: "099",
+        busca: "pedido_ana",
+      }),
+    ).toEqual([]);
+  });
+
+  it("Deve filtrar a fila de auditoria Pix por critérios operacionais", () => {
+    const transacoes = [
+      criarTransacao({
+        id: "tx_para_validar",
+        vendaId: "venda_001",
+        aderido: { id: "aderido_001", nome: "Ana Costa" },
+        rifas: [{ numero: "010", status: "pago" }],
+      }),
+      criarTransacao({
+        id: "tx_sem_vinculo",
+        vendaId: null,
+        aderido: { nome: "Sem aderido vinculado" },
+        rifas: [],
+      }),
+      criarTransacao({
+        id: "tx_pendente_banco",
+        statusPagamento: "WAITING",
+        valorPago: 0,
+        dataPagamento: null,
+        vendaId: "venda_002",
+        aderido: { id: "aderido_002", nome: "Bruno Lima" },
+        rifas: [{ numero: "020", status: "pendente" }],
+      }),
+      criarTransacao({
+        id: "tx_aceita",
+        statusValidacao: "aceita",
+        vendaId: "venda_003",
+        aderido: { id: "aderido_003", nome: "Carla Dias" },
+        rifas: [{ numero: "030", status: "pago" }],
+      }),
+    ];
+
+    expect(
+      filtrarPixTransacoes(transacoes, {
+        status: "para_validar",
+        busca: "",
+      }),
+    ).toEqual([transacoes[0], transacoes[1]]);
+
+    expect(
+      filtrarPixTransacoes(transacoes, {
+        status: "com_rifas",
+        busca: "",
+      }),
+    ).toEqual([transacoes[0], transacoes[2], transacoes[3]]);
+
+    expect(
+      filtrarPixTransacoes(transacoes, {
+        status: "sem_vinculo",
+        busca: "",
       }),
     ).toEqual([transacoes[1]]);
+
+    expect(
+      filtrarPixTransacoes(transacoes, {
+        status: "pendentes_banco",
+        busca: "",
+      }),
+    ).toEqual([transacoes[2]]);
   });
 });

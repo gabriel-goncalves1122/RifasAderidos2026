@@ -127,4 +127,5 @@ export interface Notificacao {
   rifas: string[]; // Bilhetes associados à notificação
   lida: boolean;
   data_criacao: string;
+  tipo?: "correcao_dados" | "rifa_liberada" | "informativo";
 }

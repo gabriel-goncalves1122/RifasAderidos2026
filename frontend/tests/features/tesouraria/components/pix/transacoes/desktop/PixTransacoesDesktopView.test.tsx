@@ -13,14 +13,16 @@ describe("Componente: PixTransacoesDesktopView", () => {
         filtros={{ status: "todas", busca: "" }}
         transacoes={pixTransacoesMock}
         onChangeFiltros={vi.fn()}
+        onAceitarTransacao={vi.fn()}
+        onNegarTransacao={vi.fn()}
       />,
     );
 
-    expect(screen.getByText("Recebido via Pix")).toBeInTheDocument();
+    expect(screen.getAllByText("Para validar").length).toBeGreaterThan(0);
     expect(screen.getByPlaceholderText("Buscar Pix")).toBeInTheDocument();
 
     expect(
-      screen.getByRole("columnheader", { name: "Pagador / Reference ID" }),
+      screen.getByRole("columnheader", { name: "Pagador" }),
     ).toBeInTheDocument();
 
     expect(screen.getByText("Engenheiro Rico")).toBeInTheDocument();
@@ -33,6 +35,8 @@ describe("Componente: PixTransacoesDesktopView", () => {
         filtros={{ status: "todas", busca: "" }}
         transacoes={[]}
         onChangeFiltros={vi.fn()}
+        onAceitarTransacao={vi.fn()}
+        onNegarTransacao={vi.fn()}
       />,
     );
 

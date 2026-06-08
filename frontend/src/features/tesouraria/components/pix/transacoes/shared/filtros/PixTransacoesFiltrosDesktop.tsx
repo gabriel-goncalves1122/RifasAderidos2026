@@ -14,7 +14,7 @@ export function PixTransacoesFiltrosDesktop({
       sx={{
         p: 2,
         mb: 3,
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
       }}

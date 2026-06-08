@@ -1,7 +1,7 @@
 
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import PaidIcon from "@mui/icons-material/Paid";
+import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
+import LinkOffOutlinedIcon from "@mui/icons-material/LinkOffOutlined";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import { Box, Paper, Typography } from "@mui/material";
 
@@ -28,7 +28,7 @@ function CardResumo({
       elevation={0}
       sx={{
         p: 2,
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 10px 28px rgba(2, 27, 22, 0.06)",
@@ -69,7 +69,7 @@ function CardResumo({
           sx={{
             width: 42,
             height: 42,
-            borderRadius: 2.5,
+            borderRadius: 2,
             display: "grid",
             placeItems: "center",
             color: "#063D31",
@@ -98,30 +98,30 @@ export function PixTransacoesResumoCards({ resumo }: PixTransacoesResumoCardsPro
       }}
     >
       <CardResumo
-        titulo="Recebido via Pix"
-        valor={formatarMoedaPix(resumo.totalRecebido)}
-        descricao={`${resumo.quantidadePagas} pagamentos confirmados`}
-        icone={<PaidIcon />}
-      />
-
-      <CardResumo
-        titulo="Aguardando Pix"
-        valor={formatarMoedaPix(resumo.totalPendente)}
-        descricao={`${resumo.quantidadeAguardando} pagamentos pendentes`}
+        titulo="Para validar"
+        valor={`${resumo.quantidadeAguardandoValidacao}`}
+        descricao={`${resumo.quantidadePagas} Pix pagos ou legados`}
         icone={<PendingActionsIcon />}
       />
 
       <CardResumo
-        titulo="Não identificadas"
-        valor={`${resumo.quantidadeNaoIdentificadas}`}
-        descricao={formatarMoedaPix(resumo.totalDivergente)}
-        icone={<ErrorOutlineIcon />}
+        titulo="Com rifas"
+        valor={`${resumo.quantidadeComRifas}`}
+        descricao={`${resumo.quantidadePagas} pagamentos confirmados`}
+        icone={<ConfirmationNumberOutlinedIcon />}
       />
 
       <CardResumo
-        titulo="Ticket médio"
-        valor={formatarMoedaPix(resumo.ticketMedio)}
-        descricao="Média dos Pix pagos"
+        titulo="Sem vínculo"
+        valor={`${resumo.quantidadeSemVinculo}`}
+        descricao={`${resumo.quantidadeNaoIdentificadas} não identificada(s)`}
+        icone={<LinkOffOutlinedIcon />}
+      />
+
+      <CardResumo
+        titulo="Pendentes do banco"
+        valor={`${resumo.quantidadeSemConfirmacaoBancaria}`}
+        descricao={formatarMoedaPix(resumo.totalPendente)}
         icone={<AccountBalanceWalletIcon />}
       />
     </Box>

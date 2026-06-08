@@ -45,7 +45,7 @@ describe("Componente: PixTabs", () => {
     ).toBeInTheDocument();
 
     expect(screen.getByRole("tab", { name: /visão geral/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /transações pix/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /auditoria pix/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /conciliação/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /aderidos/i })).toBeInTheDocument();
   });
@@ -58,12 +58,12 @@ describe("Componente: PixTabs", () => {
     );
 
     expect(screen.getByRole("tab", { name: /visão geral/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /transações pix/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /auditoria pix/i })).toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /conciliação/i })).not.toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /aderidos/i })).toBeInTheDocument();
   });
 
-  it("Deve trocar para aba de Transações Pix", () => {
+  it("Deve trocar para aba de auditoria Pix", () => {
     const onChangeAba = vi.fn();
 
     render(
@@ -73,7 +73,7 @@ describe("Componente: PixTabs", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("tab", { name: /transações pix/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /auditoria pix/i }));
 
     expect(onChangeAba).toHaveBeenCalledWith("transacoes");
   });

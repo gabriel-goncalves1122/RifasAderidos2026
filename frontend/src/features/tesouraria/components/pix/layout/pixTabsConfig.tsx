@@ -16,7 +16,7 @@ export const ABAS_PIX: Array<{
     icon: <AssessmentOutlinedIcon />,
   },
   {
-    label: "Transações Pix",
+    label: "Auditoria Pix",
     value: "transacoes",
     icon: <ReceiptLongOutlinedIcon />,
   },

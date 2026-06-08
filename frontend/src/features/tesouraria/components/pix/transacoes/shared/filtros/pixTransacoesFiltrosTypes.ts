@@ -13,7 +13,8 @@ export const FILTROS_PIX: Array<{
   value: FiltroRapidoTransacoesPix;
 }> = [
   { label: "Todas", value: "todas" },
-  { label: "Pagas", value: "pagas" },
-  { label: "Não vinculadas", value: "nao_vinculadas" },
-  { label: "Canceladas", value: "canceladas" },
+  { label: "Para validar", value: "para_validar" },
+  { label: "Com rifas", value: "com_rifas" },
+  { label: "Sem vínculo", value: "sem_vinculo" },
+  { label: "Pendentes do banco", value: "pendentes_banco" },
 ];

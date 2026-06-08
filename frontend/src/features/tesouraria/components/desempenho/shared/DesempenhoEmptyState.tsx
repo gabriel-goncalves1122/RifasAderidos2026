@@ -19,7 +19,7 @@ export function DesempenhoEmptyState({
         textAlign: "center",
         bgcolor: "#F6F8F7",
         border: "1px dashed rgba(6, 61, 49, 0.20)",
-        borderRadius: 2.5,
+        borderRadius: 2,
       }}
     >
       <Typography

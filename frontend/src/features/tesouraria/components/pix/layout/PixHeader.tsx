@@ -16,7 +16,7 @@ export function PixHeader({
     <TesourariaSectionHeader
       eyebrow="Tesouraria"
       titulo="Recebimentos Pix"
-      subtitulo="Acompanhe recebimentos, conciliação e aderidos."
+      subtitulo="Audite confirmações bancárias, validação final e conciliação."
       compact
       action={
         <Tooltip title="Atualizar informações Pix">
@@ -28,7 +28,7 @@ export function PixHeader({
               sx={{
                 width: 42,
                 height: 42,
-                borderRadius: 2.5,
+                borderRadius: 2,
                 bgcolor: "#063D31",
                 color: "#FFFFFF",
                 flexShrink: 0,

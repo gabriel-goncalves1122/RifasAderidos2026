@@ -13,28 +13,32 @@ const resumoMock: PixTransacoesResumo = {
   quantidadeAguardando: 1,
   quantidadeCanceladas: 1,
   quantidadeNaoIdentificadas: 1,
+  quantidadeAguardandoValidacao: 2,
+  quantidadeAceitas: 3,
+  quantidadeNegadas: 1,
+  quantidadeSemConfirmacaoBancaria: 1,
+  quantidadeComRifas: 4,
+  quantidadeSemVinculo: 2,
   ticketMedio: 25,
 };
 
 describe("Componente: PixTransacoesResumoCards", () => {
-  it("Deve renderizar os cards financeiros do fluxo Pix Pix", () => {
+  it("Deve renderizar os cards da fila de auditoria Pix", () => {
     render(<PixTransacoesResumoCards resumo={resumoMock} />);
 
-    expect(screen.getByText("Recebido via Pix")).toBeInTheDocument();
-    expect(screen.getByText("Aguardando Pix")).toBeInTheDocument();
-    expect(screen.getByText("Não identificadas")).toBeInTheDocument();
-    expect(screen.getByText("Ticket médio")).toBeInTheDocument();
+    expect(screen.getByText("Para validar")).toBeInTheDocument();
+    expect(screen.getByText("Com rifas")).toBeInTheDocument();
+    expect(screen.getByText("Sem vínculo")).toBeInTheDocument();
+    expect(screen.getByText("Pendentes do banco")).toBeInTheDocument();
 
-    expect(screen.getByText("R$ 50,00")).toBeInTheDocument();
     expect(screen.getByText("R$ 10,00")).toBeInTheDocument();
-    expect(screen.getByText("R$ 25,00")).toBeInTheDocument();
   });
 
   it("Deve mostrar as quantidades relevantes para tesouraria", () => {
     render(<PixTransacoesResumoCards resumo={resumoMock} />);
 
-    expect(screen.getByText("2 pagamentos confirmados")).toBeInTheDocument();
-    expect(screen.getByText("1 pagamentos pendentes")).toBeInTheDocument();
-    expect(screen.getByText("Média dos Pix pagos")).toBeInTheDocument();
+    expect(screen.getByText("2 Pix pagos ou legados")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
+    expect(screen.getByText("1 não identificada(s)")).toBeInTheDocument();
   });
 });

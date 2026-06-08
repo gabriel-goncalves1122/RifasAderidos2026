@@ -28,7 +28,7 @@ function ContadorAuditoria({
         position: "relative",
         overflow: "hidden",
         p: { xs: 1.65, md: 2 },
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: destaque ? "#063D31" : "#FFFFFF",
         border: destaque
           ? "1px solid rgba(255, 255, 255, 0.16)"

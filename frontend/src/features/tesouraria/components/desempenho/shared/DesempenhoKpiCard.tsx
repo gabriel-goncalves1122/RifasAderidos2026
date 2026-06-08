@@ -25,7 +25,7 @@ export function DesempenhoKpiCard({
         position: "relative",
         overflow: "hidden",
         p: { xs: 1.85, sm: 2.15 },
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: destaque ? "#063D31" : "#FFFFFF",
         border: destaque
           ? "1px solid rgba(255, 255, 255, 0.14)"

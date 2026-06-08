@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Paper,
   Stack,
   TextField,
   Typography,
@@ -35,7 +34,7 @@ export function AuditoriaCompraDetalhesDialog({
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 3,
+          borderRadius: 2.25,
           overflow: "hidden",
         },
       }}
@@ -54,26 +53,8 @@ export function AuditoriaCompraDetalhesDialog({
         </Typography>
       </DialogTitle>
       {compra && (
-        <DialogContent sx={{ pt: 2 }}>
-          <Stack spacing={2}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 1.5,
-                borderRadius: 2.5,
-                bgcolor: "#EAF3EF",
-                border: "1px solid rgba(6, 61, 49, 0.12)",
-              }}
-            >
-              <Typography sx={{ color: "#063D31", fontWeight: 900 }}>
-                Campos bloqueados
-              </Typography>
-              <Typography sx={{ color: "#526760", fontSize: "0.88rem", mt: 0.5 }}>
-                Números das rifas, aderido/vendedor, comprador_id, status, datas
-                e comprovante não podem ser editados pela tela.
-              </Typography>
-            </Paper>
-
+        <DialogContent sx={{ pt: 2.75 }}>
+          <Stack spacing={2.25}>
             <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
               {compra.bilhetes.map((bilhete) => (
                 <Chip

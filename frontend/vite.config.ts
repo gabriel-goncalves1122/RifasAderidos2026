@@ -21,7 +21,7 @@ export default defineConfig({
     environment: "happy-dom",
     setupFiles: "./src/setupTests.ts",
     include: ["tests/**/*.{test,spec}.{ts,tsx}"],
-    exclude: ["node_modules", "dist", "coverage"],
+    exclude: ["node_modules", "dist", "coverage", "tests/e2e/**"],
     clearMocks: true,
     restoreMocks: true,
   },

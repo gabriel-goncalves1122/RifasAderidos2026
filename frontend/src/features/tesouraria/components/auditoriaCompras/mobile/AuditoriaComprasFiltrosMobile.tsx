@@ -40,7 +40,7 @@ export function AuditoriaComprasFiltrosMobile({
       sx={{
         p: 1.25,
         mb: 1.75,
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 10px 24px rgba(2, 27, 22, 0.06)",
@@ -68,7 +68,7 @@ export function AuditoriaComprasFiltrosMobile({
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                borderRadius: 2.5,
+                borderRadius: 2,
                 bgcolor: "#F6F8F7",
               },
             }}
@@ -80,7 +80,7 @@ export function AuditoriaComprasFiltrosMobile({
             sx={{
               width: 40,
               height: 40,
-              borderRadius: 2.5,
+              borderRadius: 2,
               bgcolor: aberto || filtrosAtivos ? "#063D31" : "#EAF3EF",
               color: aberto || filtrosAtivos ? "#FFFFFF" : "#063D31",
               flexShrink: 0,
@@ -163,7 +163,7 @@ export function AuditoriaComprasFiltrosMobile({
                 InputLabelProps={{ shrink: true }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: 2.5,
+                    borderRadius: 2,
                     bgcolor: "#F6F8F7",
                   },
                 }}
@@ -180,7 +180,7 @@ export function AuditoriaComprasFiltrosMobile({
                 InputLabelProps={{ shrink: true }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: 2.5,
+                    borderRadius: 2,
                     bgcolor: "#F6F8F7",
                   },
                 }}
@@ -200,7 +200,7 @@ export function AuditoriaComprasFiltrosMobile({
               }
               sx={{
                 "& .MuiOutlinedInput-root": {
-                  borderRadius: 2.5,
+                  borderRadius: 2,
                   bgcolor: "#F6F8F7",
                 },
               }}
@@ -217,7 +217,7 @@ export function AuditoriaComprasFiltrosMobile({
                 onClick={onExportarCsv}
                 disabled={!possuiResultados}
                 sx={{
-                  borderRadius: 2.5,
+                  borderRadius: 2,
                   bgcolor: "#063D31",
                   color: "#FFFFFF",
                   fontWeight: 850,
@@ -239,7 +239,7 @@ export function AuditoriaComprasFiltrosMobile({
                     startIcon={<DownloadOutlinedIcon />}
                     disabled
                     sx={{
-                      borderRadius: 2.5,
+                      borderRadius: 2,
                       color: "#063D31",
                       bgcolor: "#EAF3EF",
                       fontWeight: 850,
@@ -258,7 +258,7 @@ export function AuditoriaComprasFiltrosMobile({
                 onClick={onLimparFiltros}
                 sx={{
                   alignSelf: "stretch",
-                  borderRadius: 2.5,
+                  borderRadius: 2,
                   color: "#063D31",
                   fontWeight: 850,
                   textTransform: "none",

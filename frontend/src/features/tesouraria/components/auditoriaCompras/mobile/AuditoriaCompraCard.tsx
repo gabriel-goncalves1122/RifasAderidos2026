@@ -13,6 +13,8 @@ interface AuditoriaComprasCardProps {
   onVerComprovante: (compra: CompraAuditavel) => void;
   onEditar: (compra: CompraAuditavel) => void;
   onVerDetalhes: (compra: CompraAuditavel) => void;
+  onReenviarEmailComprovante: (compra: CompraAuditavel) => void;
+  reenviandoEmailComprovante?: boolean;
 }
 
 export function AuditoriaCompraCard({
@@ -20,13 +22,16 @@ export function AuditoriaCompraCard({
   onVerComprovante,
   onEditar,
   onVerDetalhes,
+  onReenviarEmailComprovante,
+  reenviandoEmailComprovante = false,
 }: AuditoriaComprasCardProps) {
   return (
     <Paper
       elevation={0}
+      data-testid={`auditoria-compra-${compra.id}`}
       sx={{
         p: 0,
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 12px 28px rgba(2, 27, 22, 0.07)",
@@ -91,19 +96,7 @@ export function AuditoriaCompraCard({
                   fontWeight: 850,
                 }}
               />
-            ) : (
-              <Chip
-                label="Sem comprovante"
-                size="small"
-                sx={{
-                  height: 28,
-                  borderRadius: 2,
-                  bgcolor: "#F6F8F7",
-                  color: "#526760",
-                  fontWeight: 850,
-                }}
-              />
-            )}
+            ) : null}
           </Stack>
 
           <Box
@@ -207,6 +200,8 @@ export function AuditoriaCompraCard({
             onVerComprovante={onVerComprovante}
             onEditar={onEditar}
             onVerDetalhes={onVerDetalhes}
+            onReenviarEmailComprovante={onReenviarEmailComprovante}
+            reenviandoEmailComprovante={reenviandoEmailComprovante}
           />
         </Stack>
       </Stack>

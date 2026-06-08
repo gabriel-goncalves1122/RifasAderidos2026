@@ -8,7 +8,7 @@ export function PixEmptyState() {
         textAlign: "center",
         py: 7,
         bgcolor: "#FFFFFF",
-        borderRadius: 3,
+        borderRadius: 2.25,
         border: "1px dashed rgba(2, 27, 22, 0.18)",
       }}
     >

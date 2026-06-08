@@ -11,6 +11,8 @@ vi.mock("@/features/tesouraria/hooks/usePixTransacoes", () => ({
 
 const setFiltros = vi.fn();
 const sincronizarBanco = vi.fn();
+const aceitarPixTransacao = vi.fn();
+const negarPixTransacao = vi.fn();
 
 describe("Hook-controller: usePixController", () => {
   beforeEach(() => {
@@ -23,9 +25,14 @@ describe("Hook-controller: usePixController", () => {
       filtros: { status: "todas", busca: "" },
       carregando: false,
       sincronizando: false,
+      validandoPixPorId: {},
+      erroValidacaoPixPorId: {},
       setFiltros,
       carregarDados: vi.fn(),
       sincronizarBanco,
+      aceitarPixTransacao,
+      negarPixTransacao,
+      limparErroValidacaoPix: vi.fn(),
     });
   });
 
@@ -39,6 +46,8 @@ describe("Hook-controller: usePixController", () => {
       { id: "tx_filtrada", referenceId: "ref_002" },
     ]);
     expect(result.current.pixProps.onChangeFiltros).toBe(setFiltros);
+    expect(result.current.pixProps.onAceitarTransacao).toBe(aceitarPixTransacao);
+    expect(result.current.pixProps.onNegarTransacao).toBe(negarPixTransacao);
 
     result.current.onSincronizar();
 

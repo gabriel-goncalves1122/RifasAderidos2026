@@ -47,4 +47,46 @@ describe("Service: auditoriaComprasService", () => {
 
     expect(resultado).toEqual([]);
   });
+
+  it("Deve atualizar dados do comprador pelo endpoint canônico de tesouraria", async () => {
+    vi.mocked(fetchAPI).mockResolvedValueOnce({ sucesso: true });
+
+    await auditoriaComprasService.atualizarComprador("comprador_123", {
+      nome: "Maria Atualizada",
+      email: "maria@teste.com",
+      telefone: "35999990000",
+    });
+
+    expect(fetchAPI).toHaveBeenCalledWith(
+      "/tesouraria/historico/compras/comprador_123",
+      "PATCH",
+      {
+        nome: "Maria Atualizada",
+        email: "maria@teste.com",
+        telefone: "35999990000",
+      },
+    );
+  });
+
+  it("Deve reenviar e-mail de comprovante pelo endpoint canônico de tesouraria", async () => {
+    vi.mocked(fetchAPI).mockResolvedValueOnce({
+      sucesso: true,
+      mensagem: "E-mail de comprovante reenviado.",
+      envio: {
+        comprador_id: "comprador_123",
+        email: "maria@teste.com",
+        rifas: ["001"],
+        status: "aprovado",
+      },
+    });
+
+    const resultado =
+      await auditoriaComprasService.reenviarEmailComprovante("comprador_123");
+
+    expect(fetchAPI).toHaveBeenCalledWith(
+      "/tesouraria/historico/compras/comprador_123/reenviar-email-comprovante",
+      "POST",
+    );
+    expect(resultado.mensagem).toBe("E-mail de comprovante reenviado.");
+  });
 });
