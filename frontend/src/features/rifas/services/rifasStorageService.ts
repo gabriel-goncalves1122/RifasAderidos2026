@@ -47,21 +47,23 @@ export const rifasStorageService = {
 
       const user = auth.currentUser;
 
-      console.log("[Storage] Iniciando upload de comprovante", {
-        host: window.location.hostname,
-        usuario: user
-          ? {
-              uid: user.uid,
-              email: user.email,
-            }
-          : null,
-        arquivo: {
-          name: arquivo.name,
-          type: arquivo.type,
-          size: arquivo.size,
-          sizeMB: Number((arquivo.size / 1024 / 1024).toFixed(2)),
-        },
-      });
+      if (import.meta.env.DEV) {
+        console.log("[Storage] Iniciando upload de comprovante", {
+          host: window.location.hostname,
+          usuario: user
+            ? {
+                uid: user.uid,
+                email: user.email,
+              }
+            : null,
+          arquivo: {
+            name: arquivo.name,
+            type: arquivo.type,
+            size: arquivo.size,
+            sizeMB: Number((arquivo.size / 1024 / 1024).toFixed(2)),
+          },
+        });
+      }
 
       if (!user) {
         throw new Error(
@@ -71,16 +73,20 @@ export const rifasStorageService = {
 
       const token = await user.getIdToken();
 
-      console.log("[Storage] Token disponível antes do upload", {
-        uid: user.uid,
-        tokenInicio: token.slice(0, 12),
-        tokenTamanho: token.length,
-      });
+      if (import.meta.env.DEV) {
+        console.log("[Storage] Token disponível antes do upload", {
+          uid: user.uid,
+          tokenInicio: token.slice(0, 12),
+          tokenTamanho: token.length,
+        });
+      }
 
       const extensao = obterExtensaoArquivo(arquivo.name);
       const caminho = `${pasta}/${user.uid}_${nomeBase}_${Date.now()}.${extensao}`;
 
-      console.log("[Storage] Caminho do comprovante:", caminho);
+      if (import.meta.env.DEV) {
+        console.log("[Storage] Caminho do comprovante:", caminho);
+      }
 
       const storageRef = ref(storage, caminho);
 
@@ -92,25 +98,24 @@ export const rifasStorageService = {
         },
       });
 
-      console.log("[Storage] Upload finalizado:", {
-        fullPath: snapshot.ref.fullPath,
-        bucket: snapshot.ref.bucket,
-      });
+      if (import.meta.env.DEV) {
+        console.log("[Storage] Upload finalizado:", {
+          fullPath: snapshot.ref.fullPath,
+          bucket: snapshot.ref.bucket,
+        });
+      }
 
       const url = await getDownloadURL(snapshot.ref);
 
-      console.log("[Storage] URL gerada:", url);
+      if (import.meta.env.DEV) {
+        console.log("[Storage] URL gerada:", url);
+      }
 
       return url;
-    } catch (erro: any) {
-      console.error("[Storage] Erro ao enviar comprovante:", {
-        code: erro?.code,
-        message: erro?.message,
-        name: erro?.name,
-        serverResponse: erro?.serverResponse,
-        stack: erro?.stack,
-        erro,
-      });
+    } catch (erro) {
+      if (import.meta.env.DEV) {
+        console.error("[Storage] Erro ao enviar comprovante:", erro);
+      }
 
       throw erro;
     }
@@ -122,10 +127,12 @@ export const rifasStorageService = {
 
       const user = auth.currentUser;
 
-      console.log("[Storage] Iniciando upload atrasado", {
-        usuario: user?.uid || null,
-        rifaId,
-      });
+      if (import.meta.env.DEV) {
+        console.log("[Storage] Iniciando upload atrasado", {
+          usuario: user?.uid || null,
+          rifaId,
+        });
+      }
 
       if (!user) {
         throw new Error(
@@ -148,16 +155,15 @@ export const rifasStorageService = {
 
       const url = await getDownloadURL(storageRef);
 
-      console.log("[Storage] URL gerada upload atrasado:", url);
+      if (import.meta.env.DEV) {
+        console.log("[Storage] URL gerada upload atrasado:", url);
+      }
 
       return url;
-    } catch (erro: any) {
-      console.error("[Storage] Erro ao enviar comprovante atrasado:", {
-        code: erro?.code,
-        message: erro?.message,
-        serverResponse: erro?.serverResponse,
-        erro,
-      });
+    } catch (erro) {
+      if (import.meta.env.DEV) {
+        console.error("[Storage] Erro ao enviar comprovante atrasado:", erro);
+      }
 
       throw erro;
     }

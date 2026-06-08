@@ -19,7 +19,7 @@ export function DesempenhoChartCard({
       elevation={0}
       sx={{
         p: compacto ? { xs: 1.85, sm: 2 } : { xs: 2, sm: 2.65 },
-        borderRadius: compacto ? 2.5 : 3,
+        borderRadius: compacto ? 2 : 2.25,
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 14px 34px rgba(2, 27, 22, 0.07)",

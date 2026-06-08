@@ -18,6 +18,6 @@ describe("Aba: PixConciliacaoTab", () => {
     render(<PixConciliacaoTab transacoes={pixTransacoesMock} />);
 
     expect(screen.getByText("Pagador Não Identificado")).toBeInTheDocument();
-    expect(screen.getByText("Não identificada")).toBeInTheDocument();
+    expect(screen.getByText("Sem rifas")).toBeInTheDocument();
   });
 });

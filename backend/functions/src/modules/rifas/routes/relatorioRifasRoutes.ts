@@ -3,8 +3,11 @@
 // ============================================================================
 import { Router } from "express";
 
-import { validateToken } from "../../../shared/middlewares/authMiddleware";
-import { rifasController } from "../rifasController";
+import {
+  requireTesourariaOrAdmin,
+  validateToken,
+} from "../../../shared/middlewares/authMiddleware";
+import { tesourariaController } from "../../tesouraria/tesourariaController";
 
 const relatorioRifasRoutes = Router();
 
@@ -13,7 +16,8 @@ const relatorioRifasRoutes = Router();
 relatorioRifasRoutes.get(
   "/relatorio",
   validateToken,
-  rifasController.obterRelatorioTesouraria,
+  requireTesourariaOrAdmin,
+  tesourariaController.obterRelatorioTesouraria,
 );
 
 // GET /rifas/historico
@@ -21,7 +25,8 @@ relatorioRifasRoutes.get(
 relatorioRifasRoutes.get(
   "/historico",
   validateToken,
-  rifasController.obterHistoricoDetalhado,
+  requireTesourariaOrAdmin,
+  tesourariaController.obterHistoricoTesouraria,
 );
 
 export default relatorioRifasRoutes;

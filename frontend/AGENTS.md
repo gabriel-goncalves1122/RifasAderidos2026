@@ -33,6 +33,14 @@ mocks      → dados temporários de desenvolvimento/teste
 legacy     → código legado isolado
 ```
 
+## Cache De Dados Remotos
+
+Quando uma feature precisar de cache, revalidação ou invalidação de dados remotos, mantenha essa lógica em `hooks` e `services` da própria feature.
+
+Componentes visuais não devem chamar backend nem manipular query keys diretamente.
+
+Prefira query keys explícitas por feature e usuário quando o dado for sensível ao usuário autenticado.
+
 ## Estrutura esperada
 
 ```txt

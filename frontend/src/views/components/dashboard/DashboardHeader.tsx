@@ -33,6 +33,7 @@ export function DashboardHeader({
           size="large"
           edge="start"
           aria-label="Abrir menu"
+          data-testid="dashboard-menu-button"
           onClick={onOpenMenu}
           sx={dashboardHeaderStyles.menuButton}
         >

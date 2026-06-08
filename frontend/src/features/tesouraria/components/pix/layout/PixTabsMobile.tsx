@@ -22,7 +22,7 @@ export function PixTabsMobile({
         zIndex: 6,
         mb: 2,
         bgcolor: "#FFFFFF",
-        borderRadius: 2.5,
+        borderRadius: 2.25,
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 10px 24px rgba(2, 27, 22, 0.07)",
         px: 1,
@@ -46,7 +46,7 @@ export function PixTabsMobile({
             mr: 0.75,
             px: 1.35,
             py: 0.75,
-            borderRadius: 999,
+            borderRadius: 2,
             border: "1px solid rgba(6, 61, 49, 0.14)",
             bgcolor: "#F6F8F7",
             textTransform: "none",
@@ -73,6 +73,7 @@ export function PixTabsMobile({
             icon={aba.icon}
             iconPosition="start"
             label={aba.label}
+            data-testid={`pix-tab-${aba.value}`}
           />
         ))}
       </Tabs>

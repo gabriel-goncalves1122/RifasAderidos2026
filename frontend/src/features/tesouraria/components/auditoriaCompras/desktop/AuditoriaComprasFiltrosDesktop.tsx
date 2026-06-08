@@ -33,7 +33,7 @@ export function AuditoriaComprasFiltrosDesktop({
       sx={{
         p: { sm: 1.75, md: 2 },
         mb: 2.5,
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 12px 28px rgba(2, 27, 22, 0.05)",
@@ -68,7 +68,7 @@ export function AuditoriaComprasFiltrosDesktop({
               onClick={onExportarCsv}
               disabled={!possuiResultados}
               sx={{
-                borderRadius: 2.5,
+                borderRadius: 2,
                 bgcolor: "#063D31",
                 color: "#FFFFFF",
                 fontWeight: 850,
@@ -90,7 +90,7 @@ export function AuditoriaComprasFiltrosDesktop({
                   startIcon={<DownloadOutlinedIcon />}
                   disabled
                   sx={{
-                    borderRadius: 2.5,
+                    borderRadius: 2,
                     color: "#063D31",
                     bgcolor: "#EAF3EF",
                     fontWeight: 850,
@@ -131,7 +131,7 @@ export function AuditoriaComprasFiltrosDesktop({
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                borderRadius: 2.5,
+                borderRadius: 2,
                 bgcolor: "#F6F8F7",
               },
             }}
@@ -148,7 +148,7 @@ export function AuditoriaComprasFiltrosDesktop({
             InputLabelProps={{ shrink: true }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                borderRadius: 2.5,
+                borderRadius: 2,
                 bgcolor: "#F6F8F7",
               },
             }}
@@ -165,7 +165,7 @@ export function AuditoriaComprasFiltrosDesktop({
             InputLabelProps={{ shrink: true }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                borderRadius: 2.5,
+                borderRadius: 2,
                 bgcolor: "#F6F8F7",
               },
             }}
@@ -185,7 +185,7 @@ export function AuditoriaComprasFiltrosDesktop({
             sx={{
               gridColumn: { sm: "1 / -1", lg: "auto" },
               "& .MuiOutlinedInput-root": {
-                borderRadius: 2.5,
+                borderRadius: 2,
                 bgcolor: "#F6F8F7",
               },
             }}
@@ -239,7 +239,7 @@ export function AuditoriaComprasFiltrosDesktop({
               startIcon={<CloseIcon />}
               onClick={onLimparFiltros}
               sx={{
-                borderRadius: 2.5,
+                borderRadius: 2,
                 color: "#063D31",
                 fontWeight: 850,
                 textTransform: "none",

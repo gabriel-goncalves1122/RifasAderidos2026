@@ -5,19 +5,12 @@ import { describe, expect, it } from "vitest";
 
 import { checkoutSchema } from "@/features/aderidos/components/checkout/checkoutSchema";
 
-function criarArquivoTeste() {
-  return new File(["comprovante"], "comprovante.png", {
-    type: "image/png",
-  });
-}
-
 describe("Schema: checkoutSchema", () => {
   it("Deve validar dados corretos do checkout", async () => {
     const dadosValidos = {
       nome: "Ana Beatriz",
       telefone: "(35) 99999-8888",
       email: "ana@email.com",
-      comprovante: criarArquivoTeste(),
     };
 
     await expect(checkoutSchema.validate(dadosValidos)).resolves.toEqual(
@@ -30,11 +23,22 @@ describe("Schema: checkoutSchema", () => {
       nome: "Ana Beatriz",
       telefone: "(35) 99999-8888",
       email: "",
-      comprovante: criarArquivoTeste(),
     };
 
     await expect(checkoutSchema.validate(dadosSemEmail)).resolves.toEqual(
       dadosSemEmail,
+    );
+  });
+
+  it("Não deve exigir comprovante do Pix no fluxo novo", async () => {
+    const dadosSemComprovante = {
+      nome: "Ana Beatriz",
+      telefone: "(35) 99999-8888",
+      email: "ana@email.com",
+    };
+
+    await expect(checkoutSchema.validate(dadosSemComprovante)).resolves.toEqual(
+      dadosSemComprovante,
     );
   });
 
@@ -43,7 +47,6 @@ describe("Schema: checkoutSchema", () => {
       nome: "",
       telefone: "(35) 99999-8888",
       email: "ana@email.com",
-      comprovante: criarArquivoTeste(),
     };
 
     await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
@@ -56,7 +59,6 @@ describe("Schema: checkoutSchema", () => {
       nome: "Ana Beatriz",
       telefone: "",
       email: "ana@email.com",
-      comprovante: criarArquivoTeste(),
     };
 
     await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
@@ -69,7 +71,6 @@ describe("Schema: checkoutSchema", () => {
       nome: "Ana Beatriz",
       telefone: "(35) 9999",
       email: "ana@email.com",
-      comprovante: criarArquivoTeste(),
     };
 
     await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
@@ -82,24 +83,10 @@ describe("Schema: checkoutSchema", () => {
       nome: "Ana Beatriz",
       telefone: "(35) 99999-8888",
       email: "email-invalido",
-      comprovante: criarArquivoTeste(),
     };
 
     await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
       "Formato de e-mail inválido.",
-    );
-  });
-
-  it("Deve exigir comprovante do PIX", async () => {
-    const dadosInvalidos = {
-      nome: "Ana Beatriz",
-      telefone: "(35) 99999-8888",
-      email: "ana@email.com",
-      comprovante: undefined,
-    };
-
-    await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
-      "Anexe o comprovante do PIX para finalizar a venda.",
     );
   });
 });

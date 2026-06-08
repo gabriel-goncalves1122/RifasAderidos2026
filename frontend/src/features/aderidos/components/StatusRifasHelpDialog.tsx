@@ -28,14 +28,14 @@ const STATUS_AJUDA = [
   {
     label: "Selecionada",
     description: "Está no seu carrinho atual e será enviada na venda.",
-    color: "#052E23",
-    border: "#052E23",
+    color: "#063D31",
+    border: "#063D31",
   },
   {
     label: "Em análise",
-    description: "O comprovante foi enviado e aguarda validação da tesouraria.",
-    color: "#EEF6F8",
-    border: "#94C6D0",
+    description: "O pagamento aguarda validação da tesouraria.",
+    color: "#FFF4D8",
+    border: "#CBA64D",
   },
   {
     label: "Paga",
@@ -46,7 +46,7 @@ const STATUS_AJUDA = [
   },
   {
     label: "Negada",
-    description: "A venda precisa de correção ou reenvio do comprovante.",
+    description: "A venda precisa de correção antes de seguir.",
     color: "#FBEAEA",
     border: "#CC8282",
   },
@@ -96,9 +96,14 @@ export function StatusRifasHelpDialog({
           onClick={onClose}
           variant="contained"
           sx={{
-            borderRadius: 999,
+            borderRadius: 2,
             textTransform: "none",
             fontWeight: 800,
+            bgcolor: "#063D31",
+
+            "&:hover": {
+              bgcolor: "#021B16",
+            },
           }}
         >
           Entendi

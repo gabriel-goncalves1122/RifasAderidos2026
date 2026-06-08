@@ -31,7 +31,7 @@ function ResumoItem({
       sx={{
         minWidth: 190,
         p: 1.75,
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: isAlerta ? "#FFF7E0" : "#FFFFFF",
         border: isAlerta
           ? "1px solid rgba(143, 104, 0, 0.22)"

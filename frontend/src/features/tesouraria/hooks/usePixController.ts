@@ -19,8 +19,12 @@ export function usePixController({
     transacoesFiltradas,
     carregando,
     sincronizando,
+    validandoPixPorId,
+    erroValidacaoPixPorId,
     setFiltros,
     sincronizarBanco,
+    aceitarPixTransacao,
+    negarPixTransacao,
   } = usePixTransacoes();
 
   useEffect(() => {
@@ -40,8 +44,21 @@ export function usePixController({
       filtros,
       transacoes: transacoesFiltradas,
       onChangeFiltros: setFiltros,
+      validandoPixPorId,
+      erroValidacaoPixPorId,
+      onAceitarTransacao: aceitarPixTransacao,
+      onNegarTransacao: negarPixTransacao,
     }),
-    [filtros, resumo, setFiltros, transacoesFiltradas],
+    [
+      aceitarPixTransacao,
+      erroValidacaoPixPorId,
+      filtros,
+      negarPixTransacao,
+      resumo,
+      setFiltros,
+      transacoesFiltradas,
+      validandoPixPorId,
+    ],
   );
 
   return {
@@ -53,10 +70,14 @@ export function usePixController({
     transacoesFiltradas,
     carregando,
     sincronizando,
+    validandoPixPorId,
+    erroValidacaoPixPorId,
     pixProps,
     setAbaAtual,
     setFiltros,
     sincronizarBanco,
     onSincronizar: sincronizarBanco,
+    onAceitarTransacao: aceitarPixTransacao,
+    onNegarTransacao: negarPixTransacao,
   };
 }

@@ -31,13 +31,32 @@ describe("Service: pixTransacoesService", () => {
   });
 
   it("Deve buscar transações no endpoint atual e normalizar o payload", async () => {
-    const transacoes = [criarTransacao({ id: "tx_001" })];
+    const transacoes = [
+      criarTransacao({ id: "tx_001", statusValidacao: "aceita" }),
+    ];
     vi.mocked(fetchAPI).mockResolvedValueOnce({ transacoes });
 
     const resultado = await pixTransacoesService.buscarTransacoes();
 
     expect(fetchAPI).toHaveBeenCalledWith("/tesouraria/transacoes-bancarias");
     expect(resultado).toEqual(transacoes);
+  });
+
+  it("Deve normalizar status de validação Pix vindo no formato de API", async () => {
+    const transacao = criarTransacao({ id: "tx_validacao" }) as PixTransacao & {
+      status_validacao: string;
+    };
+    transacao.status_validacao = "negada";
+
+    vi.mocked(fetchAPI).mockResolvedValueOnce({ transacoes: [transacao] });
+
+    const resultado = await pixTransacoesService.buscarTransacoes();
+
+    expect(resultado[0]).toMatchObject({
+      id: "tx_validacao",
+      statusValidacao: "negada",
+    });
+    expect(resultado[0]).not.toHaveProperty("status_validacao");
   });
 
   it("Deve retornar lista vazia quando o payload de transações vier ausente", async () => {
@@ -70,6 +89,12 @@ describe("Service: pixTransacoesService", () => {
       quantidadeAguardando: 0,
       quantidadeCanceladas: 0,
       quantidadeNaoIdentificadas: 0,
+      quantidadeAguardandoValidacao: 0,
+      quantidadeAceitas: 0,
+      quantidadeNegadas: 0,
+      quantidadeSemConfirmacaoBancaria: 0,
+      quantidadeComRifas: 0,
+      quantidadeSemVinculo: 0,
       ticketMedio: 0,
     });
   });

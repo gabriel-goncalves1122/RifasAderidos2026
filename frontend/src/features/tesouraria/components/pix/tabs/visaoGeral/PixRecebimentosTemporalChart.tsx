@@ -35,7 +35,7 @@ export function PixRecebimentosTemporalChart({
       sx={{
         mt: { xs: 2, sm: 3 },
         p: { xs: 1.5, sm: 2.5 },
-        borderRadius: { xs: 2.5, sm: 3 },
+        borderRadius: { xs: 2, sm: 2.25 },
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 14px 34px rgba(2, 27, 22, 0.07)",
@@ -81,7 +81,7 @@ export function PixRecebimentosTemporalChart({
         sx={{
           height: { xs: 280, sm: 320 },
           minHeight: 260,
-          borderRadius: { xs: 2, sm: 2.5 },
+          borderRadius: 2,
           bgcolor: "#F6F8F7",
           border: "1px solid rgba(2, 27, 22, 0.08)",
           overflow: "hidden",

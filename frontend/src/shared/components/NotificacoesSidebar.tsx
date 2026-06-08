@@ -1,25 +1,91 @@
+import CloseIcon from "@mui/icons-material/Close";
+import EditNoteIcon from "@mui/icons-material/EditNote";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import {
+  Avatar,
   Box,
-  Typography,
+  Chip,
+  Divider,
   Drawer,
+  IconButton,
   List,
   ListItem,
-  ListItemText,
-  ListItemAvatar,
-  Avatar,
-  Divider,
-  Chip,
-  IconButton,
+  Stack,
+  Typography,
 } from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
-import CloseIcon from "@mui/icons-material/Close";
-import NotificationsIcon from "@mui/icons-material/Notifications";
+
+import { NotificacaoRifa, TipoNotificacaoRifa } from "../types/notificacoes";
+import {
+  formatarDataNotificacao,
+  normalizarTipoNotificacaoRifa,
+} from "../utils/notificacoesUtils";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  notificacoes: any[];
+  notificacoes: NotificacaoRifa[];
+}
+
+const CONFIG_NOTIFICACAO: Record<
+  TipoNotificacaoRifa,
+  {
+    titulo: string;
+    rifasLabel: string;
+    bgcolor: string;
+    borderColor: string;
+    color: string;
+    chipBg: string;
+  }
+> = {
+  correcao_dados: {
+    titulo: "Corrigir dados",
+    rifasLabel: "Rifas para corrigir",
+    bgcolor: "#FFF7E0",
+    borderColor: "#C48A16",
+    color: "#6B4E00",
+    chipBg: "#FFFFFF",
+  },
+  rifa_liberada: {
+    titulo: "Rifa disponível",
+    rifasLabel: "Rifas disponíveis novamente",
+    bgcolor: "#EAF3EF",
+    borderColor: "#0B7A61",
+    color: "#063D31",
+    chipBg: "#FFFFFF",
+  },
+  informativo: {
+    titulo: "Aviso",
+    rifasLabel: "Rifas relacionadas",
+    bgcolor: "#F6F8F7",
+    borderColor: "#526760",
+    color: "#526760",
+    chipBg: "#FFFFFF",
+  },
+};
+
+function renderIconeNotificacao(tipo: TipoNotificacaoRifa) {
+  if (tipo === "rifa_liberada") {
+    return <TaskAltIcon fontSize="small" />;
+  }
+
+  if (tipo === "informativo") {
+    return <InfoOutlinedIcon fontSize="small" />;
+  }
+
+  return <EditNoteIcon fontSize="small" />;
+}
+
+function obterTituloNotificacao(notificacao: NotificacaoRifa) {
+  const tipo = normalizarTipoNotificacaoRifa(notificacao.tipo);
+  const config = CONFIG_NOTIFICACAO[tipo];
+
+  if (tipo === "informativo") {
+    return notificacao.titulo || config.titulo;
+  }
+
+  return config.titulo;
 }
 
 export function NotificacoesSidebar({ open, onClose, notificacoes }: Props) {
@@ -27,113 +93,174 @@ export function NotificacoesSidebar({ open, onClose, notificacoes }: Props) {
     <Drawer anchor="right" open={open} onClose={onClose}>
       <Box
         sx={{
-          width: { xs: "100vw", sm: 400 },
-          p: 3,
+          width: { xs: "100vw", sm: 420 },
+          p: { xs: 2.25, sm: 3 },
           display: "flex",
           flexDirection: "column",
           height: "100%",
+          bgcolor: "#F6F8F7",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          spacing={2}
+          sx={{ mb: 2 }}
         >
           <Typography
-            variant="h6"
-            fontWeight="bold"
-            color="primary.main"
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+            component="h2"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              color: "#021B16",
+              fontWeight: 950,
+              fontSize: "1.15rem",
+            }}
           >
-            <NotificationsIcon /> Caixa de Mensagens
+            <NotificationsNoneIcon /> Notificações
           </Typography>
-          <IconButton onClick={onClose}>
+
+          <IconButton
+            onClick={onClose}
+            aria-label="Fechar notificações"
+            sx={{
+              borderRadius: 2,
+              color: "#063D31",
+              bgcolor: "#FFFFFF",
+              border: "1px solid rgba(6, 61, 49, 0.10)",
+            }}
+          >
             <CloseIcon />
           </IconButton>
-        </Box>
+        </Stack>
+
         <Divider sx={{ mb: 2 }} />
 
-        <List sx={{ flexGrow: 1, overflow: "auto" }}>
+        <List sx={{ flexGrow: 1, overflow: "auto", p: 0 }}>
           {notificacoes.length === 0 ? (
-            <Box sx={{ textAlign: "center", mt: 10 }}>
-              <CheckCircleIcon
-                sx={{ fontSize: 60, color: "success.light", opacity: 0.5 }}
+            <Stack alignItems="center" spacing={1.5} sx={{ mt: 10 }}>
+              <TaskAltIcon
+                sx={{ fontSize: 56, color: "#0B7A61", opacity: 0.5 }}
               />
-              <Typography color="text.secondary" mt={2}>
+              <Typography sx={{ color: "#526760", fontWeight: 800 }}>
                 Você não tem novas mensagens.
               </Typography>
-            </Box>
+            </Stack>
           ) : (
-            notificacoes.map((notificacao) => (
-              <ListItem
-                key={notificacao.id}
-                sx={{
-                  mb: 2,
-                  bgcolor: "#fff0f0",
-                  borderRadius: 2,
-                  borderLeft: "4px solid #f44336",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                }}
-              >
-                <Box
+            notificacoes.map((notificacao) => {
+              const tipo = normalizarTipoNotificacaoRifa(notificacao.tipo);
+              const config = CONFIG_NOTIFICACAO[tipo];
+              const dataFormatada = formatarDataNotificacao(
+                notificacao.data_criacao,
+              );
+              const rifas = notificacao.rifas || [];
+
+              return (
+                <ListItem
+                  key={notificacao.id}
                   sx={{
-                    display: "flex",
-                    width: "100%",
-                    alignItems: "center",
-                    mb: 1,
+                    mb: 1.5,
+                    p: 1.75,
+                    bgcolor: config.bgcolor,
+                    borderRadius: 2,
+                    border: `1px solid ${config.borderColor}`,
+                    borderLeft: `4px solid ${config.borderColor}`,
+                    flexDirection: "column",
+                    alignItems: "flex-start",
                   }}
                 >
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: "error.main" }}>
-                      <CancelIcon />
+                  <Stack direction="row" spacing={1.25} sx={{ width: "100%" }}>
+                    <Avatar
+                      sx={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 2,
+                        bgcolor: config.color,
+                        color: "#FFFFFF",
+                      }}
+                    >
+                      {renderIconeNotificacao(tipo)}
                     </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={notificacao.titulo}
-                    primaryTypographyProps={{
-                      fontWeight: "bold",
-                      color: "error.main",
+
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography
+                        sx={{
+                          color: config.color,
+                          fontWeight: 950,
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {obterTituloNotificacao(notificacao)}
+                      </Typography>
+
+                      {dataFormatada && (
+                        <Typography
+                          sx={{
+                            color: "#526760",
+                            fontSize: "0.78rem",
+                            mt: 0.2,
+                          }}
+                        >
+                          {dataFormatada}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Stack>
+
+                  <Typography
+                    sx={{
+                      mt: 1.35,
+                      color: "#021B16",
+                      fontSize: "0.9rem",
+                      lineHeight: 1.4,
+                      fontWeight: 750,
                     }}
-                    secondary={new Date(
-                      notificacao.data_criacao,
-                    ).toLocaleDateString("pt-BR")}
-                  />
-                </Box>
+                  >
+                    {notificacao.mensagem || "Sem motivo informado."}
+                  </Typography>
 
-                <Typography
-                  variant="body2"
-                  fontWeight="bold"
-                  sx={{ mt: 1, mb: 1 }}
-                >
-                  Motivo: {notificacao.mensagem}
-                </Typography>
+                  {rifas.length > 0 && (
+                    <Box sx={{ mt: 1.4 }}>
+                      <Typography
+                        sx={{
+                          color: "#526760",
+                          fontSize: "0.76rem",
+                          fontWeight: 900,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.06em",
+                        }}
+                      >
+                        {config.rifasLabel}
+                      </Typography>
 
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="block"
-                >
-                  Rifas devolvidas:
-                </Typography>
-                <Box
-                  sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}
-                >
-                  {(notificacao.rifas || []).map((rifa: string) => (
-                    <Chip
-                      key={rifa}
-                      label={rifa}
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                    />
-                  ))}
-                </Box>
-              </ListItem>
-            ))
+                      <Stack
+                        direction="row"
+                        flexWrap="wrap"
+                        gap={0.65}
+                        sx={{ mt: 0.8 }}
+                      >
+                        {rifas.map((rifa) => (
+                          <Chip
+                            key={rifa}
+                            label={rifa}
+                            size="small"
+                            sx={{
+                              borderRadius: 2,
+                              color: config.color,
+                              bgcolor: config.chipBg,
+                              border: `1px solid ${config.borderColor}`,
+                              fontWeight: 850,
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
+                </ListItem>
+              );
+            })
           )}
         </List>
       </Box>

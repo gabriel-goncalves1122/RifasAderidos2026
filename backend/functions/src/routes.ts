@@ -10,6 +10,7 @@ import auditoriaRoutes from "./modules/auditoria/auditoriaRoutes";
 import premiosRoutes from "./modules/premios/premiosRoutes";
 import notificacoesRoutes from "./modules/notificacoes/notificacoesRoutes";
 import adminRoutes from "./modules/admin/adminRoutes";
+import tesourariaRoutes from "./modules/tesouraria/tesourariaRoutes";
 
 const router = Router();
 
@@ -18,6 +19,7 @@ const router = Router();
 // ============================================================================
 router.use("/auth", authRoutes);
 router.use("/rifas", rifasRoutes);
+router.use("/tesouraria", tesourariaRoutes);
 router.use("/auditorias", auditoriaRoutes);
 router.use("/premios", premiosRoutes);
 router.use("/notificacoes", notificacoesRoutes);

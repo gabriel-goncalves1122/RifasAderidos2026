@@ -18,7 +18,7 @@ describe("Componente: BotaoNotificacoes", () => {
 
     expect(
       screen.getByRole("button", {
-        name: /abrir notificações da tesouraria/i,
+        name: /abrir notificações/i,
       }),
     ).toBeInTheDocument();
   });
@@ -36,7 +36,7 @@ describe("Componente: BotaoNotificacoes", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: /abrir notificações da tesouraria/i,
+        name: /abrir notificações/i,
       }),
     );
 

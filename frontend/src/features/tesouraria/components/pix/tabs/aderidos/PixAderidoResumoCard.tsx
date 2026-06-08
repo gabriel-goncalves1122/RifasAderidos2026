@@ -21,7 +21,7 @@ export function PixAderidoResumoCard({
       sx={{
         width: "100%",
         p: { xs: 1.5, sm: 2 },
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 10px 24px rgba(2, 27, 22, 0.06)",

@@ -20,17 +20,18 @@ export function CardPendenciasAderido({
 
   const textoPendencia =
     totalPendencias === 1
-      ? "1 correção pendente"
-      : `${totalPendencias} correções pendentes`;
+      ? "1 correção aberta"
+      : `${totalPendencias} correções abertas`;
 
   return (
     <Box sx={painelAderidoStyles.resumoCompactoItem}>
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack sx={painelAderidoStyles.resumoMetaLinha}>
         <Box
           sx={{
             ...painelAderidoStyles.resumoIconBox,
-            color: possuiPendencias ? "#8A2A2A" : "#0B5136",
-            bgcolor: possuiPendencias ? "#FBEAEA" : "#EAF7EF",
+            ...(possuiPendencias
+              ? painelAderidoStyles.resumoIconBoxAlerta
+              : painelAderidoStyles.resumoIconBoxOk),
           }}
         >
           {possuiPendencias ? (
@@ -45,29 +46,31 @@ export function CardPendenciasAderido({
         </Typography>
       </Stack>
 
-      <Typography
-        sx={{
-          ...painelAderidoStyles.resumoCardValor,
-          color: possuiPendencias ? "#8A2A2A" : "#052E23",
-        }}
-      >
-        {possuiPendencias ? totalPendencias : 0}
-      </Typography>
-
-      <Typography sx={painelAderidoStyles.resumoCardDescricao}>
-        {possuiPendencias ? textoPendencia : "Nenhuma correção no momento."}
-      </Typography>
-
-      {possuiPendencias && (
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={onAbrirRecusadas}
-          sx={painelAderidoStyles.pendenciaBotao}
+      <Box sx={painelAderidoStyles.resumoConteudoLinha}>
+        <Typography
+          sx={{
+            ...painelAderidoStyles.resumoCardValor,
+            color: possuiPendencias ? "#6B4A00" : "#063D31",
+          }}
         >
-          Corrigir
-        </Button>
-      )}
+          {possuiPendencias ? totalPendencias : 0}
+        </Typography>
+
+        <Typography sx={painelAderidoStyles.resumoCardDescricao}>
+          {possuiPendencias ? textoPendencia : "Tudo certo agora."}
+        </Typography>
+
+        {possuiPendencias && (
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={onAbrirRecusadas}
+            sx={painelAderidoStyles.pendenciaBotao}
+          >
+            Revisar
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 }

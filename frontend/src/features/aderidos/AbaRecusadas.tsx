@@ -15,10 +15,12 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 import BuildCircleIcon from "@mui/icons-material/BuildCircle";
 
+import { GrupoRifasRecusadas } from "./types/painelAderido";
+
 interface AbaRecusadasProps {
-  gruposRecusados: any[];
+  gruposRecusados: GrupoRifasRecusadas[];
   onVoltar: () => void;
-  onAbrirCorrecao: (grupo: any) => void;
+  onAbrirCorrecao: (grupo: GrupoRifasRecusadas) => void;
 }
 
 export function AbaRecusadas({
@@ -42,14 +44,13 @@ export function AbaRecusadas({
           color="error.main"
           sx={{ display: "flex", alignItems: "center", gap: 1 }}
         >
-          <ReportGmailerrorredIcon fontSize="large" /> Vendas Negadas pela
-          Tesouraria
+          <ReportGmailerrorredIcon fontSize="large" /> Vendas recusadas - ação
+          necessária
         </Typography>
       </Box>
 
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        A tesouraria encontrou problemas nos comprovativos abaixo. Selecione uma
-        venda para corrigir os dados e anexar um novo comprovativo.
+        Atualize os dados solicitados para que a venda volte para análise.
       </Typography>
 
       <Box
@@ -62,8 +63,9 @@ export function AbaRecusadas({
             key={idx}
             sx={{
               borderLeft: "6px solid",
-              borderColor: "error.main",
-              boxShadow: 3,
+              borderColor: "#7A1F1F",
+              boxShadow: "0 10px 28px rgba(2, 27, 22, 0.08)",
+              border: "1px solid rgba(122, 31, 31, 0.14)",
               borderRadius: 2,
             }}
           >
@@ -93,11 +95,20 @@ export function AbaRecusadas({
                 fontWeight="bold"
                 sx={{ mb: 2 }}
               >
-                Motivo: {grupo.motivo}
+                {grupo.motivo}
+              </Typography>
+
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={800}
+                sx={{ display: "block", mb: 0.75 }}
+              >
+                Rifas para revisar
               </Typography>
 
               <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mb: 3 }}>
-                {grupo.bilhetes.map((b: string) => (
+                {grupo.bilhetes.map((b) => (
                   <Chip
                     key={b}
                     size="small"
@@ -115,7 +126,7 @@ export function AbaRecusadas({
                 startIcon={<BuildCircleIcon />}
                 onClick={() => onAbrirCorrecao(grupo)}
               >
-                Corrigir Informações
+                Corrigir dados
               </Button>
             </CardContent>
           </Card>

@@ -102,6 +102,26 @@ describe("Service: rifasService", () => {
     });
   });
 
+  it("Deve corrigir apenas dados das rifas recusadas pelo endpoint futuro", async () => {
+    vi.mocked(fetchAPI).mockResolvedValueOnce({ sucesso: true });
+
+    const resultado = await rifaService.corrigirDadosRifasRecusadas({
+      nome: "Ana",
+      telefone: "(11) 99999-9999",
+      email: "ana@teste.com",
+      numerosRifas: ["015"],
+    });
+
+    expect(resultado).toBe(true);
+    expect(rifasStorageService.uploadComprovante).not.toHaveBeenCalled();
+    expect(fetchAPI).toHaveBeenCalledWith("/rifas/corrigir-dados", "POST", {
+      nome: "Ana",
+      telefone: "(11) 99999-9999",
+      email: "ana@teste.com",
+      numerosRifas: ["015"],
+    });
+  });
+
   it("Deve anexar comprovante atrasado em uma rifa específica", async () => {
     vi.mocked(
       rifasStorageService.uploadComprovanteAtrasado,

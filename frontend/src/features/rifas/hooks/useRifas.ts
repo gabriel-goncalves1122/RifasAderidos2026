@@ -21,7 +21,10 @@ export function useRifas() {
     try {
       return await rifaService.buscarMinhasRifas();
     } catch (erro) {
-      console.error("[useRifas] Erro ao buscar minhas rifas:", erro);
+      if (import.meta.env.DEV) {
+        console.error("[useRifas] Erro ao buscar minhas rifas:", erro);
+      }
+
       return [];
     } finally {
       setLoading(false);
@@ -32,33 +35,33 @@ export function useRifas() {
     setLoading(true);
 
     try {
-      console.log("[useRifas] Iniciando finalizarVenda", {
-        nome: dados.nome,
-        telefone: dados.telefone,
-        email: dados.email,
-        numerosRifas: dados.numerosRifas,
-        comprovante: dados.comprovante
-          ? {
-              name: dados.comprovante.name,
-              type: dados.comprovante.type,
-              size: dados.comprovante.size,
-            }
-          : null,
-      });
+      if (import.meta.env.DEV) {
+        console.log("[useRifas] Iniciando finalizarVenda", {
+          nome: dados.nome,
+          telefone: dados.telefone,
+          email: dados.email,
+          numerosRifas: dados.numerosRifas,
+          comprovante: dados.comprovante
+            ? {
+                name: dados.comprovante.name,
+                type: dados.comprovante.type,
+                size: dados.comprovante.size,
+              }
+            : null,
+        });
+      }
 
       await rifaService.finalizarVenda(dados);
 
-      console.log("[useRifas] Venda finalizada com sucesso");
+      if (import.meta.env.DEV) {
+        console.log("[useRifas] Venda finalizada com sucesso");
+      }
+
       return true;
-    } catch (erro: any) {
-      console.error("[useRifas] Erro ao finalizar venda:", {
-        code: erro?.code,
-        message: erro?.message,
-        name: erro?.name,
-        serverResponse: erro?.serverResponse,
-        stack: erro?.stack,
-        erro,
-      });
+    } catch (erro) {
+      if (import.meta.env.DEV) {
+        console.error("[useRifas] Erro ao finalizar venda:", erro);
+      }
 
       return false;
     } finally {
@@ -85,7 +88,39 @@ export function useRifas() {
 
         return true;
       } catch (erro) {
-        console.error("[useRifas] Erro ao reenviar correção:", erro);
+        if (import.meta.env.DEV) {
+          console.error("[useRifas] Erro ao reenviar correção:", erro);
+        }
+
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  const corrigirDadosRifasRecusadas = useCallback(
+    async (
+      numerosRifas: string[],
+      dadosAtualizados: DadosCorrecaoComprador,
+    ) => {
+      setLoading(true);
+
+      try {
+        await rifaService.corrigirDadosRifasRecusadas({
+          numerosRifas,
+          nome: dadosAtualizados.nome,
+          email: dadosAtualizados.email,
+          telefone: dadosAtualizados.telefone,
+        });
+
+        return true;
+      } catch (erro) {
+        if (import.meta.env.DEV) {
+          console.error("[useRifas] Erro ao corrigir dados da venda:", erro);
+        }
+
         return false;
       } finally {
         setLoading(false);
@@ -102,7 +137,10 @@ export function useRifas() {
         await rifaService.anexarComprovante(rifaId, arquivo);
         return true;
       } catch (erro) {
-        console.error("[useRifas] Erro ao anexar comprovante:", erro);
+        if (import.meta.env.DEV) {
+          console.error("[useRifas] Erro ao anexar comprovante:", erro);
+        }
+
         return false;
       } finally {
         setLoading(false);
@@ -115,6 +153,7 @@ export function useRifas() {
     buscarMinhasRifas,
     finalizarVenda,
     corrigirRifasRecusadas,
+    corrigirDadosRifasRecusadas,
     anexarComprovante,
     loading,
   };

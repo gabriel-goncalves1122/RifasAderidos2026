@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuditoriaComprasPage } from "@/features/tesouraria/pages/AuditoriaComprasPage";
@@ -7,6 +7,8 @@ import { auditoriaComprasService } from "@/features/tesouraria/services/auditori
 vi.mock("@/features/tesouraria/services/auditoriaComprasService", () => ({
   auditoriaComprasService: {
     buscarHistoricoDetalhado: vi.fn(),
+    atualizarComprador: vi.fn(),
+    reenviarEmailComprovante: vi.fn(),
   },
 }));
 
@@ -85,6 +87,21 @@ describe("Página <AuditoriaComprasPage />", () => {
     vi.mocked(
       auditoriaComprasService.buscarHistoricoDetalhado,
     ).mockResolvedValue(historicoMock);
+    vi.mocked(auditoriaComprasService.atualizarComprador).mockResolvedValue({
+      sucesso: true,
+    });
+    vi.mocked(
+      auditoriaComprasService.reenviarEmailComprovante,
+    ).mockResolvedValue({
+      sucesso: true,
+      mensagem: "E-mail de comprovante reenviado.",
+      envio: {
+        comprador_id: "comprador_maria",
+        email: "maria@teste.com",
+        rifas: ["001", "002"],
+        status: "aprovado",
+      },
+    });
   });
 
   afterEach(() => {
@@ -152,6 +169,7 @@ describe("Página <AuditoriaComprasPage />", () => {
       screen.getByRole("button", { name: /abrir filtros de auditoria/i }),
     ).toBeInTheDocument();
     expect(screen.getAllByText("João Lima").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Sem comprovante")).not.toBeInTheDocument();
 
     fireEvent.click(
       screen.getByRole("button", { name: /abrir filtros de auditoria/i }),
@@ -161,13 +179,14 @@ describe("Página <AuditoriaComprasPage />", () => {
     expect(screen.getByLabelText("Fim")).toBeInTheDocument();
   });
 
-  it("Deve abrir modais de detalhes, edição e comprovante sem mutação real", async () => {
+  it("Deve abrir detalhes, editar comprador e visualizar comprovante", async () => {
     const detalhes = render(<AuditoriaComprasPage />);
 
     await screen.findByText("Auditoria de compras");
 
     fireEvent.click(screen.getAllByRole("button", { name: /ver detalhes/i })[0]);
-    expect(screen.getByText("Campos bloqueados")).toBeInTheDocument();
+    expect(screen.getByText("Detalhes da compra")).toBeInTheDocument();
+    expect(screen.queryByText("Campos bloqueados")).not.toBeInTheDocument();
 
     detalhes.unmount();
 
@@ -178,8 +197,34 @@ describe("Página <AuditoriaComprasPage />", () => {
     fireEvent.click(screen.getAllByRole("button", { name: /editar comprador/i })[0]);
 
     expect(screen.getByText("Editar dados do comprador")).toBeInTheDocument();
-    expect(screen.getByLabelText("Nome do comprador")).toHaveValue("João Lima");
-    expect(screen.getByRole("button", { name: /salvar alterações/i })).toBeDisabled();
+    expect(
+      screen.getByRole("textbox", { name: /nome do comprador/i }),
+    ).toHaveValue("João Lima");
+    expect(screen.queryByText("Dados editáveis")).not.toBeInTheDocument();
+    expect(screen.queryByText("Campos bloqueados")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("textbox", { name: /nome do comprador/i }), {
+      target: { value: "João Atualizado" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /e-mail do comprador/i }), {
+      target: { value: "joao.atualizado@teste.com" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /telefone do comprador/i }), {
+      target: { value: "35977776666" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /salvar alterações/i }));
+
+    await waitFor(() => {
+      expect(auditoriaComprasService.atualizarComprador).toHaveBeenCalledWith(
+        "comprador_joao",
+        {
+          nome: "João Atualizado",
+          email: "joao.atualizado@teste.com",
+          telefone: "35977776666",
+        },
+      );
+    });
 
     edicao.unmount();
 
@@ -195,5 +240,57 @@ describe("Página <AuditoriaComprasPage />", () => {
     fireEvent.click(botaoComprovanteHabilitado!);
 
     expect(screen.getByAltText("Comprovante Pix")).toBeInTheDocument();
+  });
+
+  it("Deve reenviar e-mail de comprovante apenas para compra paga com e-mail", async () => {
+    let resolverEnvio: (valor: any) => void = () => {};
+    vi.mocked(
+      auditoriaComprasService.reenviarEmailComprovante,
+    ).mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolverEnvio = resolve;
+      }),
+    );
+
+    render(<AuditoriaComprasPage />);
+
+    await screen.findByText("Auditoria de compras");
+
+    const botoesEmail = screen.getAllByRole("button", {
+      name: /reenviar e-mail/i,
+    });
+    const botaoHabilitado = botoesEmail.find(
+      (botao) => !botao.hasAttribute("disabled"),
+    );
+    const botoesDesabilitados = botoesEmail.filter((botao) =>
+      botao.hasAttribute("disabled"),
+    );
+
+    expect(botaoHabilitado).toBeDefined();
+    expect(botoesDesabilitados.length).toBeGreaterThan(0);
+
+    fireEvent.click(botaoHabilitado!);
+
+    await waitFor(() => {
+      expect(botaoHabilitado).toBeDisabled();
+    });
+    expect(
+      auditoriaComprasService.reenviarEmailComprovante,
+    ).toHaveBeenCalledWith("comprador_maria");
+
+    resolverEnvio({
+      sucesso: true,
+      mensagem: "E-mail de comprovante reenviado.",
+      envio: {
+        comprador_id: "comprador_maria",
+        email: "maria@teste.com",
+        rifas: ["001", "002"],
+        status: "aprovado",
+      },
+    });
+
+    expect(
+      await screen.findByText("E-mail de comprovante reenviado."),
+    ).toBeInTheDocument();
   });
 });

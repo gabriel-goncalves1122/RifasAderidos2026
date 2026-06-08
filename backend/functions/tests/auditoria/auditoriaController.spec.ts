@@ -10,7 +10,7 @@ const mockAuditarLoteIA = jest.fn<any>();
 const mockProcessarDecisaoManual = jest.fn<any>();
 const mockSalvarExtratoCsv = jest.fn<any>();
 
-jest.mock("../../src/modules/auditoria/auditoriaService", () => ({
+jest.mock("../../src/modules/tesouraria/legacy/auditoria/auditoriaService", () => ({
   AuditoriaService: {
     listarPendentes: mockListarPendentes,
     auditarLoteIA: mockAuditarLoteIA,
@@ -19,7 +19,7 @@ jest.mock("../../src/modules/auditoria/auditoriaService", () => ({
   },
 }));
 
-import { auditoriaController } from "../../src/modules/auditoria/auditoriaController";
+import { auditoriaController } from "../../src/modules/tesouraria/legacy/auditoria/auditoriaController";
 
 describe("Auditoria Controller", () => {
   let req: Partial<AuthRequest>;

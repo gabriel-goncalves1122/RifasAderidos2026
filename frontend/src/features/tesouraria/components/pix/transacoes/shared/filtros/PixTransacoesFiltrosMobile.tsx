@@ -37,7 +37,7 @@ export function PixTransacoesFiltrosMobile({
         mb: 0,
         maxWidth: "100%",
         overflow: "hidden",
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 8px 20px rgba(2, 27, 22, 0.06)",
@@ -54,7 +54,7 @@ export function PixTransacoesFiltrosMobile({
               minWidth: 0,
               flex: 1,
               justifyContent: "flex-start",
-              borderRadius: 2.5,
+              borderRadius: 2,
               bgcolor: "#F6F8F7",
               color: "#063D31",
               border: "1px solid rgba(6, 61, 49, 0.16)",
@@ -93,7 +93,7 @@ export function PixTransacoesFiltrosMobile({
               onClick={limparFiltros}
               sx={{
                 flexShrink: 0,
-                borderRadius: 2.5,
+                borderRadius: 2,
                 color: "#063D31",
                 bgcolor: "#EAF3EF",
                 border: "1px solid rgba(6, 61, 49, 0.16)",

@@ -1,27 +1,31 @@
-import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
-import { Box, Chip, IconButton, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 
-import { PixTransacao } from "../../../../types/pixTransacoes";
+import {
+  AcaoValidacaoPix,
+  PixTransacao,
+} from "../../../../types/pixTransacoes";
 import {
   formatarDataPix,
   formatarMoedaPix,
+  formatarRifasPix,
 } from "../../../../utils/pixTransacoesUtils";
-import {
-  StatusConciliacaoChip,
-  StatusPagamentoChip,
-} from "../shared/PixStatusChips";
+import { podeValidarPixTransacao } from "../../../../utils/pixValidacaoUtils";
+import { PixValidacaoActions } from "../shared/PixValidacaoActions";
+import { PixValidacaoChip } from "../shared/PixValidacaoChip";
 
 interface PixTransacaoCardProps {
   transacao: PixTransacao;
+  acaoEmAndamento?: AcaoValidacaoPix;
+  onAceitarTransacao?: (transacaoId: string) => void | Promise<unknown>;
+  onNegarTransacao?: (transacaoId: string) => void | Promise<unknown>;
 }
 
-function truncarReferenceId(referenceId: string) {
-  if (referenceId.length <= 28) return referenceId;
-
-  return `${referenceId.slice(0, 18)}...${referenceId.slice(-6)}`;
-}
-
-export function PixTransacaoCard({ transacao }: PixTransacaoCardProps) {
+export function PixTransacaoCard({
+  transacao,
+  acaoEmAndamento,
+  onAceitarTransacao,
+  onNegarTransacao,
+}: PixTransacaoCardProps) {
   const valor =
     transacao.statusPagamento === "PAID"
       ? transacao.valorPago
@@ -31,21 +35,17 @@ export function PixTransacaoCard({ transacao }: PixTransacaoCardProps) {
   const dataLabel = formatarDataPix(
     transacao.dataPagamento || transacao.dataCriacao,
   );
-
-  const copiarReferenceId = async () => {
-    try {
-      await navigator.clipboard?.writeText(transacao.referenceId);
-    } catch {
-      // Em navegadores mobile sem permissão de clipboard, a ação falha sem quebrar a UI.
-    }
-  };
+  const mostrarAcoesValidacao = Boolean(
+    (onAceitarTransacao || onNegarTransacao) && podeValidarPixTransacao(transacao),
+  );
 
   return (
     <Paper
       elevation={0}
+      data-testid={`pix-transacao-${transacao.id}`}
       sx={{
         p: 1.75,
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#FFFFFF",
         border: "1px solid rgba(2, 27, 22, 0.10)",
         borderLeft: "4px solid #063D31",
@@ -101,8 +101,7 @@ export function PixTransacaoCard({ transacao }: PixTransacaoCardProps) {
         </Box>
 
         <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-          <StatusPagamentoChip status={transacao.statusPagamento} />
-          <StatusConciliacaoChip status={transacao.statusConciliacao} />
+          <PixValidacaoChip transacao={transacao} />
         </Stack>
 
         <Box
@@ -138,89 +137,28 @@ export function PixTransacaoCard({ transacao }: PixTransacaoCardProps) {
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-          {transacao.rifas?.length ? (
-            transacao.rifas.map((rifa) => (
-              <Chip
-                key={rifa.numero}
-                label={`Rifa ${rifa.numero}`}
-                size="small"
-                sx={{
-                  height: 28,
-                  borderRadius: 2,
-                  bgcolor: "#EAF3EF",
-                  color: "#063D31",
-                  border: "1px solid rgba(6, 61, 49, 0.14)",
-                  fontWeight: 850,
-                  fontSize: "0.75rem",
-                }}
-              />
-            ))
-          ) : (
-            <Typography sx={{ color: "#526760", fontSize: "0.82rem" }}>
-              Sem rifas vinculadas
-            </Typography>
-          )}
-        </Stack>
+        <Typography sx={{ color: "#526760", fontSize: "0.84rem" }}>
+          {transacao.rifas?.length
+            ? `Rifas ${formatarRifasPix(transacao)}`
+            : "Sem rifas vinculadas"}
+        </Typography>
 
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          spacing={1}
-          sx={{
-            pt: 0.25,
-            borderTop: "1px solid rgba(2, 27, 22, 0.08)",
-          }}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography
-              sx={{
-                color: "#526760",
-                fontSize: "0.7rem",
-                fontWeight: 850,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-              }}
-            >
-              Reference ID
-            </Typography>
-
-            <Typography
-              sx={{
-                color: "#021B16",
-                fontSize: "0.82rem",
-                fontWeight: 750,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                maxWidth: "72vw",
-              }}
-              title={transacao.referenceId}
-            >
-              {truncarReferenceId(transacao.referenceId)}
-            </Typography>
-          </Box>
-
-          <IconButton
-            size="small"
-            aria-label="Copiar reference ID"
-            onClick={copiarReferenceId}
+        {mostrarAcoesValidacao && (
+          <Box
             sx={{
-              width: 38,
-              height: 38,
-              borderRadius: 2,
-              color: "#063D31",
-              bgcolor: "#EAF3EF",
-              flexShrink: 0,
-              "&:hover": {
-                bgcolor: "#DDECE6",
-              },
+              pt: 0.25,
+              borderTop: "1px solid rgba(2, 27, 22, 0.08)",
             }}
           >
-            <ContentCopyOutlinedIcon fontSize="small" />
-          </IconButton>
-        </Stack>
+            <PixValidacaoActions
+              transacao={transacao}
+              acaoEmAndamento={acaoEmAndamento}
+              onAceitar={onAceitarTransacao}
+              onNegar={onNegarTransacao}
+              compacto
+            />
+          </Box>
+        )}
       </Stack>
     </Paper>
   );

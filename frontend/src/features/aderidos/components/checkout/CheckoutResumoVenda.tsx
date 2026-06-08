@@ -23,7 +23,7 @@ export function CheckoutResumoVenda({
           xs: 2,
           sm: 2.25,
         },
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#F6F8F7",
         border: "1px solid rgba(2, 27, 22, 0.08)",
       }}
@@ -74,7 +74,7 @@ export function CheckoutResumoVenda({
               mt: 0.25,
             }}
           >
-            Confira os números antes de enviar.
+            Confira os números antes de gerar o Pix.
           </Typography>
         </Box>
       </Stack>
@@ -128,7 +128,7 @@ export function CheckoutResumoVenda({
               sm: "1.55rem",
             },
             lineHeight: 1,
-            letterSpacing: "-0.035em",
+            letterSpacing: 0,
           }}
         >
           {formatarMoedaBR(valorTotal)}

@@ -8,10 +8,14 @@ import { FieldErrors, UseFormSetValue } from "react-hook-form";
 
 import { CheckoutFormData } from "./checkoutSchema";
 
+type CheckoutUploadComprovanteFormData = CheckoutFormData & {
+  comprovante?: File;
+};
+
 interface CheckoutUploadComprovanteProps {
   arquivo?: File;
-  setValue: UseFormSetValue<CheckoutFormData>;
-  errors: FieldErrors<CheckoutFormData>;
+  setValue: UseFormSetValue<CheckoutUploadComprovanteFormData>;
+  errors: FieldErrors<CheckoutUploadComprovanteFormData>;
 }
 
 export function CheckoutUploadComprovante({
@@ -25,10 +29,11 @@ export function CheckoutUploadComprovante({
         component="label"
         fullWidth
         variant="outlined"
+        data-testid="checkout-comprovante-botao"
         startIcon={arquivo ? <CheckCircleOutlineIcon /> : <CloudUploadIcon />}
         sx={{
           minHeight: 54,
-          borderRadius: 3,
+          borderRadius: 2,
           textTransform: "none",
           fontWeight: 900,
           justifyContent: "flex-start",
@@ -49,6 +54,7 @@ export function CheckoutUploadComprovante({
         <input
           hidden
           type="file"
+          data-testid="checkout-comprovante-input"
           accept="image/*,.pdf"
           onChange={(event) => {
             const arquivoSelecionado = event.target.files?.[0];

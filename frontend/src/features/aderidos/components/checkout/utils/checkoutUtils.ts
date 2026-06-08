@@ -2,8 +2,6 @@
 // ARQUIVO: frontend/src/features/aderidos/components/checkout/utils/checkoutUtils.ts
 // ============================================================================
 
-export const CHAVE_PIX_COMISSAO = "comissao0026@gmail.com";
-
 export function aplicarMascaraTelefone(valor: string) {
   const somenteNumeros = valor.replace(/\D/g, "").slice(0, 11);
 
@@ -30,4 +28,16 @@ export function aplicarMascaraTelefone(valor: string) {
 
 export function calcularValorTotalRifas(numerosRifas: string[]) {
   return numerosRifas.length * 10;
+}
+
+export function formatarExpiracaoPix(data?: string | null) {
+  if (!data) return "Expiração não informada";
+
+  const dataConvertida = new Date(data);
+
+  if (Number.isNaN(dataConvertida.getTime())) {
+    return "Expiração inválida";
+  }
+
+  return dataConvertida.toLocaleString("pt-BR");
 }

@@ -1,6 +1,7 @@
 // ============================================================================
 // ARQUIVO: frontend/src/features/aderidos/types/painelAderido.ts
 // ============================================================================
+import { NotificacaoRifa } from "@/shared/types/notificacoes";
 
 export type VisaoPainelAderido = "geral" | "recusadas";
 
@@ -32,14 +33,7 @@ export interface RifaAderido {
   motivo_recusa?: string | null;
 }
 
-export interface NotificacaoAderido {
-  id: string;
-  titulo?: string;
-  mensagem?: string;
-  lida: boolean;
-  data_criacao?: string;
-  rifas?: string[];
-}
+export type NotificacaoAderido = NotificacaoRifa;
 
 export interface GrupoRifasRecusadas {
   comprador: string;
@@ -48,4 +42,10 @@ export interface GrupoRifasRecusadas {
   data: string | null;
   motivo: string;
   bilhetes: string[];
+}
+
+export interface DadosCorrecaoRecusa {
+  nome: string;
+  email: string;
+  telefone: string;
 }

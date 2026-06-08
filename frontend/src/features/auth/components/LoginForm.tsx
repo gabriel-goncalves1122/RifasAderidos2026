@@ -74,6 +74,7 @@ export function LoginForm({
           fullWidth
           id="email"
           label="E-mail"
+          inputProps={{ "data-testid": "login-email" }}
           autoComplete="email"
           autoFocus
           disabled={isUIBlocked}
@@ -87,6 +88,7 @@ export function LoginForm({
           fullWidth
           id="password"
           label="Senha"
+          inputProps={{ "data-testid": "login-password" }}
           autoComplete="current-password"
           type={showPassword ? "text" : "password"}
           disabled={isUIBlocked}
@@ -126,6 +128,7 @@ export function LoginForm({
           type="submit"
           fullWidth
           variant="contained"
+          data-testid="login-submit"
           disabled={isUIBlocked}
           sx={authStyles.submitButton}
         >

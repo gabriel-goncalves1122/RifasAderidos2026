@@ -18,6 +18,10 @@ export interface DadosCorrigirRifas extends DadosCompradorRifa {
   comprovante: File;
 }
 
+export interface DadosCorrigirDadosRifas extends DadosCompradorRifa {
+  numerosRifas: string[];
+}
+
 export interface ResultadoMinhasRifas {
   bilhetes?: unknown[];
 }

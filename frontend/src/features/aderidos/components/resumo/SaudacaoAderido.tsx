@@ -10,12 +10,13 @@ interface SaudacaoAderidoProps {
 }
 
 export function SaudacaoAderido({ primeiroNome }: SaudacaoAderidoProps) {
-  const nomeSeguro = primeiroNome?.trim() || "Aderido";
+  const nome = primeiroNome?.trim();
+  const nomeSeguro = nome && nome.toLowerCase() !== "aderido" ? nome : "";
 
   return (
     <Box>
       <Typography component="h2" sx={painelAderidoStyles.saudacaoTitulo}>
-        Olá, {nomeSeguro}
+        {nomeSeguro ? `Olá, ${nomeSeguro}` : "Olá"}
       </Typography>
 
       {/* <Typography sx={painelAderidoStyles.saudacaoSubtitulo}>

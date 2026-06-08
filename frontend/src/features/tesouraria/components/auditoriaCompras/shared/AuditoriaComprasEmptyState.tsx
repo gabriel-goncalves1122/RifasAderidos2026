@@ -9,7 +9,7 @@ export function AuditoriaComprasEmptyState() {
         py: 7,
         px: 2,
         textAlign: "center",
-        borderRadius: 3,
+        borderRadius: 2.25,
         bgcolor: "#FFFFFF",
         border: "1px dashed rgba(2, 27, 22, 0.22)",
       }}
