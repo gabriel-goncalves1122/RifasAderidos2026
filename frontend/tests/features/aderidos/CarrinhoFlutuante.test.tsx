@@ -13,6 +13,7 @@ vi.mock("@/features/aderidos/hooks/useKeyboardHeight", () => ({
 }));
 
 import { CarrinhoFlutuante } from "@/features/aderidos/CarrinhoFlutuante";
+import { painelAderidoStyles } from "@/features/aderidos/styles/painelAderidoStyles";
 
 describe("Componente <CarrinhoFlutuante />", () => {
   const mockOnVenderClick = vi.fn();
@@ -49,6 +50,21 @@ describe("Componente <CarrinhoFlutuante />", () => {
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText(/rifas selecionadas/i)).toBeInTheDocument();
     expect(screen.getByText("R$ 30,00")).toBeInTheDocument();
+  });
+
+  it("Deve usar superfície sólida, borda forte e animação de entrada", () => {
+    expect(painelAderidoStyles.carrinhoFixoArea).toMatchObject({
+      bgcolor: "#FFFFFF",
+      maxHeight: "100dvh",
+    });
+    expect(painelAderidoStyles.carrinhoFixoCard).toMatchObject({
+      bgcolor: "#FFFFFF",
+      border: "2px solid rgba(6,61,49,0.16)",
+    });
+    expect(painelAderidoStyles.carrinhoAnimado).toMatchObject({
+      opacity: 1,
+      transform: "translateY(0)",
+    });
   });
 
   it("Deve disparar a função de Vender ao clicar no botão", () => {
