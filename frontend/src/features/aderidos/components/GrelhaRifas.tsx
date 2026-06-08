@@ -51,12 +51,12 @@ function montarEstiloRifa(
     boxShadow: "0 3px 8px rgba(2, 27, 22, 0.045)",
 
     "&:hover": {
-      bgcolor: podeClicar ? config.hoverBg : config.bg,
+      bgcolor: config.hoverBg,
       borderColor: podeClicar ? "#8DBEAD" : config.border,
       transform: podeClicar ? "translateY(-1px)" : "none",
       boxShadow: podeClicar
         ? "0 8px 16px rgba(2, 27, 22, 0.08)"
-        : "0 3px 8px rgba(2, 27, 22, 0.045)",
+        : "0 6px 14px rgba(2, 27, 22, 0.065)",
     },
 
     "&.Mui-disabled": {

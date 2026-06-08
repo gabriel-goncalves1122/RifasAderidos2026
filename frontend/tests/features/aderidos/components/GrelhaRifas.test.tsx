@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 
 import { GrelhaRifas } from "@/features/aderidos/components/GrelhaRifas";
+import { painelAderidoStyles } from "@/features/aderidos/styles/painelAderidoStyles";
 
 const rifas = [
   {
@@ -58,6 +59,21 @@ describe("Componente <GrelhaRifas />", () => {
     expect(screen.getByText("002")).toBeInTheDocument();
     expect(screen.getByText("003")).toBeInTheDocument();
     expect(screen.getByText("004")).toBeInTheDocument();
+  });
+
+  it("Deve usar grid XS respirado e cards com affordance forte", () => {
+    expect(painelAderidoStyles.gridRifas).toMatchObject({
+      gridTemplateColumns: {
+        xs: "repeat(3, minmax(76px, 1fr))",
+      },
+      gap: 1.5,
+    });
+    expect(painelAderidoStyles.rifaButton).toMatchObject({
+      minHeight: {
+        xs: 56,
+      },
+      border: "2px solid",
+    });
   });
 
   it("Deve permitir selecionar apenas rifas disponíveis", () => {

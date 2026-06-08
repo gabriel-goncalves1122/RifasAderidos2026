@@ -99,13 +99,13 @@ const ESTILOS_ATIVOS_POR_FILTRO: Record<FiltroRifasAderido, SxProps<Theme>> = {
   },
 
   recusado: {
-    bgcolor: "#FDE8E8",
-    color: "#7A1F1F",
-    borderColor: "#D86B6B",
-    boxShadow: "0 8px 16px rgba(122, 31, 31, 0.13)",
+    bgcolor: "#FAD6D6",
+    color: "#8E1F1F",
+    borderColor: "#C84F4F",
+    boxShadow: "0 8px 16px rgba(142, 31, 31, 0.13)",
 
     "&:hover": {
-      bgcolor: "#FAD6D6",
+      bgcolor: "#F2C3C3",
       borderColor: "#C84F4F",
     },
   },
@@ -151,6 +151,7 @@ export function FiltrosRifas({ filtro, onChangeFiltro }: FiltrosRifasProps) {
             clickable
             role="tab"
             aria-selected={ativo}
+            tabIndex={ativo ? 0 : -1}
             onClick={() => onChangeFiltro(item.value)}
             sx={montarEstiloFiltro(ativo, item.value)}
           />
