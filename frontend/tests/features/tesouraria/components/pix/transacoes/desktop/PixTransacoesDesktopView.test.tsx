@@ -6,7 +6,7 @@ import { pixTransacoesMock } from "@/features/tesouraria/mocks/pixTransacoesMock
 import { calcularResumoPixTransacoes } from "@/features/tesouraria/utils/pixTransacoesUtils";
 
 describe("Componente: PixTransacoesDesktopView", () => {
-  it("Deve renderizar a visão desktop com cards, filtros e tabela", () => {
+  it("Deve renderizar a visão desktop com filtros, legenda e tabela", () => {
     render(
       <PixTransacoesDesktopView
         resumo={calcularResumoPixTransacoes(pixTransacoesMock)}
@@ -18,7 +18,9 @@ describe("Componente: PixTransacoesDesktopView", () => {
       />,
     );
 
-    expect(screen.getAllByText("Para validar").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Aguardando validação:/i)).toBeInTheDocument();
+    expect(screen.queryByText("Validadas")).not.toBeInTheDocument();
+    expect(screen.getByText("Legenda de status")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Buscar Pix")).toBeInTheDocument();
 
     expect(
