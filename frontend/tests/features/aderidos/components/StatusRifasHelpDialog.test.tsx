@@ -39,7 +39,7 @@ describe("Componente: StatusRifasHelpDialog", () => {
     expect(screen.getByText(/clique para ver detalhes/i)).toBeInTheDocument();
 
     expect(
-      screen.getByText(/precisa de correção ou reenvio/i),
+      screen.getByText(/precisa de correção antes de seguir/i),
     ).toBeInTheDocument();
   });
 

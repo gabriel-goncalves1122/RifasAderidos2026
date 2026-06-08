@@ -1,12 +1,14 @@
 // ============================================================================
 // ARQUIVO: frontend/tests/features/aderidos/hooks/usePainelAderido.test.tsx
 // ============================================================================
+import { PropsWithChildren } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   buscarMinhasRifas: vi.fn(),
-  corrigirRifasRecusadas: vi.fn(),
+  corrigirDadosRifasRecusadas: vi.fn(),
 
   buscarNotificacoes: vi.fn(),
   marcarNotificacoesLidas: vi.fn(),
@@ -22,7 +24,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/features/rifas/hooks/useRifas", () => ({
   useRifas: () => ({
     buscarMinhasRifas: mocks.buscarMinhasRifas,
-    corrigirRifasRecusadas: mocks.corrigirRifasRecusadas,
+    corrigirDadosRifasRecusadas: mocks.corrigirDadosRifasRecusadas,
   }),
 }));
 
@@ -74,6 +76,29 @@ const notificacoesMock = [
   },
 ];
 
+function criarQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        staleTime: 60_000,
+        gcTime: Infinity,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
+}
+
+function criarWrapper(queryClient = criarQueryClient()) {
+  return function Wrapper({ children }: PropsWithChildren) {
+    return (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+  };
+}
+
 describe("Hook: usePainelAderido", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -81,11 +106,11 @@ describe("Hook: usePainelAderido", () => {
     mocks.buscarMinhasRifas.mockResolvedValue(rifasMock);
     mocks.buscarNotificacoes.mockResolvedValue(notificacoesMock);
     mocks.marcarNotificacoesLidas.mockResolvedValue(undefined);
-    mocks.corrigirRifasRecusadas.mockResolvedValue(true);
+    mocks.corrigirDadosRifasRecusadas.mockResolvedValue(true);
   });
 
   it("Deve buscar rifas e notificações ao inicializar o painel", async () => {
-    renderHook(() => usePainelAderido());
+    renderHook(() => usePainelAderido(), { wrapper: criarWrapper() });
 
     await waitFor(() => {
       expect(mocks.buscarMinhasRifas).toHaveBeenCalledTimes(1);
@@ -94,7 +119,9 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Deve montar o primeiro nome do usuário logado", async () => {
-    const { result } = renderHook(() => usePainelAderido());
+    const { result } = renderHook(() => usePainelAderido(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.carregando).toBe(false);
@@ -104,7 +131,9 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Deve armazenar as rifas retornadas pelo hook de rifas", async () => {
-    const { result } = renderHook(() => usePainelAderido());
+    const { result } = renderHook(() => usePainelAderido(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.minhasRifas).toHaveLength(3);
@@ -115,7 +144,9 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Deve selecionar e remover uma rifa disponível da seleção", async () => {
-    const { result } = renderHook(() => usePainelAderido());
+    const { result } = renderHook(() => usePainelAderido(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.minhasRifas).toHaveLength(3);
@@ -135,7 +166,9 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Não deve selecionar rifas que não estejam disponíveis", async () => {
-    const { result } = renderHook(() => usePainelAderido());
+    const { result } = renderHook(() => usePainelAderido(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.minhasRifas).toHaveLength(3);
@@ -150,5 +183,88 @@ describe("Hook: usePainelAderido", () => {
     });
 
     expect(result.current.selecionadas).toEqual([]);
+  });
+
+  it("Deve corrigir dados de rifas recusadas e recarregar o painel", async () => {
+    const { result } = renderHook(() => usePainelAderido(), {
+      wrapper: criarWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.carregando).toBe(false);
+    });
+
+    await act(async () => {
+      const sucesso = await result.current.corrigirDadosRecusados(["003"], {
+        nome: "Ana",
+        email: "ana@email.com",
+        telefone: "(35) 99999-9999",
+      });
+
+      expect(sucesso).toBe(true);
+    });
+
+    expect(mocks.corrigirDadosRifasRecusadas).toHaveBeenCalledWith(["003"], {
+      nome: "Ana",
+      email: "ana@email.com",
+      telefone: "(35) 99999-9999",
+    });
+    expect(mocks.buscarMinhasRifas).toHaveBeenCalledTimes(2);
+  });
+
+  it("Deve marcar notificações como lidas de forma otimista", async () => {
+    const { result } = renderHook(() => usePainelAderido(), {
+      wrapper: criarWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.notificacoesNaoLidas).toBe(1);
+    });
+
+    await act(async () => {
+      await result.current.abrirSidebarNotificacoes();
+    });
+
+    expect(mocks.marcarNotificacoesLidas).toHaveBeenCalledWith(["NOT_001"]);
+    expect(result.current.drawerNotificacoesAberto).toBe(true);
+    expect(result.current.notificacoesNaoLidas).toBe(0);
+  });
+
+  it("Deve reaproveitar rifas e notificações em cache para o mesmo usuário", async () => {
+    const queryClient = criarQueryClient();
+    const wrapper = criarWrapper(queryClient);
+
+    const primeiraRenderizacao = renderHook(() => usePainelAderido(), {
+      wrapper,
+    });
+
+    await waitFor(() => {
+      expect(primeiraRenderizacao.result.current.minhasRifas).toHaveLength(3);
+    });
+
+    primeiraRenderizacao.unmount();
+
+    const segundaRenderizacao = renderHook(() => usePainelAderido(), {
+      wrapper,
+    });
+
+    expect(segundaRenderizacao.result.current.minhasRifas).toHaveLength(3);
+    expect(mocks.buscarMinhasRifas).toHaveBeenCalledTimes(1);
+    expect(mocks.buscarNotificacoes).toHaveBeenCalledTimes(1);
+  });
+
+  it("Deve manter a tela renderizável quando a busca de rifas falhar", async () => {
+    mocks.buscarMinhasRifas.mockRejectedValueOnce(new Error("API indisponível"));
+
+    const { result } = renderHook(() => usePainelAderido(), {
+      wrapper: criarWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.carregando).toBe(false);
+    });
+
+    expect(result.current.minhasRifas).toEqual([]);
+    expect(result.current.rifasFiltradas).toEqual([]);
   });
 });

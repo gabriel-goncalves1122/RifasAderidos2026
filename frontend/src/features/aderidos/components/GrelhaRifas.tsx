@@ -1,7 +1,8 @@
 // ============================================================================
 // ARQUIVO: frontend/src/features/aderidos/components/GrelhaRifas.tsx
 // ============================================================================
-import { Box, ButtonBase } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { Box, ButtonBase, Tooltip } from "@mui/material";
 
 import { painelAderidoStyles } from "../styles/painelAderidoStyles";
 import { RifaAderido } from "../types/painelAderido";
@@ -24,16 +25,16 @@ function montarEstiloRifa(
 
   if (isSelecionada) {
     return {
-      bgcolor: "#052E23",
+      bgcolor: "#063D31",
       color: "#FFFFFF",
-      borderColor: "#052E23",
-      boxShadow: "0 8px 16px rgba(5, 46, 35, 0.20)",
+      borderColor: "#063D31",
+      boxShadow: "0 8px 16px rgba(6, 61, 49, 0.20)",
 
       "&:hover": {
-        bgcolor: "#031F18",
-        borderColor: "#031F18",
+        bgcolor: "#021B16",
+        borderColor: "#021B16",
         transform: "translateY(-1px)",
-        boxShadow: "0 10px 20px rgba(5, 46, 35, 0.24)",
+        boxShadow: "0 10px 20px rgba(6, 61, 49, 0.24)",
       },
 
       "&.Mui-disabled": {
@@ -82,6 +83,16 @@ export function GrelhaRifas({
           const isSelecionada = selecionadas.includes(rifa.numero);
           const config = obterConfigStatusRifa(rifa.status);
           const podeClicar = config.selecionavel || config.abreDetalhes;
+          const tooltip = config.selecionavel
+            ? "Clique para vender"
+            : config.abreDetalhes
+              ? "Clique para ver detalhes"
+              : "";
+          const ariaLabel = config.selecionavel
+            ? `Rifa ${rifa.numero} disponível para vender`
+            : config.abreDetalhes
+              ? `Rifa ${rifa.numero} paga, clique para ver detalhes`
+              : `Rifa ${rifa.numero} - ${config.label}`;
 
           const handleClick = () => {
             // Rifas disponíveis entram ou saem da seleção atual.
@@ -96,21 +107,48 @@ export function GrelhaRifas({
             }
           };
 
-          return (
+          const botaoRifa = (
             <ButtonBase
               key={rifa.numero}
+              data-testid={`rifa-${rifa.numero}`}
               onClick={podeClicar ? handleClick : undefined}
               disabled={!podeClicar}
-              aria-label={`Rifa ${rifa.numero} - ${config.label}`}
+              aria-label={ariaLabel}
               aria-pressed={isSelecionada}
               sx={{
                 ...painelAderidoStyles.rifaButton,
-                cursor: podeClicar ? "pointer" : "default",
+                position: "relative",
+                cursor: config.abreDetalhes
+                  ? "help"
+                  : config.selecionavel
+                    ? "pointer"
+                    : "default",
                 ...montarEstiloRifa(rifa, isSelecionada, podeClicar),
               }}
             >
+              {config.abreDetalhes && (
+                <InfoOutlinedIcon
+                  data-testid={`rifa-${rifa.numero}-detalhes-icon`}
+                  sx={{
+                    position: "absolute",
+                    top: 4,
+                    right: 4,
+                    fontSize: 15,
+                    color: "#063D31",
+                  }}
+                />
+              )}
+
               {rifa.numero}
             </ButtonBase>
+          );
+
+          if (!tooltip) return botaoRifa;
+
+          return (
+            <Tooltip key={rifa.numero} title={tooltip} arrow>
+              {botaoRifa}
+            </Tooltip>
           );
         })}
       </Box>

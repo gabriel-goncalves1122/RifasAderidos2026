@@ -2,11 +2,25 @@
 // ARQUIVO: frontend/src/views/components/__tests__/CarrinhoFlutuante.test.tsx
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, it, expect, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  useKeyboardHeight: vi.fn(() => 0),
+}));
+
+vi.mock("@/features/aderidos/hooks/useKeyboardHeight", () => ({
+  useKeyboardHeight: mocks.useKeyboardHeight,
+}));
+
 import { CarrinhoFlutuante } from "@/features/aderidos/CarrinhoFlutuante";
 
 describe("Componente <CarrinhoFlutuante />", () => {
   const mockOnVenderClick = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.useKeyboardHeight.mockReturnValue(0);
+  });
 
   it("Não deve renderizar ABSOLUTAMENTE NADA se a quantidade for 0", () => {
     render(
@@ -50,5 +64,20 @@ describe("Componente <CarrinhoFlutuante />", () => {
     fireEvent.click(btnVender);
 
     expect(mockOnVenderClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("Deve deslocar o carrinho quando houver teclado virtual", () => {
+    mocks.useKeyboardHeight.mockReturnValue(180);
+
+    render(
+      <CarrinhoFlutuante
+        quantidade={2}
+        valorTotal={20}
+        onVenderClick={mockOnVenderClick}
+      />,
+    );
+
+    expect(screen.getByTestId("carrinho-vender").closest("[data-keyboard-height]"))
+      .toHaveAttribute("data-keyboard-height", "180");
   });
 });

@@ -5,6 +5,7 @@ import { fetchAPI } from "@/shared/services/api";
 
 import {
   DadosCorrigirRifas,
+  DadosCorrigirDadosRifas,
   DadosFinalizarVenda,
   EnviarCorrecaoParams,
   EnviarVendaParams,
@@ -40,7 +41,9 @@ export const rifaService = {
   },
 
   async finalizarVenda(dados: DadosFinalizarVenda) {
-    console.log("[RifaService] Finalizar venda chamado");
+    if (import.meta.env.DEV) {
+      console.log("[RifaService] Finalizar venda chamado");
+    }
 
     const comprovanteUrl = await rifasStorageService.uploadComprovante({
       arquivo: dados.comprovante,
@@ -52,9 +55,11 @@ export const rifaService = {
       },
     });
 
-    console.log(
-      "[RifaService] Upload concluído. Agora chamando API /rifas/vender",
-    );
+    if (import.meta.env.DEV) {
+      console.log(
+        "[RifaService] Upload concluído. Agora chamando API /rifas/vender",
+      );
+    }
 
     await this.enviarVenda({
       nome: dados.nome,
@@ -64,7 +69,9 @@ export const rifaService = {
       comprovanteUrl,
     });
 
-    console.log("[RifaService] API /rifas/vender respondeu com sucesso");
+    if (import.meta.env.DEV) {
+      console.log("[RifaService] API /rifas/vender respondeu com sucesso");
+    }
 
     return true;
   },
@@ -102,6 +109,22 @@ export const rifaService = {
       telefone: dados.telefone,
       email: dados.email,
       comprovanteUrl,
+    });
+
+    return true;
+  },
+
+  async corrigirDadosRifasRecusadas({
+    numerosRifas,
+    nome,
+    telefone,
+    email,
+  }: DadosCorrigirDadosRifas) {
+    await fetchAPI("/rifas/corrigir-dados", "POST", {
+      numerosRifas,
+      nome,
+      telefone,
+      email,
     });
 
     return true;

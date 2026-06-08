@@ -12,7 +12,7 @@ describe("Componente: CheckoutResumoVenda", () => {
 
     expect(screen.getByText("Resumo da venda")).toBeInTheDocument();
     expect(
-      screen.getByText("Confira os números antes de enviar."),
+      screen.getByText("Confira os números antes de gerar o Pix."),
     ).toBeInTheDocument();
   });
 

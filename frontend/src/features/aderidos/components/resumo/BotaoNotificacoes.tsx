@@ -16,10 +16,10 @@ export function BotaoNotificacoes({
   onAbrirNotificacoes,
 }: BotaoNotificacoesProps) {
   return (
-    <Tooltip title="Avisos da tesouraria" arrow>
+    <Tooltip title="Notificações" arrow>
       <IconButton
         onClick={onAbrirNotificacoes}
-        aria-label="Abrir notificações da tesouraria"
+        aria-label="Abrir notificações"
         sx={painelAderidoStyles.notificacaoButton}
       >
         <Badge

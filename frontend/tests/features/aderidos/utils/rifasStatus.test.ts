@@ -37,6 +37,14 @@ describe("Utils: rifasStatus", () => {
     expect(obterConfigStatusRifa("recusado").selecionavel).toBe(false);
   });
 
+  it("Deve manter rifas em análise na mesma família amarela do filtro", () => {
+    const config = obterConfigStatusRifa("pendente");
+
+    expect(config.bg).toBe("#FFF4D8");
+    expect(config.color).toBe("#6B4A00");
+    expect(config.border).toBe("#CBA64D");
+  });
+
   it("Deve retornar uma configuração válida para status desconhecido", () => {
     const config = obterConfigStatusRifa("status_inexistente" as any);
 

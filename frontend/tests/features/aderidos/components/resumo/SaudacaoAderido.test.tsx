@@ -17,22 +17,22 @@ describe("Componente: SaudacaoAderido", () => {
     ).toBeInTheDocument();
   });
 
-  it("Deve usar Aderido quando o nome vier vazio", () => {
+  it("Deve usar saudação neutra quando o nome vier vazio", () => {
     render(<SaudacaoAderido primeiroNome="" />);
 
     expect(
       screen.getByRole("heading", {
-        name: /olá, aderido/i,
+        name: "Olá",
       }),
     ).toBeInTheDocument();
   });
 
-  it("Deve usar Aderido quando o nome vier apenas com espaços", () => {
+  it("Deve usar saudação neutra quando o nome vier apenas com espaços", () => {
     render(<SaudacaoAderido primeiroNome="     " />);
 
     expect(
       screen.getByRole("heading", {
-        name: /olá, aderido/i,
+        name: "Olá",
       }),
     ).toBeInTheDocument();
   });

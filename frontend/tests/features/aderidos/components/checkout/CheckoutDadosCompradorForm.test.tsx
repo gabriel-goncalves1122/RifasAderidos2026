@@ -1,87 +1,71 @@
-// ============================================================================
-// ARQUIVO: frontend/tests/features/rifas/components/CheckoutUploadComprovante.test.tsx
-// ============================================================================
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 
-import { CheckoutUploadComprovante } from "@/features/aderidos/components/checkout/CheckoutUploadComprovante";
+import { CheckoutDadosCompradorForm } from "@/features/aderidos/components/checkout/CheckoutDadosCompradorForm";
+import { CheckoutFormData } from "@/features/aderidos/components/checkout/checkoutSchema";
 
-describe("Componente: CheckoutUploadComprovante", () => {
-  it("Deve renderizar o botão para anexar comprovante quando não há arquivo", () => {
+function criarRegister() {
+  return vi.fn((name: keyof CheckoutFormData) => ({
+    name,
+    onBlur: vi.fn(),
+    ref: vi.fn(),
+  })) as unknown as UseFormRegister<CheckoutFormData>;
+}
+
+describe("Componente: CheckoutDadosCompradorForm", () => {
+  it("Deve exibir helper simples para e-mail opcional", () => {
     render(
-      <CheckoutUploadComprovante
-        arquivo={undefined}
-        setValue={vi.fn() as any}
+      <CheckoutDadosCompradorForm
+        register={criarRegister()}
+        setValue={vi.fn() as unknown as UseFormSetValue<CheckoutFormData>}
         errors={{}}
       />,
     );
 
     expect(
-      screen.getByRole("button", { name: /anexar comprovante do pix/i }),
+      screen.getByText(/Para enviar comprovante \(opcional\)/i),
     ).toBeInTheDocument();
   });
 
-  it("Deve exibir o nome do arquivo quando já existe comprovante anexado", () => {
-    const arquivo = new File(["conteudo"], "comprovante.png", {
-      type: "image/png",
-    });
-
-    render(
-      <CheckoutUploadComprovante
-        arquivo={arquivo}
-        setValue={vi.fn() as any}
-        errors={{}}
-      />,
-    );
-
-    expect(screen.getByText("comprovante.png")).toBeInTheDocument();
-  });
-
-  it("Deve chamar setValue com o arquivo selecionado", async () => {
-    const user = userEvent.setup();
+  it("Deve aplicar máscara de telefone usando setValue", () => {
     const setValue = vi.fn();
 
-    const arquivo = new File(["conteudo"], "pix.pdf", {
-      type: "application/pdf",
-    });
-
     render(
-      <CheckoutUploadComprovante
-        arquivo={undefined}
-        setValue={setValue as any}
+      <CheckoutDadosCompradorForm
+        register={criarRegister()}
+        setValue={setValue as unknown as UseFormSetValue<CheckoutFormData>}
         errors={{}}
       />,
     );
 
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    fireEvent.change(screen.getByTestId("checkout-telefone"), {
+      target: { value: "35999998888" },
+    });
 
-    await user.upload(input, arquivo);
-
-    expect(setValue).toHaveBeenCalledWith("comprovante", arquivo, {
+    expect(setValue).toHaveBeenCalledWith("telefone", "(35) 99999-8888", {
       shouldValidate: true,
       shouldDirty: true,
     });
   });
 
-  it("Deve mostrar mensagem de erro quando o comprovante for obrigatório", () => {
+  it("Deve priorizar mensagem de erro do e-mail", () => {
     render(
-      <CheckoutUploadComprovante
-        arquivo={undefined}
-        setValue={vi.fn() as any}
+      <CheckoutDadosCompradorForm
+        register={criarRegister()}
+        setValue={vi.fn() as unknown as UseFormSetValue<CheckoutFormData>}
         errors={{
-          comprovante: {
-            type: "required",
-            message: "Anexe o comprovante do PIX para finalizar a venda.",
+          email: {
+            type: "email",
+            message: "E-mail inválido.",
           },
         }}
       />,
     );
 
+    expect(screen.getByText("E-mail inválido.")).toBeInTheDocument();
     expect(
-      screen.getByText("Anexe o comprovante do PIX para finalizar a venda."),
-    ).toBeInTheDocument();
+      screen.queryByText(/Para enviar comprovante \(opcional\)/i),
+    ).not.toBeInTheDocument();
   });
 });

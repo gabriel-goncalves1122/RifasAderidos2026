@@ -21,12 +21,10 @@ describe("Componente <EstatisticasAderido />", () => {
 
     expect(screen.getByText(/Olá, Gabriel/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/Valor confirmado pela tesouraria/i),
+      screen.getByText(/Confirmado nas vendas aprovadas/i),
     ).toBeInTheDocument();
     expect(screen.getByText(/R\$\s*250,00/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Nenhuma correção no momento/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Tudo certo agora/i)).toBeInTheDocument();
   });
 
   it("Deve abrir notificações ao clicar no botão de avisos", () => {
@@ -45,7 +43,7 @@ describe("Componente <EstatisticasAderido />", () => {
 
     fireEvent.click(
       screen.getByRole("button", {
-        name: /Abrir notificações da tesouraria/i,
+        name: /Abrir notificações/i,
       }),
     );
 
@@ -66,9 +64,9 @@ describe("Componente <EstatisticasAderido />", () => {
       />,
     );
 
-    expect(screen.getByText(/1 correção pendente/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 correção aberta/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Corrigir/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Revisar/i }));
 
     expect(mockAbrirRecusadas).toHaveBeenCalledTimes(1);
   });

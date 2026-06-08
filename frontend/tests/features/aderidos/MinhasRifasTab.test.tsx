@@ -61,7 +61,7 @@ function criarPainelMock(
     abrirSidebarNotificacoes: vi.fn(),
     alternarSelecaoRifa: vi.fn(),
     finalizarVendaComSucesso: vi.fn(),
-    reenviarComprovanteRecusado: vi.fn(),
+    corrigirDadosRecusados: vi.fn(),
 
     ...overrides,
   } as any;

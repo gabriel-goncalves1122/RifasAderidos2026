@@ -14,7 +14,7 @@ interface CardArrecadacaoProps {
 export function CardArrecadacao({ valorArrecadado }: CardArrecadacaoProps) {
   return (
     <Box sx={painelAderidoStyles.resumoCompactoItem}>
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack sx={painelAderidoStyles.resumoMetaLinha}>
         <Box sx={painelAderidoStyles.resumoIconBox}>
           <AccountBalanceWalletOutlinedIcon fontSize="small" />
         </Box>
@@ -24,13 +24,15 @@ export function CardArrecadacao({ valorArrecadado }: CardArrecadacaoProps) {
         </Typography>
       </Stack>
 
-      <Typography sx={painelAderidoStyles.resumoCardValor}>
-        {formatarMoedaBR(valorArrecadado)}
-      </Typography>
+      <Box sx={painelAderidoStyles.resumoConteudoLinha}>
+        <Typography sx={painelAderidoStyles.resumoCardValor}>
+          {formatarMoedaBR(valorArrecadado)}
+        </Typography>
 
-      <Typography sx={painelAderidoStyles.resumoCardDescricao}>
-        Valor confirmado pela tesouraria.
-      </Typography>
+        <Typography sx={painelAderidoStyles.resumoCardDescricao}>
+          Confirmado nas vendas aprovadas.
+        </Typography>
+      </Box>
     </Box>
   );
 }

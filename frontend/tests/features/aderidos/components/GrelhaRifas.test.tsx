@@ -2,6 +2,7 @@
 // ARQUIVO: frontend/tests/features/rifas/components/GrelhaRifas.test.tsx
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 
 import { GrelhaRifas } from "@/features/aderidos/components/GrelhaRifas";
@@ -77,6 +78,70 @@ describe("Componente <GrelhaRifas />", () => {
 
     expect(mockToggle).toHaveBeenCalledTimes(1);
     expect(mockToggle).toHaveBeenCalledWith("001", "disponivel");
+  });
+
+  it("Deve identificar rifas pendentes como Em análise", () => {
+    render(
+      <GrelhaRifas
+        rifas={rifas}
+        selecionadas={[]}
+        onToggleSelecao={vi.fn()}
+        onAbrirDetalhes={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /Rifa 003 - Em análise/i }),
+    ).toBeDisabled();
+  });
+
+  it("Deve diferenciar rifa disponível como ação de venda", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GrelhaRifas
+        rifas={rifas}
+        selecionadas={[]}
+        onToggleSelecao={vi.fn()}
+        onAbrirDetalhes={vi.fn()}
+      />,
+    );
+
+    const rifaDisponivel = screen.getByRole("button", {
+      name: /Rifa 001 disponível para vender/i,
+    });
+
+    expect(rifaDisponivel).toHaveStyle({ cursor: "pointer" });
+
+    await user.hover(rifaDisponivel);
+
+    expect(await screen.findByText(/Clique para vender/i)).toBeInTheDocument();
+  });
+
+  it("Deve diferenciar rifa paga como ação de detalhes", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <GrelhaRifas
+        rifas={rifas}
+        selecionadas={[]}
+        onToggleSelecao={vi.fn()}
+        onAbrirDetalhes={vi.fn()}
+      />,
+    );
+
+    const rifaPaga = screen.getByRole("button", {
+      name: /Rifa 002 paga, clique para ver detalhes/i,
+    });
+
+    expect(rifaPaga).toHaveStyle({ cursor: "help" });
+    expect(screen.getByTestId("rifa-002-detalhes-icon")).toBeInTheDocument();
+
+    await user.hover(rifaPaga);
+
+    expect(
+      await screen.findByText(/Clique para ver detalhes/i),
+    ).toBeInTheDocument();
   });
 
   it("Deve abrir detalhes apenas ao clicar em rifa paga", () => {

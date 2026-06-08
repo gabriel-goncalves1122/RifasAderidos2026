@@ -39,14 +39,14 @@ const FILTROS: Array<{
 
 const ESTILOS_ATIVOS_POR_FILTRO: Record<FiltroRifasAderido, SxProps<Theme>> = {
   todas: {
-    bgcolor: "#052E23",
+    bgcolor: "#063D31",
     color: "#FFFFFF",
-    borderColor: "#052E23",
-    boxShadow: "0 8px 16px rgba(5, 46, 35, 0.16)",
+    borderColor: "#063D31",
+    boxShadow: "0 8px 16px rgba(6, 61, 49, 0.16)",
 
     "&:hover": {
-      bgcolor: "#031F18",
-      borderColor: "#031F18",
+      bgcolor: "#021B16",
+      borderColor: "#021B16",
     },
   },
 
@@ -77,12 +77,12 @@ const ESTILOS_ATIVOS_POR_FILTRO: Record<FiltroRifasAderido, SxProps<Theme>> = {
   pendente: {
     bgcolor: "#FFF4D8",
     color: "#6B4A00",
-    borderColor: "#D6A92B",
-    boxShadow: "0 8px 16px rgba(214, 169, 43, 0.18)",
+    borderColor: "#CBA64D",
+    boxShadow: "0 8px 16px rgba(107, 74, 0, 0.10)",
 
     "&:hover": {
       bgcolor: "#FFE9AD",
-      borderColor: "#C49A2C",
+      borderColor: "#A88123",
     },
   },
 

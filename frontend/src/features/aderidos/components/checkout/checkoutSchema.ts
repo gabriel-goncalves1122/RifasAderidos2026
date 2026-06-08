@@ -7,7 +7,6 @@ export interface CheckoutFormData {
   nome: string;
   telefone: string;
   email?: string;
-  comprovante: File;
 }
 
 export const checkoutSchema = yup
@@ -30,9 +29,5 @@ export const checkoutSchema = yup
           value.trim() === "" ||
           yup.string().email().isValidSync(value),
       ),
-
-    comprovante: yup
-      .mixed<File>()
-      .required("Anexe o comprovante do PIX para finalizar a venda."),
   })
   .required();

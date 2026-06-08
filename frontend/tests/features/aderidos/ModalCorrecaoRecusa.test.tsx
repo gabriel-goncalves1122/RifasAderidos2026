@@ -1,24 +1,26 @@
 // ============================================================================
 // ARQUIVO: frontend/tests/aderidos/ModalCorrecaoRecusa.test.tsx
 // ============================================================================
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { ModalCorrecaoRecusa } from "@/features/aderidos/ModalCorrecaoRecusa";
 
 describe("Componente: ModalCorrecaoRecusa", () => {
   const mockOnClose = vi.fn();
-  const mockOnReenviar = vi.fn().mockResolvedValue(undefined);
+  const mockOnCorrigirDados = vi.fn().mockResolvedValue(true);
 
   const mockGrupoRecusado = {
     comprador: "João Silva",
     email: "joao@email.com",
-    telefone: "11987654321", // Sem máscara, para testar se o useEffect formata
-    motivo: "Comprovativo ilegível ou cortado.",
+    telefone: "11987654321",
+    motivo: "Telefone do comprador divergente.",
     bilhetes: ["015", "016"],
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockOnCorrigirDados.mockResolvedValue(true);
   });
 
   it("Não deve renderizar nada se o grupoRecusado for nulo", () => {
@@ -27,125 +29,141 @@ describe("Componente: ModalCorrecaoRecusa", () => {
         open={true}
         onClose={mockOnClose}
         grupoRecusado={null}
-        onReenviar={mockOnReenviar}
+        onCorrigirDados={mockOnCorrigirDados}
       />,
     );
+
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("Deve renderizar os dados iniciais e aplicar a máscara ao telefone antigo", () => {
+  it("Deve renderizar os dados iniciais e aplicar máscara ao telefone", () => {
     render(
       <ModalCorrecaoRecusa
         open={true}
         onClose={mockOnClose}
         grupoRecusado={mockGrupoRecusado}
-        onReenviar={mockOnReenviar}
+        onCorrigirDados={mockOnCorrigirDados}
       />,
     );
 
-    // Verifica se os campos foram preenchidos corretamente
     expect(screen.getByDisplayValue("João Silva")).toBeInTheDocument();
     expect(screen.getByDisplayValue("joao@email.com")).toBeInTheDocument();
-
-    // Verifica se o telefone que era '11987654321' ganhou a máscara automaticamente
     expect(screen.getByDisplayValue("(11) 98765-4321")).toBeInTheDocument();
-
-    // Verifica os avisos na interface
     expect(
-      screen.getByText(/Comprovativo ilegível ou cortado/i),
+      screen.getByText(/Telefone do comprador divergente/i),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Confira DDD e número do WhatsApp/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Por que foi recusada/i)).toBeInTheDocument();
     expect(screen.getByText(/015, 016/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Anexar/i)).not.toBeInTheDocument();
   });
 
-  it("Deve aplicar a formatação do telefone enquanto o utilizador digita", () => {
+  it("Deve aplicar a formatação do telefone enquanto o usuário digita", () => {
     render(
       <ModalCorrecaoRecusa
         open={true}
         onClose={mockOnClose}
-        // Passamos um grupo sem telefone para simular a digitação do zero
         grupoRecusado={{ ...mockGrupoRecusado, telefone: "" }}
-        onReenviar={mockOnReenviar}
+        onCorrigirDados={mockOnCorrigirDados}
       />,
     );
 
-    // Procura o input pelo placeholder ou pela Label
     const inputTelefone = screen.getByLabelText(
       /Telefone do Comprador/i,
     ) as HTMLInputElement;
 
-    // Simula o utilizador a digitar tudo seguido
     fireEvent.change(inputTelefone, { target: { value: "21912345678" } });
 
-    // O valor deve ter sido formatado pela função interna
     expect(inputTelefone.value).toBe("(21) 91234-5678");
   });
 
-  it("Deve manter o botão de submissão desativado até que um ficheiro seja anexado", () => {
+  it("Deve manter o botão desativado quando faltar nome ou telefone", () => {
     render(
       <ModalCorrecaoRecusa
         open={true}
         onClose={mockOnClose}
-        grupoRecusado={mockGrupoRecusado}
-        onReenviar={mockOnReenviar}
+        grupoRecusado={{
+          ...mockGrupoRecusado,
+          comprador: "",
+          telefone: "",
+        }}
+        onCorrigirDados={mockOnCorrigirDados}
       />,
     );
 
-    const btnSubmit = screen.getByRole("button", {
-      name: /Reenviar para Análise/i,
-    });
-    expect(btnSubmit).toBeDisabled(); // Não há ficheiro, deve estar desativado
+    expect(
+      screen.getByRole("button", { name: /Corrigir e Reenviar/i }),
+    ).toBeDisabled();
   });
 
-  it("Deve permitir anexar um ficheiro e submeter os dados corretamente", async () => {
-    // Pode remover o { container } daqui do render, pois não vamos usá-arlo mais
+  it("Deve exigir confirmação dos dados antes de reenviar", () => {
     render(
       <ModalCorrecaoRecusa
         open={true}
         onClose={mockOnClose}
         grupoRecusado={mockGrupoRecusado}
-        onReenviar={mockOnReenviar}
+        onCorrigirDados={mockOnCorrigirDados}
       />,
     );
 
-    // 1. Simula a criação de um ficheiro de imagem falso
-    const ficheiroFalso = new File(["(conteudo binario)"], "recibo_novo.png", {
-      type: "image/png",
-    });
+    expect(
+      screen.getByRole("button", { name: /Corrigir e Reenviar/i }),
+    ).toBeDisabled();
 
-    // 2. CORREÇÃO: Procura no 'document' inteiro, pois o Modal é desenhado num Portal fora do container!
-    const inputFicheiro = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
-    expect(inputFicheiro).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText(/Verifiquei os dados/i));
 
-    // 3. Simula o upload do ficheiro
-    fireEvent.change(inputFicheiro, { target: { files: [ficheiroFalso] } });
+    expect(
+      screen.getByRole("button", { name: /Corrigir e Reenviar/i }),
+    ).not.toBeDisabled();
+  });
 
-    // 4. Verifica se o nome do ficheiro apareceu na interface e o botão ativou
-    expect(screen.getByText(/Anexado: recibo_novo.png/i)).toBeInTheDocument();
-    const btnSubmit = screen.getByRole("button", {
-      name: /Reenviar para Análise/i,
-    });
-    expect(btnSubmit).not.toBeDisabled();
+  it("Deve submeter somente os dados corrigidos", async () => {
+    render(
+      <ModalCorrecaoRecusa
+        open={true}
+        onClose={mockOnClose}
+        grupoRecusado={mockGrupoRecusado}
+        onCorrigirDados={mockOnCorrigirDados}
+      />,
+    );
 
-    // 5. Clica em enviar
-    fireEvent.click(btnSubmit);
+    fireEvent.click(screen.getByLabelText(/Verifiquei os dados/i));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Corrigir e Reenviar/i }),
+    );
 
-    // 6. Aguarda a resolução e verifica se a função onReenviar recebeu tudo formatado
     await waitFor(() => {
-      expect(mockOnReenviar).toHaveBeenCalledTimes(1);
-      expect(mockOnReenviar).toHaveBeenCalledWith(
-        ["015", "016"], // Array de bilhetes
-        ficheiroFalso, // O ficheiro anexado
-        {
-          nome: "João Silva",
-          email: "joao@email.com",
-          telefone: "(11) 98765-4321", // O telefone formatado
-        },
-      );
-
-      // O modal deve fechar automaticamente após o sucesso
+      expect(mockOnCorrigirDados).toHaveBeenCalledWith(["015", "016"], {
+        nome: "João Silva",
+        email: "joao@email.com",
+        telefone: "(11) 98765-4321",
+      });
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it("Deve exibir erro quando a correção estiver indisponível", async () => {
+    mockOnCorrigirDados.mockResolvedValueOnce(false);
+
+    render(
+      <ModalCorrecaoRecusa
+        open={true}
+        onClose={mockOnClose}
+        grupoRecusado={mockGrupoRecusado}
+        onCorrigirDados={mockOnCorrigirDados}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText(/Verifiquei os dados/i));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Corrigir e Reenviar/i }),
+    );
+
+    expect(
+      await screen.findByText(/Correção de dados indisponível/i),
+    ).toBeInTheDocument();
+    expect(mockOnClose).not.toHaveBeenCalled();
   });
 });

@@ -25,12 +25,19 @@ interface Props {
   onLiberarRifas: (numeros: string[]) => void;
 }
 
+interface GrupoRecusado {
+  comprador: string;
+  data?: string;
+  motivo: string;
+  bilhetes: string[];
+}
+
 export function PainelRecusadas({ rifasRecusadas, onLiberarRifas }: Props) {
   if (rifasRecusadas.length === 0) return null;
 
   // Agrupa as rifas pelo comprador e data
   const gruposRecusados = Object.values(
-    rifasRecusadas.reduce((acc: any, rifa) => {
+    rifasRecusadas.reduce<Record<string, GrupoRecusado>>((acc, rifa) => {
       const key = `${rifa.comprador_nome}-${rifa.data_reserva}`;
       if (!acc[key]) {
         acc[key] = {
@@ -43,14 +50,14 @@ export function PainelRecusadas({ rifasRecusadas, onLiberarRifas }: Props) {
       acc[key].bilhetes.push(rifa.numero);
       return acc;
     }, {}),
-  ) as any[];
+  );
 
   return (
     <Box
       sx={{
         bgcolor: "#fffdfa",
         p: 2,
-        borderRadius: 3,
+        borderRadius: 2.25,
         border: "1px solid",
         borderColor: "error.light",
         height: "100%",
@@ -65,8 +72,7 @@ export function PainelRecusadas({ rifasRecusadas, onLiberarRifas }: Props) {
         <ReportGmailerrorredIcon /> Vendas Recusadas
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        A tesouraria invalidou os comprovativos abaixo. Reveja o motivo e libere
-        as rifas para tentar vender novamente.
+        Reveja o motivo e libere as rifas para tentar vender novamente.
       </Typography>
 
       {gruposRecusados.map((grupo, idx) => (
@@ -74,6 +80,7 @@ export function PainelRecusadas({ rifasRecusadas, onLiberarRifas }: Props) {
           key={idx}
           sx={{
             mb: 2,
+            borderRadius: 2,
             borderLeft: "4px solid",
             borderColor: "error.main",
             boxShadow: 1,
@@ -101,7 +108,7 @@ export function PainelRecusadas({ rifasRecusadas, onLiberarRifas }: Props) {
             </Typography>
 
             <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mb: 2 }}>
-              {grupo.bilhetes.map((b: string) => (
+              {grupo.bilhetes.map((b) => (
                 <Chip
                   key={b}
                   size="small"

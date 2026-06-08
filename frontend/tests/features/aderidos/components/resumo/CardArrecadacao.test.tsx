@@ -33,11 +33,11 @@ describe("Componente: CardArrecadacao", () => {
     expect(buscarTextoNormalizado("R$ 0,00")).toBeInTheDocument();
   });
 
-  it("Deve renderizar a descrição de confirmação pela tesouraria", () => {
+  it("Deve renderizar a microcopy do valor confirmado", () => {
     render(<CardArrecadacao valorArrecadado={250} />);
 
     expect(
-      screen.getByText("Valor confirmado pela tesouraria."),
+      screen.getByText("Confirmado nas vendas aprovadas."),
     ).toBeInTheDocument();
   });
 });

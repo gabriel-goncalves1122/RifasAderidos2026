@@ -4,10 +4,9 @@
 import { Box, Paper } from "@mui/material";
 
 import { painelAderidoStyles } from "./styles/painelAderidoStyles";
-import { BotaoNotificacoes } from "./components/resumo/BotaoNotificacoes";
 import { CardArrecadacao } from "./components/resumo/CardArrecadacao";
 import { CardPendenciasAderido } from "./components/resumo/CardPendenciasAderido";
-import { SaudacaoAderido } from "./components/resumo/SaudacaoAderido";
+import { HeaderAderido } from "./components/resumo/HeaderAderido";
 
 interface EstatisticasAderidoProps {
   primeiroNome: string;
@@ -28,14 +27,11 @@ export function EstatisticasAderido({
 }: EstatisticasAderidoProps) {
   return (
     <Box sx={painelAderidoStyles.resumoContainer}>
-      <Box sx={painelAderidoStyles.resumoHeader}>
-        <SaudacaoAderido primeiroNome={primeiroNome} />
-
-        <BotaoNotificacoes
-          notificacoesNaoLidas={notificacoesNaoLidas}
-          onAbrirNotificacoes={onAbrirNotificacoes}
-        />
-      </Box>
+      <HeaderAderido
+        primeiroNome={primeiroNome}
+        notificacoesNaoLidas={notificacoesNaoLidas}
+        onAbrirNotificacoes={onAbrirNotificacoes}
+      />
 
       <Paper elevation={0} sx={painelAderidoStyles.resumoCompactoCard}>
         <CardArrecadacao valorArrecadado={valorArrecadado} />

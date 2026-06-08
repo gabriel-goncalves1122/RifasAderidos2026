@@ -3,6 +3,7 @@
 // ============================================================================
 import { useState, useEffect } from "react";
 import {
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -13,31 +14,32 @@ import {
   Box,
   Alert,
   IconButton,
+  FormControlLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import EditIcon from "@mui/icons-material/Edit";
+
+import {
+  DadosCorrecaoRecusa,
+  GrupoRifasRecusadas,
+} from "./types/painelAderido";
+import { obterDicaCorrecaoRecusa } from "./utils/obterDicaCorrecaoRecusa";
 
 interface ModalCorrecaoRecusaProps {
   open: boolean;
   onClose: () => void;
-  grupoRecusado: any; // Dados do grupo selecionado
-  onReenviar: (
+  grupoRecusado: GrupoRifasRecusadas | null;
+  onCorrigirDados: (
     numeros: string[],
-    novoComprovante: File,
-    dadosAtualizados: any,
-  ) => Promise<void>;
+    dadosAtualizados: DadosCorrecaoRecusa,
+  ) => Promise<boolean>;
 }
 
-// ==========================================================================
-// FUNÇÃO DE MÁSCARA (CORRETOR)
-// ==========================================================================
 const formatarTelefone = (valor: string) => {
   if (!valor) return "";
 
-  // Remove tudo o que não for número
   const apenasNumeros = valor.replace(/\D/g, "");
 
-  // Aplica a formatação (XX) XXXXX-XXXX progressivamente
   if (apenasNumeros.length <= 2) {
     return apenasNumeros.length > 0 ? `(${apenasNumeros}` : "";
   }
@@ -45,11 +47,9 @@ const formatarTelefone = (valor: string) => {
     return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2)}`;
   }
   if (apenasNumeros.length <= 10) {
-    // Fixo (XX) XXXX-XXXX
     return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2, 6)}-${apenasNumeros.slice(6)}`;
   }
 
-  // Telemóvel (XX) XXXXX-XXXX (Limita ao tamanho máximo)
   return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2, 7)}-${apenasNumeros.slice(7, 11)}`;
 };
 
@@ -57,43 +57,64 @@ export function ModalCorrecaoRecusa({
   open,
   onClose,
   grupoRecusado,
-  onReenviar,
+  onCorrigirDados,
 }: ModalCorrecaoRecusaProps) {
-  const [comprovante, setComprovante] = useState<File | null>(null);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [dadosVerificados, setDadosVerificados] = useState(false);
 
-  // Preenche os dados automaticamente quando o modal abre
   useEffect(() => {
     if (grupoRecusado) {
       setNome(grupoRecusado.comprador || "");
       setEmail(grupoRecusado.email || "");
-      // Já aplica a máscara na hora de preencher os dados antigos
       setTelefone(formatarTelefone(grupoRecusado.telefone || ""));
-      setComprovante(null);
+      setErro(null);
+      setDadosVerificados(false);
     }
   }, [grupoRecusado]);
 
   if (!grupoRecusado) return null;
 
   const handleSubmeter = async () => {
-    if (!comprovante) {
-      alert("Por favor, anexe o novo comprovativo.");
+    if (!nome.trim() || !telefone.trim()) {
+      setErro("Informe nome e telefone para enviar a correção.");
       return;
     }
+
+    if (!dadosVerificados) {
+      setErro("Confirme que os dados foram verificados antes de reenviar.");
+      return;
+    }
+
     setEnviando(true);
+    setErro(null);
+
     try {
-      await onReenviar(grupoRecusado.bilhetes, comprovante, {
-        nome,
-        email,
+      const sucesso = await onCorrigirDados(grupoRecusado.bilhetes, {
+        nome: nome.trim(),
+        email: email.trim(),
         telefone,
       });
+
+      if (!sucesso) {
+        setErro(
+          "Correção de dados indisponível no momento. Tente novamente mais tarde.",
+        );
+        return;
+      }
+
       onClose();
     } catch (error) {
-      console.error("Erro ao reenviar:", error);
-      alert("Ocorreu um erro ao reenviar. Tente novamente.");
+      if (import.meta.env.DEV) {
+        console.error("Erro ao corrigir dados:", error);
+      }
+
+      setErro(
+        "Correção de dados indisponível no momento. Tente novamente mais tarde.",
+      );
     } finally {
       setEnviando(false);
     }
@@ -102,33 +123,54 @@ export function ModalCorrecaoRecusa({
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTelefone(formatarTelefone(e.target.value));
   };
+  const dicaCorrecao = obterDicaCorrecaoRecusa(grupoRecusado.motivo);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle
         sx={{
-          bgcolor: "error.main",
-          color: "white",
+          bgcolor: "#FFFFFF",
+          color: "#021B16",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          borderBottom: "1px solid rgba(2, 27, 22, 0.10)",
         }}
       >
         <Typography variant="h6" component="div" fontWeight="bold">
-          Corrigir Rifas Negadas
+          Corrigir dados
         </Typography>
-        <IconButton onClick={onClose} sx={{ color: "white" }}>
+        <IconButton onClick={onClose} sx={{ color: "#063D31" }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
       <DialogContent dividers>
-        <Alert severity="error" sx={{ mb: 3 }}>
-          <strong>Motivo da Recusa:</strong> {grupoRecusado.motivo}
+        <Alert
+          severity="warning"
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            bgcolor: "#FFF7E0",
+            color: "#6B4E00",
+            "& .MuiAlert-icon": {
+              color: "#6B4E00",
+            },
+          }}
+        >
+          <Typography fontWeight={900} sx={{ mb: 0.5 }}>
+            Por que foi recusada?
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            {grupoRecusado.motivo}
+          </Typography>
+          <Typography variant="body2" fontWeight={800}>
+            Dica: {dicaCorrecao}
+          </Typography>
         </Alert>
 
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Rifas afetadas: {grupoRecusado.bilhetes.join(", ")}
+          Rifas para corrigir: {grupoRecusado.bilhetes.join(", ")}
         </Typography>
 
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
@@ -149,36 +191,42 @@ export function ModalCorrecaoRecusa({
           <TextField
             label="Telefone do Comprador"
             value={telefone}
-            onChange={handleTelefoneChange} // <-- Atualizado para usar a função de máscara
+            onChange={handleTelefoneChange}
             fullWidth
             size="small"
             placeholder="(XX) XXXXX-XXXX"
             slotProps={{
-              htmlInput: { maxLength: 15 }, // <-- Limite físico de caracteres
+              htmlInput: { maxLength: 15 },
             }}
           />
 
-          <Button
-            variant="outlined"
-            component="label"
-            color={comprovante ? "success" : "primary"}
-            startIcon={<CloudUploadIcon />}
-            sx={{ mt: 1, py: 1.5, borderStyle: "dashed", borderWidth: 2 }}
-          >
-            {comprovante
-              ? `Anexado: ${comprovante.name}`
-              : "Anexar Novo Comprovativo (PDF/Imagem)"}
-            <input
-              type="file"
-              hidden
-              accept="image/*,application/pdf"
-              onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  setComprovante(e.target.files[0]);
-                }
-              }}
-            />
-          </Button>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={dadosVerificados}
+                onChange={(event) => setDadosVerificados(event.target.checked)}
+                sx={{
+                  color: "#063D31",
+                  "&.Mui-checked": {
+                    color: "#063D31",
+                  },
+                }}
+              />
+            }
+            label="Verifiquei os dados"
+            sx={{
+              color: "#021B16",
+              "& .MuiFormControlLabel-label": {
+                fontWeight: 800,
+              },
+            }}
+          />
+
+          {erro && (
+            <Alert severity="error" sx={{ borderRadius: 2 }}>
+              {erro}
+            </Alert>
+          )}
         </Box>
       </DialogContent>
 
@@ -189,10 +237,18 @@ export function ModalCorrecaoRecusa({
         <Button
           onClick={handleSubmeter}
           variant="contained"
-          color="primary"
-          disabled={enviando || !comprovante}
+          startIcon={<EditIcon />}
+          disabled={
+            enviando || !nome.trim() || !telefone.trim() || !dadosVerificados
+          }
+          sx={{
+            bgcolor: "#063D31",
+            "&:hover": {
+              bgcolor: "#021B16",
+            },
+          }}
         >
-          {enviando ? "A enviar..." : "Reenviar para Análise"}
+          {enviando ? "Enviando..." : "Corrigir e Reenviar"}
         </Button>
       </DialogActions>
     </Dialog>

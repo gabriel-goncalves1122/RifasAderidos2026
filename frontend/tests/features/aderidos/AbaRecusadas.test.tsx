@@ -10,7 +10,7 @@ describe("Componente: AbaRecusadas", () => {
     {
       comprador: "Gabriel Sampaio",
       data: "2026-04-19T10:00:00.000Z",
-      motivo: "Comprovativo ilegível.",
+      motivo: "Telefone divergente.",
       bilhetes: ["015", "016"],
     },
   ];
@@ -24,16 +24,13 @@ describe("Componente: AbaRecusadas", () => {
       />,
     );
 
-    // Título e Descrição
     expect(
-      screen.getByText(/Vendas Negadas pela Tesouraria/i),
+      screen.getByText(/Vendas recusadas - ação necessária/i),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Rifas para revisar/i)).toBeInTheDocument();
 
-    // Dados do Card
     expect(screen.getByText("Gabriel Sampaio")).toBeInTheDocument();
-    expect(screen.getByText(/Comprovativo ilegível/i)).toBeInTheDocument();
-
-    // Chips das rifas
+    expect(screen.getByText(/Telefone divergente/i)).toBeInTheDocument();
     expect(screen.getByText("015")).toBeInTheDocument();
     expect(screen.getByText("016")).toBeInTheDocument();
   });
@@ -66,7 +63,7 @@ describe("Componente: AbaRecusadas", () => {
     );
 
     const btnCorrigir = screen.getByRole("button", {
-      name: /Corrigir Informações/i,
+      name: /Corrigir dados/i,
     });
     fireEvent.click(btnCorrigir);
 

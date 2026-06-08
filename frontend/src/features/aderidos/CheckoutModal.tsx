@@ -1,6 +1,7 @@
 // ============================================================================
 // ARQUIVO: frontend/src/features/aderidos/CheckoutModal.tsx
 // ============================================================================
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Alert,
@@ -10,6 +11,7 @@ import {
   Dialog,
   DialogContent,
   IconButton,
+  LinearProgress,
   Snackbar,
   Stack,
   Typography,
@@ -18,17 +20,15 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { useRifas } from "@/features/rifas/hooks/useRifas";
-
 import {
   CheckoutFormData,
   checkoutSchema,
 } from "./components/checkout/checkoutSchema";
-import { CHAVE_PIX_COMISSAO } from "./components/checkout/utils/checkoutUtils";
 import { CheckoutDadosCompradorForm } from "./components/checkout/CheckoutDadosCompradorForm";
 import { CheckoutPixBox } from "./components/checkout/CheckoutPixBox";
 import { CheckoutResumoVenda } from "./components/checkout/CheckoutResumoVenda";
-import { CheckoutUploadComprovante } from "./components/checkout/CheckoutUploadComprovante";
+import { checkoutPixService } from "./services/checkoutPixService";
+import { CheckoutPixCobranca } from "./types/checkoutPix";
 
 interface CheckoutModalProps {
   open: boolean;
@@ -75,24 +75,35 @@ function limparDraftCheckout() {
   sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
 }
 
+function obterMensagemErroPix(error: unknown) {
+  const mensagem = error instanceof Error ? error.message : "";
+
+  if (/404|not found|não encontrado/i.test(mensagem)) {
+    return "Pagamento via Pix indisponível no momento. O backend ainda não respondeu a este contrato.";
+  }
+
+  return mensagem || "Não foi possível gerar o pagamento via Pix agora.";
+}
+
 export function CheckoutModal({
   open,
   onClose,
-  onSuccess,
   numerosRifas,
 }: CheckoutModalProps) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-
-  const { finalizarVenda, loading } = useRifas();
+  const [cobrancaPix, setCobrancaPix] =
+    useState<CheckoutPixCobranca | null>(null);
+  const [gerandoPix, setGerandoPix] = useState(false);
+  const [erroPix, setErroPix] = useState<string | null>(null);
 
   const defaultValues = useMemo(() => carregarDraftCheckout(), []);
+  const numerosRifasKey = numerosRifas.join("|");
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    reset,
     formState: { errors },
   } = useForm<CheckoutFormData>({
     resolver: yupResolver(checkoutSchema) as any,
@@ -102,14 +113,12 @@ export function CheckoutModal({
       nome: defaultValues.nome,
       telefone: defaultValues.telefone,
       email: defaultValues.email,
-      comprovante: undefined as any,
     },
   });
 
   const nome = watch("nome");
   const telefone = watch("telefone");
   const email = watch("email");
-  const comprovanteAnexado = watch("comprovante");
 
   useEffect(() => {
     salvarDraftCheckout({
@@ -119,42 +128,77 @@ export function CheckoutModal({
     });
   }, [nome, telefone, email]);
 
-  const copiarChavePix = async () => {
-    await navigator.clipboard.writeText(CHAVE_PIX_COMISSAO);
+  useEffect(() => {
+    if (!open) return;
+
+    setCobrancaPix(null);
+    setErroPix(null);
+  }, [open, numerosRifasKey]);
+
+  useEffect(() => {
+    if (!cobrancaPix) return;
+
+    setCobrancaPix(null);
+    setErroPix(null);
+  }, [nome, telefone, email]);
+
+  const copiarPix = async () => {
+    if (!cobrancaPix?.copiaECola) return;
+
+    await navigator.clipboard.writeText(cobrancaPix.copiaECola);
     setSnackbarOpen(true);
   };
 
+  const abrirAppBanco = async () => {
+    await copiarPix();
+
+    window.open("pix://", "_blank", "noopener,noreferrer");
+  };
+
   const fecharModal = () => {
-    if (loading) return;
+    if (gerandoPix) return;
 
     // Não limpa os campos ao fechar. Assim, se o Safari suspender a aba,
     // os dados digitados continuam preservados.
     onClose();
   };
 
-  const enviarVenda = async (dados: CheckoutFormData) => {
-    const sucesso = await finalizarVenda({
-      nome: dados.nome,
-      telefone: dados.telefone,
-      email: dados.email || "",
-      numerosRifas,
-      comprovante: dados.comprovante,
-    });
+  const gerarCobrancaPix = async (dados: CheckoutFormData) => {
+    setGerandoPix(true);
+    setErroPix(null);
+    setCobrancaPix(null);
 
-    if (!sucesso) return;
+    try {
+      const cobranca = await checkoutPixService.criarCobrancaPix({
+        nome: dados.nome.trim(),
+        telefone: dados.telefone,
+        email: dados.email?.trim() || "",
+        numerosRifas,
+      });
 
-    limparDraftCheckout();
-    reset();
-
-    onSuccess();
+      setCobrancaPix(cobranca);
+      limparDraftCheckout();
+    } catch (error) {
+      setErroPix(obterMensagemErroPix(error));
+    } finally {
+      setGerandoPix(false);
+    }
   };
+
+  const etapaAtual = cobrancaPix ? 2 : 1;
+  const progressoCheckout = cobrancaPix ? 100 : 50;
+  const etapaTitulo = cobrancaPix ? "Pagamento gerado" : "Preencher dados";
+  const etapaDescricao = cobrancaPix
+    ? "Use o QR Code ou copie o Pix para concluir no banco."
+    : "Informe nome e telefone para gerar o pagamento.";
+  const botaoTexto = cobrancaPix ? "Pagamento gerado" : "Gerar pagamento";
 
   return (
     <>
       <Dialog
         open={open}
         keepMounted
-        disableEscapeKeyDown={loading}
+        disableEscapeKeyDown={gerandoPix}
         onClose={(_, reason) => {
           // Evita perder o modal por clique acidental fora dele.
           if (reason === "backdropClick") return;
@@ -166,8 +210,8 @@ export function CheckoutModal({
         PaperProps={{
           sx: {
             borderRadius: {
-              xs: "22px 22px 0 0",
-              sm: 5,
+              xs: "16px 16px 0 0",
+              sm: 2.25,
             },
             m: {
               xs: 0,
@@ -221,13 +265,13 @@ export function CheckoutModal({
                 mt: 0.35,
               }}
             >
-              Preencha os dados e envie o comprovante para análise.
+              Preencha os dados para gerar o pagamento via Pix.
             </Typography>
           </Box>
 
           <IconButton
             onClick={fecharModal}
-            disabled={loading}
+            disabled={gerandoPix}
             aria-label="Fechar modal de venda"
             sx={{
               bgcolor: "#F1F4F3",
@@ -241,11 +285,96 @@ export function CheckoutModal({
         </Box>
 
         <DialogContent sx={{ p: 2.25 }}>
-          <Box component="form" onSubmit={handleSubmit(enviarVenda)}>
+          <Box component="form" onSubmit={handleSubmit(gerarCobrancaPix)}>
             <Stack spacing={2}>
-              <CheckoutResumoVenda numerosRifas={numerosRifas} />
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  bgcolor: "#FFFFFF",
+                  border: "1px solid rgba(2, 27, 22, 0.10)",
+                }}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  spacing={1}
+                  sx={{ mb: 1 }}
+                >
+                  <Typography
+                    sx={{
+                      color: "#063D31",
+                      fontWeight: 900,
+                      fontSize: "0.82rem",
+                    }}
+                  >
+                    Etapa {etapaAtual} de 2
+                  </Typography>
 
-              <CheckoutPixBox onCopiarPix={copiarChavePix} />
+                  <Typography
+                    sx={{
+                      color: "#526760",
+                      fontWeight: 850,
+                      fontSize: "0.78rem",
+                    }}
+                  >
+                    {progressoCheckout}%
+                  </Typography>
+                </Stack>
+
+                <LinearProgress
+                  variant="determinate"
+                  value={progressoCheckout}
+                  aria-label={`Progresso do checkout: etapa ${etapaAtual} de 2`}
+                  sx={{
+                    height: 8,
+                    borderRadius: 2,
+                    bgcolor: "#EAF3EF",
+                    "& .MuiLinearProgress-bar": {
+                      borderRadius: 2,
+                      bgcolor: "#063D31",
+                    },
+                  }}
+                />
+
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={0.75}
+                  sx={{ mt: 1.2 }}
+                >
+                  {cobrancaPix && (
+                    <CheckCircleIcon
+                      fontSize="small"
+                      sx={{ color: "#063D31" }}
+                    />
+                  )}
+
+                  <Box>
+                    <Typography
+                      sx={{
+                        color: "#021B16",
+                        fontWeight: 900,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {etapaTitulo}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: "#526760",
+                        fontSize: "0.84rem",
+                        mt: 0.25,
+                      }}
+                    >
+                      {etapaDescricao}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+
+              <CheckoutResumoVenda numerosRifas={numerosRifas} />
 
               <CheckoutDadosCompradorForm
                 register={register}
@@ -253,21 +382,24 @@ export function CheckoutModal({
                 errors={errors}
               />
 
-              <CheckoutUploadComprovante
-                arquivo={comprovanteAnexado}
-                setValue={setValue}
-                errors={errors}
+              <CheckoutPixBox
+                cobranca={cobrancaPix}
+                gerando={gerandoPix}
+                erro={erroPix}
+                onCopiarPix={copiarPix}
+                onAbrirAppBanco={cobrancaPix ? abrirAppBanco : undefined}
               />
 
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
-                disabled={loading}
+                data-testid="checkout-enviar-venda"
+                disabled={gerandoPix || Boolean(cobrancaPix)}
                 sx={{
                   mt: 0.5,
                   minHeight: 52,
-                  borderRadius: 999,
+                  borderRadius: 2,
                   textTransform: "none",
                   fontWeight: 950,
                   fontSize: "1rem",
@@ -277,27 +409,23 @@ export function CheckoutModal({
                     bgcolor: "#052F26",
                     boxShadow: "0 14px 26px rgba(6, 61, 49, 0.28)",
                   },
+                  "&.Mui-disabled": {
+                    bgcolor: "#526760",
+                    color: "#FFFFFF",
+                  },
                 }}
               >
-                {loading ? (
+                {gerandoPix ? (
                   <CircularProgress size={24} sx={{ color: "#FFFFFF" }} />
+                ) : cobrancaPix ? (
+                  <Stack direction="row" alignItems="center" spacing={0.75}>
+                    <CheckCircleIcon fontSize="small" />
+                    <span>{botaoTexto}</span>
+                  </Stack>
                 ) : (
-                  "Enviar venda para análise"
+                  botaoTexto
                 )}
               </Button>
-
-              {/* {comprovanteAnexado === undefined && (
-                <Typography
-                  sx={{
-                    color: "#7A1F1F",
-                    fontSize: "0.78rem",
-                    textAlign: "center",
-                  }}
-                >
-                  No iPhone, se você trocar de aplicativo, talvez seja
-                  necessário anexar o comprovante novamente.
-                </Typography>
-              )} */}
             </Stack>
           </Box>
         </DialogContent>
@@ -316,11 +444,11 @@ export function CheckoutModal({
           severity="success"
           variant="filled"
           sx={{
-            borderRadius: 3,
+            borderRadius: 2,
             fontWeight: 800,
           }}
         >
-          Chave PIX copiada.
+          Pix copia-e-cola copiado.
         </Alert>
       </Snackbar>
     </>

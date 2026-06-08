@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   aplicarMascaraTelefone,
   calcularValorTotalRifas,
-  CHAVE_PIX_COMISSAO,
+  formatarExpiracaoPix,
 } from "@/features/aderidos/components/checkout/utils/checkoutUtils";
 
 describe("Utils: checkoutUtils", () => {
@@ -35,8 +35,14 @@ describe("Utils: checkoutUtils", () => {
     expect(aplicarMascaraTelefone("119876543219999")).toBe("(11) 98765-4321");
   });
 
-  it("Deve possuir uma chave PIX configurada", () => {
-    expect(CHAVE_PIX_COMISSAO).toBeTruthy();
-    expect(typeof CHAVE_PIX_COMISSAO).toBe("string");
+  it("Deve formatar a expiração do pagamento via Pix", () => {
+    expect(formatarExpiracaoPix("2026-06-07T18:00:00.000-03:00")).toContain(
+      "07/06/2026",
+    );
+  });
+
+  it("Deve tratar expiração ausente ou inválida", () => {
+    expect(formatarExpiracaoPix()).toBe("Expiração não informada");
+    expect(formatarExpiracaoPix("data-invalida")).toBe("Expiração inválida");
   });
 });

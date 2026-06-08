@@ -26,6 +26,7 @@ export function CheckoutDadosCompradorForm({
       <TextField
         label="Nome completo"
         fullWidth
+        inputProps={{ "data-testid": "checkout-nome" }}
         error={Boolean(errors.nome)}
         helperText={errors.nome?.message}
         {...register("nome")}
@@ -41,6 +42,7 @@ export function CheckoutDadosCompradorForm({
       <TextField
         label="WhatsApp"
         fullWidth
+        inputProps={{ "data-testid": "checkout-telefone" }}
         error={Boolean(errors.telefone)}
         helperText={errors.telefone?.message}
         {...register("telefone")}
@@ -65,9 +67,10 @@ export function CheckoutDadosCompradorForm({
       <TextField
         label="E-mail opcional"
         fullWidth
+        inputProps={{ "data-testid": "checkout-email" }}
         error={Boolean(errors.email)}
         helperText={
-          errors.email?.message || "Use caso queira registrar o comprador."
+          errors.email?.message || "Para enviar comprovante (opcional)."
         }
         {...register("email")}
         InputProps={{

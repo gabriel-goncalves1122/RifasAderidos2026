@@ -14,9 +14,7 @@ describe("Componente <CardPendenciasAderido />", () => {
 
     expect(screen.getByText(/Pendências/i)).toBeInTheDocument();
     expect(screen.getByText("0")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Nenhuma correção no momento/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Tudo certo agora/i)).toBeInTheDocument();
   });
 
   it("Deve mostrar aviso quando houver uma pendência", () => {
@@ -25,15 +23,15 @@ describe("Componente <CardPendenciasAderido />", () => {
     );
 
     expect(
-      screen.getByText(/1 correção pendente/i),
+      screen.getByText(/1 correção aberta/i),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole("button", { name: /Corrigir/i }),
+      screen.getByRole("button", { name: /Revisar/i }),
     ).toBeInTheDocument();
   });
 
-  it("Deve chamar onAbrirRecusadas ao clicar em Corrigir", () => {
+  it("Deve chamar onAbrirRecusadas ao clicar em Revisar", () => {
     const mockOnAbrirRecusadas = vi.fn();
 
     render(
@@ -43,7 +41,7 @@ describe("Componente <CardPendenciasAderido />", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Corrigir/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Revisar/i }));
 
     expect(mockOnAbrirRecusadas).toHaveBeenCalledTimes(1);
   });
@@ -54,7 +52,7 @@ describe("Componente <CardPendenciasAderido />", () => {
     );
 
     expect(
-      screen.getByText(/3 correções pendentes/i),
+      screen.getByText(/3 correções abertas/i),
     ).toBeInTheDocument();
   });
 });
