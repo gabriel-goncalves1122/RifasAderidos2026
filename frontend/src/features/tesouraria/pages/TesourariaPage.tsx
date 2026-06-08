@@ -36,6 +36,7 @@ export function TesourariaPage({ variante = "desktop" }: TesourariaPageProps) {
   return (
     <Box sx={{ pb: 4 }}>
       <PixHeader
+        abaAtual={abaVisivel}
         sincronizando={sincronizando}
         onSincronizar={onSincronizar}
       />

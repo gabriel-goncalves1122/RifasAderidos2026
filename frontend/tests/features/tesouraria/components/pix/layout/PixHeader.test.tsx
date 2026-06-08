@@ -6,13 +6,31 @@ import { PixHeader } from "@/features/tesouraria/components/pix/layout/PixHeader
 describe("Componente: PixHeader", () => {
   it("Deve renderizar o contexto da tela de tesouraria Pix", () => {
     render(
-      <PixHeader sincronizando={false} onSincronizar={vi.fn()} />,
+      <PixHeader
+        abaAtual="transacoes"
+        sincronizando={false}
+        onSincronizar={vi.fn()}
+      />,
     );
 
     expect(screen.getByText("Tesouraria")).toBeInTheDocument();
     expect(screen.getByText("Recebimentos Pix")).toBeInTheDocument();
     expect(
-      screen.getByText(/Audite confirmações bancárias/i),
+      screen.getByText(/Revise Pix confirmados pelo banco/i),
+    ).toBeInTheDocument();
+  });
+
+  it("Deve trocar subtítulo conforme a aba Pix", () => {
+    render(
+      <PixHeader
+        abaAtual="conciliacao"
+        sincronizando={false}
+        onSincronizar={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText(/Vincule pagamentos recebidos/i),
     ).toBeInTheDocument();
   });
 
@@ -21,6 +39,7 @@ describe("Componente: PixHeader", () => {
 
     render(
       <PixHeader
+        abaAtual="visao-geral"
         sincronizando={false}
         onSincronizar={onSincronizar}
       />,
@@ -35,7 +54,11 @@ describe("Componente: PixHeader", () => {
 
   it("Deve mostrar estado de sincronização", () => {
     render(
-      <PixHeader sincronizando onSincronizar={vi.fn()} />,
+      <PixHeader
+        abaAtual="aderidos"
+        sincronizando
+        onSincronizar={vi.fn()}
+      />,
     );
 
     expect(screen.queryByText("Sincronizando...")).not.toBeInTheDocument();
