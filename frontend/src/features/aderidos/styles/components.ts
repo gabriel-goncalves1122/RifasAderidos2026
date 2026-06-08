@@ -1,6 +1,20 @@
 import { SxProps, Theme } from "@mui/material";
 
-export const painelAderidoRifasStyles: Record<string, SxProps<Theme>> = {
+import {
+  aderidosColors,
+  aderidosMotion,
+  reduceMotionSx,
+  typographyScale,
+} from "../tokens";
+
+const focusVisibleSx = {
+  "&:focus-visible": {
+    outline: "4px solid rgba(6, 61, 49, 0.24)",
+    outlineOffset: "2px",
+  },
+};
+
+export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
   blocoVendasHeader: {
     mb: 2.25,
   },
@@ -17,24 +31,15 @@ export const painelAderidoRifasStyles: Record<string, SxProps<Theme>> = {
   },
 
   blocoVendasTitulo: {
-    fontWeight: 900,
-    color: "#021B16",
-    lineHeight: 1.1,
+    ...typographyScale.pageTitle,
+    color: aderidosColors.greenBlack,
     letterSpacing: 0,
-    fontSize: {
-      xs: "1.45rem",
-      sm: "1.75rem",
-    },
   },
 
   blocoVendasDescricao: {
+    ...typographyScale.bodyBase,
     color: "#536962",
-    lineHeight: 1.45,
     maxWidth: 520,
-    fontSize: {
-      xs: "0.95rem",
-      sm: "1rem",
-    },
     pl: {
       xs: 0.25,
       sm: 0.5,
@@ -47,7 +52,7 @@ export const painelAderidoRifasStyles: Record<string, SxProps<Theme>> = {
     pb: 1,
     mb: 2.5,
     gap: 1,
-
+    scrollSnapType: "x mandatory",
     scrollbarWidth: "none",
     "&::-webkit-scrollbar": {
       display: "none",
@@ -55,35 +60,40 @@ export const painelAderidoRifasStyles: Record<string, SxProps<Theme>> = {
   },
 
   filtroChip: {
-    height: 38,
+    height: 44,
     px: 0.8,
     borderRadius: 2,
-    bgcolor: "#FFFFFF",
-    border: "1px solid rgba(6, 61, 49, 0.14)",
-    color: "#063D31",
-    fontWeight: 850,
+    bgcolor: aderidosColors.white,
+    border: "1.5px solid rgba(6, 61, 49, 0.14)",
+    color: aderidosColors.greenDark,
+    fontWeight: 800,
+    fontSize: "0.95rem",
     whiteSpace: "nowrap",
+    scrollSnapAlign: "start",
     boxShadow: "0 4px 10px rgba(2, 27, 22, 0.035)",
+    transition: `background-color ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}, border-color ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}, box-shadow ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}`,
+    ...focusVisibleSx,
+    ...reduceMotionSx,
 
     "& .MuiChip-label": {
       px: 1.55,
     },
 
     "&:hover": {
-      bgcolor: "#EAF3EF",
+      bgcolor: aderidosColors.greenSoft,
       borderColor: "rgba(6, 61, 49, 0.24)",
     },
   },
 
   filtroChipAtivo: {
-    bgcolor: "#063D31",
-    color: "#FFFFFF",
-    borderColor: "#063D31",
+    bgcolor: aderidosColors.greenDark,
+    color: aderidosColors.white,
+    borderColor: aderidosColors.greenDark,
     boxShadow: "0 8px 16px rgba(6, 61, 49, 0.16)",
 
     "&:hover": {
-      bgcolor: "#021B16",
-      borderColor: "#021B16",
+      bgcolor: aderidosColors.greenBlack,
+      borderColor: aderidosColors.greenBlack,
     },
   },
 
@@ -99,7 +109,6 @@ export const painelAderidoRifasStyles: Record<string, SxProps<Theme>> = {
     },
     overflowY: "auto",
     overflowX: "hidden",
-
     px: {
       xs: 0,
       sm: 0.25,
@@ -112,11 +121,9 @@ export const painelAderidoRifasStyles: Record<string, SxProps<Theme>> = {
       xs: 0.4,
       sm: 0.75,
     },
-
     bgcolor: "transparent",
     border: "none",
     boxShadow: "none",
-
     scrollbarWidth: "thin",
     scrollbarColor: "rgba(5, 46, 35, 0.24) transparent",
 
@@ -137,20 +144,17 @@ export const painelAderidoRifasStyles: Record<string, SxProps<Theme>> = {
   gridRifas: {
     display: "grid",
     gridTemplateColumns: {
-      xs: "repeat(4, minmax(68px, 1fr))",
+      xs: "repeat(3, minmax(76px, 1fr))",
       sm: "repeat(auto-fill, minmax(86px, 1fr))",
       md: "repeat(auto-fill, minmax(92px, 1fr))",
     },
-    gap: {
-      xs: 1.35,
-      sm: 1.55,
-    },
+    gap: 1.5,
   },
 
   rifaButton: {
     minHeight: {
-      xs: 48,
-      sm: 50,
+      xs: 56,
+      sm: 56,
     },
     width: "100%",
     borderRadius: 2,
@@ -158,7 +162,7 @@ export const painelAderidoRifasStyles: Record<string, SxProps<Theme>> = {
       xs: 1,
       sm: 1.25,
     },
-    border: "1.7px solid",
+    border: "2px solid",
     fontWeight: 900,
     fontSize: {
       xs: "0.88rem",
@@ -170,13 +174,9 @@ export const painelAderidoRifasStyles: Record<string, SxProps<Theme>> = {
     alignItems: "center",
     justifyContent: "center",
     userSelect: "none",
-    transition:
-      "transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease, border-color 140ms ease",
-
-    "&:focus-visible": {
-      outline: "3px solid rgba(6, 61, 49, 0.22)",
-      outlineOffset: 2,
-    },
+    transition: `transform 140ms ${aderidosMotion.easing.easeOut}, box-shadow 140ms ${aderidosMotion.easing.easeOut}, background-color 140ms ${aderidosMotion.easing.easeOut}, border-color 140ms ${aderidosMotion.easing.easeOut}`,
+    ...focusVisibleSx,
+    ...reduceMotionSx,
 
     "&.Mui-disabled": {
       opacity: 1,

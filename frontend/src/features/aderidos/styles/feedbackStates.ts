@@ -1,5 +1,7 @@
 import { SxProps, Theme } from "@mui/material";
 
+import { aderidosColors } from "../tokens";
+
 export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
   emptyState: {
     minHeight: 260,
@@ -21,11 +23,11 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    bgcolor: "#F6F8F7",
+    bgcolor: aderidosColors.background,
   },
 
   statusHelpDialogTitle: {
-    color: "#021B16",
+    color: aderidosColors.greenBlack,
     fontWeight: 900,
     borderBottom: "1px solid rgba(2, 27, 22, 0.10)",
   },
@@ -56,19 +58,44 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
   },
 
   statusHelpLabel: {
-    color: "#021B16",
-    fontWeight: 850,
+    color: aderidosColors.greenBlack,
+    fontWeight: 800,
     lineHeight: 1.2,
   },
 
   statusHelpDescription: {
     mt: 0.25,
-    color: "#526760",
+    color: aderidosColors.textMuted,
     lineHeight: 1.35,
   },
 
+  detalheDialogPaper: {
+    borderRadius: {
+      xs: "16px 16px 0 0",
+      sm: 2.25,
+    },
+    m: {
+      xs: 0,
+      sm: 2,
+    },
+    position: {
+      xs: "fixed",
+      sm: "relative",
+    },
+    bottom: {
+      xs: 0,
+      sm: "auto",
+    },
+    width: {
+      xs: "100%",
+      sm: "auto",
+    },
+    bgcolor: aderidosColors.background,
+    overflow: "hidden",
+  },
+
   detalheDialogTitle: {
-    color: "#021B16",
+    color: aderidosColors.greenBlack,
     fontWeight: 900,
     borderBottom: "1px solid rgba(2, 27, 22, 0.10)",
   },
@@ -79,7 +106,7 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
     gap: 0.35,
     p: 1.25,
     borderRadius: 2,
-    bgcolor: "#F6F8F7",
+    bgcolor: aderidosColors.background,
     border: "1px solid rgba(6, 61, 49, 0.08)",
   },
 
@@ -89,7 +116,7 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
     gap: 0.35,
     p: 1.25,
     borderRadius: 2,
-    bgcolor: "#EAF3EF",
+    bgcolor: aderidosColors.greenSoft,
     border: "1px solid rgba(6, 61, 49, 0.12)",
   },
 };

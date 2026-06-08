@@ -1,15 +1,13 @@
 import { SxProps, Theme } from "@mui/material";
 
-import { painelAderidoBaseStyles } from "./painelAderidoBaseStyles";
-import { painelAderidoCarrinhoStyles } from "./painelAderidoCarrinhoStyles";
-import { painelAderidoFeedbackStyles } from "./painelAderidoFeedbackStyles";
-import { painelAderidoResumoStyles } from "./painelAderidoResumoStyles";
-import { painelAderidoRifasStyles } from "./painelAderidoRifasStyles";
+import { painelAderidoBaseStyles } from "./base";
+import { painelAderidoComponentStyles } from "./components";
+import { painelAderidoFeedbackStyles } from "./feedbackStates";
+import { painelAderidoSurfaceStyles } from "./surfaces";
 
 export const painelAderidoStyles: Record<string, SxProps<Theme>> = {
   ...painelAderidoBaseStyles,
-  ...painelAderidoCarrinhoStyles,
+  ...painelAderidoComponentStyles,
   ...painelAderidoFeedbackStyles,
-  ...painelAderidoResumoStyles,
-  ...painelAderidoRifasStyles,
+  ...painelAderidoSurfaceStyles,
 };
