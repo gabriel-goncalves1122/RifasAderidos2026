@@ -78,6 +78,7 @@ microservico-ocr/**/temp_*
 *.png
 !frontend/src/assets/**/*
 !frontend/public/**/*
+!frontend/tests/e2e/fixtures/**/*.pdf
 
 # ----------------------------------------------------------------------------
 # 6. SISTEMA & IDE
@@ -93,6 +94,9 @@ microservico-ocr/**/temp_*
 # ----------------------------------------------------------------------------
 coverage/
 frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
 .nyc_output/
 *.log
 npm-debug.log*
