@@ -87,7 +87,7 @@ describe("Componente: PixTransacoesFiltros", () => {
     });
   });
 
-  it("Deve abrir a busca recolhida no mobile antes de digitar", () => {
+  it("Deve manter a busca visível no mobile e mostrar contador de filtros", () => {
     const onChangeFiltros = vi.fn();
     simularMobile();
 
@@ -95,9 +95,7 @@ describe("Componente: PixTransacoesFiltros", () => {
       <PixTransacoesFiltros filtros={filtrosBase} onChangeFiltros={onChangeFiltros} />,
     );
 
-    expect(screen.queryByPlaceholderText("Buscar Pix")).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /buscar pix/i }));
+    expect(screen.getByText("Sem filtros ativos")).toBeInTheDocument();
 
     fireEvent.change(screen.getByPlaceholderText("Buscar Pix"), {
       target: { value: "Ana" },
@@ -119,6 +117,8 @@ describe("Componente: PixTransacoesFiltros", () => {
         onChangeFiltros={onChangeFiltros}
       />,
     );
+
+    expect(screen.getByText("2 filtros ativos")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /limpar filtros pix/i }));
 

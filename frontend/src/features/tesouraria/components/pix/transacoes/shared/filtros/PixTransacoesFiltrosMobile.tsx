@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
-import SearchIcon from "@mui/icons-material/Search";
-import { Button, Collapse, Paper, Stack, Typography } from "@mui/material";
+import { Button, Chip, Paper, Stack } from "@mui/material";
 
 import { PixTransacoesCampoBusca } from "./PixTransacoesCampoBusca";
 import { PixTransacoesFiltrosChips } from "./PixTransacoesFiltrosChips";
@@ -11,22 +9,13 @@ export function PixTransacoesFiltrosMobile({
   filtros,
   onChangeFiltros,
 }: PixTransacoesFiltrosProps) {
-  const [buscaAberta, setBuscaAberta] = useState(Boolean(filtros.busca));
-
   const buscaAtiva = filtros.busca.trim().length > 0;
   const filtroStatusAtivo = filtros.status !== "todas";
   const totalFiltrosAtivos =
     Number(buscaAtiva) + Number(filtroStatusAtivo);
 
-  useEffect(() => {
-    if (buscaAtiva) {
-      setBuscaAberta(true);
-    }
-  }, [buscaAtiva]);
-
   const limparFiltros = () => {
     onChangeFiltros({ status: "todas", busca: "" });
-    setBuscaAberta(false);
   };
 
   return (
@@ -44,47 +33,25 @@ export function PixTransacoesFiltrosMobile({
       }}
     >
       <Stack spacing={1.1} sx={{ minWidth: 0 }}>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Button
-            type="button"
-            aria-expanded={buscaAberta}
-            startIcon={<SearchIcon />}
-            onClick={() => setBuscaAberta((aberta) => !aberta)}
-            sx={{
-              minWidth: 0,
-              flex: 1,
-              justifyContent: "flex-start",
-              borderRadius: 2,
-              bgcolor: "#F6F8F7",
-              color: "#063D31",
-              border: "1px solid rgba(6, 61, 49, 0.16)",
-              fontWeight: 850,
-              textTransform: "none",
-              overflow: "hidden",
-              px: 1.25,
-              "&:hover": {
-                bgcolor: "#EAF3EF",
-              },
-              "& .MuiButton-startIcon": {
-                flexShrink: 0,
-              },
-            }}
-          >
-            <Typography
-              component="span"
-              sx={{
-                minWidth: 0,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                fontSize: "0.88rem",
-                fontWeight: 850,
-              }}
-            >
-              {buscaAtiva ? filtros.busca : "Buscar Pix"}
-            </Typography>
-          </Button>
+        <PixTransacoesCampoBusca filtros={filtros} onChangeFiltros={onChangeFiltros} />
 
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Chip
+            label={
+              totalFiltrosAtivos > 0
+                ? `${totalFiltrosAtivos} filtro${totalFiltrosAtivos > 1 ? "s" : ""} ativo${totalFiltrosAtivos > 1 ? "s" : ""}`
+                : "Sem filtros ativos"
+            }
+            size="small"
+            sx={{
+              height: 30,
+              borderRadius: 2,
+              color: totalFiltrosAtivos > 0 ? "#063D31" : "#526760",
+              bgcolor: totalFiltrosAtivos > 0 ? "#EAF3EF" : "#F6F8F7",
+              border: "1px solid rgba(6, 61, 49, 0.14)",
+              fontWeight: 850,
+            }}
+          />
           {totalFiltrosAtivos > 0 && (
             <Button
               type="button"
@@ -109,10 +76,6 @@ export function PixTransacoesFiltrosMobile({
             </Button>
           )}
         </Stack>
-
-        <Collapse in={buscaAberta} unmountOnExit>
-          <PixTransacoesCampoBusca filtros={filtros} onChangeFiltros={onChangeFiltros} />
-        </Collapse>
 
         <PixTransacoesFiltrosChips
           filtros={filtros}
