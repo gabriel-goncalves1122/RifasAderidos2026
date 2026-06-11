@@ -29,7 +29,6 @@ export const secretariaService = {
   async adicionarAderido(dadosNovos: DadosNovoAderido) {
     const dados = normalizarDadosNovoAderido(dadosNovos);
 
-    // Regra de negócio centralizada por modalidade.
     const bilhetesPorPessoa = BILHETES_POR_MODALIDADE[dados.modalidade_adesao];
     const metaVendas = META_VENDAS_POR_MODALIDADE[dados.modalidade_adesao];
 
@@ -43,110 +42,121 @@ export const secretariaService = {
       throw new Error("Este e-mail já foi autorizado anteriormente.");
     }
 
-    let proximaPosicao = 1;
+    const contadorRef = db.collection("contadores").doc("aderidos");
+    const contadorExistente = await contadorRef.get();
 
-    const usersSnap = await db
-      .collection("usuarios")
-      .orderBy("posicao_adesao", "desc")
-      .limit(1)
-      .get();
+    if (!contadorExistente.exists) {
+      const usersSnap = await db
+        .collection("usuarios")
+        .orderBy("posicao_adesao", "desc")
+        .limit(1)
+        .get();
 
-    if (!usersSnap.empty) {
-      const ultimaPosicao = usersSnap.docs[0].data().posicao_adesao;
+      const ultimaPosicao =
+        !usersSnap.empty && typeof usersSnap.docs[0].data().posicao_adesao === "number"
+          ? usersSnap.docs[0].data().posicao_adesao
+          : 0;
 
-      if (typeof ultimaPosicao === "number") {
-        proximaPosicao = ultimaPosicao + 1;
-      }
+      const bilhetesSnap = await db
+        .collection("bilhetes")
+        .orderBy("numero", "desc")
+        .limit(1)
+        .get();
+
+      const ultimoBilhete =
+        !bilhetesSnap.empty && !Number.isNaN(parseInt(bilhetesSnap.docs[0].id, 10))
+          ? parseInt(bilhetesSnap.docs[0].id, 10)
+          : 0;
+
+      await contadorRef.set({
+        ultima_posicao: ultimaPosicao,
+        ultimo_bilhete: ultimoBilhete,
+      });
     }
 
-    let proximoNumeroBilhete = 1;
+    let idAderido = "";
+    let numeroInicio = "";
+    let numeroFim = "";
 
-    const bilhetesSnap = await db
-      .collection("bilhetes")
-      .orderBy("numero", "desc")
-      .limit(1)
-      .get();
+    await db.runTransaction(async (transaction) => {
+      const contadorSnap = await transaction.get(contadorRef);
+      const dadosContador = contadorSnap.data()!;
 
-    if (!bilhetesSnap.empty) {
-      const ultimoBilhete = parseInt(bilhetesSnap.docs[0].id, 10);
+      const proximaPosicao = (dadosContador.ultima_posicao || 0) + 1;
+      const proximoNumeroBilhete = (dadosContador.ultimo_bilhete || 0) + 1;
 
-      if (!Number.isNaN(ultimoBilhete)) {
-        proximoNumeroBilhete = ultimoBilhete + 1;
-      }
-    }
+      idAderido = `ADERIDO_${String(proximaPosicao).padStart(3, "0")}`;
+      const userRef = db.collection("usuarios").doc(idAderido);
 
-    const batch = db.batch();
+      numeroInicio = String(proximoNumeroBilhete).padStart(5, "0");
+      numeroFim = String(proximoNumeroBilhete + bilhetesPorPessoa - 1).padStart(5, "0");
 
-    const idAderido = `ADERIDO_${String(proximaPosicao).padStart(3, "0")}`;
-    const userRef = db.collection("usuarios").doc(idAderido);
+      const novoUsuario: Usuario & {
+        posicao_adesao: number;
+        curso?: string;
+        data_nascimento?: string;
+        modalidade_adesao: ModalidadeAdesao;
+        status_cadastro: "pendente";
+      } = {
+        id: idAderido,
+        id_aderido: idAderido,
+        posicao_adesao: proximaPosicao,
 
-    const numeroInicio = String(proximoNumeroBilhete).padStart(5, "0");
-    const numeroFim = String(
-      proximoNumeroBilhete + bilhetesPorPessoa - 1,
-    ).padStart(5, "0");
+        uid: null,
+        cpf: "",
+        email: dados.email,
+        nome: dados.nome,
+        curso: dados.curso,
+        data_nascimento: dados.dataNascimento,
+        telefone: dados.telefone,
 
-    const novoUsuario: Usuario & {
-      posicao_adesao: number;
-      curso?: string;
-      data_nascimento?: string;
-      modalidade_adesao: ModalidadeAdesao;
-      status_cadastro: "pendente";
-    } = {
-      id: idAderido,
-      id_aderido: idAderido,
-      posicao_adesao: proximaPosicao,
+        cargo: dados.cargo,
+        modalidade_adesao: dados.modalidade_adesao,
 
-      uid: null,
-      cpf: "",
-      email: dados.email,
-      nome: dados.nome,
-      curso: dados.curso,
-      data_nascimento: dados.dataNascimento,
-      telefone: dados.telefone,
+        faixa_rifas: {
+          inicio: numeroInicio,
+          fim: numeroFim,
+        },
 
-      cargo: dados.cargo,
-      modalidade_adesao: dados.modalidade_adesao,
+        meta_vendas: metaVendas,
+        total_arrecadado: 0,
+        rifas_vendidas: 0,
 
-      faixa_rifas: {
-        inicio: numeroInicio,
-        fim: numeroFim,
-      },
+        status: "pendente",
+        status_cadastro: "pendente",
 
-      meta_vendas: metaVendas,
-      total_arrecadado: 0,
-      rifas_vendidas: 0,
-
-      status: "pendente",
-      status_cadastro: "pendente",
-
-      criado_em: new Date().toISOString(),
-    };
-
-    batch.set(userRef, novoUsuario);
-
-    for (let b = 0; b < bilhetesPorPessoa; b++) {
-      const numeroString = String(proximoNumeroBilhete).padStart(5, "0");
-      const bilheteRef = db.collection("bilhetes").doc(numeroString);
-
-      const novoBilhete: Bilhete = {
-        numero: numeroString,
-        status: "disponivel",
-
-        vendedor_cpf: "",
-        vendedor_id: idAderido,
-        vendedor_nome: dados.nome,
-
-        comprador_id: null,
-        data_reserva: null,
-        data_pagamento: null,
-        comprovante_url: null,
+        criado_em: new Date().toISOString(),
       };
 
-      batch.set(bilheteRef, novoBilhete);
-      proximoNumeroBilhete++;
-    }
+      transaction.set(userRef, novoUsuario);
 
-    await batch.commit();
+      let b = proximoNumeroBilhete;
+      const fim = proximoNumeroBilhete + bilhetesPorPessoa;
+
+      for (; b < fim; b++) {
+        const numeroString = String(b).padStart(5, "0");
+        const bilheteRef = db.collection("bilhetes").doc(numeroString);
+
+        transaction.set(bilheteRef, {
+          numero: numeroString,
+          status: "disponivel",
+
+          vendedor_cpf: "",
+          vendedor_id: idAderido,
+          vendedor_nome: dados.nome,
+
+          comprador_id: null,
+          data_reserva: null,
+          data_pagamento: null,
+          comprovante_url: null,
+        } as Bilhete);
+      }
+
+      transaction.set(contadorRef, {
+        ultima_posicao: proximaPosicao,
+        ultimo_bilhete: fim - 1,
+      });
+    });
 
     return {
       idAderido,

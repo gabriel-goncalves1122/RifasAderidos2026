@@ -10,37 +10,41 @@ import { secretariaService } from "../../../src/modules/admin/secretaria/secreta
 // ============================================================================
 
 const mockGet: any = jest.fn();
-const mockDoc: any = jest.fn((id: string) => ({ id }));
-const mockBatchSet: any = jest.fn();
-const mockBatchCommit: any = jest.fn();
+const mockDoc: any = jest.fn((id: string) => ({ id, get: mockDocGet, set: mockDocSet }));
+const mockDocGet: any = jest.fn();
+const mockDocSet: any = jest.fn();
+const mockRunTransaction: any = jest.fn();
 
 jest.mock("../../../src/shared/config/firebaseAdmin", () => {
   const collectionMock = {
     where: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
-
-    // Mantém o controle do retorno de cada query no próprio teste.
-    get: (..._args: any[]) => mockGet(),
-
-    // Retorna um objeto simples para conseguirmos validar qual documento foi usado.
+    get: (...args: any[]) => mockGet(...args),
     doc: (...args: any[]) => mockDoc(...args),
   };
 
   return {
     db: {
       collection: jest.fn(() => collectionMock),
-      batch: jest.fn(() => ({
-        set: mockBatchSet,
-        commit: mockBatchCommit,
-      })),
+      runTransaction: (...args: any[]) => mockRunTransaction(...args),
     },
   };
 });
 
+const mockTransactionSet: any = jest.fn();
+const mockTransactionGet: any = jest.fn();
+
 describe("Service: secretariaService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    mockRunTransaction.mockImplementation(async (callback: any) => {
+      return callback({
+        get: mockTransactionGet,
+        set: mockTransactionSet,
+      });
+    });
   });
 
   it("Deve lançar erro se o e-mail já estiver autorizado", async () => {
@@ -50,13 +54,18 @@ describe("Service: secretariaService", () => {
       secretariaService.adicionarAderido({ email: "teste@teste.com" }),
     ).rejects.toThrow("Este e-mail já foi autorizado anteriormente.");
 
-    expect(mockBatchCommit).not.toHaveBeenCalled();
+    expect(mockRunTransaction).not.toHaveBeenCalled();
   });
 
   it("Deve criar o primeiro aderido completo com 120 bilhetes", async () => {
     mockGet.mockResolvedValueOnce({ empty: true });
+    mockDocGet.mockResolvedValueOnce({ exists: false });
     mockGet.mockResolvedValueOnce({ empty: true });
     mockGet.mockResolvedValueOnce({ empty: true });
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ ultima_posicao: 0, ultimo_bilhete: 0 }),
+    });
 
     const resultado = await secretariaService.adicionarAderido({
       email: "primeiro@teste.com",
@@ -75,15 +84,14 @@ describe("Service: secretariaService", () => {
       },
     });
 
-    // 1 usuário + 120 bilhetes.
-    expect(mockBatchSet).toHaveBeenCalledTimes(121);
-    expect(mockBatchCommit).toHaveBeenCalledTimes(1);
+    expect(mockTransactionSet).toHaveBeenCalledTimes(122);
+    expect(mockRunTransaction).toHaveBeenCalledTimes(1);
 
     expect(mockDoc).toHaveBeenCalledWith("ADERIDO_001");
     expect(mockDoc).toHaveBeenCalledWith("00001");
     expect(mockDoc).toHaveBeenCalledWith("00120");
 
-    const novoUsuario = mockBatchSet.mock.calls[0][1];
+    const novoUsuario = mockTransactionSet.mock.calls[0][1];
 
     expect(novoUsuario).toEqual(
       expect.objectContaining({
@@ -102,8 +110,13 @@ describe("Service: secretariaService", () => {
 
   it("Deve criar meio-aderido com 60 bilhetes e meta reduzida", async () => {
     mockGet.mockResolvedValueOnce({ empty: true });
+    mockDocGet.mockResolvedValueOnce({ exists: false });
     mockGet.mockResolvedValueOnce({ empty: true });
     mockGet.mockResolvedValueOnce({ empty: true });
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ ultima_posicao: 0, ultimo_bilhete: 0 }),
+    });
 
     const resultado = await secretariaService.adicionarAderido({
       email: "meio@teste.com",
@@ -121,10 +134,9 @@ describe("Service: secretariaService", () => {
       },
     });
 
-    // 1 usuário + 60 bilhetes.
-    expect(mockBatchSet).toHaveBeenCalledTimes(61);
+    expect(mockTransactionSet).toHaveBeenCalledTimes(62);
 
-    const novoUsuario = mockBatchSet.mock.calls[0][1];
+    const novoUsuario = mockTransactionSet.mock.calls[0][1];
 
     expect(novoUsuario).toEqual(
       expect.objectContaining({
@@ -140,19 +152,18 @@ describe("Service: secretariaService", () => {
 
   it("Deve continuar a contagem se já existirem usuários e bilhetes", async () => {
     mockGet.mockResolvedValueOnce({ empty: true });
-
-    mockGet.mockResolvedValueOnce({
-      empty: false,
-      docs: [{ data: () => ({ posicao_adesao: 15 }) }],
+    mockDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ ultima_posicao: 15, ultimo_bilhete: 1800 }),
     });
-
-    mockGet.mockResolvedValueOnce({
-      empty: false,
-      docs: [{ id: "01800" }],
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ ultima_posicao: 15, ultimo_bilhete: 1800 }),
     });
 
     const resultado = await secretariaService.adicionarAderido({
       email: "novo@teste.com",
+      modalidade_adesao: "completo",
     });
 
     expect(resultado.idAderido).toBe("ADERIDO_016");
@@ -163,7 +174,7 @@ describe("Service: secretariaService", () => {
 
     expect(mockDoc).toHaveBeenCalledWith("ADERIDO_016");
     expect(mockDoc).toHaveBeenCalledWith("01801");
-    expect(mockBatchCommit).toHaveBeenCalledTimes(1);
+    expect(mockRunTransaction).toHaveBeenCalledTimes(1);
   });
 
   it("Deve atualizar apenas campos cadastrais do aderido", async () => {
@@ -177,8 +188,6 @@ describe("Service: secretariaService", () => {
 
     mockGet.mockResolvedValueOnce({
       exists: true,
-
-      // Dados atuais usados pela regra que bloqueia ativo -> pendente.
       data: () => ({
         status_cadastro: "ativo",
         modalidade_adesao: "completo",
