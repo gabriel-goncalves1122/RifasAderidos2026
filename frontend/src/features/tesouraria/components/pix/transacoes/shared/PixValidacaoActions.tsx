@@ -2,6 +2,8 @@ import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { Button, CircularProgress, Stack, Tooltip } from "@mui/material";
 
+import { colors } from "../../../../styles/colors";
+import { components } from "../../../../styles/components";
 import {
   AcaoValidacaoPix,
   PixTransacao,
@@ -73,16 +75,8 @@ export function PixValidacaoActions({
             }
             onClick={() => onAceitar?.(transacao.id)}
             sx={{
+              ...components.botaoAceitar,
               minWidth: compacto ? 96 : 104,
-              borderRadius: 1.75,
-              color: "#063D31",
-              bgcolor: "#EAF3EF",
-              border: "1px solid rgba(6, 61, 49, 0.18)",
-              fontWeight: 850,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: "#DDECE6",
-              },
             }}
           >
             Aceitar
@@ -111,16 +105,8 @@ export function PixValidacaoActions({
             }
             onClick={() => onNegar?.(transacao.id)}
             sx={{
+              ...components.botaoNegar,
               minWidth: compacto ? 88 : 96,
-              borderRadius: 1.75,
-              color: "#7A1F1F",
-              bgcolor: "#FDF0F0",
-              border: "1px solid rgba(122, 31, 31, 0.18)",
-              fontWeight: 850,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: "#F9E4E4",
-              },
             }}
           >
             Negar

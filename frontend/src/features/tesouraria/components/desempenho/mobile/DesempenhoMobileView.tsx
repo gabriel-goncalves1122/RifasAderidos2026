@@ -3,6 +3,8 @@ import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumb
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import { Box, Stack } from "@mui/material";
 
+import { colors } from "../../../styles/colors";
+
 import { TesourariaSectionHeader } from "../../shared/TesourariaSectionHeader";
 import {
   formatarInteiroDesempenho,
@@ -42,7 +44,7 @@ export function DesempenhoMobileView({ dados }: DesempenhoMobileViewProps) {
             valor={formatarMoedaDesempenho(dados.resumoGeral.totalArrecadado)}
             detalhe="Entrada confirmada"
             icon={<AttachMoneyOutlinedIcon fontSize="small" />}
-            cor="#063D31"
+            cor={colors.verdeEscuro}
             destaque
           />
         </Box>
@@ -52,7 +54,7 @@ export function DesempenhoMobileView({ dados }: DesempenhoMobileViewProps) {
           valor={formatarInteiroDesempenho(dados.resumoGeral.rifasPagas)}
           detalhe="Bilhetes pagos"
           icon={<ConfirmationNumberOutlinedIcon fontSize="small" />}
-          cor="#0B7A61"
+          cor={colors.verdeMedio}
         />
 
         <DesempenhoKpiCard
@@ -60,7 +62,7 @@ export function DesempenhoMobileView({ dados }: DesempenhoMobileViewProps) {
           valor={formatarInteiroDesempenho(dados.resumoGeral.aderidosAtivos)}
           detalhe="Na comissão"
           icon={<GroupsOutlinedIcon fontSize="small" />}
-          cor="#C48A16"
+          cor={colors.dourado}
         />
       </Box>
 

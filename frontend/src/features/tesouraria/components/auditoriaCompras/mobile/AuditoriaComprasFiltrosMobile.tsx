@@ -23,6 +23,7 @@ import {
 import { AuditoriaComprasFiltrosProps } from "../shared/auditoriaComprasFiltrosTypes";
 import { FiltroComprovante } from "../../../types/auditoriaCompras";
 import { STATUS_FILTROS_AUDITORIA_COMPRAS } from "../../../utils/auditoriaComprasUtils";
+import { colors } from "../../../styles/colors";
 
 export function AuditoriaComprasFiltrosMobile({
   filtros,
@@ -41,7 +42,7 @@ export function AuditoriaComprasFiltrosMobile({
         p: 1.25,
         mb: 1.75,
         borderRadius: 2.25,
-        bgcolor: "#FFFFFF",
+        bgcolor: colors.branco,
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 10px 24px rgba(2, 27, 22, 0.06)",
         position: "sticky",
@@ -62,14 +63,14 @@ export function AuditoriaComprasFiltrosMobile({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ color: "#526760" }} />
+                  <SearchIcon sx={{ color: colors.cinzaTexto }} />
                 </InputAdornment>
               ),
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
-                bgcolor: "#F6F8F7",
+                bgcolor: colors.fundoSuave,
               },
             }}
           />
@@ -81,11 +82,11 @@ export function AuditoriaComprasFiltrosMobile({
               width: 40,
               height: 40,
               borderRadius: 2,
-              bgcolor: aberto || filtrosAtivos ? "#063D31" : "#EAF3EF",
-              color: aberto || filtrosAtivos ? "#FFFFFF" : "#063D31",
+              bgcolor: aberto || filtrosAtivos ? colors.verdeEscuro : colors.verdeClaro,
+              color: aberto || filtrosAtivos ? colors.branco : colors.verdeEscuro,
               flexShrink: 0,
               "&:hover": {
-                bgcolor: aberto || filtrosAtivos ? "#052F26" : "#DCEDE8",
+                bgcolor: aberto || filtrosAtivos ? colors.verdeEscuroHover : colors.verdeHover,
               },
             }}
           >
@@ -119,10 +120,10 @@ export function AuditoriaComprasFiltrosMobile({
                   borderRadius: 999,
                   fontWeight: 850,
                   flexShrink: 0,
-                  bgcolor: ativo ? "#063D31" : "#FFFFFF",
-                  color: ativo ? "#FFFFFF" : "#063D31",
+                  bgcolor: ativo ? colors.verdeEscuro : colors.branco,
+                  color: ativo ? colors.branco : colors.verdeEscuro,
                   border: ativo
-                    ? "1px solid #063D31"
+                    ? `1px solid ${colors.verdeEscuro}`
                     : "1px solid rgba(6, 61, 49, 0.18)",
                 }}
               />
@@ -134,7 +135,7 @@ export function AuditoriaComprasFiltrosMobile({
           <Stack spacing={1.1} sx={{ pt: 0.25 }}>
             <Typography
               sx={{
-                color: "#526760",
+                color: colors.cinzaTexto,
                 fontSize: "0.78rem",
                 fontWeight: 850,
               }}
@@ -164,7 +165,7 @@ export function AuditoriaComprasFiltrosMobile({
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 2,
-                    bgcolor: "#F6F8F7",
+                    bgcolor: colors.fundoSuave,
                   },
                 }}
               />
@@ -181,7 +182,7 @@ export function AuditoriaComprasFiltrosMobile({
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 2,
-                    bgcolor: "#F6F8F7",
+                    bgcolor: colors.fundoSuave,
                   },
                 }}
               />
@@ -201,7 +202,7 @@ export function AuditoriaComprasFiltrosMobile({
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 2,
-                  bgcolor: "#F6F8F7",
+                  bgcolor: colors.fundoSuave,
                 },
               }}
             >
@@ -218,14 +219,14 @@ export function AuditoriaComprasFiltrosMobile({
                 disabled={!possuiResultados}
                 sx={{
                   borderRadius: 2,
-                  bgcolor: "#063D31",
-                  color: "#FFFFFF",
+                  bgcolor: colors.verdeEscuro,
+                  color: colors.branco,
                   fontWeight: 850,
                   textTransform: "none",
-                  "&:hover": { bgcolor: "#052F26" },
+                  "&:hover": { bgcolor: colors.verdeEscuroHover },
                   "&.Mui-disabled": {
-                    bgcolor: "#EAF3EF",
-                    color: "#526760",
+                    bgcolor: colors.verdeClaro,
+                    color: colors.cinzaTexto,
                   },
                 }}
               >
@@ -240,8 +241,8 @@ export function AuditoriaComprasFiltrosMobile({
                     disabled
                     sx={{
                       borderRadius: 2,
-                      color: "#063D31",
-                      bgcolor: "#EAF3EF",
+                      color: colors.verdeEscuro,
+                      bgcolor: colors.verdeClaro,
                       fontWeight: 850,
                       textTransform: "none",
                     }}
@@ -259,7 +260,7 @@ export function AuditoriaComprasFiltrosMobile({
                 sx={{
                   alignSelf: "stretch",
                   borderRadius: 2,
-                  color: "#063D31",
+                  color: colors.verdeEscuro,
                   fontWeight: 850,
                   textTransform: "none",
                 }}

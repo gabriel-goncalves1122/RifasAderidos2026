@@ -1,10 +1,20 @@
 import {
+  formatarDataCurta as formatarDataAuditoria,
+  formatarMoeda as formatarMoedaAuditoria,
+  somenteNumeros,
+} from "./formatadores";
+import {
   CompraAuditavel,
   AuditoriaComprasFiltros,
   ResumoAuditoriaCompras,
   StatusAuditoriaCompras,
   TransacaoAuditoriaComprasBase,
 } from "../types/auditoriaCompras";
+
+export {
+  formatarDataAuditoria,
+  formatarMoedaAuditoria,
+};
 
 export const STATUS_FILTROS_AUDITORIA_COMPRAS: Array<{
   label: string;
@@ -25,33 +35,12 @@ export const FILTROS_AUDITORIA_COMPRAS_VAZIOS: AuditoriaComprasFiltros = {
   comprovante: "todos",
 };
 
-export function somenteNumeros(valor?: string | null) {
-  return String(valor || "").replace(/\D/g, "");
-}
-
 export function normalizarTexto(valor?: string | null) {
   return String(valor || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
-}
-
-export function formatarMoedaAuditoria(valor: number) {
-  return valor.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
-
-export function formatarDataAuditoria(data?: string | null) {
-  if (!data || data === "-") return "Data não informada";
-
-  const dataConvertida = new Date(data);
-
-  if (Number.isNaN(dataConvertida.getTime())) return "Data inválida";
-
-  return dataConvertida.toLocaleDateString("pt-BR");
 }
 
 export function dataParaInputAuditoria(data?: string | null) {

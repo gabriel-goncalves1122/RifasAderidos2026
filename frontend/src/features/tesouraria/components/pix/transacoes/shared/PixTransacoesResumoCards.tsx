@@ -5,6 +5,9 @@ import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import { Box, Paper, Typography } from "@mui/material";
 
+import { colors } from "../../../../styles/colors";
+import { surfaces } from "../../../../styles/surfaces";
+import { typography } from "../../../../styles/typography";
 import { PixTransacoesResumo } from "../../../../types/pixTransacoes";
 import { formatarMoedaPix } from "../../../../utils/pixTransacoesUtils";
 
@@ -26,31 +29,19 @@ function CardResumo({
   return (
     <Paper
       elevation={0}
-      sx={{
-        p: 2,
-        borderRadius: 2.25,
-        bgcolor: "#FFFFFF",
-        border: "1px solid rgba(2, 27, 22, 0.10)",
-        boxShadow: "0 10px 28px rgba(2, 27, 22, 0.06)",
-      }}
+      sx={{ ...surfaces.paperComSombra, p: 2 }}
     >
       <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
         <Box>
           <Typography
-            sx={{
-              color: "#526760",
-              fontSize: "0.76rem",
-              fontWeight: 850,
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-            }}
+            sx={{ ...typography.label, fontSize: "0.76rem", fontWeight: 850 }}
           >
             {titulo}
           </Typography>
 
           <Typography
             sx={{
-              color: "#021B16",
+              color: colors.pretoEsverdeado,
               fontSize: "1.45rem",
               fontWeight: 950,
               lineHeight: 1.1,
@@ -60,7 +51,7 @@ function CardResumo({
             {valor}
           </Typography>
 
-          <Typography sx={{ color: "#526760", fontSize: "0.82rem", mt: 0.5 }}>
+          <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.82rem", mt: 0.5 }}>
             {descricao}
           </Typography>
         </Box>
@@ -72,8 +63,8 @@ function CardResumo({
             borderRadius: 2,
             display: "grid",
             placeItems: "center",
-            color: "#063D31",
-            bgcolor: "#EAF3EF",
+            color: colors.verdeEscuro,
+            bgcolor: colors.verdeClaro,
           }}
         >
           {icone}

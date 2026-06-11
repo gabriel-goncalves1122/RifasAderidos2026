@@ -2,6 +2,7 @@ import { Box, Paper, Typography } from "@mui/material";
 
 import { PixTransacoesResumo } from "../../../../types/pixTransacoes";
 import { formatarMoedaPix } from "../../../../utils/pixTransacoesUtils";
+import { colors } from "../../../../styles/colors";
 
 interface PixVisaoGeralKpisMobileProps {
   resumo: PixTransacoesResumo;
@@ -47,7 +48,7 @@ export function PixVisaoGeralKpisMobile({
             p: 1.35,
             minHeight: 104,
             borderRadius: 2,
-            bgcolor: kpi.destaque ? "#063D31" : "#FFFFFF",
+            bgcolor: kpi.destaque ? colors.verdeEscuro : colors.branco,
             border: kpi.alerta
               ? "1px solid rgba(143, 104, 0, 0.28)"
               : "1px solid rgba(2, 27, 22, 0.10)",
@@ -56,7 +57,7 @@ export function PixVisaoGeralKpisMobile({
         >
           <Typography
             sx={{
-              color: kpi.destaque ? "rgba(255,255,255,0.76)" : "#526760",
+              color: kpi.destaque ? "rgba(255,255,255,0.76)" : colors.cinzaTexto,
               fontSize: "0.72rem",
               fontWeight: 850,
               textTransform: "uppercase",
@@ -69,10 +70,10 @@ export function PixVisaoGeralKpisMobile({
           <Typography
             sx={{
               color: kpi.destaque
-                ? "#FFFFFF"
+                ? colors.branco
                 : kpi.alerta
-                  ? "#6B4E00"
-                  : "#021B16",
+                  ? colors.alertaTexto
+                  : colors.pretoEsverdeado,
               fontSize: "1.28rem",
               fontWeight: 950,
               lineHeight: 1.1,

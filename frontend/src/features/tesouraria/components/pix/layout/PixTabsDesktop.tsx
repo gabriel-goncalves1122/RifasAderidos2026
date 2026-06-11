@@ -1,5 +1,7 @@
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 
+import { colors } from "../../../styles/colors";
+import { surfaces } from "../../../styles/surfaces";
 import { ABAS_PIX } from "./pixTabsConfig";
 import { PixTabTooltip } from "./PixTabTooltip";
 import { PixTabsProps } from "./pixTabsTypes";
@@ -12,9 +14,7 @@ export function PixTabsDesktop({
     <Box
       sx={{
         mb: 3,
-        bgcolor: "#FFFFFF",
-        borderRadius: 2.25,
-        border: "1px solid rgba(2, 27, 22, 0.10)",
+        ...surfaces.paper,
         px: 1,
       }}
     >
@@ -29,7 +29,7 @@ export function PixTabsDesktop({
           "& .MuiTabs-indicator": {
             height: 3,
             borderRadius: 2,
-            bgcolor: "#063D31",
+            bgcolor: colors.verdeEscuro,
           },
           "& .MuiTab-root": {
             minHeight: 54,
@@ -38,11 +38,11 @@ export function PixTabsDesktop({
             py: 1.5,
             textTransform: "none",
             fontWeight: 850,
-            color: "#526760",
+            color: colors.cinzaTexto,
             gap: 0.75,
           },
           "& .MuiTab-root.Mui-selected": {
-            color: "#063D31 !important",
+            color: `${colors.verdeEscuro} !important`,
           },
           "& .MuiTab-iconWrapper": {
             mr: 0.5,

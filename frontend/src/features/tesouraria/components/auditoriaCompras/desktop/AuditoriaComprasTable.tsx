@@ -18,6 +18,10 @@ import {
 } from "../../../utils/auditoriaComprasUtils";
 import { AuditoriaCompraActions } from "../shared/AuditoriaCompraActions";
 import { AuditoriaStatusChip } from "../shared/AuditoriaStatusChip";
+import { colors } from "../../../styles/colors";
+import { surfaces } from "../../../styles/surfaces";
+import { components } from "../../../styles/components";
+import { typography } from "../../../styles/typography";
 
 interface AuditoriaComprasTableProps {
   compras: CompraAuditavel[];
@@ -41,28 +45,14 @@ export function AuditoriaComprasTable({
       elevation={0}
       sx={{
         display: { xs: "none", md: "block" },
-        borderRadius: 2.25,
+        ...surfaces.paperComSombra,
         overflow: "hidden",
-        border: "1px solid rgba(2, 27, 22, 0.10)",
-        bgcolor: "#FFFFFF",
-        boxShadow: "0 12px 30px rgba(2, 27, 22, 0.05)",
       }}
     >
       <Table size="small">
         <TableHead>
           <TableRow
-            sx={{
-              bgcolor: "#F6F8F7",
-              "& th": {
-                color: "#526760",
-                fontWeight: 900,
-                fontSize: "0.72rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                py: 1.45,
-                borderColor: "rgba(2, 27, 22, 0.08)",
-              },
-            }}
+            sx={components.tabelaCabecalho}
           >
             <TableCell>Data</TableCell>
             <TableCell>Comprador</TableCell>
@@ -80,43 +70,33 @@ export function AuditoriaComprasTable({
               key={compra.id}
               hover
               data-testid={`auditoria-compra-${compra.id}`}
-              sx={{
-                "& td": {
-                  borderColor: "rgba(2, 27, 22, 0.08)",
-                  verticalAlign: "middle",
-                  py: 1.45,
-                },
-                "&:hover": {
-                  bgcolor: "#FAFCFB",
-                },
-              }}
+              sx={components.linhaTabela}
             >
               <TableCell sx={{ minWidth: 128 }}>
-                <Typography sx={{ color: "#021B16", fontWeight: 850 }}>
+                <Typography sx={typography.bodyDestaque}>
                   {formatarDataAuditoria(compra.data_reserva)}
                 </Typography>
-                <Typography sx={{ color: "#526760", fontSize: "0.78rem" }}>
+                <Typography sx={typography.bodyPequeno}>
                   Reserva
                 </Typography>
               </TableCell>
               <TableCell sx={{ minWidth: 180 }}>
                 <Typography
                   sx={{
-                    color: "#021B16",
+                    ...typography.bodyDestaque,
                     fontWeight: 950,
-                    lineHeight: 1.2,
                   }}
                 >
                   {compra.comprador_nome}
                 </Typography>
-                <Typography sx={{ color: "#526760", fontSize: "0.78rem", mt: 0.3 }}>
+                <Typography sx={{ ...typography.bodyPequeno, mt: 0.3 }}>
                   ID: {compra.comprador_id || "sem comprador_id"}
                 </Typography>
               </TableCell>
               <TableCell sx={{ minWidth: 190 }}>
                 <Typography
                   sx={{
-                    color: "#021B16",
+                    color: colors.pretoEsverdeado,
                     fontSize: "0.86rem",
                     fontWeight: 750,
                     overflowWrap: "anywhere",
@@ -124,15 +104,15 @@ export function AuditoriaComprasTable({
                 >
                   {compra.comprador_email || "Sem e-mail"}
                 </Typography>
-                <Typography sx={{ color: "#526760", fontSize: "0.8rem" }}>
+                <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.8rem" }}>
                   {compra.comprador_telefone || "Sem telefone"}
                 </Typography>
               </TableCell>
               <TableCell sx={{ minWidth: 170 }}>
-                <Typography sx={{ color: "#021B16", fontWeight: 850, lineHeight: 1.2 }}>
+                <Typography sx={typography.bodyDestaque}>
                   {compra.vendedor_nome}
                 </Typography>
-                <Typography sx={{ color: "#526760", fontSize: "0.8rem" }}>
+                <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.8rem" }}>
                   {compra.vendedor_cpf}
                 </Typography>
               </TableCell>
@@ -150,12 +130,10 @@ export function AuditoriaComprasTable({
                       label={bilhete}
                       size="small"
                       sx={{
+                        ...components.chipBilhete,
                         height: 24,
                         borderRadius: 1.5,
-                        bgcolor: "#EAF3EF",
-                        color: "#063D31",
                         border: "1px solid rgba(6, 61, 49, 0.18)",
-                        fontWeight: 850,
                       }}
                     />
                   ))}
@@ -166,15 +144,7 @@ export function AuditoriaComprasTable({
               </TableCell>
               <TableCell align="right" sx={{ minWidth: 118 }}>
                 <Box
-                  sx={{
-                    display: "inline-flex",
-                    px: 1,
-                    py: 0.5,
-                    borderRadius: 2,
-                    bgcolor: "#EAF3EF",
-                    color: "#063D31",
-                    fontWeight: 950,
-                  }}
+                  sx={components.labelVerde}
                 >
                   {formatarMoedaAuditoria(compra.valor_total)}
                 </Box>

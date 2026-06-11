@@ -4,6 +4,8 @@ import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import { Box } from "@mui/material";
 
+import { colors } from "../../../styles/colors";
+
 import { TesourariaSectionHeader } from "../../shared/TesourariaSectionHeader";
 import {
   formatarInteiroDesempenho,
@@ -39,7 +41,7 @@ export function DesempenhoDesktopView({ dados }: DesempenhoDesktopViewProps) {
           valor={formatarMoedaDesempenho(dados.resumoGeral.totalArrecadado)}
           detalhe="Entrada confirmada no período"
           icon={<AttachMoneyOutlinedIcon fontSize="small" />}
-          cor="#063D31"
+          cor={colors.verdeEscuro}
           destaque
         />
       </Box>
@@ -66,7 +68,7 @@ export function DesempenhoDesktopView({ dados }: DesempenhoDesktopViewProps) {
           )} rifas`}
           detalhe={`${formatarInteiroDesempenho(dados.status.pagas)} pagamentos`}
           icon={<ConfirmationNumberOutlinedIcon fontSize="small" />}
-          cor="#0B7A61"
+          cor={colors.verdeMedio}
         />
         <DesempenhoKpiCard
           titulo="Aderidos ativos"
@@ -77,7 +79,7 @@ export function DesempenhoDesktopView({ dados }: DesempenhoDesktopViewProps) {
             dados.metas.bateramMeta,
           )} na meta`}
           icon={<GroupsOutlinedIcon fontSize="small" />}
-          cor="#C48A16"
+          cor={colors.dourado}
         />
         <DesempenhoKpiCard
           titulo="Meta atingida"
@@ -86,7 +88,7 @@ export function DesempenhoDesktopView({ dados }: DesempenhoDesktopViewProps) {
             dados.metas.bateramMeta,
           )} de ${formatarInteiroDesempenho(dados.metas.total)} aderidos`}
           icon={<TaskAltOutlinedIcon fontSize="small" />}
-          cor="#063D31"
+          cor={colors.verdeEscuro}
         />
       </Box>
 

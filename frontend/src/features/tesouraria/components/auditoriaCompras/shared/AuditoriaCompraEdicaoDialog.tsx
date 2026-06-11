@@ -13,6 +13,10 @@ import {
 import { FormEvent, useEffect, useState } from "react";
 
 import { CompraAuditavel } from "../../../types/auditoriaCompras";
+import { formatarTelefone } from "../../../utils/formatadores";
+import { colors } from "../../../styles/colors";
+import { surfaces } from "../../../styles/surfaces";
+import { components } from "../../../styles/components";
 
 interface AuditoriaCompraEdicaoDialogProps {
   compra: CompraAuditavel | null;
@@ -67,22 +71,14 @@ export function AuditoriaCompraEdicaoDialog({
       maxWidth="sm"
       fullWidth
       PaperProps={{
-        sx: {
-          borderRadius: 2.25,
-          overflow: "hidden",
-        },
+        sx: surfaces.dialog,
       }}
     >
       <DialogTitle
-        sx={{
-          color: "#021B16",
-          fontWeight: 950,
-          pb: 1,
-          borderBottom: "1px solid rgba(2, 27, 22, 0.08)",
-        }}
+        sx={surfaces.dialogTitle}
       >
         Editar dados do comprador
-        <Typography sx={{ color: "#526760", fontSize: "0.88rem", mt: 0.45 }}>
+        <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.88rem", mt: 0.45 }}>
           Preparado para alterar apenas dados de contato, sem tocar nos vínculos.
         </Typography>
       </DialogTitle>
@@ -122,19 +118,22 @@ export function AuditoriaCompraEdicaoDialog({
             <TextField
               label="Telefone do comprador"
               value={telefone}
-              onChange={(event) => setTelefone(event.target.value)}
+              onChange={(event) => setTelefone(formatarTelefone(event.target.value))}
               size="small"
               fullWidth
               disabled={salvando}
+              slotProps={{
+                htmlInput: { maxLength: 15 },
+              }}
             />
           </Stack>
         </DialogContent>
       )}
-      <DialogActions sx={{ px: 3, py: 2, bgcolor: "#FAFCFB" }}>
+      <DialogActions sx={surfaces.dialogActions}>
         <Button
           onClick={onClose}
           disabled={salvando}
-          sx={{ color: "#063D31", fontWeight: 850, textTransform: "none" }}
+          sx={components.botaoSecundario}
         >
           Cancelar
         </Button>
@@ -143,15 +142,7 @@ export function AuditoriaCompraEdicaoDialog({
           onClick={salvarCampos}
           disabled={!nomeValido || salvando}
           variant="contained"
-          sx={{
-            borderRadius: 2,
-            fontWeight: 850,
-            textTransform: "none",
-            bgcolor: "#063D31",
-            "&:hover": {
-              bgcolor: "#052F26",
-            },
-          }}
+          sx={components.botaoPrimario}
         >
           {salvando ? (
             <CircularProgress size={18} color="inherit" />

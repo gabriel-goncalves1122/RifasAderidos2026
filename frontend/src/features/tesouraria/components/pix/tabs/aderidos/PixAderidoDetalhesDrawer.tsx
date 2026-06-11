@@ -5,6 +5,10 @@ import {
   formatarDataPix,
   formatarMoedaPix,
 } from "../../../../utils/pixTransacoesUtils";
+import { colors } from "../../../../styles/colors";
+import { surfaces } from "../../../../styles/surfaces";
+import { typography } from "../../../../styles/typography";
+import { layout } from "../../../../styles/layout";
 
 interface PixAderidoDetalhesDrawerProps {
   aderido: PixAderidoResumo | null;
@@ -25,38 +29,24 @@ export function PixAderidoDetalhesDrawer({
       open={Boolean(aderido)}
       onClose={onClose}
       PaperProps={{
-        sx: {
-          borderTopLeftRadius: 16,
-          borderTopRightRadius: 16,
-          p: 2,
-          bgcolor: "#FFFFFF",
-        },
+        sx: layout.drawerPaper,
       }}
     >
       {aderido && (
         <Stack spacing={2} sx={{ pb: 1 }}>
-          <Box
-            sx={{
-              width: 42,
-              height: 4,
-              borderRadius: 999,
-              bgcolor: "rgba(2, 27, 22, 0.18)",
-              mx: "auto",
-            }}
-          />
+          <Box sx={layout.drawerPullHandle} />
 
           <Box>
             <Typography
               sx={{
-                color: "#021B16",
+                ...typography.bodyDestaque,
                 fontWeight: 950,
                 fontSize: "1.08rem",
-                lineHeight: 1.2,
               }}
             >
               {aderido.nome}
             </Typography>
-            <Typography sx={{ color: "#526760", fontSize: "0.82rem", mt: 0.4 }}>
+            <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.82rem", mt: 0.4 }}>
               {aderido.cpfLabel}
             </Typography>
           </Box>
@@ -70,48 +60,31 @@ export function PixAderidoDetalhesDrawer({
           >
             <Paper
               elevation={0}
-              sx={{
-                p: 1.25,
-                borderRadius: 2,
-                bgcolor: "#EAF3EF",
-                border: "1px solid rgba(6, 61, 49, 0.14)",
-              }}
+              sx={surfaces.cartaoResumo(true)}
             >
-              <Typography sx={{ color: "#526760", fontSize: "0.72rem" }}>
+              <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.72rem" }}>
                 Arrecadado
               </Typography>
-              <Typography sx={{ color: "#063D31", fontWeight: 950, mt: 0.35 }}>
+              <Typography sx={{ ...typography.valorMonetario, mt: 0.35 }}>
                 {formatarMoedaPix(aderido.totalArrecadado)}
               </Typography>
             </Paper>
 
             <Paper
               elevation={0}
-              sx={{
-                p: 1.25,
-                borderRadius: 2,
-                bgcolor: "#F6F8F7",
-                border: "1px solid rgba(2, 27, 22, 0.08)",
-              }}
+              sx={surfaces.cartaoResumo()}
             >
-              <Typography sx={{ color: "#526760", fontSize: "0.72rem" }}>
+              <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.72rem" }}>
                 Rifas restantes
               </Typography>
-              <Typography sx={{ color: "#021B16", fontWeight: 950, mt: 0.35 }}>
+              <Typography sx={{ color: colors.pretoEsverdeado, fontWeight: 950, mt: 0.35 }}>
                 {aderido.rifasRestantes}
               </Typography>
             </Paper>
           </Box>
 
           <Box>
-            <Typography
-              sx={{
-                color: "#021B16",
-                fontWeight: 900,
-                fontSize: "0.92rem",
-                mb: 1,
-              }}
-            >
+            <Typography sx={typography.secaoTitulo}>
               Transações relacionadas
             </Typography>
 
@@ -131,8 +104,7 @@ export function PixAderidoDetalhesDrawer({
                     <Box sx={{ minWidth: 0 }}>
                       <Typography
                         sx={{
-                          color: "#021B16",
-                          fontWeight: 850,
+                          ...typography.bodyDestaque,
                           fontSize: "0.85rem",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -141,14 +113,13 @@ export function PixAderidoDetalhesDrawer({
                       >
                         {transacao.compradorNome || "Pagador não informado"}
                       </Typography>
-                      <Typography sx={{ color: "#526760", fontSize: "0.75rem" }}>
+                      <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.75rem" }}>
                         {formatarDataPix(transacao.dataPagamento)}
                       </Typography>
                     </Box>
                     <Typography
                       sx={{
-                        color: "#063D31",
-                        fontWeight: 950,
+                        ...typography.valorMonetario,
                         fontSize: "0.9rem",
                         whiteSpace: "nowrap",
                       }}
@@ -158,7 +129,7 @@ export function PixAderidoDetalhesDrawer({
                   </Box>
                 ))
               ) : (
-                <Typography sx={{ color: "#526760", fontSize: "0.85rem" }}>
+                <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.85rem" }}>
                   Nenhum Pix pago vinculado.
                 </Typography>
               )}

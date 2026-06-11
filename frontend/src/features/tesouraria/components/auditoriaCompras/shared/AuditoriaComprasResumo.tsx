@@ -7,6 +7,9 @@ import { Box, Paper, Stack, Typography } from "@mui/material";
 
 import { ResumoAuditoriaCompras } from "../../../types/auditoriaCompras";
 import { formatarMoedaAuditoria } from "../../../utils/auditoriaComprasUtils";
+import { colors } from "../../../styles/colors";
+import { surfaces } from "../../../styles/surfaces";
+import { typography } from "../../../styles/typography";
 
 function ContadorAuditoria({
   label,
@@ -25,11 +28,12 @@ function ContadorAuditoria({
     <Paper
       elevation={0}
       sx={{
+        ...surfaces.cartaoResumo(destaque),
         position: "relative",
         overflow: "hidden",
         p: { xs: 1.65, md: 2 },
         borderRadius: 2.25,
-        bgcolor: destaque ? "#063D31" : "#FFFFFF",
+        bgcolor: destaque ? colors.verdeEscuro : colors.branco,
         border: destaque
           ? "1px solid rgba(255, 255, 255, 0.16)"
           : "1px solid rgba(2, 27, 22, 0.10)",
@@ -43,7 +47,7 @@ function ContadorAuditoria({
           position: "absolute",
           inset: "0 auto 0 0",
           width: 5,
-          bgcolor: destaque ? "#A8DCCB" : "#0B7A61",
+          bgcolor: destaque ? "#A8DCCB" : colors.verdeMedio,
         },
       }}
     >
@@ -57,8 +61,8 @@ function ContadorAuditoria({
               display: "grid",
               placeItems: "center",
               flexShrink: 0,
-              color: destaque ? "#063D31" : "#063D31",
-              bgcolor: destaque ? "#FFFFFF" : "#EAF3EF",
+              color: colors.verdeEscuro,
+              bgcolor: destaque ? colors.branco : colors.verdeClaro,
             }}
           >
             {icon}
@@ -66,10 +70,9 @@ function ContadorAuditoria({
 
           <Typography
             sx={{
-              color: destaque ? "rgba(255,255,255,0.82)" : "#526760",
+              ...typography.label,
+              color: destaque ? "rgba(255,255,255,0.82)" : colors.cinzaTexto,
               fontSize: { xs: "0.72rem", md: "0.76rem" },
-              fontWeight: 900,
-              textTransform: "uppercase",
               letterSpacing: "0.05em",
               lineHeight: 1.18,
             }}
@@ -81,11 +84,11 @@ function ContadorAuditoria({
         <Box sx={{ minWidth: 0 }}>
           <Typography
             sx={{
-              color: destaque ? "#FFFFFF" : "#021B16",
+              ...typography.titulo,
+              color: destaque ? colors.branco : colors.pretoEsverdeado,
               fontSize: destaque
                 ? { xs: "1.42rem", md: "1.78rem" }
                 : { xs: "1.24rem", md: "1.48rem" },
-              fontWeight: 950,
               lineHeight: 1.08,
               overflowWrap: "anywhere",
             }}
@@ -95,7 +98,8 @@ function ContadorAuditoria({
 
           <Typography
             sx={{
-              color: destaque ? "rgba(255,255,255,0.76)" : "#526760",
+              ...typography.bodyPequeno,
+              color: destaque ? "rgba(255,255,255,0.76)" : colors.cinzaTexto,
               fontSize: { xs: "0.78rem", md: "0.84rem" },
               fontStyle: "italic",
               mt: 0.6,

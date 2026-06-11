@@ -9,7 +9,7 @@ describe("Aba: PixAderidosTab", () => {
     render(<PixAderidosTab transacoes={pixTransacoesMock} />);
 
     expect(screen.getByText("Gabriel Sampaio")).toBeInTheDocument();
-    expect(screen.getByText("000.000.000-00")).toBeInTheDocument();
+    expect(screen.getByText("000.000.001-91")).toBeInTheDocument();
     expect(screen.getByText(/R\$\s*30,00/)).toBeInTheDocument();
     expect(screen.getByText("117 rifas")).toBeInTheDocument();
   });

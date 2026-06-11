@@ -1,6 +1,7 @@
 import SyncIcon from "@mui/icons-material/Sync";
 import { CircularProgress, IconButton, Tooltip } from "@mui/material";
 
+import { colors } from "../../../styles/colors";
 import { AbaPix } from "../../../types/pixTabs";
 import { TesourariaSectionHeader } from "../../shared/TesourariaSectionHeader";
 
@@ -39,15 +40,15 @@ export function PixHeader({
                 width: 42,
                 height: 42,
                 borderRadius: 2,
-                bgcolor: "#063D31",
-                color: "#FFFFFF",
+                bgcolor: colors.verdeEscuro,
+                color: colors.branco,
                 flexShrink: 0,
                 "&:hover": {
-                  bgcolor: "#052F26",
+                  bgcolor: colors.verdeEscuroHover,
                 },
                 "&.Mui-disabled": {
-                  bgcolor: "#EAF3EF",
-                  color: "#526760",
+                  bgcolor: colors.verdeClaro,
+                  color: colors.cinzaTexto,
                 },
               }}
             >

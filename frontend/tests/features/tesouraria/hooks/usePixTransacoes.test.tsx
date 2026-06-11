@@ -15,6 +15,8 @@ vi.mock("@/features/tesouraria/services/pixTransacoesService", () => ({
     buscarTransacoes: vi.fn(),
     buscarResumo: vi.fn(),
     sincronizarBanco: vi.fn(),
+    aceitarTransacao: vi.fn(),
+    negarTransacao: vi.fn(),
   },
 }));
 
@@ -62,6 +64,12 @@ describe("Hook: usePixTransacoes", () => {
       RESUMO_PIX_TRANSACOES_VAZIO,
     );
     vi.mocked(pixTransacoesService.sincronizarBanco).mockResolvedValue({
+      sucesso: true,
+    });
+    vi.mocked(pixTransacoesService.aceitarTransacao).mockResolvedValue({
+      sucesso: true,
+    });
+    vi.mocked(pixTransacoesService.negarTransacao).mockResolvedValue({
       sucesso: true,
     });
   });
@@ -211,7 +219,7 @@ describe("Hook: usePixTransacoes", () => {
     expect(result.current.transacoesFiltradas).toEqual([transacoes[1]]);
   });
 
-  it("Deve expor ação local para aceitar Pix confirmado pelo banco", async () => {
+  it("Deve chamar backend para aceitar Pix confirmado pelo banco e recarregar dados", async () => {
     const transacoes = [
       criarTransacao({ id: "tx_paga", statusPagamento: "PAID" }),
       criarTransacao({
@@ -220,13 +228,21 @@ describe("Hook: usePixTransacoes", () => {
         valorPago: 0,
       }),
     ];
+    const transacoesRecarregadas = [
+      criarTransacao({
+        id: "tx_paga",
+        statusPagamento: "PAID",
+        statusValidacao: "aceita",
+      }),
+      transacoes[1],
+    ];
 
-    vi.mocked(pixTransacoesService.buscarTransacoes).mockResolvedValueOnce(
-      transacoes,
-    );
-    vi.mocked(pixTransacoesService.buscarResumo).mockResolvedValueOnce(
-      RESUMO_PIX_TRANSACOES_VAZIO,
-    );
+    vi.mocked(pixTransacoesService.buscarTransacoes)
+      .mockResolvedValueOnce(transacoes)
+      .mockResolvedValueOnce(transacoesRecarregadas);
+    vi.mocked(pixTransacoesService.buscarResumo)
+      .mockResolvedValueOnce(RESUMO_PIX_TRANSACOES_VAZIO)
+      .mockResolvedValueOnce(RESUMO_PIX_TRANSACOES_VAZIO);
 
     const { result } = renderHook(() => usePixTransacoes());
 
@@ -242,9 +258,48 @@ describe("Hook: usePixTransacoes", () => {
       expect(result.current.transacoes[0].statusValidacao).toBe("aceita");
     });
 
+    expect(pixTransacoesService.aceitarTransacao).toHaveBeenCalledWith(
+      "tx_paga",
+    );
     expect(result.current.resumo.quantidadeAceitas).toBe(1);
     expect(result.current.resumo.quantidadeAguardandoValidacao).toBe(0);
     expect(result.current.resumo.quantidadeSemConfirmacaoBancaria).toBe(1);
+  });
+
+  it("Deve chamar backend para negar Pix confirmado pelo banco com motivo padrão", async () => {
+    const transacoes = [
+      criarTransacao({ id: "tx_paga", statusPagamento: "AUTHORIZED" }),
+    ];
+    const transacoesRecarregadas = [
+      criarTransacao({
+        id: "tx_paga",
+        statusPagamento: "AUTHORIZED",
+        statusValidacao: "negada",
+      }),
+    ];
+
+    vi.mocked(pixTransacoesService.buscarTransacoes)
+      .mockResolvedValueOnce(transacoes)
+      .mockResolvedValueOnce(transacoesRecarregadas);
+    vi.mocked(pixTransacoesService.buscarResumo)
+      .mockResolvedValueOnce(RESUMO_PIX_TRANSACOES_VAZIO)
+      .mockResolvedValueOnce(RESUMO_PIX_TRANSACOES_VAZIO);
+
+    const { result } = renderHook(() => usePixTransacoes());
+
+    await waitFor(() => {
+      expect(result.current.carregando).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.negarPixTransacao("tx_paga");
+    });
+
+    expect(pixTransacoesService.negarTransacao).toHaveBeenCalledWith(
+      "tx_paga",
+      "Dados incorretos informados pelo comprador.",
+    );
+    expect(result.current.transacoes[0].statusValidacao).toBe("negada");
   });
 
   it("Deve bloquear validação local quando Pix ainda não foi confirmado pelo banco", async () => {
@@ -274,6 +329,7 @@ describe("Hook: usePixTransacoes", () => {
     });
 
     expect(result.current.transacoes[0].statusValidacao).toBeUndefined();
+    expect(pixTransacoesService.negarTransacao).not.toHaveBeenCalled();
     expect(result.current.erroValidacaoPixPorId.tx_aguardando).toMatch(
       /confirmação bancária/i,
     );

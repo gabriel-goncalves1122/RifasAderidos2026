@@ -1,7 +1,7 @@
 
 import { PixTransacao } from "../types/pixTransacoes";
-
-export const META_RIFAS_ADERIDO = 120;
+import { META_RIFAS_ADERIDO } from "./constants";
+import { somenteNumeros } from "./formatadores";
 export const CPF_NAO_INFORMADO = "CPF não informado";
 export const ADERIDO_NAO_VINCULADO = "Sem aderido vinculado";
 
@@ -15,10 +15,6 @@ export interface PixAderidoResumo {
   rifasPagas: number;
   rifasRestantes: number;
   transacoes: PixTransacao[];
-}
-
-function somenteNumeros(valor?: string | null) {
-  return String(valor || "").replace(/\D/g, "");
 }
 
 export function formatarCpfTesouraria(cpf?: string | null) {

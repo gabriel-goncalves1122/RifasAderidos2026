@@ -1,5 +1,10 @@
 
 import {
+  formatarData as formatarDataPix,
+  formatarMoeda as formatarMoedaPix,
+  somenteNumeros,
+} from "./formatadores";
+import {
   PixTransacoesFiltros,
   PixTransacoesResumo,
   PixTransacoesSerieTemporal,
@@ -14,6 +19,8 @@ import {
   pixTransacaoTemRifas,
   podeValidarPixTransacao,
 } from "./pixValidacaoUtils";
+
+export { formatarDataPix, formatarMoedaPix };
 
 export const RESUMO_PIX_TRANSACOES_VAZIO: PixTransacoesResumo = {
   totalRecebido: 0,
@@ -32,10 +39,6 @@ export const RESUMO_PIX_TRANSACOES_VAZIO: PixTransacoesResumo = {
   quantidadeSemVinculo: 0,
   ticketMedio: 0,
 };
-
-function somenteNumeros(valor?: string | null) {
-  return String(valor || "").replace(/\D/g, "");
-}
 
 function campoContemTermo(
   valor: string | undefined | null,
@@ -69,27 +72,6 @@ export function formatarRifasPix(transacao: PixTransacao) {
     .filter(Boolean);
 
   return numeros.length > 0 ? numeros.join(", ") : "Sem rifas";
-}
-
-export function formatarMoedaPix(valor?: number | null) {
-  const valorSeguro = Number.isFinite(valor) ? Number(valor) : 0;
-
-  return valorSeguro.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
-
-export function formatarDataPix(data?: string | null) {
-  if (!data) return "Data não informada";
-
-  const dataConvertida = new Date(data);
-
-  if (Number.isNaN(dataConvertida.getTime())) {
-    return "Data inválida";
-  }
-
-  return dataConvertida.toLocaleString("pt-BR");
 }
 
 export function obterLabelStatusPagamento(status: StatusPagamentoPix) {

@@ -5,6 +5,8 @@ import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 
+import { colors } from "../../../../styles/colors";
+import { typography } from "../../../../styles/typography";
 import { PixTransacoesResumo } from "../../../../types/pixTransacoes";
 import { formatarMoedaPix } from "../../../../utils/pixTransacoesUtils";
 
@@ -32,7 +34,7 @@ function ResumoItem({
         minWidth: 190,
         p: 1.75,
         borderRadius: 2.25,
-        bgcolor: isAlerta ? "#FFF7E0" : "#FFFFFF",
+        bgcolor: isAlerta ? colors.alertaSuave : colors.branco,
         border: isAlerta
           ? "1px solid rgba(143, 104, 0, 0.22)"
           : "1px solid rgba(2, 27, 22, 0.10)",
@@ -48,8 +50,8 @@ function ResumoItem({
             display: "grid",
             placeItems: "center",
             flexShrink: 0,
-            bgcolor: isAlerta ? "#FFF1CC" : "#EAF3EF",
-            color: isAlerta ? "#6B4E00" : "#063D31",
+            bgcolor: isAlerta ? "#FFF1CC" : colors.verdeClaro,
+            color: isAlerta ? colors.alertaTexto : colors.verdeEscuro,
           }}
         >
           {isAlerta ? (
@@ -61,20 +63,14 @@ function ResumoItem({
 
         <Box sx={{ minWidth: 0 }}>
           <Typography
-            sx={{
-              color: "#526760",
-              fontSize: "0.72rem",
-              fontWeight: 850,
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-            }}
+            sx={{ ...typography.label, fontWeight: 850 }}
           >
             {titulo}
           </Typography>
 
           <Typography
             sx={{
-              color: isAlerta ? "#6B4E00" : "#021B16",
+              color: isAlerta ? colors.alertaTexto : colors.pretoEsverdeado,
               fontSize: "1.18rem",
               fontWeight: 950,
               lineHeight: 1.1,
@@ -86,7 +82,7 @@ function ResumoItem({
 
           <Typography
             sx={{
-              color: "#526760",
+              color: colors.cinzaTexto,
               fontSize: "0.76rem",
               mt: 0.35,
               lineHeight: 1.25,

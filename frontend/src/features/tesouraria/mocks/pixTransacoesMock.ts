@@ -24,7 +24,7 @@ export const pixTransacoesMock: PixTransacao[] = [
     aderido: {
       id: "ADERIDO_001",
       nome: "Gabriel Sampaio",
-      cpf: "00000000000",
+      cpf: "00000000191",
       modalidade_adesao: "completo",
     },
     rifas: [

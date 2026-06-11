@@ -20,12 +20,6 @@ import {
   podeValidarPixTransacao,
 } from "../utils/pixValidacaoUtils";
 
-function ambienteEhDev() {
-  return Boolean(
-    (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV,
-  );
-}
-
 function resumoPossuiDados(resumo: PixTransacoesResumo | null) {
   if (!resumo) return false;
 
@@ -38,9 +32,6 @@ export function usePixTransacoes() {
     useState<PixTransacoesResumo>(RESUMO_PIX_TRANSACOES_VAZIO);
   const [carregando, setCarregando] = useState(true);
   const [sincronizando, setSincronizando] = useState(false);
-  const [validacoesLocais, setValidacoesLocais] = useState<
-    Record<string, StatusValidacaoPix>
-  >({});
   const [validandoPixPorId, setValidandoPixPorId] = useState<
     Record<string, AcaoValidacaoPix | undefined>
   >({});
@@ -68,7 +59,7 @@ export function usePixTransacoes() {
     const dadosResumo =
       resultadoResumo.status === "fulfilled" ? resultadoResumo.value : null;
 
-    const deveUsarMockLocal = ambienteEhDev() && dadosTransacoes.length === 0;
+    const deveUsarMockLocal = import.meta.env.DEV && dadosTransacoes.length === 0;
 
     const transacoesBase = deveUsarMockLocal
       ? pixTransacoesMock
@@ -94,17 +85,7 @@ export function usePixTransacoes() {
     }
   };
 
-  const transacoesComValidacao = useMemo(
-    () =>
-      transacoes.map((transacao) => {
-        const statusValidacaoLocal = validacoesLocais[transacao.id];
-
-        return statusValidacaoLocal
-          ? { ...transacao, statusValidacao: statusValidacaoLocal }
-          : transacao;
-      }),
-    [transacoes, validacoesLocais],
-  );
+  const transacoesComValidacao = transacoes;
 
   const resumoComValidacao = useMemo(
     () => aplicarResumoValidacaoPix(resumo, transacoesComValidacao),
@@ -139,12 +120,24 @@ export function usePixTransacoes() {
       }));
 
       try {
-        await Promise.resolve();
-        setValidacoesLocais((estadoAtual) => ({
-          ...estadoAtual,
-          [transacaoId]: statusValidacao,
-        }));
+        if (statusValidacao === "aceita") {
+          await pixTransacoesService.aceitarTransacao(transacaoId);
+        } else {
+          await pixTransacoesService.negarTransacao(
+            transacaoId,
+            "Dados incorretos informados pelo comprador.",
+          );
+        }
+
+        await carregarDados();
         return true;
+      } catch (error: any) {
+        setErroValidacaoPixPorId((estadoAtual) => ({
+          ...estadoAtual,
+          [transacaoId]:
+            error?.message || "Erro ao validar transação Pix.",
+        }));
+        return false;
       } finally {
         setValidandoPixPorId((estadoAtual) => ({
           ...estadoAtual,
@@ -152,7 +145,7 @@ export function usePixTransacoes() {
         }));
       }
     },
-    [transacoesComValidacao],
+    [carregarDados, transacoesComValidacao],
   );
 
   const aceitarPixTransacao = useCallback(

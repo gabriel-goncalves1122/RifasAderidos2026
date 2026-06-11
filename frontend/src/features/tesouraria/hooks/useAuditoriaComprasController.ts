@@ -14,6 +14,7 @@ import {
   filtrosAuditoriaAtivos,
   normalizarTexto,
 } from "../utils/auditoriaComprasUtils";
+import { sanitizarDadosCliente } from "@/shared/utils/sanitizadores";
 import { auditoriaComprasService } from "../services/auditoriaComprasService";
 
 interface DadosEdicaoComprador {
@@ -129,9 +130,15 @@ export function useAuditoriaComprasController() {
       setErroEdicao(null);
 
       try {
+        const dadosSanitizados = sanitizarDadosCliente({
+          nome: dados.nome,
+          email: dados.email || "",
+          telefone: dados.telefone || "",
+        });
+
         await auditoriaComprasService.atualizarComprador(
           compraEdicao.comprador_id,
-          dados,
+          dadosSanitizados,
         );
         setCompraEdicao(null);
         await carregarHistorico();

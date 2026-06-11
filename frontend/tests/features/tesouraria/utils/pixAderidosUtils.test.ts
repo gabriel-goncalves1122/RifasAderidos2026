@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  agruparPixAderidos,
-  META_RIFAS_ADERIDO,
-} from "@/features/tesouraria/utils/pixAderidosUtils";
+import { agruparPixAderidos } from "@/features/tesouraria/utils/pixAderidosUtils";
+import { META_RIFAS_ADERIDO } from "@/features/tesouraria/utils/constants";
 import { PixTransacao } from "@/features/tesouraria/types/pixTransacoes";
 
 function criarTransacao(

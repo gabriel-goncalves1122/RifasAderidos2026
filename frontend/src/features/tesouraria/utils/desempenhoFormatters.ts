@@ -1,12 +1,6 @@
+import { formatarMoeda as formatarMoedaDesempenho } from "./formatadores";
 
-export function formatarMoedaDesempenho(valor?: number | null) {
-  const valorSeguro = Number.isFinite(valor) ? Number(valor) : 0;
-
-  return valorSeguro.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
+export { formatarMoedaDesempenho };
 
 export function formatarInteiroDesempenho(valor?: number | null) {
   const valorSeguro = Number.isFinite(valor) ? Number(valor) : 0;

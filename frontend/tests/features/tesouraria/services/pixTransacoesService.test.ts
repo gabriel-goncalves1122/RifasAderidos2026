@@ -109,4 +109,30 @@ describe("Service: pixTransacoesService", () => {
       "POST",
     );
   });
+
+  it("Deve aceitar transação Pix usando endpoint real de tesouraria", async () => {
+    vi.mocked(fetchAPI).mockResolvedValueOnce({ sucesso: true });
+
+    await pixTransacoesService.aceitarTransacao("ORDE_001");
+
+    expect(fetchAPI).toHaveBeenCalledWith(
+      "/tesouraria/transacoes-bancarias/ORDE_001/aceitar",
+      "POST",
+    );
+  });
+
+  it("Deve negar transação Pix usando endpoint real de tesouraria e motivo", async () => {
+    vi.mocked(fetchAPI).mockResolvedValueOnce({ sucesso: true });
+
+    await pixTransacoesService.negarTransacao(
+      "ORDE_001",
+      "Dados incorretos.",
+    );
+
+    expect(fetchAPI).toHaveBeenCalledWith(
+      "/tesouraria/transacoes-bancarias/ORDE_001/negar",
+      "POST",
+      { motivo: "Dados incorretos." },
+    );
+  });
 });

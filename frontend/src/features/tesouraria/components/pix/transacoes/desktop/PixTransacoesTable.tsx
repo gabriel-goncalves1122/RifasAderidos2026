@@ -13,6 +13,10 @@ import {
   Typography,
 } from "@mui/material";
 
+import { colors } from "../../../../styles/colors";
+import { components } from "../../../../styles/components";
+import { surfaces } from "../../../../styles/surfaces";
+import { typography } from "../../../../styles/typography";
 import {
   AcaoValidacaoPix,
   PixTransacao,
@@ -46,26 +50,12 @@ export function PixTransacoesTable({
     <>
       <Paper
         elevation={0}
-        sx={{
-          borderRadius: 2.25,
-          overflow: "hidden",
-          border: "1px solid rgba(2, 27, 22, 0.10)",
-          bgcolor: "#FFFFFF",
-        }}
+        sx={{ ...surfaces.paper, overflow: "hidden" }}
       >
         <Table>
           <TableHead>
             <TableRow
-              sx={{
-                bgcolor: "#F6F8F7",
-                "& th": {
-                  color: "#526760",
-                  fontWeight: 900,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                },
-              }}
+              sx={{ ...components.tabelaCabecalho, "& th": { ...components.tabelaCabecalho["& th"], fontSize: "0.75rem" } }}
             >
               <TableCell sx={{ width: 54 }} />
               <TableCell>Data</TableCell>
@@ -98,14 +88,12 @@ export function PixTransacoesTable({
                   sx={{
                     cursor: "pointer",
                     transition: "background-color 160ms ease",
-                    "& td": {
-                      borderColor: "rgba(2, 27, 22, 0.08)",
-                    },
+                    ...components.linhaTabela,
                     "&:hover": {
-                      bgcolor: "#F6F8F7",
+                      bgcolor: colors.fundoSuave,
                     },
                     "&:focus-visible": {
-                      outline: "2px solid #063D31",
+                      outline: `2px solid ${colors.verdeEscuro}`,
                       outlineOffset: -2,
                     },
                   }}
@@ -120,10 +108,10 @@ export function PixTransacoesTable({
                       }}
                       sx={{
                         borderRadius: 2,
-                        color: "#063D31",
-                        bgcolor: "#EAF3EF",
+                        color: colors.verdeEscuro,
+                        bgcolor: colors.verdeClaro,
                         "&:hover": {
-                          bgcolor: "#DDECE6",
+                          bgcolor: colors.verdeHover,
                         },
                       }}
                     >
@@ -136,17 +124,17 @@ export function PixTransacoesTable({
                     </IconButton>
                   </TableCell>
 
-                  <TableCell sx={{ color: "#526760", fontWeight: 700 }}>
+                  <TableCell sx={{ color: colors.cinzaTexto, fontWeight: 700 }}>
                     {formatarDataPix(
                       transacao.dataPagamento || transacao.dataCriacao,
                     )}
                   </TableCell>
 
                   <TableCell>
-                    <Typography sx={{ color: "#021B16", fontWeight: 850 }}>
+                    <Typography sx={{ color: colors.pretoEsverdeado, fontWeight: 850 }}>
                       {transacao.compradorNome || "Pagador não informado"}
                     </Typography>
-                    <Typography sx={{ color: "#526760", fontSize: "0.82rem" }}>
+                    <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.82rem" }}>
                       {transacao.compradorEmail ||
                         transacao.aderido?.nome ||
                         "Sem e-mail informado"}
@@ -159,8 +147,8 @@ export function PixTransacoesTable({
                         sx={{
                           color:
                             transacao.statusPagamento === "PAID"
-                              ? "#063D31"
-                              : "#6B4E00",
+                              ? colors.verdeEscuro
+                              : colors.alertaTexto,
                           fontWeight: 950,
                         }}
                       >

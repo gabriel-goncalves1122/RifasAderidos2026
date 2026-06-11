@@ -6,6 +6,7 @@ import { CircularProgress, IconButton, Stack, Tooltip } from "@mui/material";
 
 import { CompraAuditavel } from "../../../types/auditoriaCompras";
 import { normalizarTexto } from "../../../utils/auditoriaComprasUtils";
+import { colors } from "../../../styles/colors";
 
 interface AuditoriaCompraActionsProps {
   compra: CompraAuditavel;
@@ -58,12 +59,12 @@ export function AuditoriaCompraActions({
             disabled={!compra.comprovante_url}
             onClick={() => onVerComprovante(compra)}
             sx={{
-              color: "#063D31",
-              bgcolor: "#EAF3EF",
-              "&:hover": { bgcolor: "#DCEDE8" },
+              color: colors.verdeEscuro,
+              bgcolor: colors.verdeClaro,
+              "&:hover": { bgcolor: colors.verdeHover },
               "&.Mui-disabled": {
-                bgcolor: "#F6F8F7",
-                color: "#9AA9A4",
+                bgcolor: colors.fundoSuave,
+                color: colors.cinzaDisabled,
               },
             }}
           >
@@ -80,12 +81,12 @@ export function AuditoriaCompraActions({
             disabled={!podeReenviarEmail}
             onClick={() => onReenviarEmailComprovante(compra)}
             sx={{
-              color: "#063D31",
-              bgcolor: "#EAF3EF",
-              "&:hover": { bgcolor: "#DCEDE8" },
+              color: colors.verdeEscuro,
+              bgcolor: colors.verdeClaro,
+              "&:hover": { bgcolor: colors.verdeHover },
               "&.Mui-disabled": {
-                bgcolor: "#F6F8F7",
-                color: "#9AA9A4",
+                bgcolor: colors.fundoSuave,
+                color: colors.cinzaDisabled,
               },
             }}
           >
@@ -104,9 +105,9 @@ export function AuditoriaCompraActions({
           aria-label="Editar comprador"
           onClick={() => onEditar(compra)}
           sx={{
-            color: "#063D31",
-            bgcolor: "#EAF3EF",
-            "&:hover": { bgcolor: "#DCEDE8" },
+            color: colors.verdeEscuro,
+            bgcolor: colors.verdeClaro,
+            "&:hover": { bgcolor: colors.verdeHover },
           }}
         >
           <EditOutlinedIcon fontSize="small" />
@@ -119,9 +120,9 @@ export function AuditoriaCompraActions({
           aria-label="Ver detalhes da compra"
           onClick={() => onVerDetalhes(compra)}
           sx={{
-            color: "#063D31",
-            bgcolor: "#EAF3EF",
-            "&:hover": { bgcolor: "#DCEDE8" },
+            color: colors.verdeEscuro,
+            bgcolor: colors.verdeClaro,
+            "&:hover": { bgcolor: colors.verdeHover },
           }}
         >
           <VisibilityOutlinedIcon fontSize="small" />

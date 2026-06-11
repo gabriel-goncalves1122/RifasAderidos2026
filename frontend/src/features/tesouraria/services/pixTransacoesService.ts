@@ -108,4 +108,19 @@ export const pixTransacoesService = {
   async sincronizarBanco() {
     return fetchAPI("/tesouraria/transacoes-bancarias/sincronizar", "POST");
   },
+
+  async aceitarTransacao(transacaoId: string) {
+    return fetchAPI(
+      `/tesouraria/transacoes-bancarias/${transacaoId}/aceitar`,
+      "POST",
+    );
+  },
+
+  async negarTransacao(transacaoId: string, motivo: string) {
+    return fetchAPI(
+      `/tesouraria/transacoes-bancarias/${transacaoId}/negar`,
+      "POST",
+      { motivo },
+    );
+  },
 };

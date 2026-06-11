@@ -1,5 +1,8 @@
 import { Box, Paper, Stack, Typography } from "@mui/material";
 
+import { colors } from "../../../../styles/colors";
+import { surfaces } from "../../../../styles/surfaces";
+import { typography } from "../../../../styles/typography";
 import {
   AcaoValidacaoPix,
   PixTransacao,
@@ -44,12 +47,9 @@ export function PixTransacaoCard({
       elevation={0}
       data-testid={`pix-transacao-${transacao.id}`}
       sx={{
+        ...surfaces.paperComSombra,
         p: 1.75,
-        borderRadius: 2.25,
-        bgcolor: "#FFFFFF",
-        border: "1px solid rgba(2, 27, 22, 0.10)",
-        borderLeft: "4px solid #063D31",
-        boxShadow: "0 10px 24px rgba(2, 27, 22, 0.07)",
+        borderLeft: `4px solid ${colors.verdeEscuro}`,
       }}
     >
       <Stack spacing={1.35}>
@@ -63,7 +63,7 @@ export function PixTransacaoCard({
             <Box sx={{ minWidth: 0 }}>
               <Typography
                 sx={{
-                  color: "#021B16",
+                  color: colors.pretoEsverdeado,
                   fontWeight: 950,
                   fontSize: "1.02rem",
                   lineHeight: 1.18,
@@ -75,7 +75,7 @@ export function PixTransacaoCard({
 
               <Typography
                 sx={{
-                  color: "#526760",
+                  color: colors.cinzaTexto,
                   fontSize: "0.78rem",
                   mt: 0.35,
                   lineHeight: 1.25,
@@ -88,7 +88,7 @@ export function PixTransacaoCard({
             <Typography
               sx={{
                 color:
-                  transacao.statusPagamento === "PAID" ? "#063D31" : "#6B4E00",
+                  transacao.statusPagamento === "PAID" ? colors.verdeEscuro : colors.alertaTexto,
                 fontWeight: 950,
                 fontSize: "1.28rem",
                 lineHeight: 1,
@@ -106,27 +106,21 @@ export function PixTransacaoCard({
 
         <Box
           sx={{
+            ...surfaces.fundoVerdeClaro,
             p: 1.25,
             borderRadius: 2.25,
-            bgcolor: "#EAF3EF",
             border: "1px solid rgba(6, 61, 49, 0.12)",
           }}
         >
           <Typography
-            sx={{
-              color: "#526760",
-              fontSize: "0.72rem",
-              fontWeight: 850,
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-            }}
+            sx={{ ...typography.label, fontWeight: 850 }}
           >
             Aderido responsável
           </Typography>
 
           <Typography
             sx={{
-              color: "#021B16",
+              color: colors.pretoEsverdeado,
               fontWeight: 850,
               fontSize: "0.94rem",
               mt: 0.25,
@@ -137,7 +131,7 @@ export function PixTransacaoCard({
           </Typography>
         </Box>
 
-        <Typography sx={{ color: "#526760", fontSize: "0.84rem" }}>
+        <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.84rem" }}>
           {transacao.rifas?.length
             ? `Rifas ${formatarRifasPix(transacao)}`
             : "Sem rifas vinculadas"}

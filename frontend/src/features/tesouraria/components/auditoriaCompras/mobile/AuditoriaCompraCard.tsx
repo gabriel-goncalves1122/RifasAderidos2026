@@ -7,6 +7,10 @@ import {
   formatarDataAuditoria,
   formatarMoedaAuditoria,
 } from "../../../utils/auditoriaComprasUtils";
+import { colors } from "../../../styles/colors";
+import { surfaces } from "../../../styles/surfaces";
+import { components } from "../../../styles/components";
+import { typography } from "../../../styles/typography";
 
 interface AuditoriaComprasCardProps {
   compra: CompraAuditavel;
@@ -30,10 +34,8 @@ export function AuditoriaCompraCard({
       elevation={0}
       data-testid={`auditoria-compra-${compra.id}`}
       sx={{
+        ...surfaces.paper,
         p: 0,
-        borderRadius: 2.25,
-        bgcolor: "#FFFFFF",
-        border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 12px 28px rgba(2, 27, 22, 0.07)",
         overflow: "hidden",
       }}
@@ -45,29 +47,28 @@ export function AuditoriaCompraCard({
           spacing={1}
           sx={{
             p: 1.5,
-            borderLeft: "5px solid #063D31",
+            borderLeft: `5px solid ${colors.verdeEscuro}`,
             borderBottom: "1px solid rgba(2, 27, 22, 0.08)",
           }}
         >
           <Box sx={{ minWidth: 0 }}>
             <Typography
               sx={{
-                color: "#021B16",
-                fontWeight: 950,
+                ...typography.titulo,
                 fontSize: "1rem",
                 lineHeight: 1.18,
               }}
             >
               {compra.comprador_nome}
             </Typography>
-            <Typography sx={{ color: "#526760", fontSize: "0.78rem", mt: 0.35 }}>
+            <Typography sx={{ ...typography.bodyPequeno, mt: 0.35 }}>
               {formatarDataAuditoria(compra.data_reserva)}
             </Typography>
           </Box>
           <Box sx={{ textAlign: "right", flexShrink: 0 }}>
             <Typography
               sx={{
-                color: "#063D31",
+                color: colors.verdeEscuro,
                 fontWeight: 950,
                 fontSize: "1.12rem",
                 whiteSpace: "nowrap",
@@ -75,7 +76,7 @@ export function AuditoriaCompraCard({
             >
               {formatarMoedaAuditoria(compra.valor_total)}
             </Typography>
-            <Typography sx={{ color: "#526760", fontSize: "0.74rem", mt: 0.25 }}>
+            <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.74rem", mt: 0.25 }}>
               {compra.bilhetes.length} rifa(s)
             </Typography>
           </Box>
@@ -89,11 +90,9 @@ export function AuditoriaCompraCard({
                 label="Com comprovante"
                 size="small"
                 sx={{
+                  ...components.chipBilhete,
                   height: 28,
                   borderRadius: 2,
-                  bgcolor: "#EAF3EF",
-                  color: "#063D31",
-                  fontWeight: 850,
                 }}
               />
             ) : null}
@@ -108,58 +107,43 @@ export function AuditoriaCompraCard({
           >
             <Box
               sx={{
+                ...surfaces.cartaoInfo,
                 p: 1.15,
                 borderRadius: 2.25,
-                bgcolor: "#F6F8F7",
-                border: "1px solid rgba(2, 27, 22, 0.08)",
               }}
             >
               <Typography
-                sx={{
-                  color: "#526760",
-                  fontSize: "0.72rem",
-                  fontWeight: 850,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                }}
+                sx={typography.label}
               >
                 Contato do comprador
               </Typography>
               <Typography
                 sx={{
-                  color: "#021B16",
-                  fontWeight: 850,
+                  ...typography.bodyDestaque,
                   mt: 0.25,
                   overflowWrap: "anywhere",
                 }}
               >
                 {compra.comprador_email || "Sem e-mail"}
               </Typography>
-              <Typography sx={{ color: "#526760", fontSize: "0.8rem", mt: 0.2 }}>
+              <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.8rem", mt: 0.2 }}>
                 {compra.comprador_telefone || "Sem telefone"}
               </Typography>
             </Box>
 
             <Box
               sx={{
+                ...surfaces.fundoVerdeClaro,
                 p: 1.15,
                 borderRadius: 2.25,
-                bgcolor: "#EAF3EF",
-                border: "1px solid rgba(6, 61, 49, 0.12)",
               }}
             >
               <Typography
-                sx={{
-                  color: "#526760",
-                  fontSize: "0.72rem",
-                  fontWeight: 850,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                }}
+                sx={typography.label}
               >
                 Vendedor responsável
               </Typography>
-              <Typography sx={{ color: "#021B16", fontWeight: 850, mt: 0.25 }}>
+              <Typography sx={{ ...typography.bodyDestaque, mt: 0.25 }}>
                 {compra.vendedor_nome}
               </Typography>
             </Box>
@@ -172,12 +156,10 @@ export function AuditoriaCompraCard({
                 label={`Rifa ${bilhete}`}
                 size="small"
                 sx={{
+                  ...components.chipBilhete,
                   height: 28,
                   borderRadius: 2,
-                  bgcolor: "#EAF3EF",
-                  color: "#063D31",
                   border: "1px solid rgba(6, 61, 49, 0.14)",
-                  fontWeight: 850,
                 }}
               />
             ))}
@@ -191,7 +173,7 @@ export function AuditoriaCompraCard({
           sx={{
             px: 1.25,
             py: 0.75,
-            bgcolor: "#FAFCFB",
+            bgcolor: colors.fundoDialogActions,
             borderTop: "1px solid rgba(2, 27, 22, 0.08)",
           }}
         >

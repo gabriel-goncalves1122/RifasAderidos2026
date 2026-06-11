@@ -16,6 +16,10 @@ import {
   formatarDataAuditoria,
   statusLabelAuditoria,
 } from "../../../utils/auditoriaComprasUtils";
+import { colors } from "../../../styles/colors";
+import { surfaces } from "../../../styles/surfaces";
+import { components } from "../../../styles/components";
+import { layout } from "../../../styles/layout";
 
 interface AuditoriaCompraDetalhesDialogProps {
   compra: CompraAuditavel | null;
@@ -33,22 +37,14 @@ export function AuditoriaCompraDetalhesDialog({
       maxWidth="sm"
       fullWidth
       PaperProps={{
-        sx: {
-          borderRadius: 2.25,
-          overflow: "hidden",
-        },
+        sx: surfaces.dialog,
       }}
     >
       <DialogTitle
-        sx={{
-          color: "#021B16",
-          fontWeight: 950,
-          pb: 1,
-          borderBottom: "1px solid rgba(2, 27, 22, 0.08)",
-        }}
+        sx={surfaces.dialogTitle}
       >
         Detalhes da compra
-        <Typography sx={{ color: "#526760", fontSize: "0.88rem", mt: 0.45 }}>
+        <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.88rem", mt: 0.45 }}>
           Conferência de vínculos, bilhetes e dados protegidos.
         </Typography>
       </DialogTitle>
@@ -60,21 +56,13 @@ export function AuditoriaCompraDetalhesDialog({
                 <Chip
                   key={bilhete}
                   label={`Rifa ${bilhete}`}
-                  sx={{
-                    bgcolor: "#EAF3EF",
-                    color: "#063D31",
-                    fontWeight: 850,
-                  }}
+                  sx={components.chipBilhete}
                 />
               ))}
             </Stack>
 
             <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-                gap: 1,
-              }}
+              sx={layout.gridDois}
             >
               <TextField
                 label="Comprador ID"
@@ -116,10 +104,10 @@ export function AuditoriaCompraDetalhesDialog({
           </Stack>
         </DialogContent>
       )}
-      <DialogActions sx={{ px: 3, py: 2, bgcolor: "#FAFCFB" }}>
+      <DialogActions sx={surfaces.dialogActions}>
         <Button
           onClick={onClose}
-          sx={{ color: "#063D31", fontWeight: 850, textTransform: "none" }}
+          sx={components.botaoSecundario}
         >
           Fechar
         </Button>

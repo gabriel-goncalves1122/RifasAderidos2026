@@ -8,6 +8,7 @@ import {
 } from "../../../utils/pixAderidosUtils";
 import { PixAderidoDetalhesDrawer } from "./aderidos/PixAderidoDetalhesDrawer";
 import { PixAderidoResumoCard } from "./aderidos/PixAderidoResumoCard";
+import { layout } from "../../../styles/layout";
 
 interface PixAderidosTabProps {
   transacoes: PixTransacao[];
@@ -28,13 +29,7 @@ export function PixAderidosTab({
 
   return (
     <>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
-          gap: { xs: 1.25, sm: 2 },
-        }}
-      >
+      <Box sx={layout.cardsGrid}>
         {resumoPorAderido.map((aderido) => (
           <PixAderidoResumoCard
             key={aderido.chave}

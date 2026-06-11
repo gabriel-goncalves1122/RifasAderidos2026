@@ -2,6 +2,7 @@ import { Box, Typography } from "@mui/material";
 
 import { PixTransacoesResumo } from "../../../../types/pixTransacoes";
 import { formatarMoedaPix } from "../../../../utils/pixTransacoesUtils";
+import { colors } from "../../../../styles/colors";
 
 interface PixMetricasOperacionaisProps {
   resumo: PixTransacoesResumo;
@@ -50,48 +51,48 @@ export function PixMetricasOperacionais({
           key={metrica.label}
           sx={{
             borderRadius: 2,
-            bgcolor: "#F6F8F7",
+            bgcolor: colors.fundoSuave,
             border: "1px solid rgba(2, 27, 22, 0.08)",
             px: 1.25,
             py: 1,
             minHeight: 74,
           }}
         >
-          <Typography
-            sx={{
-              color: "#526760",
-              fontSize: "0.72rem",
-              fontWeight: 850,
-              textTransform: "uppercase",
-            }}
-          >
-            {metrica.label}
-          </Typography>
+            <Typography
+              sx={{
+                color: colors.cinzaTexto,
+                fontSize: "0.72rem",
+                fontWeight: 850,
+                textTransform: "uppercase",
+              }}
+            >
+              {metrica.label}
+            </Typography>
 
-          <Typography
-            sx={{
-              color: "#021B16",
-              fontWeight: 950,
-              fontSize: "1.25rem",
-              lineHeight: 1.1,
-              mt: 0.35,
-            }}
-          >
-            {metrica.valor}
-          </Typography>
+            <Typography
+              sx={{
+                color: colors.pretoEsverdeado,
+                fontWeight: 950,
+                fontSize: "1.25rem",
+                lineHeight: 1.1,
+                mt: 0.35,
+              }}
+            >
+              {metrica.valor}
+            </Typography>
 
-          <Typography
-            sx={{
-              color: "#526760",
-              fontSize: "0.76rem",
-              mt: 0.25,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {metrica.detalhe}
-          </Typography>
+            <Typography
+              sx={{
+                color: colors.cinzaTexto,
+                fontSize: "0.76rem",
+                mt: 0.25,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {metrica.detalhe}
+            </Typography>
         </Box>
       ))}
     </Box>

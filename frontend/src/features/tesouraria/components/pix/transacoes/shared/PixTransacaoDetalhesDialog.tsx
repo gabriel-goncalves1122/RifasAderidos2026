@@ -9,6 +9,10 @@ import {
   Typography,
 } from "@mui/material";
 
+import { colors } from "../../../../styles/colors";
+import { surfaces } from "../../../../styles/surfaces";
+import { typography } from "../../../../styles/typography";
+import { layout } from "../../../../styles/layout";
 import { PixTransacao } from "../../../../types/pixTransacoes";
 import {
   formatarDataPix,
@@ -33,31 +37,14 @@ function CampoDetalhe({
   valor?: string | number | null;
 }) {
   return (
-    <Box
-      sx={{
-        p: 1.35,
-        borderRadius: 2,
-        bgcolor: "#F6F8F7",
-        border: "1px solid rgba(2, 27, 22, 0.08)",
-        minWidth: 0,
-      }}
-    >
-      <Typography
-        sx={{
-          color: "#526760",
-          fontSize: "0.72rem",
-          fontWeight: 900,
-          textTransform: "uppercase",
-          letterSpacing: "0.04em",
-        }}
-      >
+    <Box sx={surfaces.cartaoInfo}>
+      <Typography sx={typography.label}>
         {label}
       </Typography>
       <Typography
         sx={{
-          color: "#021B16",
+          ...typography.bodyDestaque,
           fontSize: "0.92rem",
-          fontWeight: 850,
           mt: 0.35,
           overflowWrap: "anywhere",
         }}
@@ -88,18 +75,12 @@ export function PixTransacaoDetalhesDialog({
       maxWidth="md"
       aria-labelledby="pix-transacao-detalhes-titulo"
       PaperProps={{
-        sx: {
-          borderRadius: 2.25,
-        },
+        sx: surfaces.dialog,
       }}
     >
       <DialogTitle
         id="pix-transacao-detalhes-titulo"
-        sx={{
-          pr: 7,
-          color: "#021B16",
-          fontWeight: 950,
-        }}
+        sx={{ ...typography.titulo, pr: 7 }}
       >
         Detalhes da transação Pix
         <IconButton
@@ -124,7 +105,7 @@ export function PixTransacaoDetalhesDialog({
               component="span"
               sx={{
                 alignSelf: "center",
-                color: "#526760",
+                color: colors.cinzaTexto,
                 fontSize: "0.86rem",
               }}
             >
@@ -132,13 +113,7 @@ export function PixTransacaoDetalhesDialog({
             </Typography>
           </Stack>
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-              gap: 1.25,
-            }}
-          >
+          <Box sx={layout.gridDois}>
             <CampoDetalhe label="Pagador" valor={transacao.compradorNome} />
             <CampoDetalhe label="E-mail" valor={transacao.compradorEmail} />
             <CampoDetalhe label="Documento" valor={transacao.compradorDocumento} />
