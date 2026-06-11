@@ -57,9 +57,8 @@ describe("Service: AderidoRifasService", () => {
       ],
     });
 
-    const resultado = await AderidoRifasService.buscarPorAderido(
-      "valido@teste.com",
-    );
+    const resultado =
+      await AderidoRifasService.buscarPorAderido("valido@teste.com");
 
     expect(resultado).toHaveLength(2);
     expect(resultado[0].numero).toBe("001");
@@ -81,9 +80,8 @@ describe("Service: AderidoRifasService", () => {
       docs: [{ data: () => ({ numero: "010", status: "disponivel" }) }],
     });
 
-    const resultado = await AderidoRifasService.buscarPorAderido(
-      "valido@teste.com",
-    );
+    const resultado =
+      await AderidoRifasService.buscarPorAderido("valido@teste.com");
 
     expect(resultado).toEqual([{ numero: "010", status: "disponivel" }]);
   });

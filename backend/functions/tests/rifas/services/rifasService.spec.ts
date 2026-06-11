@@ -7,6 +7,10 @@ const mocks = {
   buscarPorAderido: jest.fn<any>(),
   processarVenda: jest.fn<any>(),
   corrigirRifasRecusadas: jest.fn<any>(),
+  corrigirDadosRifasRecusadas: jest.fn<any>(),
+  criarCobrancaPix: jest.fn<any>(),
+  consultarCobrancaPix: jest.fn<any>(),
+  processarWebhook: jest.fn<any>(),
   obterRelatorioTesouraria: jest.fn<any>(),
   obterHistoricoDetalhado: jest.fn<any>(),
 };
@@ -28,6 +32,31 @@ jest.mock("../../../src/modules/rifas/services/correcaoRifasService", () => ({
     corrigirRifasRecusadas: mocks.corrigirRifasRecusadas,
   },
 }));
+
+jest.mock(
+  "../../../src/modules/rifas/services/correcaoDadosRifasService",
+  () => ({
+    CorrecaoDadosRifasService: {
+      corrigirDadosRifasRecusadas: mocks.corrigirDadosRifasRecusadas,
+    },
+  }),
+);
+
+jest.mock("../../../src/modules/rifas/services/checkoutPixService", () => ({
+  CheckoutPixService: {
+    criarCobrancaPix: mocks.criarCobrancaPix,
+    consultarCobrancaPix: mocks.consultarCobrancaPix,
+  },
+}));
+
+jest.mock(
+  "../../../src/modules/rifas/services/checkoutPixWebhookService",
+  () => ({
+    CheckoutPixWebhookService: {
+      processarWebhook: mocks.processarWebhook,
+    },
+  }),
+);
 
 jest.mock("../../../src/modules/rifas/services/relatorioRifasService", () => ({
   RelatorioRifasService: {
@@ -62,7 +91,11 @@ describe("Fachada: RifasService", () => {
 
     mocks.processarVenda.mockResolvedValueOnce(undefined);
 
-    await RifasService.processarVenda("UID_001", "aderido@email.com", dadosVenda);
+    await RifasService.processarVenda(
+      "UID_001",
+      "aderido@email.com",
+      dadosVenda,
+    );
 
     expect(mocks.processarVenda).toHaveBeenCalledWith(
       "UID_001",
@@ -94,6 +127,85 @@ describe("Fachada: RifasService", () => {
     );
 
     expect(resultado).toBe(true);
+  });
+
+  it("Deve delegar corrigirDadosRifasRecusadas para CorrecaoDadosRifasService", async () => {
+    const dadosCorrecao = {
+      nome: "Comprador",
+      telefone: "11999999999",
+      email: "comprador@email.com",
+    };
+
+    mocks.corrigirDadosRifasRecusadas.mockResolvedValueOnce(true);
+
+    const resultado = await RifasService.corrigirDadosRifasRecusadas(
+      "aderido@email.com",
+      ["010"],
+      dadosCorrecao,
+    );
+
+    expect(mocks.corrigirDadosRifasRecusadas).toHaveBeenCalledWith(
+      "aderido@email.com",
+      ["010"],
+      dadosCorrecao,
+    );
+    expect(resultado).toBe(true);
+  });
+
+  it("Deve delegar criarCheckoutPix para CheckoutPixService", async () => {
+    const payload = {
+      nome: "Comprador",
+      telefone: "11999999999",
+      numerosRifas: ["001"],
+    };
+    const cobranca = { id: "ORDE_001", copiaECola: "000201PIX" };
+
+    mocks.criarCobrancaPix.mockResolvedValueOnce(cobranca);
+
+    const resultado = await RifasService.criarCheckoutPix(
+      "UID_001",
+      "aderido@email.com",
+      payload,
+    );
+
+    expect(mocks.criarCobrancaPix).toHaveBeenCalledWith(
+      "UID_001",
+      "aderido@email.com",
+      payload,
+    );
+    expect(resultado).toBe(cobranca);
+  });
+
+  it("Deve delegar consultarCheckoutPix para CheckoutPixService", async () => {
+    const cobranca = { id: "ORDE_001", status: "pago" };
+
+    mocks.consultarCobrancaPix.mockResolvedValueOnce(cobranca);
+
+    const resultado = await RifasService.consultarCheckoutPix(
+      "aderido@email.com",
+      "ORDE_001",
+    );
+
+    expect(mocks.consultarCobrancaPix).toHaveBeenCalledWith(
+      "aderido@email.com",
+      "ORDE_001",
+    );
+    expect(resultado).toBe(cobranca);
+  });
+
+  it("Deve delegar processarWebhookCheckoutPix para CheckoutPixWebhookService", async () => {
+    const params = {
+      payload: { id: "ORDE_001" },
+      rawBody: '{"id":"ORDE_001"}',
+      assinatura: "assinatura",
+    };
+
+    mocks.processarWebhook.mockResolvedValueOnce({ sucesso: true });
+
+    const resultado = await RifasService.processarWebhookCheckoutPix(params);
+
+    expect(mocks.processarWebhook).toHaveBeenCalledWith(params);
+    expect(resultado).toEqual({ sucesso: true });
   });
 
   it("Deve delegar obterRelatorioTesouraria para RelatorioRifasService", async () => {

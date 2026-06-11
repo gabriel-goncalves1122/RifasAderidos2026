@@ -11,9 +11,9 @@ import {
 } from "@jest/globals";
 
 const mockGet = jest.fn<any>();
-const mockDocGet = jest.fn<any>();
-const mockBatchUpdate = jest.fn<any>();
-const mockBatchCommit = jest.fn<any>();
+const mockTransactionGet = jest.fn<any>();
+const mockTransactionUpdate = jest.fn<any>();
+const mockRunTransaction = jest.fn<any>();
 
 jest.mock("firebase-admin", () => {
   const collectionMock = {
@@ -21,7 +21,6 @@ jest.mock("firebase-admin", () => {
     limit: jest.fn().mockReturnThis(),
     doc: jest.fn().mockReturnValue({
       id: "DOC_ID_FALSO_123",
-      get: mockDocGet,
     }),
     get: mockGet,
   };
@@ -29,10 +28,7 @@ jest.mock("firebase-admin", () => {
   return {
     firestore: jest.fn().mockReturnValue({
       collection: jest.fn().mockReturnValue(collectionMock),
-      batch: jest.fn().mockReturnValue({
-        update: mockBatchUpdate,
-        commit: mockBatchCommit,
-      }),
+      runTransaction: mockRunTransaction,
     }),
   };
 });
@@ -53,6 +49,13 @@ describe("Service: CorrecaoRifasService", () => {
     jest.clearAllMocks();
 
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    mockRunTransaction.mockImplementation(async (callback: any) => {
+      return callback({
+        get: mockTransactionGet,
+        update: mockTransactionUpdate,
+      });
+    });
   });
 
   afterEach(() => {
@@ -87,7 +90,7 @@ describe("Service: CorrecaoRifasService", () => {
       ],
     });
 
-    mockDocGet.mockResolvedValueOnce({
+    mockTransactionGet.mockResolvedValueOnce({
       exists: true,
       data: () => ({
         vendedor_id: "ADERIDO_999",
@@ -101,8 +104,8 @@ describe("Service: CorrecaoRifasService", () => {
       dadosAtualizados,
     );
 
-    expect(mockBatchUpdate).not.toHaveBeenCalled();
-    expect(mockBatchCommit).toHaveBeenCalled();
+    expect(mockTransactionUpdate).not.toHaveBeenCalled();
+    expect(mockRunTransaction).toHaveBeenCalledTimes(1);
   });
 
   it("Deve bloquear correção se a rifa não estiver recusada", async () => {
@@ -118,7 +121,7 @@ describe("Service: CorrecaoRifasService", () => {
       ],
     });
 
-    mockDocGet.mockResolvedValueOnce({
+    mockTransactionGet.mockResolvedValueOnce({
       exists: true,
       data: () => ({
         vendedor_id: "ADERIDO_030",
@@ -132,8 +135,8 @@ describe("Service: CorrecaoRifasService", () => {
       dadosAtualizados,
     );
 
-    expect(mockBatchUpdate).not.toHaveBeenCalled();
-    expect(mockBatchCommit).toHaveBeenCalled();
+    expect(mockTransactionUpdate).not.toHaveBeenCalled();
+    expect(mockRunTransaction).toHaveBeenCalledTimes(1);
   });
 
   it("Deve processar correção se o dono for válido e a rifa estiver recusada", async () => {
@@ -149,7 +152,7 @@ describe("Service: CorrecaoRifasService", () => {
       ],
     });
 
-    mockDocGet.mockResolvedValueOnce({
+    mockTransactionGet.mockResolvedValueOnce({
       exists: true,
       data: () => ({
         vendedor_id: "ADERIDO_030",
@@ -165,7 +168,7 @@ describe("Service: CorrecaoRifasService", () => {
 
     expect(sucesso).toBe(true);
 
-    expect(mockBatchUpdate).toHaveBeenCalledWith(
+    expect(mockTransactionUpdate).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         status: "pendente",
@@ -178,7 +181,7 @@ describe("Service: CorrecaoRifasService", () => {
       }),
     );
 
-    expect(mockBatchCommit).toHaveBeenCalledTimes(1);
+    expect(mockRunTransaction).toHaveBeenCalledTimes(1);
   });
 
   it("Deve lançar erro de falha caso o commit no banco falhe", async () => {
@@ -194,7 +197,7 @@ describe("Service: CorrecaoRifasService", () => {
       ],
     });
 
-    mockDocGet.mockResolvedValueOnce({
+    mockTransactionGet.mockResolvedValueOnce({
       exists: true,
       data: () => ({
         vendedor_id: "ADERIDO_030",
@@ -202,7 +205,7 @@ describe("Service: CorrecaoRifasService", () => {
       }),
     });
 
-    mockBatchCommit.mockRejectedValueOnce(new Error("Firebase Offline"));
+    mockRunTransaction.mockRejectedValueOnce(new Error("Firebase Offline"));
 
     await expect(
       CorrecaoRifasService.corrigirRifasRecusadas(

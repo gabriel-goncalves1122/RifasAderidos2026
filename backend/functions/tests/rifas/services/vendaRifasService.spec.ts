@@ -29,7 +29,7 @@ jest.mock("firebase-admin", () => {
 });
 
 jest.mock("../../../src/modules/rifas/emailService", () => ({
-  enviarEmailRecibo: jest.fn(),
+  enviarEmailRecibo: jest.fn<any>().mockResolvedValue(undefined),
 }));
 
 import { VendaRifasService } from "../../../src/modules/rifas/services/vendaRifasService";
@@ -135,5 +135,45 @@ describe("Service: VendaRifasService", () => {
     expect(mockBatchSet).toHaveBeenCalledTimes(2);
     expect(mockBatchCommit).toHaveBeenCalledTimes(1);
     expect(enviarEmailRecibo).not.toHaveBeenCalled();
+  });
+
+  it("Não deve quebrar a venda se o envio de e-mail falhar", async () => {
+    const dadosVenda = {
+      nome: "Comprador Teste",
+      telefone: "35999999999",
+      email: "comprador@teste.com",
+      numerosRifas: ["010"],
+      comprovanteUrl: "https://meu-comprovante.png",
+    };
+
+    mockGet.mockResolvedValueOnce({
+      empty: false,
+      docs: [
+        {
+          id: "DOC_USUARIO_001",
+          data: () => ({
+            nome: "Vendedor Teste",
+            cpf: "123.456.789-00",
+            id_aderido: "ADERIDO_999",
+          }),
+        },
+      ],
+    });
+
+    mockBatchCommit.mockResolvedValueOnce(true);
+
+    (enviarEmailRecibo as jest.Mock<any>).mockRejectedValueOnce(
+      new Error("SMTP offline"),
+    );
+
+    await expect(
+      VendaRifasService.processarVenda(
+        "uid_123",
+        "vendedor@teste.com",
+        dadosVenda,
+      ),
+    ).resolves.not.toThrow();
+
+    expect(mockBatchCommit).toHaveBeenCalledTimes(1);
   });
 });
