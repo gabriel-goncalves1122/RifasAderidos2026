@@ -79,25 +79,6 @@ export const painelAderidoSurfaceStyles: Record<string, SxProps<Theme>> = {
     overflowWrap: "anywhere",
   },
 
-  aderidoHeaderDescricao: {
-    color: aderidosColors.greenSoft,
-    mt: 1,
-    lineHeight: 1.45,
-    maxWidth: 560,
-    fontSize: {
-      xs: "0.92rem",
-      sm: "0.98rem",
-    },
-  },
-
-  resumoHeader: {
-    display: "grid",
-    gridTemplateColumns: "1fr auto",
-    alignItems: "start",
-    gap: 2,
-    mb: 2.25,
-  },
-
   saudacaoTitulo: {
     ...typographyScale.pageTitle,
     color: "#061F18",
@@ -286,28 +267,6 @@ export const painelAderidoSurfaceStyles: Record<string, SxProps<Theme>> = {
     },
   },
 
-  saudacaoDescricao: {
-    mt: 0.75,
-    color: "#4A5F59",
-    lineHeight: 1.45,
-    maxWidth: 460,
-  },
-
-  botaoNotificacoes: {
-    width: 44,
-    height: 44,
-    borderRadius: 2,
-    bgcolor: aderidosColors.white,
-    border: "1px solid rgba(2, 27, 22, 0.08)",
-    boxShadow: "0 8px 22px rgba(2, 27, 22, 0.08)",
-    color: "#0B2F24",
-    ...focusVisibleSx,
-
-    "&:hover": {
-      bgcolor: "#F3F7F5",
-    },
-  },
-
   carrinhoFixoArea: {
     position: "fixed",
     left: 0,
@@ -479,55 +438,4 @@ export const painelAderidoSurfaceStyles: Record<string, SxProps<Theme>> = {
     },
   },
 
-  vendaResumoFixo: {
-    position: "sticky",
-    bottom: 0,
-    zIndex: 5,
-    mt: 2,
-    p: {
-      xs: 1.5,
-      sm: 2,
-    },
-    borderRadius: 2.25,
-    bgcolor: "rgba(255, 255, 255, 0.96)",
-    border: "1px solid rgba(2, 27, 22, 0.12)",
-    boxShadow: "0 -8px 26px rgba(2, 27, 22, 0.1)",
-    backdropFilter: "blur(10px)",
-  },
-
-  vendaResumoContent: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 2,
-  },
-
-  vendaResumoTitulo: {
-    fontWeight: 900,
-    color: aderidosColors.greenBlack,
-    lineHeight: 1.15,
-  },
-
-  vendaResumoDescricao: {
-    color: aderidosColors.textMuted,
-    fontSize: "0.9rem",
-    mt: 0.25,
-  },
-
-  vendaResumoBotao: {
-    borderRadius: 2,
-    px: {
-      xs: 2,
-      sm: 3,
-    },
-    py: 1.1,
-    fontWeight: 900,
-    textTransform: "none",
-    bgcolor: aderidosColors.greenDark,
-    ...focusVisibleSx,
-
-    "&:hover": {
-      bgcolor: "#052F26",
-    },
-  },
 };

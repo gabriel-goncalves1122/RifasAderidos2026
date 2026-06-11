@@ -1,6 +1,13 @@
+// ============================================================================
+// HOOK: useRifasSelection
+//
+// Gerencia a selecao de rifas para venda no painel do aderido.
+// Estado local puro: mantem lista de numeros selecionados,
+// calcula valor total e expoe acoes de alternar/limpar.
+// ============================================================================
 import { useCallback, useMemo, useState } from "react";
 
-const VALOR_RIFA = 10;
+import { VALOR_RIFA } from "../utils/constants";
 
 export function useRifasSelection() {
   const [selecionadas, setSelecionadas] = useState<string[]>([]);
@@ -19,6 +26,8 @@ export function useRifasSelection() {
     setSelecionadas([]);
   }, []);
 
+  const possuiSelecao = selecionadas.length > 0;
+
   const valorTotalSelecionado = useMemo(
     () => selecionadas.length * VALOR_RIFA,
     [selecionadas.length],
@@ -26,7 +35,7 @@ export function useRifasSelection() {
 
   return {
     selecionadas,
-    possuiSelecao: selecionadas.length > 0,
+    possuiSelecao,
     valorTotalSelecionado,
     alternarSelecaoRifa,
     limparSelecao,

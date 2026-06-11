@@ -22,7 +22,6 @@ import { painelAderidoStyles } from "./styles/painelAderidoStyles";
 
 export function MinhasRifasTab() {
   const painel = usePainelAderido();
-  const possuiSelecao = painel.selecionadas.length > 0;
 
   if (painel.carregando) {
     return <LoadingRifasState />;
@@ -33,7 +32,7 @@ export function MinhasRifasTab() {
       <Box
         sx={{
           ...painelAderidoStyles.root,
-          pb: possuiSelecao ? { xs: 17, sm: 15 } : 3,
+          pb: painel.possuiSelecao ? { xs: 17, sm: 15 } : 3,
         }}
       >
         <EstatisticasAderido
@@ -72,10 +71,10 @@ export function MinhasRifasTab() {
           />
         )}
 
-        {possuiSelecao && painel.visaoAtual === "geral" && (
+        {painel.possuiSelecao && painel.visaoAtual === "geral" && (
           <CarrinhoFlutuante
             quantidade={painel.selecionadas.length}
-            valorTotal={painel.selecionadas.length * 10}
+            valorTotal={painel.valorTotalSelecionado}
             onVenderClick={() => painel.setModalCheckoutAberto(true)}
           />
         )}

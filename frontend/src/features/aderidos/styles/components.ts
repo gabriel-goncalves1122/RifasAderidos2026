@@ -85,18 +85,6 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     },
   },
 
-  filtroChipAtivo: {
-    bgcolor: aderidosColors.greenDark,
-    color: aderidosColors.white,
-    borderColor: aderidosColors.greenDark,
-    boxShadow: "0 8px 16px rgba(6, 61, 49, 0.16)",
-
-    "&:hover": {
-      bgcolor: aderidosColors.greenBlack,
-      borderColor: aderidosColors.greenBlack,
-    },
-  },
-
   gridRifasWrapper: {
     maxHeight: {
       xs: "48vh",
@@ -183,18 +171,6 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     },
   },
 
-  blocoVendasCard: {
-    mt: {
-      xs: 3.5,
-      sm: 4,
-    },
-    p: 0,
-    borderRadius: 0,
-    bgcolor: "transparent",
-    border: "none",
-    boxShadow: "none",
-  },
-
   blocoVendasArea: {
     mt: {
       xs: 3.5,
@@ -202,14 +178,4 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     },
   },
 
-  legendaChip: {
-    height: 28,
-    borderRadius: 2,
-    fontWeight: 800,
-    fontSize: "0.78rem",
-
-    "& .MuiChip-label": {
-      px: 1.1,
-    },
-  },
 };

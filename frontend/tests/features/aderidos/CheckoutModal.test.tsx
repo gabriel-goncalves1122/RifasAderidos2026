@@ -20,10 +20,9 @@ describe("Componente <CheckoutModal />", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    sessionStorage.clear();
   });
 
-  it("Não deve abrir o dialog quando open for false", () => {
+  it("Nao deve abrir o dialog quando open for false", () => {
     render(
       <CheckoutModal
         open={false}
@@ -56,7 +55,7 @@ describe("Componente <CheckoutModal />", () => {
     });
   });
 
-  it("Deve mostrar erro de validação sem exigir comprovante", async () => {
+  it("Deve mostrar erro de validacao sem exigir comprovante", async () => {
     render(
       <CheckoutModal
         open={true}
@@ -139,7 +138,7 @@ describe("Componente <CheckoutModal />", () => {
     expect(mockOnSuccess).not.toHaveBeenCalled();
   });
 
-  it("Deve mostrar indisponibilidade quando o endpoint futuro ainda não responder", async () => {
+  it("Deve mostrar indisponibilidade quando o endpoint futuro ainda nao responder", async () => {
     vi.mocked(checkoutPixService.criarCobrancaPix).mockRejectedValueOnce(
       new Error("Erro HTTP 404"),
     );
@@ -163,7 +162,7 @@ describe("Componente <CheckoutModal />", () => {
     fireEvent.click(screen.getByRole("button", { name: /gerar pagamento/i }));
 
     expect(
-      await screen.findByText(/Pagamento via Pix indisponível no momento/i),
+      await screen.findByText(/Pagamento via Pix indisponivel no momento/i),
     ).toBeInTheDocument();
   });
 });

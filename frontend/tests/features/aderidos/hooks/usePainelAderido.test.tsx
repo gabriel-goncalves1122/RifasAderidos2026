@@ -21,11 +21,11 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/features/rifas/hooks/useRifas", () => ({
-  useRifas: () => ({
+vi.mock("@/features/aderidos/services/aderidoRifaService", () => ({
+  aderidoRifaService: {
     buscarMinhasRifas: mocks.buscarMinhasRifas,
     corrigirDadosRifasRecusadas: mocks.corrigirDadosRifasRecusadas,
-  }),
+  },
 }));
 
 vi.mock("@/shared/hooks/useNotificacoes", () => ({
@@ -63,7 +63,7 @@ const rifasMock = [
     comprador_email: "ana@email.com",
     comprador_telefone: "(35) 99999-9999",
     data_pagamento: "2026-05-01",
-    motivo_recusa: "Comprovante ilegível",
+    motivo_recusa: "Comprovante ilegivel",
   },
 ];
 
@@ -109,7 +109,7 @@ describe("Hook: usePainelAderido", () => {
     mocks.corrigirDadosRifasRecusadas.mockResolvedValue(true);
   });
 
-  it("Deve buscar rifas e notificações ao inicializar o painel", async () => {
+  it("Deve buscar rifas e notificacoes ao inicializar o painel", async () => {
     renderHook(() => usePainelAderido(), { wrapper: criarWrapper() });
 
     await waitFor(() => {
@@ -118,7 +118,7 @@ describe("Hook: usePainelAderido", () => {
     });
   });
 
-  it("Deve montar o primeiro nome do usuário logado", async () => {
+  it("Deve montar o primeiro nome do usuario logado", async () => {
     const { result } = renderHook(() => usePainelAderido(), {
       wrapper: criarWrapper(),
     });
@@ -128,6 +128,26 @@ describe("Hook: usePainelAderido", () => {
     });
 
     expect(result.current.primeiroNome).toBe("Gabriel");
+  });
+
+  it("Deve usar email do proprio usuario quando nao houver nome", async () => {
+    mocks.usuarioAtual = {
+      uid: "USER_002",
+      nome: null,
+      displayName: null,
+      email: "joao@email.com",
+    };
+
+    const { result } = renderHook(() => usePainelAderido(), {
+      wrapper: criarWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.carregando).toBe(false);
+    });
+
+    // Nao deve usar vendedor_email de terceiros, mas sim o email do usuario
+    expect(result.current.primeiroNome).toBe("joao");
   });
 
   it("Deve armazenar as rifas retornadas pelo hook de rifas", async () => {
@@ -143,7 +163,7 @@ describe("Hook: usePainelAderido", () => {
     expect(result.current.notificacoes).toHaveLength(1);
   });
 
-  it("Deve selecionar e remover uma rifa disponível da seleção", async () => {
+  it("Deve selecionar e remover uma rifa disponivel da selecao", async () => {
     const { result } = renderHook(() => usePainelAderido(), {
       wrapper: criarWrapper(),
     });
@@ -165,7 +185,7 @@ describe("Hook: usePainelAderido", () => {
     expect(result.current.selecionadas).toEqual([]);
   });
 
-  it("Não deve selecionar rifas que não estejam disponíveis", async () => {
+  it("Nao deve selecionar rifas que nao estejam disponiveis", async () => {
     const { result } = renderHook(() => usePainelAderido(), {
       wrapper: criarWrapper(),
     });
@@ -204,15 +224,17 @@ describe("Hook: usePainelAderido", () => {
       expect(sucesso).toBe(true);
     });
 
-    expect(mocks.corrigirDadosRifasRecusadas).toHaveBeenCalledWith(["003"], {
+    // Telefone agora e sanitizado (remove nao-digitos) pelo useRifasData
+    expect(mocks.corrigirDadosRifasRecusadas).toHaveBeenCalledWith({
+      numerosRifas: ["003"],
       nome: "Ana",
       email: "ana@email.com",
-      telefone: "(35) 99999-9999",
+      telefone: "35999999999",
     });
     expect(mocks.buscarMinhasRifas).toHaveBeenCalledTimes(2);
   });
 
-  it("Deve marcar notificações como lidas de forma otimista", async () => {
+  it("Deve marcar notificacoes como lidas de forma otimista", async () => {
     const { result } = renderHook(() => usePainelAderido(), {
       wrapper: criarWrapper(),
     });
@@ -230,7 +252,7 @@ describe("Hook: usePainelAderido", () => {
     expect(result.current.notificacoesNaoLidas).toBe(0);
   });
 
-  it("Deve reaproveitar rifas e notificações em cache para o mesmo usuário", async () => {
+  it("Deve reaproveitar rifas e notificacoes em cache para o mesmo usuario", async () => {
     const queryClient = criarQueryClient();
     const wrapper = criarWrapper(queryClient);
 
@@ -253,8 +275,8 @@ describe("Hook: usePainelAderido", () => {
     expect(mocks.buscarNotificacoes).toHaveBeenCalledTimes(1);
   });
 
-  it("Deve manter a tela renderizável quando a busca de rifas falhar", async () => {
-    mocks.buscarMinhasRifas.mockRejectedValueOnce(new Error("API indisponível"));
+  it("Deve manter a tela renderizavel quando a busca de rifas falhar", async () => {
+    mocks.buscarMinhasRifas.mockRejectedValueOnce(new Error("API indisponivel"));
 
     const { result } = renderHook(() => usePainelAderido(), {
       wrapper: criarWrapper(),

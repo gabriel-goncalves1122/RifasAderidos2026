@@ -1,5 +1,15 @@
 // ============================================================================
-// ARQUIVO: frontend/src/features/aderidos/CheckoutModal.tsx
+// COMPONENTE: CheckoutModal
+//
+// Modal de checkout para venda de rifas via Pix.
+//
+// Fluxo:
+//   1. Usuario preenche dados do comprador (nome, WhatsApp, email)
+//   2. Gera cobranca Pix chamando o backend do sistema
+//   3. Exibe QR Code e codigo copia-e-cola para pagamento
+//
+// O Dialog usa keepMounted, entao o estado do formulario persiste
+// entre aberturas sem precisar de armazenamento externo.
 // ============================================================================
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CloseIcon from "@mui/icons-material/Close";
@@ -31,60 +41,13 @@ import { checkoutPixService } from "./services/checkoutPixService";
 import { painelAderidoStyles } from "./styles/painelAderidoStyles";
 import { aderidosColors, aderidosMotion, reduceMotionSx } from "./tokens";
 import { CheckoutPixCobranca } from "./types/checkoutPix";
+import { obterMensagemErroPix } from "./utils/errorsPix";
 
 interface CheckoutModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
   numerosRifas: string[];
-}
-
-const CHECKOUT_DRAFT_KEY = "checkout_venda_rifas_draft";
-
-interface CheckoutDraft {
-  nome: string;
-  telefone: string;
-  email: string;
-}
-
-function carregarDraftCheckout(): CheckoutDraft {
-  try {
-    const draft = sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
-
-    if (!draft) {
-      return {
-        nome: "",
-        telefone: "",
-        email: "",
-      };
-    }
-
-    return JSON.parse(draft) as CheckoutDraft;
-  } catch {
-    return {
-      nome: "",
-      telefone: "",
-      email: "",
-    };
-  }
-}
-
-function salvarDraftCheckout(dados: CheckoutDraft) {
-  sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(dados));
-}
-
-function limparDraftCheckout() {
-  sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
-}
-
-function obterMensagemErroPix(error: unknown) {
-  const mensagem = error instanceof Error ? error.message : "";
-
-  if (/404|not found|não encontrado/i.test(mensagem)) {
-    return "Pagamento via Pix indisponível no momento. O backend ainda não respondeu a este contrato.";
-  }
-
-  return mensagem || "Não foi possível gerar o pagamento via Pix agora.";
 }
 
 export function CheckoutModal({
@@ -98,7 +61,6 @@ export function CheckoutModal({
   const [gerandoPix, setGerandoPix] = useState(false);
   const [erroPix, setErroPix] = useState<string | null>(null);
 
-  const defaultValues = useMemo(() => carregarDraftCheckout(), []);
   const numerosRifasKey = numerosRifas.join("|");
 
   const {
@@ -112,23 +74,15 @@ export function CheckoutModal({
     mode: "onChange",
     shouldUnregister: false,
     defaultValues: {
-      nome: defaultValues.nome,
-      telefone: defaultValues.telefone,
-      email: defaultValues.email,
+      nome: "",
+      telefone: "",
+      email: "",
     },
   });
 
   const nome = watch("nome");
   const telefone = watch("telefone");
   const email = watch("email");
-
-  useEffect(() => {
-    salvarDraftCheckout({
-      nome: nome || "",
-      telefone: telefone || "",
-      email: email || "",
-    });
-  }, [nome, telefone, email]);
 
   useEffect(() => {
     if (!open) return;
@@ -160,8 +114,6 @@ export function CheckoutModal({
   const fecharModal = () => {
     if (gerandoPix) return;
 
-    // Não limpa os campos ao fechar. Assim, se o Safari suspender a aba,
-    // os dados digitados continuam preservados.
     onClose();
   };
 
@@ -179,7 +131,6 @@ export function CheckoutModal({
       });
 
       setCobrancaPix(cobranca);
-      limparDraftCheckout();
     } catch (error) {
       setErroPix(obterMensagemErroPix(error));
     } finally {
@@ -202,7 +153,6 @@ export function CheckoutModal({
         keepMounted
         disableEscapeKeyDown={gerandoPix}
         onClose={(_, reason) => {
-          // Evita perder o modal por clique acidental fora dele.
           if (reason === "backdropClick") return;
 
           fecharModal();
@@ -287,7 +237,7 @@ export function CheckoutModal({
                 >
                   <Typography
                     sx={{
-                  color: aderidosColors.greenDark,
+                      color: aderidosColors.greenDark,
                       fontWeight: 900,
                       fontSize: "0.82rem",
                     }}
@@ -297,7 +247,7 @@ export function CheckoutModal({
 
                   <Typography
                     sx={{
-                    color: aderidosColors.textMuted,
+                      color: aderidosColors.textMuted,
                       fontWeight: 850,
                       fontSize: "0.78rem",
                     }}

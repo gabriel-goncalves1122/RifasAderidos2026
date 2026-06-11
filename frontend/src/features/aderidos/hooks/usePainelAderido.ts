@@ -1,5 +1,14 @@
 // ============================================================================
-// ARQUIVO: frontend/src/features/aderidos/hooks/usePainelAderido.ts
+// HOOK: usePainelAderido
+//
+// Hook principal da feature Aderidos. Orquestra:
+//
+// 1. Dados remotos (rifas, notificacoes) via useRifasData
+// 2. Selecao de rifas para venda via useRifasSelection
+// 3. Controle de modais e drawers via useModalStack
+// 4. Fluxo pos-checkout via useCheckoutFlow
+//
+// Componentes de UI consomem este hook e nao acessam dados diretamente.
 // ============================================================================
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -30,12 +39,14 @@ export function usePainelAderido() {
   const fecharCheckout = useCallback(() => {
     modais.setModalCheckoutAberto(false);
   }, [modais.setModalCheckoutAberto]);
+
   const { finalizarVendaComSucesso } = useCheckoutFlow({
     fecharCheckout,
     limparSelecao: selecao.limparSelecao,
     invalidarDadosPainel: dadosPainel.invalidarDadosPainel,
   });
 
+  // Se o usuario deslogar, limpa estado local para evitar dados residuais
   useEffect(() => {
     if (!dadosPainel.usuarioId) {
       selecao.limparSelecao();
@@ -43,6 +54,10 @@ export function usePainelAderido() {
       modais.reset();
     }
   }, [dadosPainel.usuarioId, modais.reset, selecao.limparSelecao]);
+
+  // ------------------------------------------------------------------
+  // Computacoes derivadas dos dados brutos
+  // ------------------------------------------------------------------
 
   const rifasFiltradas = useMemo(
     () => filtrarRifasPorStatus(dadosPainel.minhasRifas, filtro),
@@ -64,6 +79,12 @@ export function usePainelAderido() {
     [dadosPainel.notificacoes],
   );
 
+  // ------------------------------------------------------------------
+  // Nome de exibicao do aderido
+  //
+  // Prioridade: nome > displayName > parte local do email.
+  // Usa apenas dados do usuario logado (nunca vendedor_email de terceiros).
+  // ------------------------------------------------------------------
   const primeiroNome = useMemo(() => {
     const usuarioComNome = dadosPainel.usuarioAtual as
       | {
@@ -74,16 +95,12 @@ export function usePainelAderido() {
       | null
       | undefined;
 
-    const primeiraRifaComVendedor = dadosPainel.minhasRifas.find((rifa) =>
-      Boolean(rifa.vendedor_nome?.trim()),
-    );
-
     return obterPrimeiroNomeAderido({
-      nome: usuarioComNome?.nome || primeiraRifaComVendedor?.vendedor_nome,
+      nome: usuarioComNome?.nome || usuarioComNome?.displayName,
       displayName: usuarioComNome?.displayName,
-      email: usuarioComNome?.email || primeiraRifaComVendedor?.vendedor_email,
+      email: usuarioComNome?.email,
     });
-  }, [dadosPainel.usuarioAtual, dadosPainel.minhasRifas]);
+  }, [dadosPainel.usuarioAtual]);
 
   const abrirSidebarNotificacoes = useCallback(async () => {
     modais.setDrawerNotificacoesAberto(true);
@@ -129,6 +146,8 @@ export function usePainelAderido() {
     visaoAtual,
     filtro,
     selecionadas: selecao.selecionadas,
+    possuiSelecao: selecao.possuiSelecao,
+    valorTotalSelecionado: selecao.valorTotalSelecionado,
 
     minhasRifas: dadosPainel.minhasRifas,
     rifasFiltradas,

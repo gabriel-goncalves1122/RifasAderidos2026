@@ -1,5 +1,8 @@
 // ============================================================================
-// ARQUIVO: frontend/src/views/components/aderidos/ModalCorrecaoRecusa.tsx
+// COMPONENTE: ModalCorrecaoRecusa
+//
+// Modal para correcao de dados de vendas recusadas pela tesouraria.
+// Permite editar nome, email e telefone do comprador e reenviar.
 // ============================================================================
 import { useState, useEffect } from "react";
 import {
@@ -24,6 +27,7 @@ import {
   GrupoRifasRecusadas,
 } from "./types/painelAderido";
 import { obterDicaCorrecaoRecusa } from "./utils/obterDicaCorrecaoRecusa";
+import { formatarTelefone } from "./utils/mascaras";
 
 interface ModalCorrecaoRecusaProps {
   open: boolean;
@@ -34,24 +38,6 @@ interface ModalCorrecaoRecusaProps {
     dadosAtualizados: DadosCorrecaoRecusa,
   ) => Promise<boolean>;
 }
-
-const formatarTelefone = (valor: string) => {
-  if (!valor) return "";
-
-  const apenasNumeros = valor.replace(/\D/g, "");
-
-  if (apenasNumeros.length <= 2) {
-    return apenasNumeros.length > 0 ? `(${apenasNumeros}` : "";
-  }
-  if (apenasNumeros.length <= 6) {
-    return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2)}`;
-  }
-  if (apenasNumeros.length <= 10) {
-    return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2, 6)}-${apenasNumeros.slice(6)}`;
-  }
-
-  return `(${apenasNumeros.slice(0, 2)}) ${apenasNumeros.slice(2, 7)}-${apenasNumeros.slice(7, 11)}`;
-};
 
 export function ModalCorrecaoRecusa({
   open,
@@ -113,7 +99,7 @@ export function ModalCorrecaoRecusa({
       }
 
       setErro(
-        "Correção de dados indisponível no momento. Tente novamente mais tarde.",
+        "Correcao de dados indisponivel no momento. Tente novamente mais tarde.",
       );
     } finally {
       setEnviando(false);

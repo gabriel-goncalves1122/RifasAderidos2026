@@ -1,20 +1,34 @@
+// ============================================================================
+// HOOK: useRifasData
+//
+// Busca e gerencia os dados remotos do painel do aderido:
+// - Lista de rifas do usuario autenticado
+// - Notificacoes do usuario autenticado
+//
+// Usa TanStack Query para cache, revalidacao e optimistic updates.
+// Centraliza a logica de fetching, invalidacao e correcao de dados recusados.
+// ============================================================================
 import { useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAuthController } from "@/features/auth/hooks/useAuthController";
-import { useRifas } from "@/features/rifas/hooks/useRifas";
 import { useNotificacoes } from "@/shared/hooks/useNotificacoes";
 
+import { aderidoRifaService } from "../services/aderidoRifaService";
 import {
   DadosCorrecaoRecusa,
   NotificacaoAderido,
   RifaAderido,
 } from "../types/painelAderido";
+import { sanitizarDadosCliente } from "../utils/sanitizadores";
+import {
+  filtrarApenasNotificacoesValidas,
+  filtrarApenasRifasValidas,
+} from "../utils/validadores";
 
 const QUERY_STALE_TIME = 60_000;
 
 export function useRifasData() {
-  const { buscarMinhasRifas, corrigirDadosRifasRecusadas } = useRifas();
   const { buscarNotificacoes, marcarNotificacoesLidas } = useNotificacoes();
   const { usuarioAtual, loading: authCarregando } = useAuthController();
   const queryClient = useQueryClient();
@@ -33,7 +47,14 @@ export function useRifasData() {
 
   const rifasQuery = useQuery({
     queryKey: rifasQueryKey,
-    queryFn: async () => (await buscarMinhasRifas()) as RifaAderido[],
+    queryFn: async () => {
+      try {
+        const dados = await aderidoRifaService.buscarMinhasRifas();
+        return filtrarApenasRifasValidas(dados);
+      } catch {
+        return [];
+      }
+    },
     enabled: consultasAtivas,
     staleTime: QUERY_STALE_TIME,
     placeholderData: (dadosAnteriores) => dadosAnteriores ?? [],
@@ -41,7 +62,10 @@ export function useRifasData() {
 
   const notificacoesQuery = useQuery({
     queryKey: notificacoesQueryKey,
-    queryFn: async () => (await buscarNotificacoes()) as NotificacaoAderido[],
+    queryFn: async () => {
+      const dados = await buscarNotificacoes();
+      return filtrarApenasNotificacoesValidas(dados);
+    },
     enabled: consultasAtivas,
     staleTime: QUERY_STALE_TIME,
     placeholderData: (dadosAnteriores) => dadosAnteriores ?? [],
@@ -66,9 +90,25 @@ export function useRifasData() {
     ]);
   }, [notificacoesQueryKey, queryClient, rifasQueryKey, usuarioId]);
 
+  // ------------------------------------------------------------------
+  // Marca notificacoes como lidas (otimista)
+  //
+  // 1. Atualiza o cache local imediatamente (otimista)
+  // 2. Envia os IDs ao backend
+  // 3. Se falhar, reverte invalidando o cache para recarregar do servidor
+  //
+  // Verifica se os IDs pertencem ao usuario antes de enviar (defense-in-depth
+  // contra IDOR, mesmo que o backend ja deva validar ownership).
+  // ------------------------------------------------------------------
   const marcarNotificacoesLidasOtimista = useCallback(
     async (ids: string[]) => {
       if (ids.length === 0) return;
+
+      const idsPertencemAoUsuario = ids.every((id) =>
+        notificacoes.some((n) => n.id === id),
+      );
+
+      if (!idsPertencemAoUsuario) return;
 
       queryClient.setQueryData<NotificacaoAderido[]>(
         notificacoesQueryKey,
@@ -82,7 +122,9 @@ export function useRifasData() {
       try {
         await marcarNotificacoesLidas(ids);
       } catch {
-        await queryClient.invalidateQueries({ queryKey: notificacoesQueryKey });
+        await queryClient.invalidateQueries({
+          queryKey: notificacoesQueryKey,
+        });
       }
     },
     [
@@ -93,11 +135,30 @@ export function useRifasData() {
     ],
   );
 
+  // ------------------------------------------------------------------
+  // Corrige dados de rifas recusadas
+  //
+  // Sanitiza os dados antes de enviar para evitar que strings
+  // malformadas ou excessivamente longas cheguem ao servidor.
+  // ------------------------------------------------------------------
   const corrigirDadosRecusados = useCallback(
-    (numeros: string[], dadosAtualizados: DadosCorrecaoRecusa) => {
-      return corrigirDadosRifasRecusadas(numeros, dadosAtualizados);
+    async (numeros: string[], dadosAtualizados: DadosCorrecaoRecusa) => {
+      const dadosSanitizados = sanitizarDadosCliente({
+        nome: dadosAtualizados.nome,
+        telefone: dadosAtualizados.telefone,
+        email: dadosAtualizados.email,
+      });
+      try {
+        await aderidoRifaService.corrigirDadosRifasRecusadas({
+          numerosRifas: numeros,
+          ...dadosSanitizados,
+        });
+        return true;
+      } catch {
+        return false;
+      }
     },
-    [corrigirDadosRifasRecusadas],
+    [],
   );
 
   const carregando =

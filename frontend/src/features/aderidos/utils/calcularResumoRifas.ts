@@ -1,12 +1,15 @@
 // ============================================================================
-// ARQUIVO: frontend/src/features/aderidos/utils/calcularResumoRifas.ts
+// UTILS: calcularResumoRifas
+//
+// Funcoes de negocio para calcular indicadores do resumo do painel:
+// - Valor total arrecadado (rifas pagas * VALOR_RIFA)
+// - Contagem de notificacoes nao lidas
+// - Filtro de rifas por status
 // ============================================================================
+import { VALOR_RIFA } from "./constants";
 import { NotificacaoAderido, RifaAderido } from "../types/painelAderido";
 
-const VALOR_RIFA = 10;
-
 export function calcularValorArrecadado(rifas: RifaAderido[]) {
-  // A tela do aderido considera arrecadado apenas o que já foi aprovado.
   return rifas.filter((rifa) => rifa.status === "pago").length * VALOR_RIFA;
 }
 
