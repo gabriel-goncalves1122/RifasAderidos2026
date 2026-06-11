@@ -29,6 +29,8 @@ types      → tipos TypeScript
 utils      → funções puras e formatadores
 components → componentes visuais
 pages      → composição de página
+styles     → objetos sx centralizados (opcional)
+tokens     → design tokens primitivos (opcional)
 mocks      → dados temporários de desenvolvimento/teste
 legacy     → código legado isolado
 ```
@@ -44,23 +46,55 @@ Prefira query keys explícitas por feature e usuário quando o dado for sensíve
 ## Estrutura esperada
 
 ```txt
-src/
-├── app/
-├── shared/
-│   ├── components/
-│   ├── config/
-│   ├── hooks/
-│   ├── services/
-│   └── types/
-├── features/
-│   ├── aderidos/
-│   ├── auth/
-│   ├── premios/
-│   ├── rifas/
-│   ├── secretaria/
-│   └── tesouraria/
-└── views/
+frontend/
+├── docs/              # Documentação técnica (arquitetura, módulos, padrões)
+├── src/
+│   ├── app/
+│   ├── shared/
+│   │   ├── components/
+│   │   ├── config/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   └── types/
+│   ├── features/
+│   │   ├── aderidos/       # Painel do vendedor + services de rifas (aderidoRifaService)
+│   │   ├── auth/
+│   │   ├── premios/
+│   │   ├── rifas/          # Legacy (codigo antigo de venda direta; so contem legacy/)
+│   │   ├── secretaria/
+│   │   └── tesouraria/
+│   ├── views/
+│   └── ... (main.tsx, setupTests.ts, etc.)
+└── tests/
+    ├── app/
+    ├── features/
+    ├── shared/
+    ├── test-utils/         # renderWithProviders.tsx (pendente implementação)
+    ├── mocks/              # firebase.mock.ts, api.mock.ts
+    └── e2e/
 ```
+
+## Estilos
+
+Features podem ter uma pasta `styles/` para centralizar objetos sx reutilizaveis.
+
+Estrutura canonica:
+
+```txt
+styles/
+├── colors.ts       → paleta de cores (ex: colors.verdeEscuro, colors.cinzaTexto)
+├── surfaces.ts     → superficies (paper, dialog, cartaoResumo)
+├── typography.ts   → estilos de texto e chipStatus(status)
+├── components.ts   → botoes, chips, tabela, etc.
+└── layout.ts       → containers, grids, responsivo
+```
+
+Regras:
+
+- Componentes importam de `styles/` e usam spread (`sx={{ ...surfaces.paper, ...typography.titulo }}`).
+- Nao coloque logica de estado ou regra de negocio em `styles/`.
+- Nao importe `styles/` de hooks, services ou utils.
+- Features sem `styles/` podem continuar usando sx inline normalmente.
 
 ## Testes
 
@@ -151,6 +185,17 @@ Object.defineProperty(navigator, "clipboard", {
   },
 });
 ```
+
+## Documentação técnica
+
+Docs detalhados em `docs/README.md`:
+
+- Arquitetura, fluxos e organização: `docs/arquitetura.md`
+- Guia de estilos: `docs/padroes/estilos.md`
+- Guia de testes: `docs/padroes/testes.md`
+- Documentos de cada feature em `docs/modulos/`
+
+Consulte antes de fazer mudanças estruturais ou de estilo.
 
 ## Comentários no código
 

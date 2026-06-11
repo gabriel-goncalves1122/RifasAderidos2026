@@ -38,6 +38,7 @@ frontend/src/features/tesouraria/
 ├── mocks/
 ├── pages/
 ├── services/
+├── styles/
 ├── types/
 └── utils/
 ```
@@ -56,7 +57,8 @@ frontend/src/features/tesouraria/
 - `hooks`: controllers de tela e hooks de estado. Controllers orquestram service, filtros, loading e callbacks.
 - `services`: chamadas ao backend do sistema. Services normalizam payloads, mas nao implementam UI.
 - `types`: contratos TypeScript compartilhados do dominio.
-- `utils`: regras puras, agrupamentos, filtros, formatadores e exportacoes sem efeito colateral.
+- `utils`: regras puras, agrupamentos, filtros, formatadores e exportacoes sem efeito colateral. `formatadores.ts` centraliza `somenteNumeros`, `formatarMoeda`, `formatarData`, `formatarTelefone`. `constants.ts` centraliza `META_RIFAS_ADERIDO`.
+- `styles`: objetos sx compartilhados (cores, tipografia, superficies, componentes). Componentes importam de `styles/` em vez de repetir hex colors e valores inline. Ver seção **Estilos** abaixo.
 - `mocks`: dados locais de desenvolvimento/teste, sem credenciais e sem contrato sensivel real.
 - `legacy`: codigo isolado para compatibilidade ou fluxos antigos. Codigo novo nao deve importar de `legacy`.
 
@@ -105,6 +107,24 @@ Regras:
 ### Tesouraria
 
 Use `Tesouraria*` apenas para shell, layout geral, pagina agregadora ou elementos compartilhados que nao pertencem exclusivamente a Pix, auditoria de compras ou desempenho.
+
+## Estilos
+
+A pasta `styles/` centraliza objetos sx reutilizaveis para evitar repeticao de cores, bordas, tipografia e espacamento nos componentes.
+
+Arquivos:
+
+- `colors.ts` — paleta de cores (`verdeEscuro`, `pretoEsverdeado`, `cinzaTexto`, `fundoSuave`, `verdeClaro`, ...). Use `colors.xxx` em vez de hex literais.
+- `surfaces.ts` — superficies compartilhadas (`paper`, `paperComSombra`, `dialog`, `cartaoResumo(destaque)`, `cartaoInfo`, ...).
+- `typography.ts` — estilos de texto (`titulo`, `label`, `bodyDestaque`, `bodyPequeno`, `valorMonetario`, ...). `chipStatus(status)` retorna sx condicional por status.
+- `components.ts` — botoes, chips, tabela (`botaoPrimario`, `botaoSecundario`, `botaoAceitar`, `botaoNegar`, `chipVerde`, `tabelaCabecalho`, `linhaTabela`, ...).
+- `layout.ts` — containers e grids (`loadingContainer`, `gridDois`, `cardsGrid`, `drawerPaper`, ...).
+
+Regras:
+
+- Prefira `import { colors } from "../../styles/colors"` e use `sx={{ ...surfaces.paper, ...typography.titulo }}` em vez de inline values.
+- Nao coloque logica de estilo condicional complexa em `styles/`; prefira funcoes simples como `cartaoResumo(destaque)`.
+- Nao importe `styles/` de `hooks/`, `services/` ou `utils/` — e apenas para camada visual.
 
 ## Padroes de arquitetura
 

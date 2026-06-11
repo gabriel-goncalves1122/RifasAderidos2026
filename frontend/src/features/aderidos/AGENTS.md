@@ -6,14 +6,19 @@ Este guia vale para tudo dentro de `frontend/src/features/aderidos`.
 
 A feature Aderidos cobre o painel de rifas do aderido, seleção de rifas, checkout Pix via backend do sistema, notificações e correção de dados.
 
+### Nota sobre a feature `rifas`
+
+O codigo ativo da antiga `features/rifas` (`buscarMinhasRifas`, `corrigirDadosRifasRecusadas`) foi movido para `services/aderidoRifaService.ts`. O restante da feature `rifas` (fluxo antigo de venda direta com upload, `rifasStorageService`, hook `useRifas`) está em `features/rifas/legacy/`. Nao importe de `features/rifas/` diretamente.
+
 ## Arquitetura
 
 - `components`: UI pura. Componentes recebem dados/callbacks por props e não chamam backend.
 - `hooks`: orquestração de tela, cache, estados locais, seleção, modais e callbacks.
-- `services`: chamadas ao backend do sistema. Nunca chamar provedor financeiro direto pelo frontend.
+- `services`: chamadas ao backend do sistema. Nunca chamar provedor financeiro direto pelo frontend. Atualmente: `checkoutPixService.ts` (criar cobranca Pix) e `aderidoRifaService.ts` (buscar rifas, corrigir dados).
 - `types`: contratos TypeScript do domínio.
 - `utils`: regras puras, agrupamentos, filtros e formatadores.
 - `styles`: estilos por área visual. Evite arquivos grandes; divida por resumo, rifas, carrinho ou checkout quando crescer.
+- `tokens`: design tokens primitivos (colors, typography, motion) para uso em arquivos de estilo.
 
 Não crie pasta `controllers` nesta feature.
 

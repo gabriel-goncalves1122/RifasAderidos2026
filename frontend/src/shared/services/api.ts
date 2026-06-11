@@ -1,3 +1,14 @@
+// ============================================================================
+// SERVICE: fetchAPI
+//
+// Camada unica de comunicacao HTTP com o backend (Firebase Functions).
+//
+// Funcionalidades:
+// - Injeta automaticamente o token de autenticacao (Firebase ID token)
+// - Aguarda o usuario estar autenticado antes de enviar a requisicao
+// - Redireciona para /login em caso de 401/403 (sessao expirada)
+// - Loga chamadas e erros apenas em ambiente DEV
+// ============================================================================
 import { onAuthStateChanged, User } from "firebase/auth";
 
 import { auth } from "@/shared/config/firebase";
@@ -18,6 +29,8 @@ function obterApiBaseUrl() {
 
 const API_BASE_URL = obterApiBaseUrl();
 
+// Aguarda o Firebase resolver a sessao do usuario.
+// Usa onAuthStateChanged com timeout para nao travar indefinidamente.
 function aguardarUsuarioAutenticado(timeoutMs = 3500): Promise<User | null> {
   if (auth.currentUser) {
     return Promise.resolve(auth.currentUser);
@@ -26,7 +39,6 @@ function aguardarUsuarioAutenticado(timeoutMs = 3500): Promise<User | null> {
   return new Promise((resolve) => {
     let resolvido = false;
 
-    // Evita erro de temporal dead zone caso o callback execute imediatamente.
     let unsubscribe: () => void = () => {};
 
     const finalizar = (user: User | null) => {
@@ -65,7 +77,7 @@ export async function fetchAPI(
       const user = await aguardarUsuarioAutenticado();
 
       if (!user) {
-        throw new Error("Usuário não autenticado no sistema.");
+        throw new Error("Usuario nao autenticado no sistema.");
       }
 
       const token = await user.getIdToken();
@@ -97,10 +109,14 @@ export async function fetchAPI(
     try {
       data = rawText ? JSON.parse(rawText) : {};
     } catch {
-      console.warn(
-        "Aviso: A resposta da API não é um JSON válido. Retorno bruto:",
-        rawText,
-      );
+      // Loga apenas em DEV para evitar vazar dados sensiveis
+      // (PII, stack traces, tokens) no console do usuario em producao.
+      if (import.meta.env.DEV) {
+        console.warn(
+          "Aviso: A resposta da API nao e um JSON valido. Retorno bruto:",
+          rawText,
+        );
+      }
 
       data = {
         error: `Resposta inesperada do servidor - Status: ${response.status}`,
@@ -113,7 +129,7 @@ export async function fetchAPI(
         window.location.href = "/login";
 
         throw new Error(
-          "A sua sessão expirou. Por favor, faça login novamente.",
+          "A sua sessao expirou. Por favor, faca login novamente.",
         );
       }
 
@@ -122,7 +138,10 @@ export async function fetchAPI(
 
     return data;
   } catch (err: any) {
-    console.error(`Erro na requisição [${method}] ${endpoint}:`, err);
+    if (import.meta.env.DEV) {
+      console.error(`Erro na requisicao [${method}] ${endpoint}:`, err);
+    }
+
     throw err;
   }
 }

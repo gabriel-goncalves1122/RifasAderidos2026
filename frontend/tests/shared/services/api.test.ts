@@ -21,12 +21,10 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-// Configuração Firebase usada diretamente pelo fetchAPI.
 vi.mock("@/shared/config/firebase", () => ({
   auth: mocks.auth,
 }));
 
-// O fetchAPI novo aguarda o Firebase resolver a sessão por onAuthStateChanged.
 vi.mock("firebase/auth", () => ({
   onAuthStateChanged: mocks.onAuthStateChanged,
   signOut: mocks.signOut,
@@ -35,7 +33,7 @@ vi.mock("firebase/auth", () => ({
 import { fetchAPI } from "@/shared/services/api";
 import { auth } from "@/shared/config/firebase";
 
-describe("Função Mestra: fetchAPI", () => {
+describe("Funcao Mestra: fetchAPI", () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
@@ -43,7 +41,6 @@ describe("Função Mestra: fetchAPI", () => {
 
     mocks.usuarioMock.getIdToken.mockResolvedValue("fake-token-123");
 
-    // Estado padrão dos testes: usuário autenticado.
     (auth as any).currentUser = mocks.usuarioMock;
 
     mocks.onAuthStateChanged.mockImplementation((_auth, callback) => {
@@ -53,7 +50,6 @@ describe("Função Mestra: fetchAPI", () => {
 
     global.fetch = vi.fn();
 
-    // Permite testar redirecionamento sem depender do objeto real do jsdom.
     delete (window as any).location;
     window.location = { href: "" } as any;
   });
@@ -62,7 +58,7 @@ describe("Função Mestra: fetchAPI", () => {
     (window as any).location = originalLocation;
   });
 
-  it("Deve fazer uma requisição GET com autenticação por padrão", async () => {
+  it("Deve fazer uma requisicao GET com autenticacao por padrao", async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
       text: async () => JSON.stringify({ sucesso: true }),
@@ -86,7 +82,7 @@ describe("Função Mestra: fetchAPI", () => {
     expect(resposta).toEqual({ sucesso: true });
   });
 
-  it("Deve fazer uma requisição POST com JSON e sem autenticação", async () => {
+  it("Deve fazer uma requisicao POST com JSON e sem autenticacao", async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
       text: async () => JSON.stringify({ salvo: true }),
@@ -113,8 +109,7 @@ describe("Função Mestra: fetchAPI", () => {
     expect(resposta).toEqual({ salvo: true });
   });
 
-  it("Deve bloquear rota autenticada quando não houver usuário logado", async () => {
-    // Simula ausência de sessão tanto no estado direto quanto no listener.
+  it("Deve bloquear rota autenticada quando nao houver usuario logado", async () => {
     (auth as any).currentUser = null;
 
     mocks.onAuthStateChanged.mockImplementationOnce((_auth, callback) => {
@@ -123,29 +118,29 @@ describe("Função Mestra: fetchAPI", () => {
     });
 
     await expect(fetchAPI("/secreto")).rejects.toThrow(
-      "Usuário não autenticado no sistema.",
+      "Usuario nao autenticado no sistema.",
     );
 
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it("Deve capturar e repassar erros normais, sem deslogar o usuário", async () => {
+  it("Deve capturar e repassar erros normais, sem deslogar o usuario", async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: false,
       status: 400,
       text: async () =>
-        JSON.stringify({ error: "Erro de validação nos campos." }),
+        JSON.stringify({ error: "Erro de validacao nos campos." }),
     });
 
     await expect(
       fetchAPI("/validacao", "POST", undefined, false),
-    ).rejects.toThrow("Erro de validação nos campos.");
+    ).rejects.toThrow("Erro de validacao nos campos.");
 
     expect(auth.signOut).not.toHaveBeenCalled();
     expect(mocks.signOut).not.toHaveBeenCalled();
   });
 
-  it("Deve forçar logout e redirecionar em caso de 401 ou 403", async () => {
+  it("Deve forcar logout e redirecionar em caso de 401 ou 403", async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: false,
       status: 403,
@@ -154,12 +149,29 @@ describe("Função Mestra: fetchAPI", () => {
     });
 
     await expect(fetchAPI("/admin", "GET", undefined, false)).rejects.toThrow(
-      "A sua sessão expirou. Por favor, faça login novamente.",
+      "A sua sessao expirou. Por favor, faca login novamente.",
     );
 
-    // Mantém compatibilidade caso o service use auth.signOut().
     expect(auth.signOut).toHaveBeenCalledTimes(1);
 
     expect(window.location.href).toBe("/login");
+  });
+
+  it("Deve retornar fallback seguro quando resposta nao for JSON valido", async () => {
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => "NAO-E-JSON",
+    });
+
+    const resposta = await fetchAPI("/rota", "GET", undefined, false);
+
+    // Em DEV (Vitest) o warn e esperado. Em PROD nao seria chamado.
+    // O importante e que a resposta sempre tenha fallback seguro.
+    expect(resposta.error).toContain("Resposta inesperada do servidor");
+
+    consoleWarnSpy.mockRestore();
   });
 });
