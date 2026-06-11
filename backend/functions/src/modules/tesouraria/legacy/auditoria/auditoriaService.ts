@@ -2,7 +2,6 @@
 // ARQUIVO: backend/functions/src/modules/tesouraria/legacy/auditoria/auditoriaService.ts
 // ============================================================================
 import * as admin from "firebase-admin";
-import { NotificacoesService } from "../../../notificacoes/notificacoesService";
 import { enviarEmailRecibo } from "../../../rifas/emailService";
 import { OcrService } from "./ocrLogic/OcrService";
 import { Bilhete } from "../../../types/models";
@@ -138,54 +137,56 @@ export class AuditoriaService {
     motivo: string,
   ): Promise<void> {
     const db = admin.firestore();
-    const batch = db.batch();
 
     let compradorEmail: string | null = null;
     let compradorNome: string | null = null;
     let vendedorId: string | null = null;
     let urlStorage: string | null = null;
 
-    for (const numero of numerosRifas) {
-      const docRef = db.collection("bilhetes").doc(numero);
-      const snap = await docRef.get();
-      if (!snap.exists) continue;
+    await db.runTransaction(async (transaction) => {
+      for (const numero of numerosRifas) {
+        const docRef = db.collection("bilhetes").doc(numero);
+        const snap = await transaction.get(docRef);
+        if (!snap.exists) continue;
 
-      const dados = snap.data() as Bilhete; // <-- CASTING RÍGIDO AQUI
+        const dados = snap.data() as Bilhete;
 
-      if (dados?.status !== "pendente") continue;
+        if (dados?.status !== "pendente") continue;
 
-      compradorEmail = compradorEmail || dados?.comprador_email || null;
-      compradorNome = compradorNome || dados?.comprador_nome || null;
-      vendedorId = vendedorId || dados?.vendedor_id || null;
-      urlStorage = urlStorage || dados?.comprovante_url || null;
+        compradorEmail = compradorEmail || dados?.comprador_email || null;
+        compradorNome = compradorNome || dados?.comprador_nome || null;
+        vendedorId = vendedorId || dados?.vendedor_id || null;
+        urlStorage = urlStorage || dados?.comprovante_url || null;
 
-      if (decisao === "aprovar") {
-        batch.update(docRef, {
-          status: "pago",
-          data_pagamento: new Date().toISOString(),
-          motivo_recusa: null,
-          log_automacao: null,
-        });
-      } else {
-        batch.update(docRef, {
-          status: "recusado",
-          motivo_recusa: motivo,
-          log_automacao: null,
-          comprovante_url: null,
+        if (decisao === "aprovar") {
+          transaction.update(docRef, {
+            status: "pago",
+            data_pagamento: new Date().toISOString(),
+            motivo_recusa: null,
+            log_automacao: null,
+          });
+        } else {
+          transaction.update(docRef, {
+            status: "recusado",
+            motivo_recusa: motivo,
+            log_automacao: null,
+            comprovante_url: null,
+          });
+        }
+      }
+
+      if (decisao === "rejeitar" && vendedorId) {
+        const notificacaoRef = db.collection("notificacoes").doc();
+        transaction.set(notificacaoRef, {
+          vendedor_id: vendedorId,
+          titulo: "Comprovante Recusado ⚠️",
+          mensagem: motivo || "O comprovante enviado não foi aceito pela tesouraria.",
+          rifas: numerosRifas,
+          lida: false,
+          data_criacao: new Date().toISOString(),
         });
       }
-    }
-
-    if (decisao === "rejeitar" && vendedorId) {
-      NotificacoesService.criarNotificacaoRecusa(
-        batch,
-        vendedorId,
-        motivo,
-        numerosRifas,
-      );
-    }
-
-    await batch.commit();
+    });
 
     if (decisao === "rejeitar" && urlStorage) {
       const path = this.extrairCaminhoStorage(urlStorage);

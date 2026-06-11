@@ -4,18 +4,21 @@ import auditoriaRoutes from "../../src/modules/tesouraria/legacy/auditoria/audit
 import { jest, describe, beforeAll, it, expect } from "@jest/globals";
 
 // 1. MOCK DO CONTROLLER
-jest.mock("../../src/modules/tesouraria/legacy/auditoria/auditoriaController", () => ({
-  auditoriaController: {
-    listarPendentes: (req: any, res: any) =>
-      res.status(200).json({ acao: "listar_pendentes" }),
-    avaliarManual: (req: any, res: any) =>
-      res.status(200).json({ acao: "avaliar_manual" }),
-    auditarIA: (req: any, res: any) =>
-      res.status(200).json({ acao: "auditar_ia" }),
-    salvarExtrato: (req: any, res: any) =>
-      res.status(200).json({ acao: "salvar_extrato" }), // <- ADICIONAR ESTA LINHA
-  },
-}));
+jest.mock(
+  "../../src/modules/tesouraria/legacy/auditoria/auditoriaController",
+  () => ({
+    auditoriaController: {
+      listarPendentes: (req: any, res: any) =>
+        res.status(200).json({ acao: "listar_pendentes" }),
+      avaliarManual: (req: any, res: any) =>
+        res.status(200).json({ acao: "avaliar_manual" }),
+      auditarIA: (req: any, res: any) =>
+        res.status(200).json({ acao: "auditar_ia" }),
+      salvarExtrato: (req: any, res: any) =>
+        res.status(200).json({ acao: "salvar_extrato" }), // <- ADICIONAR ESTA LINHA
+    },
+  }),
+);
 
 // 2. MOCK DO MIDDLEWARE
 jest.mock("../../src/shared/middlewares/authMiddleware", () => ({

@@ -1,5 +1,4 @@
 import { AuditoriaService } from "../../src/modules/tesouraria/legacy/auditoria/auditoriaService";
-import { NotificacoesService } from "../../src/modules/notificacoes/notificacoesService";
 import { enviarEmailRecibo } from "../../src/modules/rifas/emailService";
 import { OcrService } from "../../src/modules/tesouraria/legacy/auditoria/ocrLogic/OcrService";
 import {
@@ -15,22 +14,19 @@ import {
 // MOCKS DE DEPENDÊNCIAS EXTERNAS E SERVIÇOS
 // ============================================================================
 
-// 1. Mock do serviço de notificações e emails
-jest.mock("../../src/modules/notificacoes/notificacoesService", () => ({
-  NotificacoesService: {
-    criarNotificacaoRecusa: jest.fn(),
-  },
-}));
 jest.mock("../../src/modules/rifas/emailService", () => ({
   enviarEmailRecibo: jest.fn(),
 }));
 
 // 2. MOCK DO OCR: Evita carregar o Tesseract e o pdf-parse no Jest, resolvendo o erro do DOMMatrix!
-jest.mock("../../src/modules/tesouraria/legacy/auditoria/ocrLogic/OcrService", () => ({
-  OcrService: {
-    processarComprovante: jest.fn(),
-  },
-}));
+jest.mock(
+  "../../src/modules/tesouraria/legacy/auditoria/ocrLogic/OcrService",
+  () => ({
+    OcrService: {
+      processarComprovante: jest.fn(),
+    },
+  }),
+);
 
 // Mock extra global para bibliotecas conflituosas com o Jest (Garante blindagem total)
 jest.mock("pdf-parse", () => jest.fn());
@@ -38,8 +34,10 @@ jest.mock("pdf-parse", () => jest.fn());
 // ============================================================================
 // MOCK BLINDADO DO FIRESTORE
 // ============================================================================
-const mockBatchUpdate: any = jest.fn();
-const mockBatchCommit: any = jest.fn();
+const mockTransactionUpdate: any = jest.fn();
+const mockTransactionSet: any = jest.fn();
+const mockTransactionGet: any = jest.fn();
+const mockRunTransaction: any = jest.fn();
 const mockFileDelete: any = jest.fn<any>().mockResolvedValue(true as any);
 const mockDocSet: any = jest.fn();
 
@@ -58,6 +56,9 @@ collectionMock.doc = jest.fn().mockReturnValue({
   ref: "mock-ref",
 });
 
+const mockBatchUpdate: any = jest.fn();
+const mockBatchCommit: any = jest.fn();
+
 jest.mock("firebase-admin", () => ({
   firestore: jest.fn(() => ({
     collection: jest.fn(() => collectionMock),
@@ -65,6 +66,7 @@ jest.mock("firebase-admin", () => ({
       update: mockBatchUpdate,
       commit: mockBatchCommit,
     })),
+    runTransaction: mockRunTransaction,
   })),
   storage: jest.fn(() => ({
     bucket: jest.fn(() => ({
@@ -189,6 +191,16 @@ describe("Service: auditoriaService", () => {
   });
 
   describe("processarDecisaoManual()", () => {
+    beforeEach(() => {
+      mockRunTransaction.mockImplementation(async (callback: any) => {
+        return callback({
+          get: mockTransactionGet,
+          update: mockTransactionUpdate,
+          set: mockTransactionSet,
+        });
+      });
+    });
+
     it("Deve APROVAR rifas, enviar email e atualizar dados", async () => {
       const mockSnap = {
         exists: true,
@@ -199,22 +211,21 @@ describe("Service: auditoriaService", () => {
         }),
       };
 
-      mockDocGet.mockResolvedValueOnce(mockSnap);
+      mockTransactionGet.mockResolvedValueOnce(mockSnap);
 
       await AuditoriaService.processarDecisaoManual(["00001"], "aprovar", "");
 
-      expect(mockBatchUpdate).toHaveBeenCalledWith(
+      expect(mockTransactionUpdate).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ status: "pago" }),
       );
-      expect(mockBatchCommit).toHaveBeenCalled();
+      expect(mockRunTransaction).toHaveBeenCalled();
       expect(enviarEmailRecibo).toHaveBeenCalledWith(
         "teste@teste.com",
         "Maria",
         ["00001"],
         "aprovado",
       );
-      expect(NotificacoesService.criarNotificacaoRecusa).not.toHaveBeenCalled();
     });
 
     it("Deve REJEITAR rifas, limpar dados, notificar e apagar imagem do Storage", async () => {
@@ -228,7 +239,7 @@ describe("Service: auditoriaService", () => {
         }),
       };
 
-      mockDocGet.mockResolvedValueOnce(mockSnap);
+      mockTransactionGet.mockResolvedValueOnce(mockSnap);
 
       await AuditoriaService.processarDecisaoManual(
         ["00002"],
@@ -236,21 +247,23 @@ describe("Service: auditoriaService", () => {
         "Comprovativo Falso",
       );
 
-      expect(mockBatchUpdate).toHaveBeenCalledWith(
+      expect(mockTransactionUpdate).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
-          status: "recusado", // <--- CORREÇÃO AQUI
+          status: "recusado",
           comprovante_url: null,
           log_automacao: null,
           motivo_recusa: "Comprovativo Falso",
         }),
       );
 
-      expect(NotificacoesService.criarNotificacaoRecusa).toHaveBeenCalledWith(
+      expect(mockTransactionSet).toHaveBeenCalledWith(
         expect.anything(),
-        "ADERIDO_010",
-        "Comprovativo Falso",
-        ["00002"],
+        expect.objectContaining({
+          vendedor_id: "ADERIDO_010",
+          titulo: "Comprovante Recusado ⚠️",
+          mensagem: "Comprovativo Falso",
+        }),
       );
 
       expect(mockFileDelete).toHaveBeenCalled();
