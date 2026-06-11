@@ -14,6 +14,7 @@ que continuam sendo guias de decisao para agentes e futuras mudancas.
 | Modulo | Documento | Estado |
 | --- | --- | --- |
 | Tesouraria | [modules/tesouraria/README.md](modules/tesouraria/README.md) | Documentado |
+| Rifas Checkout Pix | [modules/rifas-checkout-pix.md](modules/rifas-checkout-pix.md) | Documentado |
 
 ## Padrao De Documentacao
 
