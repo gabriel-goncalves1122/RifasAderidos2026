@@ -15,6 +15,8 @@ export type StatusConciliacaoPix =
   | "divergente"
   | "cancelada";
 
+export type StatusValidacaoPix = "aceita" | "negada";
+
 export interface AderidoResumoTransacao {
   id?: string;
   nome: string;
@@ -34,24 +36,34 @@ export interface PixTransacao {
   id: string;
   pixOrderId?: string;
   pixChargeId?: string;
+  pixQrCodeId?: string;
   referenceId: string;
   metodo: "PIX";
   statusPagamento: StatusPagamentoPix;
   statusConciliacao: StatusConciliacaoPix;
+  statusValidacao?: StatusValidacaoPix;
   valorBruto: number;
   valorPago: number;
+  valorEstornado?: number;
   moeda: "BRL";
   descricao?: string;
   dataCriacao: string;
   dataPagamento?: string | null;
+  dataExpiracao?: string | null;
   compradorNome?: string;
   compradorEmail?: string | null;
+  compradorDocumento?: string | null;
   compradorTelefone?: string | null;
   aderido?: AderidoResumoTransacao;
   rifas?: RifaResumoTransacao[];
   quantidadeRifas?: number;
   vendaId?: string | null;
+  qrCodeTexto?: string | null;
+  qrCodeImagemUrl?: string | null;
   observacao?: string;
+  validadoEm?: string | null;
+  validadoPor?: string | null;
+  motivoNegacao?: string | null;
 }
 
 export interface PixTransacoesResumo {
@@ -63,12 +75,19 @@ export interface PixTransacoesResumo {
   quantidadeAguardando: number;
   quantidadeCanceladas: number;
   quantidadeNaoIdentificadas: number;
+  quantidadeAguardandoValidacao: number;
+  quantidadeAceitas: number;
+  quantidadeNegadas: number;
+  quantidadeSemConfirmacaoBancaria: number;
+  quantidadeComRifas: number;
+  quantidadeSemVinculo: number;
   ticketMedio: number;
 }
 
 export interface ResultadoSincronizacaoPix {
   sucesso: true;
-  sincronizado: false;
+  sincronizado: boolean;
+  atualizados?: number;
   mensagem: string;
 }
 

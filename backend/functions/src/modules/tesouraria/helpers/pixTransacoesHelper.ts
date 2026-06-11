@@ -32,6 +32,10 @@ export function normalizarId(valor: string) {
 }
 
 export function chaveCompra(bilhete: BilheteComNumero) {
+  if (bilhete.pix_order_id) {
+    return `pix-${bilhete.pix_order_id}`;
+  }
+
   if (bilhete.comprovante_url) {
     return `comprovante-${bilhete.comprovante_url}`;
   }
@@ -46,9 +50,21 @@ export function chaveCompra(bilhete: BilheteComNumero) {
   return `manual-${comprador}-${reserva}-${bilhete.status}`;
 }
 
-export function statusPagamento(status: string): StatusPagamentoPix {
+export function statusPagamento(
+  status: string,
+  statusBanco?: string | null,
+): StatusPagamentoPix {
+  if (
+    statusBanco &&
+    ["WAITING", "PAID", "AUTHORIZED", "IN_ANALYSIS", "DECLINED", "CANCELED"]
+      .includes(statusBanco)
+  ) {
+    return statusBanco as StatusPagamentoPix;
+  }
+
   if (status === "pago") return "PAID";
   if (status === "recusado") return "DECLINED";
+  if (status === "reservado") return "WAITING";
   if (status === "pendente") return "WAITING";
 
   return "WAITING";
@@ -58,6 +74,9 @@ export function statusConciliacao(
   bilhetes: BilheteComNumero[],
 ): StatusConciliacaoPix {
   const status = bilhetes[0]?.status;
+  const statusBanco = bilhetes[0]?.status_pagamento_banco;
+
+  if (statusBanco === "CANCELED") return "cancelada";
 
   if (status === "pago") {
     return bilhetes.some((bilhete) => !bilhete.vendedor_id)
@@ -79,30 +98,49 @@ export function montarPixTransacao(
   const base = bilhetesOrdenados[0];
   const numerosRifas = bilhetesOrdenados.map((bilhete) => bilhete.numero);
   const quantidadeRifas = bilhetesOrdenados.length;
-  const valorBruto = quantidadeRifas * VALOR_RIFA;
-  const pagamento = statusPagamento(base.status);
+  const valorBruto = bilhetesOrdenados.reduce(
+    (acc, bilhete) => acc + (bilhete.valor_bruto || VALOR_RIFA),
+    0,
+  );
+  const pagamento = statusPagamento(base.status, base.status_pagamento_banco);
   const dataCriacao = primeiraDataValida(base.data_reserva, base.data_pagamento);
   const dataPagamento =
-    pagamento === "PAID"
+    ["PAID", "AUTHORIZED"].includes(pagamento)
       ? primeiraDataValida(base.data_pagamento, base.data_reserva)
       : null;
   const idNormalizado = normalizarId(chaveCompra(base) || numerosRifas.join("-"));
   const referenceId = `rifas-${numerosRifas.join("-")}`;
+  const statusValidacao =
+    base.status_validacao === "aceita" || base.status_validacao === "negada"
+      ? base.status_validacao
+      : undefined;
 
   return {
     id: idNormalizado || referenceId,
+    pixOrderId: base.pix_order_id || undefined,
+    pixChargeId: base.pix_charge_id || undefined,
+    pixQrCodeId: base.pix_qr_code_id || undefined,
     referenceId,
     metodo: "PIX",
     statusPagamento: pagamento,
     statusConciliacao: statusConciliacao(bilhetesOrdenados),
+    statusValidacao,
     valorBruto,
-    valorPago: pagamento === "PAID" ? valorBruto : 0,
+    valorPago:
+      ["PAID", "AUTHORIZED"].includes(pagamento)
+        ? bilhetesOrdenados.reduce(
+            (acc, bilhete) => acc + (bilhete.valor_pago || bilhete.valor_bruto || VALOR_RIFA),
+            0,
+          )
+        : 0,
     moeda: "BRL",
     descricao: `Rifas ${numerosRifas.join(", ")}`,
     dataCriacao,
     dataPagamento,
+    dataExpiracao: base.data_expiracao || null,
     compradorNome: base.comprador_nome || "Pagador Não Identificado",
     compradorEmail: base.comprador_email || null,
+    compradorDocumento: undefined,
     compradorTelefone: base.comprador_telefone || null,
     aderido: {
       id: base.vendedor_id,
@@ -115,6 +153,9 @@ export function montarPixTransacao(
     })),
     quantidadeRifas,
     vendaId: base.comprador_id || null,
+    validadoEm: base.validado_em || null,
+    validadoPor: base.validado_por || null,
+    motivoNegacao: base.motivo_recusa || null,
     observacao:
       pagamento === "DECLINED"
         ? base.motivo_recusa || "Comprovante recusado pela tesouraria."
@@ -139,6 +180,26 @@ export function calcularResumoPixTransacoes(
   );
   const divergentes = transacoes.filter(
     (transacao) => transacao.statusConciliacao === "divergente",
+  );
+  const aguardandoValidacao = transacoes.filter(
+    (transacao) =>
+      ["PAID", "AUTHORIZED"].includes(transacao.statusPagamento) &&
+      !transacao.statusValidacao,
+  );
+  const aceitas = transacoes.filter(
+    (transacao) => transacao.statusValidacao === "aceita",
+  );
+  const negadas = transacoes.filter(
+    (transacao) => transacao.statusValidacao === "negada",
+  );
+  const semConfirmacaoBancaria = transacoes.filter(
+    (transacao) => !["PAID", "AUTHORIZED"].includes(transacao.statusPagamento),
+  );
+  const comRifas = transacoes.filter((transacao) =>
+    Boolean(transacao.rifas?.length),
+  );
+  const semVinculo = transacoes.filter(
+    (transacao) => !transacao.vendaId || !transacao.aderido?.id,
   );
   const totalRecebido = pagas.reduce(
     (acc, transacao) => acc + transacao.valorPago,
@@ -166,6 +227,12 @@ export function calcularResumoPixTransacoes(
     quantidadeAguardando: aguardando.length,
     quantidadeCanceladas: canceladas.length,
     quantidadeNaoIdentificadas: naoIdentificadas.length,
+    quantidadeAguardandoValidacao: aguardandoValidacao.length,
+    quantidadeAceitas: aceitas.length,
+    quantidadeNegadas: negadas.length,
+    quantidadeSemConfirmacaoBancaria: semConfirmacaoBancaria.length,
+    quantidadeComRifas: comRifas.length,
+    quantidadeSemVinculo: semVinculo.length,
     ticketMedio: pagas.length > 0 ? totalRecebido / pagas.length : 0,
   };
 }

@@ -1,0 +1,178 @@
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+
+const mockTransactionSet = jest.fn<any>();
+const mockTransactionGet = jest.fn<any>();
+const mockRunTransaction = jest.fn<any>();
+const mockBuscarTransacoes = jest.fn<any>();
+const mockEnviarEmailRecibo = jest.fn<any>();
+
+jest.mock("firebase-admin", () => ({
+  firestore: jest.fn().mockReturnValue({
+    collection: jest.fn().mockReturnValue({
+      doc: jest.fn().mockReturnValue({}),
+    }),
+    runTransaction: mockRunTransaction,
+  }),
+}));
+
+jest.mock(
+  "../../../src/modules/tesouraria/services/pixTransacoesService",
+  () => ({
+    PixTransacoesService: {
+      buscarTransacoes: mockBuscarTransacoes,
+    },
+  }),
+);
+
+jest.mock("../../../src/modules/rifas/emailService", () => ({
+  enviarEmailRecibo: mockEnviarEmailRecibo,
+}));
+
+import { PixValidacaoService } from "../../../src/modules/tesouraria/services/pixValidacaoService";
+
+function transacaoBase(sobrescritas: Record<string, any> = {}) {
+  return {
+    id: "tx_001",
+    pixOrderId: "ORDE_001",
+    referenceId: "rifas-001",
+    metodo: "PIX",
+    statusPagamento: "PAID",
+    statusConciliacao: "conciliada",
+    valorBruto: 10,
+    valorPago: 10,
+    moeda: "BRL",
+    dataCriacao: "2026-06-08T10:00:00.000Z",
+    dataPagamento: "2026-06-08T10:01:00.000Z",
+    compradorNome: "Maria",
+    compradorEmail: "maria@teste.com",
+    aderido: { id: "ADERIDO_001", nome: "Aderido" },
+    rifas: [{ numero: "001", status: "pendente" }],
+    ...sobrescritas,
+  };
+}
+
+describe("Service: PixValidacaoService", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockEnviarEmailRecibo.mockResolvedValue(true);
+
+    mockRunTransaction.mockImplementation(async (callback: any) => {
+      return callback({
+        get: mockTransactionGet,
+        set: mockTransactionSet,
+      });
+    });
+  });
+
+  it("Deve aceitar Pix confirmado pelo banco", async () => {
+    mockBuscarTransacoes.mockResolvedValueOnce([transacaoBase()]);
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ status_pagamento_banco: "PAID" }),
+    });
+
+    const resultado = await PixValidacaoService.aceitarTransacao({
+      transacaoId: "tx_001",
+      uidTesouraria: "tesoureiro_001",
+      emailTesouraria: "tesouraria@teste.com",
+    });
+
+    expect(mockTransactionSet).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        status: "pago",
+        status_validacao: "aceita",
+        validado_por: "tesouraria@teste.com",
+      }),
+      { merge: true },
+    );
+    expect(mockEnviarEmailRecibo).toHaveBeenCalledWith(
+      "maria@teste.com",
+      "Maria",
+      ["001"],
+      "aprovado",
+    );
+    expect(resultado).toMatchObject({
+      sucesso: true,
+      statusValidacao: "aceita",
+      rifas: ["001"],
+      emailEnviado: true,
+    });
+  });
+
+  it("Deve bloquear Pix sem confirmação bancária", async () => {
+    mockBuscarTransacoes.mockResolvedValueOnce([
+      transacaoBase({ statusPagamento: "WAITING", valorPago: 0 }),
+    ]);
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ status_pagamento_banco: "WAITING" }),
+    });
+
+    await expect(
+      PixValidacaoService.aceitarTransacao({
+        transacaoId: "tx_001",
+        uidTesouraria: "tesoureiro_001",
+      }),
+    ).rejects.toThrow("PIX_NOT_CONFIRMED");
+  });
+
+  it("Deve bloquear Pix já validado", async () => {
+    mockBuscarTransacoes.mockResolvedValueOnce([
+      transacaoBase(),
+    ]);
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({
+        status_pagamento_banco: "PAID",
+        status_validacao: "aceita",
+      }),
+    });
+
+    await expect(
+      PixValidacaoService.negarTransacao({
+        transacaoId: "tx_001",
+        uidTesouraria: "tesoureiro_001",
+        motivo: "Dados incorretos",
+      }),
+    ).rejects.toThrow("PIX_ALREADY_VALIDATED");
+  });
+
+  it("Deve exigir motivo para negar Pix", async () => {
+    await expect(
+      PixValidacaoService.negarTransacao({
+        transacaoId: "tx_001",
+        uidTesouraria: "tesoureiro_001",
+      }),
+    ).rejects.toThrow("MOTIVO_REQUIRED");
+  });
+
+  it("Deve negar Pix confirmado e notificar correção de dados", async () => {
+    mockBuscarTransacoes.mockResolvedValueOnce([transacaoBase()]);
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ status_pagamento_banco: "PAID" }),
+    });
+
+    const resultado = await PixValidacaoService.negarTransacao({
+      transacaoId: "tx_001",
+      uidTesouraria: "tesoureiro_001",
+      motivo: "Telefone inválido",
+    });
+
+    expect(mockTransactionSet).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        status: "recusado",
+        status_validacao: "negada",
+        motivo_recusa: "Telefone inválido",
+      }),
+      { merge: true },
+    );
+    expect(resultado).toMatchObject({
+      sucesso: true,
+      statusValidacao: "negada",
+      motivo: "Telefone inválido",
+    });
+  });
+});

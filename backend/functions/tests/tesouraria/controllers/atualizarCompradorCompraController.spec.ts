@@ -52,14 +52,11 @@ describe("Controller Tesouraria: atualizarCompradorCompra", () => {
 
     await atualizarCompradorCompra(req as AuthRequest, res as Response);
 
-    expect(mockAtualizarCompradorCompra).toHaveBeenCalledWith(
-      "comprador_123",
-      {
-        nome: "Maria Atualizada",
-        email: "maria@teste.com",
-        telefone: "35999990000",
-      },
-    );
+    expect(mockAtualizarCompradorCompra).toHaveBeenCalledWith("comprador_123", {
+      nome: "Maria Atualizada",
+      email: "maria@teste.com",
+      telefone: "35999990000",
+    });
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       sucesso: true,

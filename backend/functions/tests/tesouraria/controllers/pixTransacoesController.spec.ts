@@ -11,6 +11,8 @@ const mocks = {
   buscarPixTransacoes: jest.fn<any>(),
   obterPixTransacoesResumo: jest.fn<any>(),
   sincronizarPixTransacoes: jest.fn<any>(),
+  aceitarPixTransacao: jest.fn<any>(),
+  negarPixTransacao: jest.fn<any>(),
 };
 
 jest.mock("../../../src/modules/tesouraria/tesourariaService", () => ({
@@ -18,11 +20,15 @@ jest.mock("../../../src/modules/tesouraria/tesourariaService", () => ({
     buscarPixTransacoes: mocks.buscarPixTransacoes,
     obterPixTransacoesResumo: mocks.obterPixTransacoesResumo,
     sincronizarPixTransacoes: mocks.sincronizarPixTransacoes,
+    aceitarPixTransacao: mocks.aceitarPixTransacao,
+    negarPixTransacao: mocks.negarPixTransacao,
   },
 }));
 
 import { listarPixTransacoes } from "../../../src/modules/tesouraria/controllers/listarPixTransacoesController";
 import { obterPixTransacoesResumo } from "../../../src/modules/tesouraria/controllers/obterPixTransacoesResumoController";
+import { aceitarPixTransacao } from "../../../src/modules/tesouraria/controllers/aceitarPixTransacaoController";
+import { negarPixTransacao } from "../../../src/modules/tesouraria/controllers/negarPixTransacaoController";
 import { sincronizarPixTransacoes } from "../../../src/modules/tesouraria/controllers/sincronizarPixTransacoesController";
 
 describe("Controllers Tesouraria: Pix transações", () => {
@@ -60,6 +66,12 @@ describe("Controllers Tesouraria: Pix transações", () => {
       quantidadeAguardando: 1,
       quantidadeCanceladas: 0,
       quantidadeNaoIdentificadas: 0,
+      quantidadeAguardandoValidacao: 1,
+      quantidadeAceitas: 0,
+      quantidadeNegadas: 0,
+      quantidadeSemConfirmacaoBancaria: 0,
+      quantidadeComRifas: 1,
+      quantidadeSemVinculo: 0,
       ticketMedio: 100,
     };
 
@@ -84,6 +96,42 @@ describe("Controllers Tesouraria: Pix transações", () => {
     await sincronizarPixTransacoes(req as AuthRequest, res as Response);
 
     expect(mocks.sincronizarPixTransacoes).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(resultado);
+  });
+
+  it("Deve aceitar uma transação Pix", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    const resultado = { sucesso: true, statusValidacao: "aceita" };
+
+    mocks.aceitarPixTransacao.mockResolvedValueOnce(resultado);
+
+    await aceitarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(mocks.aceitarPixTransacao).toHaveBeenCalledWith({
+      transacaoId: "tx_001",
+      uidTesouraria: "tesouraria_123",
+      emailTesouraria: "tesouraria@teste.com",
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(resultado);
+  });
+
+  it("Deve negar uma transação Pix com motivo", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    req.body = { motivo: "E-mail incorreto" };
+    const resultado = { sucesso: true, statusValidacao: "negada" };
+
+    mocks.negarPixTransacao.mockResolvedValueOnce(resultado);
+
+    await negarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(mocks.negarPixTransacao).toHaveBeenCalledWith({
+      transacaoId: "tx_001",
+      uidTesouraria: "tesouraria_123",
+      emailTesouraria: "tesouraria@teste.com",
+      motivo: "E-mail incorreto",
+    });
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(resultado);
   });

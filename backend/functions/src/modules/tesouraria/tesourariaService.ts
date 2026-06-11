@@ -1,5 +1,6 @@
 import { EmailComprovanteService } from "./services/emailComprovanteService";
 import { PixTransacoesService } from "./services/pixTransacoesService";
+import { PixValidacaoService } from "./services/pixValidacaoService";
 import { TesourariaRelatorioService } from "./services/tesourariaRelatorioService";
 
 export class TesourariaService {
@@ -39,5 +40,22 @@ export class TesourariaService {
 
   static async sincronizarPixTransacoes() {
     return PixTransacoesService.sincronizar();
+  }
+
+  static async aceitarPixTransacao(params: {
+    transacaoId: string;
+    uidTesouraria: string;
+    emailTesouraria?: string;
+  }) {
+    return PixValidacaoService.aceitarTransacao(params);
+  }
+
+  static async negarPixTransacao(params: {
+    transacaoId: string;
+    uidTesouraria: string;
+    emailTesouraria?: string;
+    motivo?: string;
+  }) {
+    return PixValidacaoService.negarTransacao(params);
   }
 }

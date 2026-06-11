@@ -7,10 +7,11 @@ Este modulo e o dominio backend canonico para tesouraria financeira.
 Ele cobre:
 
 - Pix derivado dos dados locais de `bilhetes`;
+- validacao final de transacoes Pix confirmadas pelo banco;
 - relatorio financeiro;
 - historico/auditoria de compras;
 - resumo de transacoes Pix;
-- conciliacao futura;
+- conciliacao/sincronizacao de pagamentos Pix abertos;
 - compatibilidade com endpoints financeiros antigos de `rifas`;
 - isolamento do legacy OCR/IA/manual de auditoria.
 
@@ -43,6 +44,8 @@ GET  /tesouraria/historico
 GET  /tesouraria/transacoes-bancarias
 GET  /tesouraria/transacoes-bancarias/resumo
 POST /tesouraria/transacoes-bancarias/sincronizar
+POST /tesouraria/transacoes-bancarias/:transacaoId/aceitar
+POST /tesouraria/transacoes-bancarias/:transacaoId/negar
 ```
 
 Aliases preservados em `rifas`:
@@ -54,21 +57,26 @@ GET /rifas/historico
 
 Os aliases antigos devem continuar delegando para `tesouraria` enquanto houver consumidor.
 
-## Pix Local
+## Pix E Validacao
 
 `PixTransacoesService` deriva transacoes Pix dos bilhetes locais.
 
 Regras atuais:
 
-- nao chama banco/provedor externo;
+- usa `status_pagamento_banco` quando existir e preserva fallback legado por `status`;
 - agrupa rifas por comprovante, comprador ou compra manual;
 - calcula valores com base no valor unitario atual da rifa;
-- mapeia `pago`, `pendente` e `recusado` para status Pix estaveis;
-- `/sincronizar` e compatibilidade/no-op controlado.
+- mapeia `reservado`, `pendente`, `pago` e `recusado` para status Pix estaveis;
+- `/sincronizar` consulta cobrancas Pix abertas em `pagamentos_pix` e reaplica o fluxo do webhook;
+- `aceitar` exige banco `PAID` ou `AUTHORIZED`, marca rifas como `pago`, grava `status_validacao: "aceita"` e pode enviar recibo aprovado;
+- `negar` exige motivo, marca rifas como `recusado`, grava `status_validacao: "negada"` e cria notificacao `correcao_dados`.
 
 As regras puras de agrupamento, mapeamento, montagem e resumo Pix ficam em `helpers/pixTransacoesHelper.ts`.
 
 O service deve buscar documentos e chamar helpers. Helpers nao devem acessar Firestore/Admin SDK, Express, `Request` ou `Response`.
+
+Validacao da tesouraria fica em `services/pixValidacaoService.ts`; nao coloque
+regra de aceite/recusa em controllers.
 
 ## Relatorio E Historico
 

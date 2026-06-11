@@ -1,8 +1,10 @@
 // ============================================================================
 // ARQUIVO: backend/functions/src/modules/tesouraria/tesourariaController.ts
 // ============================================================================
+import { aceitarPixTransacao } from "./controllers/aceitarPixTransacaoController";
 import { atualizarCompradorCompra } from "./controllers/atualizarCompradorCompraController";
 import { listarPixTransacoes } from "./controllers/listarPixTransacoesController";
+import { negarPixTransacao } from "./controllers/negarPixTransacaoController";
 import { obterHistoricoTesouraria } from "./controllers/obterHistoricoTesourariaController";
 import { obterPixTransacoesResumo } from "./controllers/obterPixTransacoesResumoController";
 import { obterRelatorioTesouraria } from "./controllers/obterRelatorioTesourariaController";
@@ -17,4 +19,6 @@ export const tesourariaController = {
   listarPixTransacoes,
   obterPixTransacoesResumo,
   sincronizarPixTransacoes,
+  aceitarPixTransacao,
+  negarPixTransacao,
 };

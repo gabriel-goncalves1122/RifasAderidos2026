@@ -23,6 +23,10 @@ jest.mock("../../../src/modules/tesouraria/tesourariaController", () => ({
       res.status(200).json({ acao: "resumo_pix_transacoes" }),
     sincronizarPixTransacoes: (_req: any, res: any) =>
       res.status(200).json({ acao: "sincronizar_pix_transacoes" }),
+    aceitarPixTransacao: (_req: any, res: any) =>
+      res.status(200).json({ acao: "aceitar_pix_transacao" }),
+    negarPixTransacao: (_req: any, res: any) =>
+      res.status(200).json({ acao: "negar_pix_transacao" }),
   },
 }));
 
@@ -79,9 +83,7 @@ describe("Rotas: /tesouraria", () => {
   it("GET /tesouraria/transacoes-bancarias -> deve listar Pix", async () => {
     const app = criarAppTesourariaTeste(tesourariaRoutes);
 
-    const response = await request(app).get(
-      "/tesouraria/transacoes-bancarias",
-    );
+    const response = await request(app).get("/tesouraria/transacoes-bancarias");
 
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("listar_pix_transacoes");
@@ -107,5 +109,27 @@ describe("Rotas: /tesouraria", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("sincronizar_pix_transacoes");
+  });
+
+  it("POST /tesouraria/transacoes-bancarias/:transacaoId/aceitar -> deve aceitar Pix", async () => {
+    const app = criarAppTesourariaTeste(tesourariaRoutes);
+
+    const response = await request(app).post(
+      "/tesouraria/transacoes-bancarias/tx_001/aceitar",
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.acao).toBe("aceitar_pix_transacao");
+  });
+
+  it("POST /tesouraria/transacoes-bancarias/:transacaoId/negar -> deve negar Pix", async () => {
+    const app = criarAppTesourariaTeste(tesourariaRoutes);
+
+    const response = await request(app)
+      .post("/tesouraria/transacoes-bancarias/tx_001/negar")
+      .send({ motivo: "Dados incorretos" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.acao).toBe("negar_pix_transacao");
   });
 });

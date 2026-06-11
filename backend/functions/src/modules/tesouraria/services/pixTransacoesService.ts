@@ -1,5 +1,7 @@
 import * as admin from "firebase-admin";
 
+import { PagBankPixClient } from "../../../shared/services/pagBankPixClient";
+import { CheckoutPixWebhookService } from "../../rifas/services/checkoutPixWebhookService";
 import { Bilhete } from "../../types/models";
 import {
   BilheteComNumero,
@@ -19,7 +21,7 @@ export class PixTransacoesService {
     const db = admin.firestore();
     const bilhetesSnap = await db
       .collection("bilhetes")
-      .where("status", "in", ["pago", "pendente", "recusado"])
+      .where("status", "in", ["pago", "pendente", "recusado", "reservado"])
       .get();
 
     const grupos = new Map<string, BilheteComNumero[]>();
@@ -50,11 +52,40 @@ export class PixTransacoesService {
   }
 
   static async sincronizar(): Promise<ResultadoSincronizacaoPix> {
+    const db = admin.firestore();
+    const pagamentosSnap = await db
+      .collection("pagamentos_pix")
+      .where("status_pagamento_banco", "in", ["WAITING", "IN_ANALYSIS"])
+      .get();
+
+    if (pagamentosSnap.empty) {
+      return {
+        sucesso: true,
+        sincronizado: false,
+        atualizados: 0,
+        mensagem: "Nenhuma cobrança Pix aberta para sincronizar.",
+      };
+    }
+
+    let atualizados = 0;
+
+    for (const doc of pagamentosSnap.docs) {
+      const dados = doc.data();
+      const orderId = String(dados.pix_order_id || dados.id || doc.id);
+
+      if (!orderId) continue;
+
+      const pedido = await PagBankPixClient.consultarPedido(orderId);
+
+      await CheckoutPixWebhookService.processarPayloadConfiavel(pedido);
+      atualizados += 1;
+    }
+
     return {
       sucesso: true,
-      sincronizado: false,
-      mensagem:
-        "Sincronização externa de Pix não configurada. Dados locais preservados.",
+      sincronizado: atualizados > 0,
+      atualizados,
+      mensagem: "Sincronização Pix concluída.",
     };
   }
 }

@@ -89,7 +89,8 @@ describe("Controller Tesouraria: reenviarEmailComprovante", () => {
 
     expect(res.status).toHaveBeenCalledWith(409);
     expect(res.json).toHaveBeenCalledWith({
-      error: "O e-mail de comprovante só pode ser reenviado para compras pagas.",
+      error:
+        "O e-mail de comprovante só pode ser reenviado para compras pagas.",
     });
   });
 

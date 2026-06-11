@@ -69,15 +69,14 @@ describe("Service: TesourariaRelatorioService", () => {
       exists: true,
     });
 
-    const resultado =
-      await TesourariaRelatorioService.atualizarCompradorCompra(
-        "comprador_123",
-        {
-          nome: "Maria Atualizada",
-          email: "maria@teste.com",
-          telefone: "35999990000",
-        },
-      );
+    const resultado = await TesourariaRelatorioService.atualizarCompradorCompra(
+      "comprador_123",
+      {
+        nome: "Maria Atualizada",
+        email: "maria@teste.com",
+        telefone: "35999990000",
+      },
+    );
 
     expect(mockBilhetesWhere).toHaveBeenCalledWith(
       "comprador_id",
@@ -125,15 +124,14 @@ describe("Service: TesourariaRelatorioService", () => {
       exists: false,
     });
 
-    const resultado =
-      await TesourariaRelatorioService.atualizarCompradorCompra(
-        "comprador_sem_doc",
-        {
-          nome: "João",
-          email: null,
-          telefone: null,
-        },
-      );
+    const resultado = await TesourariaRelatorioService.atualizarCompradorCompra(
+      "comprador_sem_doc",
+      {
+        nome: "João",
+        email: null,
+        telefone: null,
+      },
+    );
 
     expect(mockBatchUpdate).toHaveBeenCalledTimes(1);
     expect(mockBatchCommit).toHaveBeenCalledTimes(1);

@@ -32,4 +32,18 @@ pixTransacoesRoutes.post(
   tesourariaController.sincronizarPixTransacoes,
 );
 
+pixTransacoesRoutes.post(
+  "/transacoes-bancarias/:transacaoId/aceitar",
+  validateToken,
+  requireTesourariaOrAdmin,
+  tesourariaController.aceitarPixTransacao,
+);
+
+pixTransacoesRoutes.post(
+  "/transacoes-bancarias/:transacaoId/negar",
+  validateToken,
+  requireTesourariaOrAdmin,
+  tesourariaController.negarPixTransacao,
+);
+
 export default pixTransacoesRoutes;

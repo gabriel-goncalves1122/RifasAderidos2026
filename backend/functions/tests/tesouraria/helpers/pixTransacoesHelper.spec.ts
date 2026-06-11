@@ -27,6 +27,10 @@ function criarBilhete(
 
 describe("Helper: pixTransacoesHelper", () => {
   it("Deve criar chave de compra por comprovante, comprador e fallback manual", () => {
+    expect(chaveCompra(criarBilhete({ pix_order_id: "ORDE_001" }))).toBe(
+      "pix-ORDE_001",
+    );
+
     expect(
       chaveCompra(
         criarBilhete({
@@ -63,6 +67,7 @@ describe("Helper: pixTransacoesHelper", () => {
     expect(statusPagamento("recusado")).toBe("DECLINED");
     expect(statusPagamento("pendente")).toBe("WAITING");
     expect(statusPagamento("reservado")).toBe("WAITING");
+    expect(statusPagamento("reservado", "PAID")).toBe("PAID");
   });
 
   it("Deve calcular status de conciliação por grupo de bilhetes", () => {
@@ -203,6 +208,12 @@ describe("Helper: pixTransacoesHelper", () => {
       quantidadeAguardando: 1,
       quantidadeCanceladas: 1,
       quantidadeNaoIdentificadas: 1,
+      quantidadeAguardandoValidacao: 2,
+      quantidadeAceitas: 0,
+      quantidadeNegadas: 0,
+      quantidadeSemConfirmacaoBancaria: 2,
+      quantidadeComRifas: 0,
+      quantidadeSemVinculo: 4,
       ticketMedio: 65,
     });
   });

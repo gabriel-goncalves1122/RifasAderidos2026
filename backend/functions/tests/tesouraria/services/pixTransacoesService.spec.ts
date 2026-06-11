@@ -19,9 +19,7 @@ jest.mock("firebase-admin", () => {
   };
 });
 
-import {
-  PixTransacoesService,
-} from "../../../src/modules/tesouraria/services/pixTransacoesService";
+import { PixTransacoesService } from "../../../src/modules/tesouraria/services/pixTransacoesService";
 
 describe("Service: PixTransacoesService", () => {
   beforeEach(() => {
@@ -82,6 +80,7 @@ describe("Service: PixTransacoesService", () => {
       "pago",
       "pendente",
       "recusado",
+      "reservado",
     ]);
     expect(resultado).toHaveLength(2);
     expect(transacaoPaga).toEqual(
@@ -101,12 +100,17 @@ describe("Service: PixTransacoesService", () => {
     ]);
   });
 
-  it("Deve retornar sincronização compatível sem chamar provedor externo", async () => {
+  it("Deve retornar sincronização vazia quando não houver cobrança aberta", async () => {
+    mockGet.mockResolvedValueOnce({
+      empty: true,
+      docs: [],
+    });
+
     await expect(PixTransacoesService.sincronizar()).resolves.toEqual({
       sucesso: true,
       sincronizado: false,
-      mensagem:
-        "Sincronização externa de Pix não configurada. Dados locais preservados.",
+      atualizados: 0,
+      mensagem: "Nenhuma cobrança Pix aberta para sincronizar.",
     });
   });
 });
