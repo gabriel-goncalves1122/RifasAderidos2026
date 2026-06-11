@@ -16,4 +16,12 @@ corrigirRifasRoutes.post(
   rifasController.corrigirRecusadas,
 );
 
+// POST /rifas/corrigir-dados
+// Corrige dados de rifas recusadas sem exigir novo comprovante.
+corrigirRifasRoutes.post(
+  "/corrigir-dados",
+  validateToken,
+  rifasController.corrigirDadosRifas,
+);
+
 export default corrigirRifasRoutes;

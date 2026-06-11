@@ -1,13 +1,13 @@
 // ============================================================================
-// ARQUIVO: backend/functions/src/services/emailService.ts
+// ARQUIVO: backend/functions/src/modules/rifas/emailService.ts
 // ============================================================================
 import * as nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "comissao0026@gmail.com",
-    pass: "okei bhql jilk nuta",
+    user: process.env.SMTP_USER || "comissao0026@gmail.com",
+    pass: process.env.SMTP_PASS || "",
   },
 });
 

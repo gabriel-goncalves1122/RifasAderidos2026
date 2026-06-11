@@ -90,4 +90,49 @@ export class NotificacoesService {
       data_criacao: new Date().toISOString(),
     });
   }
+
+  static criarNotificacaoCorrecaoDados(
+    batch: admin.firestore.WriteBatch,
+    vendedorId: string,
+    motivo: string,
+    numerosRifas: string[],
+  ) {
+    const db = admin.firestore();
+    const notificacaoRef = db.collection("notificacoes").doc();
+
+    if (!vendedorId) return;
+
+    batch.set(notificacaoRef, {
+      vendedor_id: vendedorId,
+      tipo: "correcao_dados",
+      titulo: "Venda recusada",
+      mensagem: motivo || "Revise os dados do comprador e envie novamente.",
+      rifas: numerosRifas || [],
+      lida: false,
+      data_criacao: new Date().toISOString(),
+    });
+  }
+
+  static criarNotificacaoRifaLiberada(
+    batch: admin.firestore.WriteBatch,
+    vendedorId: string,
+    motivo: string,
+    numerosRifas: string[],
+  ) {
+    const db = admin.firestore();
+    const notificacaoRef = db.collection("notificacoes").doc();
+
+    if (!vendedorId) return;
+
+    batch.set(notificacaoRef, {
+      vendedor_id: vendedorId,
+      tipo: "rifa_liberada",
+      titulo: "Rifas disponíveis novamente",
+      mensagem:
+        motivo || "O pagamento não foi confirmado pelo banco e as rifas voltaram para venda.",
+      rifas: numerosRifas || [],
+      lida: false,
+      data_criacao: new Date().toISOString(),
+    });
+  }
 }

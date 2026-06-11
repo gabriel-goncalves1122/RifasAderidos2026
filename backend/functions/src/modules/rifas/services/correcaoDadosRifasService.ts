@@ -1,0 +1,70 @@
+// ============================================================================
+// ARQUIVO: backend/functions/src/modules/rifas/services/correcaoDadosRifasService.ts
+// ============================================================================
+import * as admin from "firebase-admin";
+
+import { Bilhete } from "../../types/models";
+import { DadosCorrecaoDadosRifas } from "../types/rifasTypes";
+import { obterContextoAderidoPorEmail } from "../helpers/usuarioRifasHelper";
+
+function validarDadosCorrecao(
+  numerosRifas: string[],
+  dados: DadosCorrecaoDadosRifas,
+) {
+  if (!Array.isArray(numerosRifas) || numerosRifas.length === 0) {
+    throw new Error("INVALID_DATA");
+  }
+
+  if (!String(dados.nome || "").trim() || !String(dados.telefone || "").trim()) {
+    throw new Error("INVALID_DATA");
+  }
+}
+
+export class CorrecaoDadosRifasService {
+  static async corrigirDadosRifasRecusadas(
+    emailLogado: string,
+    numerosRifas: string[],
+    dadosAtualizados: DadosCorrecaoDadosRifas,
+  ): Promise<boolean> {
+    validarDadosCorrecao(numerosRifas, dadosAtualizados);
+
+    const db = admin.firestore();
+    const contextoAderido = await obterContextoAderidoPorEmail(emailLogado);
+    let atualizadas = 0;
+
+    await db.runTransaction(async (transaction) => {
+      for (const numero of numerosRifas) {
+        const bilheteRef = db.collection("bilhetes").doc(numero);
+        const bilheteSnap = await transaction.get(bilheteRef);
+
+        if (!bilheteSnap.exists) continue;
+
+        const bilhete = bilheteSnap.data() as Bilhete;
+        const podeCorrigir =
+          bilhete.vendedor_id === contextoAderido.idAderido &&
+          bilhete.status === "recusado";
+
+        if (!podeCorrigir) continue;
+
+        transaction.update(bilheteRef, {
+          status: "pendente",
+          comprador_nome: dadosAtualizados.nome,
+          comprador_email: dadosAtualizados.email || null,
+          comprador_telefone: dadosAtualizados.telefone,
+          status_validacao: null,
+          motivo_recusa: null,
+          log_automacao: null,
+          data_reserva: new Date().toISOString(),
+        });
+        atualizadas += 1;
+      }
+    });
+
+    if (atualizadas === 0) {
+      throw new Error("RIFAS_NOT_FOUND");
+    }
+
+    return true;
+  }
+}
+

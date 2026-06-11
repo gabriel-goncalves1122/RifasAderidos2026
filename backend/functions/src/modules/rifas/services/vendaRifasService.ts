@@ -60,7 +60,10 @@ export class VendaRifasService {
     await batch.commit();
 
     if (email) {
-      enviarEmailRecibo(email, nome, numerosRifas, "pendente");
+      await enviarEmailRecibo(email, nome, numerosRifas, "pendente")
+        .catch((erro) => {
+          console.error("[Venda] Falha ao enviar email:", erro);
+        });
     }
   }
 }

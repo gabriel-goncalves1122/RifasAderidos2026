@@ -11,6 +11,8 @@ jest.mock("../../../src/modules/rifas/rifasController", () => ({
   rifasController: {
     corrigirRecusadas: (_req: any, res: any) =>
       res.status(200).json({ acao: "corrigir_recusadas" }),
+    corrigirDadosRifas: (_req: any, res: any) =>
+      res.status(200).json({ acao: "corrigir_dados_rifas" }),
   },
 }));
 
@@ -26,5 +28,14 @@ describe("Rotas de correção de rifas", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("corrigir_recusadas");
+  });
+
+  it("POST /rifas/corrigir-dados -> deve chamar corrigirDadosRifas", async () => {
+    const app = criarAppRifasTeste(corrigirRifasRoutes);
+
+    const response = await request(app).post("/rifas/corrigir-dados");
+
+    expect(response.status).toBe(200);
+    expect(response.body.acao).toBe("corrigir_dados_rifas");
   });
 });

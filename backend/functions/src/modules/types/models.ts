@@ -94,6 +94,16 @@ export type StatusBilhete =
   | "pago"
   | "recusado";
 
+export type StatusPagamentoBanco =
+  | "WAITING"
+  | "PAID"
+  | "AUTHORIZED"
+  | "IN_ANALYSIS"
+  | "DECLINED"
+  | "CANCELED";
+
+export type StatusValidacaoTesouraria = "aceita" | "negada";
+
 export interface Bilhete {
   numero: string;
   status: StatusBilhete;
@@ -112,11 +122,59 @@ export interface Bilhete {
   // Datas do fluxo da venda
   data_reserva?: string | null;
   data_pagamento?: string | null;
+  data_expiracao?: string | null;
 
   // Comprovante e auditoria
   comprovante_url?: string | null;
   log_automacao?: string | null;
   motivo_recusa?: string | null;
+
+  // Pix dinâmico e validação da tesouraria
+  pix_order_id?: string | null;
+  pix_charge_id?: string | null;
+  pix_qr_code_id?: string | null;
+  pix_reference_id?: string | null;
+  status_pagamento_banco?: StatusPagamentoBanco | string | null;
+  status_validacao?: StatusValidacaoTesouraria | string | null;
+  valor_bruto?: number | null;
+  valor_pago?: number | null;
+  validado_em?: string | null;
+  validado_por?: string | null;
+}
+
+// ----------------------------------------------------------------------------
+// PAGAMENTO PIX
+// Coleção: pagamentos_pix
+// ----------------------------------------------------------------------------
+
+export interface PagamentoPix {
+  id: string;
+  reference_id: string;
+  comprador_id: string;
+  vendedor_id: string;
+  vendedor_nome?: string;
+  comprador_nome: string;
+  comprador_email?: string | null;
+  comprador_telefone?: string | null;
+  comprador_documento?: string | null;
+  numeros_rifas: string[];
+  valor_bruto: number;
+  valor_pago: number;
+  status_pagamento_banco: StatusPagamentoBanco | string;
+  status_validacao?: StatusValidacaoTesouraria | string | null;
+  pix_order_id?: string | null;
+  pix_charge_id?: string | null;
+  pix_qr_code_id?: string | null;
+  copia_e_cola?: string | null;
+  qr_code_imagem_url?: string | null;
+  qr_code_base64?: string | null;
+  data_criacao: string;
+  data_pagamento?: string | null;
+  data_expiracao?: string | null;
+  validado_em?: string | null;
+  validado_por?: string | null;
+  motivo_negacao?: string | null;
+  raw_pagbank?: Record<string, unknown> | null;
 }
 
 // ----------------------------------------------------------------------------
@@ -157,6 +215,7 @@ export interface Notificacao {
   titulo: string;
   mensagem: string;
   rifas: string[];
+  tipo?: "correcao_dados" | "rifa_liberada" | "informativo";
   lida: boolean;
   data_criacao: string;
 }

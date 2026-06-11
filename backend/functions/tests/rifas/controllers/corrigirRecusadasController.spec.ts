@@ -103,6 +103,24 @@ describe("Controller: corrigirRecusadas", () => {
     });
   });
 
+  it("Deve retornar 400 se o serviço lançar INVALID_DATA", async () => {
+    req.body = {
+      numerosRifas: ["010"],
+      comprovanteUrl: "https://minha-url.com",
+    };
+
+    mockCorrigirRifasRecusadas.mockRejectedValueOnce(
+      new Error("INVALID_DATA"),
+    );
+
+    await corrigirRecusadas(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "Dados incompletos para correção.",
+    });
+  });
+
   it("Deve capturar erros do serviço e retornar 500", async () => {
     req.body = {
       numerosRifas: ["010"],

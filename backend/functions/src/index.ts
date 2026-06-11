@@ -68,8 +68,17 @@ const corsOptions: cors.CorsOptions = {
 // Não use app.options("*") aqui, porque essa versão do Express quebra com "*".
 app.use(cors(corsOptions));
 
-// Libera leitura de JSON.
-app.use(express.json({ limit: "10mb" }));
+// Libera leitura de JSON e preserva o corpo bruto para validação de webhooks.
+app.use(
+  express.json({
+    limit: "10mb",
+    verify: (req, _res, buf) => {
+      (req as express.Request & { rawBody?: string }).rawBody = buf.toString(
+        "utf8",
+      );
+    },
+  }),
+);
 
 // ============================================================================
 // ROTAS
