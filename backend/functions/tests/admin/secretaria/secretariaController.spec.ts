@@ -1,7 +1,7 @@
 // ============================================================================
 // ARQUIVO: backend/functions/tests/admin/secretaria/secretariaController.spec.ts
 // ============================================================================
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
   jest,
   describe,
@@ -24,6 +24,7 @@ jest.mock("../../../src/modules/admin/secretaria/secretariaService", () => ({
 describe("Controller: secretariaController", () => {
   let mockReq: Partial<Request>;
   let mockRes: Partial<Response>;
+  let mockNext: NextFunction;
   let consoleErrorSpy: any;
 
   beforeEach(() => {
@@ -35,29 +36,35 @@ describe("Controller: secretariaController", () => {
       status: jest.fn().mockReturnThis() as any,
       json: jest.fn() as any,
     };
+    mockNext = jest.fn() as any;
   });
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
   });
 
-  it("Deve retornar 400 se o e-mail não for enviado ao adicionar aderido", async () => {
+  it("Deve repassar o erro via next se o body for invalido ou ocorrer erro", async () => {
     mockReq = {
       body: {
-        nome: "João",
+        email: "duplicado@teste.com",
       },
     };
+
+    const erroSimulado = new Error(
+      "Este e-mail já foi autorizado anteriormente.",
+    );
+
+    jest
+      .mocked(secretariaService.adicionarAderido)
+      .mockRejectedValue(erroSimulado);
 
     await secretariaController.adicionarAderido(
       mockReq as Request,
       mockRes as Response,
+      mockNext
     );
 
-    expect(mockRes.status).toHaveBeenCalledWith(400);
-    expect(mockRes.json).toHaveBeenCalledWith({
-      error: "O e-mail é obrigatório.",
-    });
-    expect(secretariaService.adicionarAderido).not.toHaveBeenCalled();
+    expect(mockNext).toHaveBeenCalledWith(erroSimulado);
   });
 
   it("Deve retornar 201 quando o aderido for criado com sucesso", async () => {
@@ -86,6 +93,7 @@ describe("Controller: secretariaController", () => {
     await secretariaController.adicionarAderido(
       mockReq as Request,
       mockRes as Response,
+      mockNext
     );
 
     expect(secretariaService.adicionarAderido).toHaveBeenCalledWith(
@@ -106,34 +114,7 @@ describe("Controller: secretariaController", () => {
     });
   });
 
-  it("Deve capturar erros do service ao adicionar aderido", async () => {
-    mockReq = {
-      body: {
-        email: "duplicado@teste.com",
-      },
-    };
-
-    const erroSimulado = new Error(
-      "Este e-mail já foi autorizado anteriormente.",
-    );
-
-    jest
-      .mocked(secretariaService.adicionarAderido)
-      .mockRejectedValue(erroSimulado);
-
-    await secretariaController.adicionarAderido(
-      mockReq as Request,
-      mockRes as Response,
-    );
-
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    expect(mockRes.status).toHaveBeenCalledWith(400);
-    expect(mockRes.json).toHaveBeenCalledWith({
-      error: "Este e-mail já foi autorizado anteriormente.",
-    });
-  });
-
-  it("Deve retornar 400 se o ID de atualização for inválido", async () => {
+  it("Deve repassar erro via next se o ID de atualização for inválido", async () => {
     mockReq = {
       params: {},
       body: {
@@ -144,12 +125,10 @@ describe("Controller: secretariaController", () => {
     await secretariaController.atualizarAderido(
       mockReq as Request,
       mockRes as Response,
+      mockNext
     );
 
-    expect(mockRes.status).toHaveBeenCalledWith(400);
-    expect(mockRes.json).toHaveBeenCalledWith({
-      error: "ID do aderido inválido.",
-    });
+    expect(mockNext).toHaveBeenCalled();
     expect(secretariaService.atualizarAderido).not.toHaveBeenCalled();
   });
 
@@ -171,6 +150,7 @@ describe("Controller: secretariaController", () => {
     await secretariaController.atualizarAderido(
       mockReq as Request,
       mockRes as Response,
+      mockNext
     );
 
     expect(secretariaService.atualizarAderido).toHaveBeenCalledWith(
@@ -187,7 +167,7 @@ describe("Controller: secretariaController", () => {
     });
   });
 
-  it("Deve retornar 404 quando o aderido não for encontrado", async () => {
+  it("Deve repassar erro via next quando o aderido não for encontrado", async () => {
     mockReq = {
       params: {
         id: "ADERIDO_999",
@@ -197,18 +177,17 @@ describe("Controller: secretariaController", () => {
       },
     };
 
+    const erro = new Error("Aderido não encontrado.");
     jest
       .mocked(secretariaService.atualizarAderido)
-      .mockRejectedValue(new Error("Aderido não encontrado."));
+      .mockRejectedValue(erro);
 
     await secretariaController.atualizarAderido(
       mockReq as Request,
       mockRes as Response,
+      mockNext
     );
 
-    expect(mockRes.status).toHaveBeenCalledWith(404);
-    expect(mockRes.json).toHaveBeenCalledWith({
-      error: "Aderido não encontrado.",
-    });
+    expect(mockNext).toHaveBeenCalledWith(erro);
   });
 });

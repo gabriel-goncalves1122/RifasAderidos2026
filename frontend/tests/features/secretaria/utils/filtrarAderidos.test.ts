@@ -4,7 +4,7 @@
 import { describe, it, expect } from "vitest";
 
 import { filtrarAderidos } from "@/features/secretaria/utils/filtrarAderidos";
-import { AderidoSecretaria } from "@/features/secretaria/types/secretaria";
+import { AderidoSecretaria } from "@/features/secretaria/types";
 
 const aderidos: AderidoSecretaria[] = [
   {

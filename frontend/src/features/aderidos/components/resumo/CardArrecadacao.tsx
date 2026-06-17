@@ -3,7 +3,7 @@
 // ============================================================================
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 
-import { formatarMoedaBR } from "../../utils/formatadoresAderido";
+import { formatarMoeda } from "@/shared/utils/formatadores";
 import { ResumoCard } from "./ResumoCard";
 
 interface CardArrecadacaoProps {
@@ -15,7 +15,7 @@ export function CardArrecadacao({ valorArrecadado }: CardArrecadacaoProps) {
     <ResumoCard
       icon={<AccountBalanceWalletOutlinedIcon fontSize="small" />}
       label="Arrecadado"
-      valor={formatarMoedaBR(valorArrecadado)}
+      valor={formatarMoeda(valorArrecadado)}
       descricao="Confirmado nas vendas aprovadas."
     />
   );

@@ -6,6 +6,39 @@ export function somenteNumeros(valor?: string | number | null): string {
   return String(valor || "").replace(/\D/g, "");
 }
 
+const PARTICULAS_NOME = new Set(["da", "das", "de", "do", "dos", "e"]);
+
+function capitalizarParteNome(parte: string): string {
+  if (!parte) return parte;
+
+  return parte
+    .split("-")
+    .map((segmento) => {
+      if (!segmento) return segmento;
+      return `${segmento.charAt(0).toLocaleUpperCase("pt-BR")}${segmento
+        .slice(1)
+        .toLocaleLowerCase("pt-BR")}`;
+    })
+    .join("-");
+}
+
+export function formatarNomeMembro(valor?: string | null): string {
+  const nome = String(valor || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("pt-BR");
+
+  if (!nome) return "";
+
+  return nome
+    .split(" ")
+    .map((parte, index) => {
+      if (index > 0 && PARTICULAS_NOME.has(parte)) return parte;
+      return capitalizarParteNome(parte);
+    })
+    .join(" ");
+}
+
 export function formatarTelefone(valor?: string | number | null): string {
   const numeros = somenteNumeros(valor).slice(0, 11);
 

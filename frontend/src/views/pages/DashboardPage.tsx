@@ -12,8 +12,8 @@ import {
 
 import { MinhasRifasTab } from "@/features/aderidos/MinhasRifasTab";
 import { useAuthController } from "@/features/auth/hooks/useAuthController";
-import { PremiosTab } from "@/features/premios/PremiosTab";
-import { SecretariaView } from "@/features/secretaria/pages/SecretariaPage";
+import { PremiosTab } from "@/features/premios";
+import { SecretariaView } from "@/features/secretaria";
 import { AuditoriaComprasPage } from "@/features/tesouraria/pages/AuditoriaComprasPage";
 import { DesempenhoPage } from "@/features/tesouraria/pages/DesempenhoPage";
 import { TesourariaPixPage } from "@/features/tesouraria/pages/TesourariaPixPage";

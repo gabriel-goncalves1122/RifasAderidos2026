@@ -1,14 +1,25 @@
 // ============================================================================
 // ARQUIVO: frontend/tests/features/secretaria/components/SecretariaHeader.test.tsx
 // ============================================================================
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
-import { SecretariaHeader } from "@/features/secretaria/components/SecretariaHeader";
+import { SecretariaHeader } from "@/features/secretaria/components/shared/SecretariaHeader";
 
 describe("Componente: SecretariaHeader", () => {
+  const onNovaAdesao = vi.fn();
+
+  const renderHeader = (props = {}) =>
+    render(
+      <SecretariaHeader
+        total={10}
+        onNovaAdesao={onNovaAdesao}
+        {...props}
+      />,
+    );
+
   it("Deve renderizar o título do painel da secretaria", () => {
-    render(<SecretariaHeader />);
+    renderHeader();
 
     expect(
       screen.getByRole("heading", {
@@ -18,7 +29,7 @@ describe("Componente: SecretariaHeader", () => {
   });
 
   it("Deve renderizar a descrição do painel", () => {
-    render(<SecretariaHeader />);
+    renderHeader();
 
     expect(
       screen.getByText(
@@ -27,9 +38,24 @@ describe("Componente: SecretariaHeader", () => {
     ).toBeInTheDocument();
   });
 
-  it("Não deve renderizar ações diretas no cabeçalho", () => {
-    render(<SecretariaHeader />);
+  it("Deve exibir a contagem total no botao", () => {
+    renderHeader({ total: 42 });
 
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(screen.getByText("Nova Adesão (42)")).toBeInTheDocument();
+  });
+
+  it("Deve chamar onNovaAdesao ao clicar no botao", () => {
+    renderHeader({ total: 5 });
+
+    fireEvent.click(screen.getByRole("button", { name: /Nova Adesão/i }));
+
+    expect(onNovaAdesao).toHaveBeenCalledTimes(1);
+  });
+
+  it("Nao deve renderizar navegacao por abas no header", () => {
+    renderHeader();
+
+    expect(screen.queryByRole("tab", { name: "Aderidos" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: "Comissão" })).not.toBeInTheDocument();
   });
 });

@@ -43,6 +43,49 @@ Componentes visuais não devem chamar backend nem manipular query keys diretamen
 
 Prefira query keys explícitas por feature e usuário quando o dado for sensível ao usuário autenticado.
 
+## Naming Convention
+
+Hooks controller seguem o padrão `use<Nome>Controller` (ex: `usePremiosController`, `usePixController`).
+Hooks de domínio puro (que apenas expõem operações de service) seguem `use<Nome>` (ex: `usePremios`, `usePixTransacoes`).
+
+Utilitários e services usam camelCase: `pixTransacoesService`, `dateUtils`.
+Tipos usam PascalCase: `PremioData`, `PixTransacao`, `InfoSorteio`.
+
+## Barrel Policy
+
+Cada feature pode ter UM único `index.ts` barrel na raiz, exportando apenas
+o componente ou hook público (ex: `PremiosTab`, `TesourariaShell`).
+
+Subpastas (`components/`, `hooks/`, `utils/`, `services/`, `types/`) NÃO
+devem ter barrels. Todos os imports internos são por caminho direto.
+
+Isto vale para frontend e backend.
+
+## Utilitários Compartilhados
+
+Não duplique formatadores e regras entre features.
+
+Funções de uso genérico DEVEM ficar em `shared/utils/` e não em feature específica:
+
+- `formatarMoeda`, `formatarData` → `shared/utils/formatadores.ts`;
+- `sanitizarNome`, `sanitizarTelefone` → já existem em `shared/utils/sanitizadores.ts`.
+
+Se uma função existe em 2+ features, mova para `shared/utils/` antes de criar a
+terceira ocorrência.
+
+Cores e tokens de design compartilhados DEVEM migrar para `shared/tokens/`
+conforme o padrão de `features/aderidos/tokens/`.
+
+## Motion e Animações
+
+Use os design tokens de motion de `features/aderidos/tokens/motion.ts` em todas
+as features:
+- `aderidosMotion.easing.easeOut` / `aderidosMotion.easing.easeInOut`;
+- `aderidosMotion.duration.short` / `standard` / `medium` / `long`;
+- `reduceMotionSx` para acessibilidade (`prefers-reduced-motion: reduce`).
+
+Não defina easing ou duration avulsos; centralize nos tokens.
+
 ## Estrutura esperada
 
 ```txt
@@ -199,16 +242,21 @@ Consulte antes de fazer mudanças estruturais ou de estilo.
 
 ## Comentários no código
 
-Comente apenas o que ajuda manutenção:
+Comente apenas o que ajuda manutenção. Não comente o óbvio linha a linha.
 
-- regra de negócio;
-- decisão de arquitetura;
-- fallback temporário;
-- compatibilidade legada;
-- integração;
-- ponto não óbvio.
+Situações que merecem comentário:
 
-Não comente o óbvio linha a linha.
+- **regra de negócio**: explicar o "por que" de uma decisão, não o "o que";
+- **decisão de arquitetura**: por que escolheu este padrão e não outro;
+- **fallback temporário**: marcar com `// TEMP: <motivo>` e vincular a issue;
+- **compatibilidade legada**: porque um campo antigo ainda precisa existir;
+- **integração externa**: contrato esperado do provedor (mas sem expor chave);
+- **ponto não óbvio**: algoritmo, fórmula ou condição que parece errada mas está certa.
+
+Não comente:
+- nomes de variáveis ou funções auto-explicativas;
+- chamadas de API padrão ou óbvias;
+- blocos de código que repetem a documentação do framework.
 
 ## Comandos
 
@@ -249,6 +297,31 @@ npm run test:run -- caminho/dos/testes
 Não alterar `.env.local` sem autorização.
 
 Não versionar `.env.local`.
+
+## Views Desktop/Mobile
+
+Features com layouts significativamente diferentes entre desktop e mobile devem
+seguir o padrao estabelecido em `premios` e `aderidos`:
+
+- `components/desktop/<Feature>DesktopView.tsx` — layout completo para desktop;
+- `components/mobile/<Feature>MobileView.tsx` — layout completo para mobile;
+- O componente orquestrador (ex: `PremiosTab.tsx`, `MinhasRifasTab.tsx`) faz o
+  switch usando `usePremiosLayout` (importado de hooks compartilhados ou da
+  propria feature).
+
+Componentes visuais puros que aparecem em ambas as views ficam em
+`components/shared/` (ex: `EmptyState`, `LoadingState`).
+
+## Roteamento e Auth
+
+`PrivateRoute` deve ser um componente compartilhado em `shared/components/`, não
+definido inline no arquivo de rotas.
+
+Para rotas com restrição de cargo, use `RequireAuth({ cargoMinimo })` que redireciona
+para `/` se o usuário não tiver permissão.
+
+`QueryClientProvider` do TanStack Query deve estar na árvore React em `App.tsx` para
+que hooks de cache (useQuery, useMutation) funcionem em toda a aplicação.
 
 ## Integrações
 

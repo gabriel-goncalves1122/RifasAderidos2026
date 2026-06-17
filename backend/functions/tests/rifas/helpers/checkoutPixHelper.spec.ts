@@ -65,7 +65,7 @@ describe("Helper: checkoutPixHelper", () => {
     });
   });
 
-  it("Deve validar assinatura de webhook Pix", () => {
+  it("Deve validar assinatura de webhook Pix (HMAC-SHA256 base64)", () => {
     const rawBody = JSON.stringify({ id: "ORDE_001" });
     const token = "token_teste";
     const assinatura = calcularAssinaturaWebhook(rawBody, token);
@@ -81,7 +81,7 @@ describe("Helper: checkoutPixHelper", () => {
       validarAssinaturaWebhookPix({
         rawBody,
         token,
-        assinaturaRecebida: "00",
+        assinaturaRecebida: "AA==",
       }),
     ).toBe(false);
   });

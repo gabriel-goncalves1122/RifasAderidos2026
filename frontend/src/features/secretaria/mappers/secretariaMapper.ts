@@ -6,6 +6,7 @@ import {
   ModalidadeAdesao,
   StatusCadastro,
 } from "../../../shared/types/secretaria";
+import { formatarNomeMembro } from "../utils/formatadoresSecretaria";
 
 function normalizarTexto(valor: unknown): string {
   if (valor === null || valor === undefined) return "";
@@ -46,10 +47,8 @@ export function normalizarAderidoSecretaria(
   idDocumento: string,
   data: any,
 ): AderidoSecretaria {
-  const nome = obterPrimeiroTextoValido(
-    data.nome,
-    data.Nome,
-    data["Nome Completo"],
+  const nome = formatarNomeMembro(
+    obterPrimeiroTextoValido(data.nome, data.Nome, data["Nome Completo"]),
   );
 
   const email = obterPrimeiroTextoValido(

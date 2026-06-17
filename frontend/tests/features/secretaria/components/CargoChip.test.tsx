@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { CargoChip } from "@/features/secretaria/components/CargoChip";
+import { CargoChip } from "@/features/secretaria/components/shared/CargoChip";
 import { CARGOS_COMISSAO } from "@/shared/types/constants";
 
 describe("Componente <CargoChip />", () => {

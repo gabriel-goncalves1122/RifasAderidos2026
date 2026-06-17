@@ -4,7 +4,7 @@
 import { describe, it, expect } from "vitest";
 
 import { calcularResumoSecretaria } from "@/features/secretaria/utils/calcularResumoSecretaria";
-import { AderidoSecretaria } from "@/features/secretaria/types/secretaria";
+import { AderidoSecretaria } from "@/features/secretaria/types";
 
 describe("calcularResumoSecretaria", () => {
   it("Deve calcular total, aderidos, meio-aderidos, pendentes e comissão", () => {

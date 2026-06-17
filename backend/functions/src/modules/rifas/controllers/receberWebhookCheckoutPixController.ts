@@ -17,7 +17,11 @@ export async function receberWebhookCheckoutPix(
     const resultado = await RifasService.processarWebhookCheckoutPix({
       payload: req.body,
       rawBody: req.rawBody || JSON.stringify(req.body || {}),
-      assinatura: String(req.headers?.["x-authenticity-token"] || ""),
+      assinatura: String(
+        req.headers?.["x-pagbank-signature"] ||
+        req.headers?.["x-authenticity-token"] ||
+        ""
+      ),
     });
 
     return res.status(200).json(resultado);

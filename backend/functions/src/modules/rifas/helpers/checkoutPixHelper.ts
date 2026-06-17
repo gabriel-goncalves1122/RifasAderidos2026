@@ -2,7 +2,6 @@
 // ARQUIVO: backend/functions/src/modules/rifas/helpers/checkoutPixHelper.ts
 // ============================================================================
 import crypto from "crypto";
-const { createHash } = crypto;
 
 import {
   CheckoutPixResposta,
@@ -163,7 +162,10 @@ export function extrairPagoEmPagBank(payload: any) {
 }
 
 export function calcularAssinaturaWebhook(rawBody: string, token: string) {
-  return createHash("sha256").update(`${token}-${rawBody}`).digest("hex");
+  return crypto
+    .createHmac("sha256", token)
+    .update(rawBody, "utf8")
+    .digest("base64");
 }
 
 export function validarAssinaturaWebhookPix(params: {
@@ -176,8 +178,8 @@ export function validarAssinaturaWebhookPix(params: {
   if (!params.token || !params.rawBody || !assinatura) return false;
 
   const calculada = calcularAssinaturaWebhook(params.rawBody, params.token);
-  const bufferCalculada = Buffer.from(calculada, "hex");
-  const bufferRecebida = Buffer.from(assinatura, "hex");
+  const bufferCalculada = Buffer.from(calculada, "base64");
+  const bufferRecebida = Buffer.from(assinatura, "base64");
 
   return (
     bufferCalculada.length === bufferRecebida.length &&

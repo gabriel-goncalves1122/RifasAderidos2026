@@ -9,6 +9,9 @@ import adminRoutes from "../../src/modules/admin/adminRoutes";
 
 jest.mock("../../src/modules/admin/secretaria/secretariaController", () => ({
   secretariaController: {
+    listarAderidos: (_req: any, res: any) =>
+      res.status(200).json([{ mock: "lista" }]),
+
     adicionarAderido: (_req: any, res: any) =>
       res.status(201).json({ mock: "aderido" }),
 
@@ -27,6 +30,10 @@ jest.mock("../../src/modules/admin/compac/compacController", () => ({
 jest.mock("../../src/shared/middlewares/authMiddleware", () => ({
   validateToken: (_req: any, _res: any, next: any) => next(),
   requireTesourariaOrAdmin: (_req: any, _res: any, next: any) => next(),
+}));
+
+jest.mock("../../src/shared/middlewares/validate", () => ({
+  validate: () => (_req: any, _res: any, next: any) => next(),
 }));
 
 describe("Rotas: /admin", () => {

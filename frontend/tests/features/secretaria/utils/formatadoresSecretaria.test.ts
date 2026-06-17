@@ -84,4 +84,37 @@ describe("Utils: formatadoresSecretaria", () => {
       "11122233344",
     );
   });
+
+  it("Deve formatar nome de membro com iniciais maiúsculas", () => {
+    const formatarNomeMembro = obterFuncao("formatarNomeMembro", [
+      "formatarNomeSecretaria",
+      "capitalizarNomeMembro",
+    ]);
+
+    expect(formatarNomeMembro("  gABRIEL   sAMPAIO  ")).toBe(
+      "Gabriel Sampaio",
+    );
+  });
+
+  it("Deve manter partículas comuns em minúsculas no meio do nome", () => {
+    const formatarNomeMembro = obterFuncao("formatarNomeMembro", [
+      "formatarNomeSecretaria",
+      "capitalizarNomeMembro",
+    ]);
+
+    expect(formatarNomeMembro("ANA CLARA DOS SANTOS E SILVA")).toBe(
+      "Ana Clara dos Santos e Silva",
+    );
+  });
+
+  it("Deve preservar nomes compostos com hífen", () => {
+    const formatarNomeMembro = obterFuncao("formatarNomeMembro", [
+      "formatarNomeSecretaria",
+      "capitalizarNomeMembro",
+    ]);
+
+    expect(formatarNomeMembro("maria-julia de souza")).toBe(
+      "Maria-Julia de Souza",
+    );
+  });
 });

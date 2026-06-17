@@ -42,7 +42,7 @@ vi.mock("@/features/auth/hooks/useAuthController", () => ({
   }),
 }));
 
-import { usePainelAderido } from "@/features/aderidos/hooks/usePainelAderido";
+import { usePainelAderidoController } from "@/features/aderidos/hooks/usePainelAderidoController";
 
 const rifasMock = [
   {
@@ -99,7 +99,7 @@ function criarWrapper(queryClient = criarQueryClient()) {
   };
 }
 
-describe("Hook: usePainelAderido", () => {
+describe("Hook: usePainelAderidoController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -110,7 +110,7 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Deve buscar rifas e notificacoes ao inicializar o painel", async () => {
-    renderHook(() => usePainelAderido(), { wrapper: criarWrapper() });
+    renderHook(() => usePainelAderidoController(), { wrapper: criarWrapper() });
 
     await waitFor(() => {
       expect(mocks.buscarMinhasRifas).toHaveBeenCalledTimes(1);
@@ -119,7 +119,7 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Deve montar o primeiro nome do usuario logado", async () => {
-    const { result } = renderHook(() => usePainelAderido(), {
+    const { result } = renderHook(() => usePainelAderidoController(), {
       wrapper: criarWrapper(),
     });
 
@@ -138,7 +138,7 @@ describe("Hook: usePainelAderido", () => {
       email: "joao@email.com",
     };
 
-    const { result } = renderHook(() => usePainelAderido(), {
+    const { result } = renderHook(() => usePainelAderidoController(), {
       wrapper: criarWrapper(),
     });
 
@@ -146,12 +146,11 @@ describe("Hook: usePainelAderido", () => {
       expect(result.current.carregando).toBe(false);
     });
 
-    // Nao deve usar vendedor_email de terceiros, mas sim o email do usuario
     expect(result.current.primeiroNome).toBe("joao");
   });
 
   it("Deve armazenar as rifas retornadas pelo hook de rifas", async () => {
-    const { result } = renderHook(() => usePainelAderido(), {
+    const { result } = renderHook(() => usePainelAderidoController(), {
       wrapper: criarWrapper(),
     });
 
@@ -164,7 +163,7 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Deve selecionar e remover uma rifa disponivel da selecao", async () => {
-    const { result } = renderHook(() => usePainelAderido(), {
+    const { result } = renderHook(() => usePainelAderidoController(), {
       wrapper: criarWrapper(),
     });
 
@@ -186,7 +185,7 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Nao deve selecionar rifas que nao estejam disponiveis", async () => {
-    const { result } = renderHook(() => usePainelAderido(), {
+    const { result } = renderHook(() => usePainelAderidoController(), {
       wrapper: criarWrapper(),
     });
 
@@ -206,7 +205,7 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Deve corrigir dados de rifas recusadas e recarregar o painel", async () => {
-    const { result } = renderHook(() => usePainelAderido(), {
+    const { result } = renderHook(() => usePainelAderidoController(), {
       wrapper: criarWrapper(),
     });
 
@@ -235,7 +234,7 @@ describe("Hook: usePainelAderido", () => {
   });
 
   it("Deve marcar notificacoes como lidas de forma otimista", async () => {
-    const { result } = renderHook(() => usePainelAderido(), {
+    const { result } = renderHook(() => usePainelAderidoController(), {
       wrapper: criarWrapper(),
     });
 
@@ -256,7 +255,7 @@ describe("Hook: usePainelAderido", () => {
     const queryClient = criarQueryClient();
     const wrapper = criarWrapper(queryClient);
 
-    const primeiraRenderizacao = renderHook(() => usePainelAderido(), {
+    const primeiraRenderizacao = renderHook(() => usePainelAderidoController(), {
       wrapper,
     });
 
@@ -266,7 +265,7 @@ describe("Hook: usePainelAderido", () => {
 
     primeiraRenderizacao.unmount();
 
-    const segundaRenderizacao = renderHook(() => usePainelAderido(), {
+    const segundaRenderizacao = renderHook(() => usePainelAderidoController(), {
       wrapper,
     });
 
@@ -278,7 +277,7 @@ describe("Hook: usePainelAderido", () => {
   it("Deve manter a tela renderizavel quando a busca de rifas falhar", async () => {
     mocks.buscarMinhasRifas.mockRejectedValueOnce(new Error("API indisponivel"));
 
-    const { result } = renderHook(() => usePainelAderido(), {
+    const { result } = renderHook(() => usePainelAderidoController(), {
       wrapper: criarWrapper(),
     });
 

@@ -4,7 +4,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 
-import { ModalidadeChip } from "@/features/secretaria/components/ModalidadeChip";
+import { ModalidadeChip } from "@/features/secretaria/components/shared/ModalidadeChip";
 
 describe("Componente <ModalidadeChip />", () => {
   it("Deve mostrar 'Aderido' quando a modalidade for completo", () => {

@@ -6,67 +6,37 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { secretariaService } from "@/features/secretaria/services/secretariaService";
 import { fetchAPI } from "@/shared/services/api";
 
-const mockCollection = vi.fn();
-const mockGetDocs = vi.fn();
-
-vi.mock("firebase/firestore", () => ({
-  collection: (...args: unknown[]) => mockCollection(...args),
-  getDocs: (...args: unknown[]) => mockGetDocs(...args),
-}));
-
-vi.mock("@/shared/config/firebase", () => ({
-  db: {
-    app: {
-      name: "firestore-mock",
-    },
-  },
-}));
-
 vi.mock("@/shared/services/api", () => ({
   fetchAPI: vi.fn(),
 }));
 
-function criarDocMock(id: string, dados: Record<string, unknown>) {
-  return {
-    id,
-    data: () => dados,
-  };
-}
-
 describe("Service: secretariaService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    mockCollection.mockReturnValue({
-      path: "usuarios",
-    });
   });
 
-  it("Deve buscar aderidos e mapear documentos antigos e novos", async () => {
-    mockGetDocs.mockResolvedValueOnce({
-      docs: [
-        criarDocMock("ADERIDO_001", {
-          nome: "Gabriel Sampaio",
-          email: "gabriel@teste.com",
-          cargo: "aderido",
-          modalidade_adesao: "completo",
-          uid: "uid-001",
-          telefone: "(35) 99999-9999",
-        }),
-        criarDocMock("ADERIDO_002", {
-          Nome: "Ana Costa",
-          "E-mail": "ana@teste.com",
-          Cargo: "secretaria",
-          modalidade_adesao: "meio",
-          uid: null,
-        }),
-      ],
-    });
+  it("Deve buscar aderidos usando fetchAPI e manter a lista retornada", async () => {
+    vi.mocked(fetchAPI).mockResolvedValueOnce([
+      {
+        id: "ADERIDO_001",
+        nome: "Gabriel Sampaio",
+        email: "gabriel@teste.com",
+        cargo: "aderido",
+        modalidade_adesao: "completo",
+        status_cadastro: "ativo",
+      },
+      {
+        id: "ADERIDO_002",
+        Nome: "Ana Costa",
+        "E-mail": "ana@teste.com",
+        Cargo: "secretaria",
+        modalidade_adesao: "meio",
+      },
+    ]);
 
     const resultado = await secretariaService.buscarAderidos();
 
-    expect(mockCollection).toHaveBeenCalled();
-    expect(mockGetDocs).toHaveBeenCalled();
+    expect(fetchAPI).toHaveBeenCalledWith("/admin/aderidos", "GET");
 
     expect(resultado).toHaveLength(2);
 
@@ -81,6 +51,7 @@ describe("Service: secretariaService", () => {
       }),
     );
 
+    // O normalizarAderidoSecretaria transforma Nome em nome, E-mail em email etc.
     expect(resultado[1]).toEqual(
       expect.objectContaining({
         id: "ADERIDO_002",
@@ -91,28 +62,6 @@ describe("Service: secretariaService", () => {
         status_cadastro: "pendente",
       }),
     );
-  });
-
-  it("Deve ordenar ativos antes de pendentes", async () => {
-    mockGetDocs.mockResolvedValueOnce({
-      docs: [
-        criarDocMock("ADERIDO_001", {
-          nome: "Pendente",
-          email: "pendente@teste.com",
-          uid: null,
-        }),
-        criarDocMock("ADERIDO_002", {
-          nome: "Ativo",
-          email: "ativo@teste.com",
-          uid: "uid-ativo",
-        }),
-      ],
-    });
-
-    const resultado = await secretariaService.buscarAderidos();
-
-    expect(resultado[0].nome).toBe("Ativo");
-    expect(resultado[1].nome).toBe("Pendente");
   });
 
   it("Deve adicionar aderido individual via API", async () => {
@@ -167,10 +116,10 @@ describe("Service: secretariaService", () => {
   });
 
   it("Deve repassar o erro original quando a busca falhar", async () => {
-    mockGetDocs.mockRejectedValueOnce(new Error("Falha Firestore"));
+    vi.mocked(fetchAPI).mockRejectedValueOnce(new Error("Falha API"));
 
     await expect(secretariaService.buscarAderidos()).rejects.toThrow(
-      "Falha Firestore",
+      "Falha API",
     );
   });
 });

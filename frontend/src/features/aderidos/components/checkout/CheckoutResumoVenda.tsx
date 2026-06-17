@@ -4,7 +4,7 @@
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 import { Box, Chip, Stack, Typography } from "@mui/material";
 
-import { formatarMoedaBR } from "../../utils/formatadoresAderido";
+import { formatarMoeda } from "@/shared/utils/formatadores";
 import { calcularValorTotalRifas } from "./utils/checkoutUtils";
 
 interface CheckoutResumoVendaProps {
@@ -131,7 +131,7 @@ export function CheckoutResumoVenda({
             letterSpacing: 0,
           }}
         >
-          {formatarMoedaBR(valorTotal)}
+          {formatarMoeda(valorTotal)}
         </Typography>
       </Box>
     </Box>

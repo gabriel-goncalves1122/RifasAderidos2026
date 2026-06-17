@@ -7,17 +7,11 @@ import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import SellIcon from "@mui/icons-material/Sell";
 
+import { formatarMoeda } from "../../../../shared/utils/formatadores";
 import { AderidoSecretaria } from "../../../../shared/types/secretaria";
 
 interface ResumoOperacionalAderidoProps {
   aderido: AderidoSecretaria;
-}
-
-function formatarMoeda(valor?: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(valor || 0);
 }
 
 export function ResumoOperacionalAderido({

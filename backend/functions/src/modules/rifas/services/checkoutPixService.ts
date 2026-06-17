@@ -20,19 +20,11 @@ import {
 import { obterContextoAderidoPorEmail } from "../helpers/usuarioRifasHelper";
 import { PagBankPixClient } from "../../../shared/services/pagBankPixClient";
 
-interface RifaSelecionada {
-  numero: string;
-  ref: admin.firestore.DocumentReference;
-  dados: Bilhete;
-}
-
-async function buscarRifasDisponiveis(
+async function verificarDisponibilidadeRifas(
   db: admin.firestore.Firestore,
-  numerosRifas: string[],
-): Promise<RifaSelecionada[]> {
-  const rifas: RifaSelecionada[] = [];
-
-  for (const numero of numerosRifas) {
+  numeros: string[],
+): Promise<void> {
+  for (const numero of numeros) {
     const ref = db.collection("bilhetes").doc(numero);
     const snap = await ref.get();
 
@@ -45,11 +37,7 @@ async function buscarRifasDisponiveis(
     if (dados.status !== "disponivel") {
       throw new Error("RIFA_INDISPONIVEL");
     }
-
-    rifas.push({ numero, ref, dados });
   }
-
-  return rifas;
 }
 
 export class CheckoutPixService {
@@ -65,10 +53,15 @@ export class CheckoutPixService {
     const db = admin.firestore();
     const dados = normalizarDadosCheckoutPix(payload);
     const contextoAderido = await obterContextoAderidoPorEmail(emailLogado);
-    const rifas = await buscarRifasDisponiveis(db, dados.numerosRifas);
     const compradorRef = db.collection("compradores").doc();
     const referenceId = montarReferenceIdPix(compradorRef.id);
     const expiraEm = dataExpiracaoPix();
+
+    // Pre-check rápido (fora da transação) para evitar chamada PagBank
+    // se alguma rifa já estiver indisponível. A validação definitiva
+    // acontece dentro da transação logo abaixo.
+    await verificarDisponibilidadeRifas(db, dados.numerosRifas);
+
     const respostaPagBank = await PagBankPixClient.criarPedidoPix({
       referenceId,
       nome: dados.nome,
@@ -121,10 +114,15 @@ export class CheckoutPixService {
       raw_pagbank: respostaPagBank,
     };
     await db.runTransaction(async (transaction) => {
-      const rifasConfirmadas: RifaSelecionada[] = [];
+      const rifasRefs = dados.numerosRifas.map((numero) => ({
+        numero,
+        ref: db.collection("bilhetes").doc(numero),
+      }));
 
-      for (const rifa of rifas) {
-        const snap = await transaction.get(rifa.ref);
+      const rifasValidas: typeof rifasRefs = [];
+
+      for (const { numero, ref } of rifasRefs) {
+        const snap = await transaction.get(ref);
 
         if (!snap.exists) {
           throw new Error("RIFA_NOT_FOUND");
@@ -136,22 +134,17 @@ export class CheckoutPixService {
           throw new Error("RIFA_INDISPONIVEL");
         }
 
-        rifasConfirmadas.push({
-          numero: rifa.numero,
-          ref: rifa.ref,
-          dados: dadosAtuais,
-        });
+        rifasValidas.push({ numero, ref });
       }
 
       transaction.set(compradorRef, comprador);
       transaction.set(pagamentoRef, pagamento);
 
-      rifasConfirmadas.forEach((rifa) => {
+      rifasValidas.forEach(({ numero, ref }) => {
         transaction.set(
-          rifa.ref,
+          ref,
           {
-            ...rifa.dados,
-            numero: rifa.numero,
+            numero,
             status: "reservado",
             comprador_id: compradorRef.id,
             comprador_nome: dados.nome,

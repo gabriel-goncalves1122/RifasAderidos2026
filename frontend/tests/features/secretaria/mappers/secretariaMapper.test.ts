@@ -50,4 +50,14 @@ describe("normalizarAderidoSecretaria", () => {
     expect(resultado.cargo).toBe("secretaria");
     expect(resultado.status_cadastro).toBe("ativo");
   });
+
+  it("Deve normalizar nome legado para exibição consistente", () => {
+    const resultado = normalizarAderidoSecretaria("DOC_002", {
+      Nome: "  ANA   CLARA DOS sANTOS ",
+      email: "ana@teste.com",
+      uid: "abc",
+    });
+
+    expect(resultado.nome).toBe("Ana Clara dos Santos");
+  });
 });

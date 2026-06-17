@@ -133,7 +133,7 @@ Regras:
 - Services usam o cliente de API do sistema e retornam dados normalizados.
 - Utils nao acessam React, DOM, rede, Firebase ou estado global.
 - Types nao importam componentes.
-- Nao crie barrels `index.ts` nesta etapa; mantenha imports explicitos.
+- Nao crie barrels em subpastas — o unico barrel permitido e o `index.ts` raiz da feature, se necessario.
 - Filtros e estados compartilhados devem ter nomes claros, por exemplo `PixTransacoesFiltros`.
 - Quando houver conflito entre tipo e componente visual, use alias de tipo no import em vez de renomear UI publica sem necessidade.
 

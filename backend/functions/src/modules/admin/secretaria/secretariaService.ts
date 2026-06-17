@@ -1,10 +1,12 @@
 // ============================================================================
 // ARQUIVO: backend/functions/src/modules/admin/secretaria/secretariaService.ts
 // ============================================================================
-import { db } from "../../../shared/config/firebaseAdmin";
+import { db, auth } from "../../../shared/config/firebaseAdmin";
+import { AppError } from "../../../shared/classes/AppError";
 import { Bilhete, Usuario } from "../../types/models";
 
 import {
+  AderidoSecretaria,
   DadosAtualizacaoAderido,
   DadosNovoAderido,
   ModalidadeAdesao,
@@ -26,12 +28,28 @@ const BILHETES_POR_MODALIDADE: Record<ModalidadeAdesao, number> = {
 };
 
 export const secretariaService = {
+  async listarAderidos(): Promise<AderidoSecretaria[]> {
+    const querySnapshot = await db.collection("usuarios").get();
+    
+    // Retornamos os dados brutos injetando o ID.
+    // O frontend possui o `normalizarAderidoSecretaria` que lidará com campos legados (Nome vs nome, status vs status_cadastro, etc).
+    // O frontend também já se encarrega de realizar a ordenação na tabela.
+    const docs = querySnapshot.docs || [];
+    return docs.map((doc: any) => {
+      return {
+        ...doc.data(),
+        id: doc.id,
+      } as unknown as AderidoSecretaria;
+    });
+  },
+
   async adicionarAderido(dadosNovos: DadosNovoAderido) {
     const dados = normalizarDadosNovoAderido(dadosNovos);
 
     const bilhetesPorPessoa = BILHETES_POR_MODALIDADE[dados.modalidade_adesao];
     const metaVendas = META_VENDAS_POR_MODALIDADE[dados.modalidade_adesao];
 
+    // TOCTOU limit: Firestore doesn't support queries inside runTransaction
     const emailSnapshot = await db
       .collection("usuarios")
       .where("email", "==", dados.email)
@@ -39,51 +57,30 @@ export const secretariaService = {
       .get();
 
     if (!emailSnapshot.empty) {
-      throw new Error("Este e-mail já foi autorizado anteriormente.");
+      throw new AppError("EMAIL_DUPLICADO", "Este e-mail já foi autorizado anteriormente.", 400);
     }
 
     const contadorRef = db.collection("contadores").doc("aderidos");
-    const contadorExistente = await contadorRef.get();
-
-    if (!contadorExistente.exists) {
-      const usersSnap = await db
-        .collection("usuarios")
-        .orderBy("posicao_adesao", "desc")
-        .limit(1)
-        .get();
-
-      const ultimaPosicao =
-        !usersSnap.empty && typeof usersSnap.docs[0].data().posicao_adesao === "number"
-          ? usersSnap.docs[0].data().posicao_adesao
-          : 0;
-
-      const bilhetesSnap = await db
-        .collection("bilhetes")
-        .orderBy("numero", "desc")
-        .limit(1)
-        .get();
-
-      const ultimoBilhete =
-        !bilhetesSnap.empty && !Number.isNaN(parseInt(bilhetesSnap.docs[0].id, 10))
-          ? parseInt(bilhetesSnap.docs[0].id, 10)
-          : 0;
-
-      await contadorRef.set({
-        ultima_posicao: ultimaPosicao,
-        ultimo_bilhete: ultimoBilhete,
-      });
-    }
-
+    
     let idAderido = "";
     let numeroInicio = "";
     let numeroFim = "";
 
     await db.runTransaction(async (transaction) => {
-      const contadorSnap = await transaction.get(contadorRef);
-      const dadosContador = contadorSnap.data()!;
+      const contadorExistente = await transaction.get(contadorRef);
+      let ultimaPosicao = 0;
+      let ultimoBilhete = 0;
 
-      const proximaPosicao = (dadosContador.ultima_posicao || 0) + 1;
-      const proximoNumeroBilhete = (dadosContador.ultimo_bilhete || 0) + 1;
+      if (!contadorExistente.exists) {
+        throw new AppError("CONTADOR_NAO_INICIALIZADO", "O contador de aderidos não foi inicializado. Crie-o manualmente no Firestore primeiro.", 500);
+      } else {
+        const dadosContador = contadorExistente.data()!;
+        ultimaPosicao = dadosContador.ultima_posicao || 0;
+        ultimoBilhete = dadosContador.ultimo_bilhete || 0;
+      }
+
+      const proximaPosicao = ultimaPosicao + 1;
+      const proximoNumeroBilhete = ultimoBilhete + 1;
 
       idAderido = `ADERIDO_${String(proximaPosicao).padStart(3, "0")}`;
       const userRef = db.collection("usuarios").doc(idAderido);
@@ -171,26 +168,42 @@ export const secretariaService = {
 
   async atualizarAderido(idAderido: string, dados: DadosAtualizacaoAderido) {
     const aderidoRef = db.collection("usuarios").doc(idAderido);
-    const aderidoSnap = await aderidoRef.get();
-
-    if (!aderidoSnap.exists) {
-      throw new Error("Aderido não encontrado.");
-    }
-
-    const aderidoAtual = aderidoSnap.data();
-
-    if (
-      aderidoAtual?.status_cadastro === "ativo" &&
-      dados.status_cadastro === "pendente"
-    ) {
-      throw new Error(
-        "Não é permitido alterar um aderido ativo para pendente.",
-      );
-    }
-
     const camposAtualizacao = montarCamposAtualizacaoAderido(dados);
+    let uidAderido: string | null = null;
+    let novoCargo: string | undefined = dados.cargo;
 
-    await aderidoRef.update(camposAtualizacao);
+    await db.runTransaction(async (transaction) => {
+      const aderidoSnap = await transaction.get(aderidoRef);
+
+      if (!aderidoSnap.exists) {
+        throw new AppError("NAO_ENCONTRADO", "Aderido não encontrado.", 404);
+      }
+
+      const aderidoAtual = aderidoSnap.data();
+      uidAderido = aderidoAtual?.uid;
+
+      if (
+        aderidoAtual?.status_cadastro === "ativo" &&
+        dados.status_cadastro === "pendente"
+      ) {
+        throw new AppError(
+          "TRANSICAO_STATUS_INVALIDA",
+          "Não é permitido alterar um aderido ativo para pendente.",
+          400
+        );
+      }
+
+      transaction.update(aderidoRef, camposAtualizacao);
+    });
+
+    // Se o cargo foi alterado e o usuário já vinculou Firebase Auth, atualiza custom claims
+    if (novoCargo && uidAderido) {
+      try {
+        await auth.setCustomUserClaims(uidAderido, { cargo: novoCargo });
+      } catch (error) {
+        console.error("[SecretariaService] Erro ao atualizar custom claims:", error);
+      }
+    }
 
     return {
       idAderido,

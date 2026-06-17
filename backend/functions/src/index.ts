@@ -7,15 +7,54 @@ import "./shared/config/firebaseAdmin";
 
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { onRequest } from "firebase-functions/v2/https";
 
 import masterRouter from "./routes";
+import { errorHandler } from "./shared/middlewares/errorHandler";
 
 // ============================================================================
 // CONFIGURAÇÃO DO EXPRESS
 // ============================================================================
 
 const app = express();
+
+// ============================================================================
+// SEGURANÇA — HEADERS HTTP
+// ============================================================================
+
+app.use(helmet());
+
+// ============================================================================
+// RATE LIMITING
+// ============================================================================
+
+const apiLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Muitas requisições. Tente novamente em instantes.", code: "RATE_LIMIT" },
+});
+
+app.use("/auth", rateLimit({
+  windowMs: 60_000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Muitas tentativas de autenticação. Aguarde.", code: "RATE_LIMIT" },
+}));
+
+app.use("/rifas/checkout/pix/webhook", rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Muitas requisições de webhook.", code: "RATE_LIMIT" },
+}));
+
+app.use(apiLimiter);
 
 // ============================================================================
 // CORS DA API EXPRESS
@@ -94,6 +133,12 @@ app.get("/status", (_req, res) => {
 app.use("/", masterRouter);
 
 // ============================================================================
+// MIDDLEWARE GLOBAL DE ERRO
+// ============================================================================
+
+app.use(errorHandler);
+
+// ============================================================================
 // CLOUD FUNCTIONS V2
 // ============================================================================
 
@@ -107,3 +152,9 @@ export const api = onRequest(
   },
   app,
 );
+
+// ============================================================================
+// AUTH TRIGGERS (v1 — coexiste com v2 sem problemas)
+// ============================================================================
+
+export { onCreateUserSetClaims } from "./modules/auth/authTriggers";

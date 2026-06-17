@@ -4,9 +4,9 @@
 // Utilitarios de formatacao e calculo usados pelos componentes de checkout.
 // ============================================================================
 import { VALOR_RIFA } from "../../../utils/constants";
-import { formatarTelefone } from "../../../utils/mascaras";
+import { formatarTelefone } from "@/shared/utils/formatadores";
 
-export { formatarTelefone as aplicarMascaraTelefone } from "../../../utils/mascaras";
+export { formatarTelefone as aplicarMascaraTelefone } from "@/shared/utils/formatadores";
 
 export function calcularValorTotalRifas(numerosRifas: string[]) {
   return numerosRifas.length * VALOR_RIFA;

@@ -68,6 +68,16 @@ Testes de middlewares devem:
 - cobrir ausencia de token, token invalido, token valido e permissoes;
 - mockar Firebase Auth/Firestore quando necessario.
 
+Ao mockar middlewares em testes de rota, exporte todos os middlewares usados
+pela rota:
+
+```ts
+jest.mock("../../src/shared/middlewares/authMiddleware", () => ({
+  validateToken: (_req: any, _res: any, next: any) => next(),
+  requireTesourariaOrAdmin: (_req: any, _res: any, next: any) => next(),
+}));
+```
+
 ## Mocks E Dados
 
 - Nao usar dados reais, credenciais, service accounts ou exports locais.
@@ -92,6 +102,34 @@ cd backend/functions
 npm run build
 npm test
 ```
+
+## Testes de Transacao (ACID)
+
+Tests de services que usam `runTransaction` devem cobrir:
+
+- **fluxo de sucesso**: verifica commit e estado final dos documentos;
+- **rollback em erro**: simula falha e verifica que nenhum documento foi alterado;
+- **condicao de concorrencia**: quando viavel, simule conflito de transacao.
+
+Nao teste o Firestore Transaction em si — teste a logica DENTRO dela.
+
+## Testes de Contrato
+
+Para endpoints consumidos pelo frontend, adicione teste que valida o schema do
+response: campos obrigatorios, tipos, valores minimos/maximos.
+
+Isso protege contra mudancas acidentais no payload da API que quebrariam o frontend.
+
+## Cobertura Minima
+
+Ao criar ou alterar um modulo, garanta:
+
+- todo controller tem ao menos um teste de sucesso e um de falha;
+- todo service tem teste com mock do Firestore;
+- toda rota nova tem teste de integracao com Supertest;
+- helper com regra nao trivial tem teste puro sem dependencias.
+
+Nao remova teste sem cobertura equivalente em outro lugar.
 
 ## Cuidados
 

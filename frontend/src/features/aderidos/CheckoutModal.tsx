@@ -7,6 +7,7 @@
 //   1. Usuario preenche dados do comprador (nome, WhatsApp, email)
 //   2. Gera cobranca Pix chamando o backend do sistema
 //   3. Exibe QR Code e codigo copia-e-cola para pagamento
+//   4. Polling automatico do status (a cada 10s) ate pagamento confirmado
 //
 // O Dialog usa keepMounted, entao o estado do formulario persiste
 // entre aberturas sem precisar de armazenamento externo.
@@ -27,7 +28,7 @@ import {
   Typography,
 } from "@mui/material";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import {
@@ -50,9 +51,13 @@ interface CheckoutModalProps {
   numerosRifas: string[];
 }
 
+const POLLING_INTERVAL_MS = 10_000;
+const POLLING_MAX_RETRIES = 36;
+
 export function CheckoutModal({
   open,
   onClose,
+  onSuccess,
   numerosRifas,
 }: CheckoutModalProps) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -60,6 +65,11 @@ export function CheckoutModal({
     useState<CheckoutPixCobranca | null>(null);
   const [gerandoPix, setGerandoPix] = useState(false);
   const [erroPix, setErroPix] = useState<string | null>(null);
+  const [pollingStatus, setPollingStatus] = useState<
+    "idle" | "polling" | "confirmado" | "expirado"
+  >("idle");
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const retryCountRef = useRef(0);
 
   const numerosRifasKey = numerosRifas.join("|");
 
@@ -84,19 +94,67 @@ export function CheckoutModal({
   const telefone = watch("telefone");
   const email = watch("email");
 
+  const limparPolling = useCallback(() => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+    retryCountRef.current = 0;
+  }, []);
+
   useEffect(() => {
     if (!open) return;
 
     setCobrancaPix(null);
     setErroPix(null);
-  }, [open, numerosRifasKey]);
+    setPollingStatus("idle");
+    limparPolling();
+  }, [open, numerosRifasKey, limparPolling]);
 
   useEffect(() => {
     if (!cobrancaPix) return;
 
     setCobrancaPix(null);
     setErroPix(null);
+    setPollingStatus("idle");
+    limparPolling();
   }, [nome, telefone, email]);
+
+  // Polling de status do pagamento
+  useEffect(() => {
+    if (!cobrancaPix || cobrancaPix.status !== "aguardando_pagamento") return;
+
+    setPollingStatus("polling");
+    retryCountRef.current = 0;
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        retryCountRef.current += 1;
+
+        if (retryCountRef.current > POLLING_MAX_RETRIES) {
+          limparPolling();
+          setPollingStatus("expirado");
+          return;
+        }
+
+        const atualizada = await checkoutPixService.consultarCobrancaPix(
+          cobrancaPix.id,
+        );
+
+        if (atualizada.status === "pago") {
+          limparPolling();
+          setPollingStatus("confirmado");
+          onSuccess();
+        }
+      } catch {
+        // erro silencioso no polling — tenta de novo no proximo ciclo
+      }
+    }, POLLING_INTERVAL_MS);
+
+    return () => {
+      limparPolling();
+    };
+  }, [cobrancaPix?.id, cobrancaPix?.status, limparPolling, onSuccess]);
 
   const copiarPix = async () => {
     if (!cobrancaPix?.copiaECola) return;
@@ -114,6 +172,7 @@ export function CheckoutModal({
   const fecharModal = () => {
     if (gerandoPix) return;
 
+    limparPolling();
     onClose();
   };
 
@@ -140,10 +199,22 @@ export function CheckoutModal({
 
   const etapaAtual = cobrancaPix ? 2 : 1;
   const progressoCheckout = cobrancaPix ? 100 : 50;
-  const etapaTitulo = cobrancaPix ? "Pagamento gerado" : "Preencher dados";
-  const etapaDescricao = cobrancaPix
-    ? "Use o QR Code ou copie o Pix para concluir no banco."
-    : "Informe nome e telefone para gerar o pagamento.";
+  const etapaTitulo =
+    pollingStatus === "confirmado"
+      ? "Pagamento confirmado!"
+      : cobrancaPix
+        ? "Pagamento gerado"
+        : "Preencher dados";
+  const etapaDescricao =
+    pollingStatus === "confirmado"
+      ? "O pagamento foi confirmado com sucesso."
+      : pollingStatus === "expirado"
+        ? "O tempo de espera expirou. Verifique o status no painel."
+        : pollingStatus === "polling"
+          ? "Aguardando confirmação do pagamento..."
+          : cobrancaPix
+            ? "Use o QR Code ou copie o Pix para concluir no banco."
+            : "Informe nome e telefone para gerar o pagamento.";
   const botaoTexto = cobrancaPix ? "Pagamento gerado" : "Gerar pagamento";
 
   return (
@@ -155,7 +226,8 @@ export function CheckoutModal({
         onClose={(_, reason) => {
           if (reason === "backdropClick") return;
 
-          fecharModal();
+          limparPolling();
+          onClose();
         }}
         fullWidth
         maxWidth="sm"
@@ -322,6 +394,7 @@ export function CheckoutModal({
                 cobranca={cobrancaPix}
                 gerando={gerandoPix}
                 erro={erroPix}
+                pollingStatus={pollingStatus}
                 onCopiarPix={copiarPix}
                 onAbrirAppBanco={cobrancaPix ? abrirAppBanco : undefined}
               />

@@ -20,7 +20,7 @@ import {
   NotificacaoAderido,
   RifaAderido,
 } from "../types/painelAderido";
-import { sanitizarDadosCliente } from "../utils/sanitizadores";
+import { sanitizarDadosCliente } from "@/shared/utils/sanitizadores";
 import {
   filtrarApenasNotificacoesValidas,
   filtrarApenasRifasValidas,

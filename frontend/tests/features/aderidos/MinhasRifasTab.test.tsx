@@ -5,10 +5,10 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { MinhasRifasTab } from "@/features/aderidos/MinhasRifasTab";
-import { usePainelAderido } from "@/features/aderidos/hooks/usePainelAderido";
+import { usePainelAderidoController } from "@/features/aderidos/hooks/usePainelAderidoController";
 
-vi.mock("@/features/aderidos/hooks/usePainelAderido", () => ({
-  usePainelAderido: vi.fn(),
+vi.mock("@/features/aderidos/hooks/usePainelAderidoController", () => ({
+  usePainelAderidoController: vi.fn(),
 }));
 
 vi.mock("@/shared/components/NotificacoesSidebar", () => ({
@@ -17,7 +17,7 @@ vi.mock("@/shared/components/NotificacoesSidebar", () => ({
 }));
 
 function criarPainelMock(
-  overrides: Partial<ReturnType<typeof usePainelAderido>> = {},
+  overrides: Partial<ReturnType<typeof usePainelAderidoController>> = {},
 ) {
   return {
     carregando: false,
@@ -73,7 +73,7 @@ describe("Componente <MinhasRifasTab />", () => {
   });
 
   it("Deve exibir carregamento enquanto busca os dados", () => {
-    vi.mocked(usePainelAderido).mockReturnValue(
+    vi.mocked(usePainelAderidoController).mockReturnValue(
       criarPainelMock({
         carregando: true,
       }),
@@ -85,7 +85,7 @@ describe("Componente <MinhasRifasTab />", () => {
   });
 
   it("Deve renderizar resumo e grelha de rifas na visão geral", () => {
-    vi.mocked(usePainelAderido).mockReturnValue(criarPainelMock());
+    vi.mocked(usePainelAderidoController).mockReturnValue(criarPainelMock());
 
     render(<MinhasRifasTab />);
 
@@ -98,7 +98,7 @@ describe("Componente <MinhasRifasTab />", () => {
   it("Deve chamar seleção ao clicar em rifa disponível", () => {
     const mockAlternarSelecao = vi.fn();
 
-    vi.mocked(usePainelAderido).mockReturnValue(
+    vi.mocked(usePainelAderidoController).mockReturnValue(
       criarPainelMock({
         alternarSelecaoRifa: mockAlternarSelecao,
       }),
@@ -112,7 +112,7 @@ describe("Componente <MinhasRifasTab />", () => {
   });
 
   it("Deve renderizar a aba de recusadas quando a visão atual for recusadas", () => {
-    vi.mocked(usePainelAderido).mockReturnValue(
+    vi.mocked(usePainelAderidoController).mockReturnValue(
       criarPainelMock({
         visaoAtual: "recusadas",
         gruposRecusados: [

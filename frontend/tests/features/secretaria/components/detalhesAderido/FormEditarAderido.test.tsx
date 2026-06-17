@@ -55,12 +55,19 @@ function renderFormEditarAderido(overrides?: {
 }
 
 describe("Componente: FormEditarAderido", () => {
-  it("Deve renderizar o aviso sobre edição cadastral", () => {
+  it("Deve exibir status e modalidade como indicadores compactos", () => {
     renderFormEditarAderido();
 
-    expect(
-      screen.getByText(/edite apenas dados cadastrais/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Status: Ativo")).toBeInTheDocument();
+    expect(screen.getByText("Modalidade: Aderido completo")).toBeInTheDocument();
+  });
+
+  it("Deve organizar o formulário por seções", () => {
+    renderFormEditarAderido();
+
+    expect(screen.getByText("Contato")).toBeInTheDocument();
+    expect(screen.getByText("Dados pessoais")).toBeInTheDocument();
+    expect(screen.getByText("Vínculo")).toBeInTheDocument();
   });
 
   it("Deve renderizar os campos principais do formulário", () => {
@@ -119,16 +126,11 @@ describe("Componente: FormEditarAderido", () => {
     expect(onChange).toHaveBeenCalledWith("telefone", expect.any(String));
   });
 
-  it("Deve renderizar modalidade e status como campos bloqueados", () => {
+  it("Nao deve renderizar modalidade e status como campos bloqueados", () => {
     renderFormEditarAderido();
 
-    expect(screen.getByLabelText(/modalidade/i)).toHaveValue(
-      "Aderido completo",
-    );
-    expect(screen.getByLabelText(/status/i)).toHaveValue("Ativo");
-
-    expect(screen.getByLabelText(/modalidade/i)).toBeDisabled();
-    expect(screen.getByLabelText(/status/i)).toBeDisabled();
+    expect(screen.queryByLabelText(/modalidade/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/status/i)).not.toBeInTheDocument();
   });
 
   it("Deve alertar quando o curso salvo não existir na lista padronizada", () => {

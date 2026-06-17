@@ -27,7 +27,7 @@ import {
   GrupoRifasRecusadas,
 } from "./types/painelAderido";
 import { obterDicaCorrecaoRecusa } from "./utils/obterDicaCorrecaoRecusa";
-import { formatarTelefone } from "./utils/mascaras";
+import { formatarTelefone } from "@/shared/utils/formatadores";
 
 interface ModalCorrecaoRecusaProps {
   open: boolean;

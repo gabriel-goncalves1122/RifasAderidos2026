@@ -28,7 +28,7 @@ vi.mock("@/features/tesouraria/pages/DesempenhoPage", () => ({
 vi.mock("@/features/tesouraria/pages/AuditoriaComprasPage", () => ({
   AuditoriaComprasPage: () => <div>Conteudo: Auditoria de compras</div>,
 }));
-vi.mock("@/features/secretaria/pages/SecretariaPage", () => ({
+vi.mock("@/features/secretaria", () => ({
   SecretariaView: () => <div>Conteudo: Secretaria</div>,
 }));
 

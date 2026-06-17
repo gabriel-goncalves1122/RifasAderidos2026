@@ -23,13 +23,17 @@ src/
 │   └── types/
 ├── scripts/
 └── shared/
+    ├── classes/        # AppError.ts
     ├── config/
-    └── middlewares/
+    ├── middlewares/     # authMiddleware, errorHandler, validate, ...
+    ├── services/       # pagBankPixClient, etc.
+    └── utils/          # formatadores, sanitizadores, ...
 ```
 
 Responsabilidades:
 
-- `index.ts`: inicializa Firebase Admin, Express, CORS, JSON parser, status e `onRequest`.
+- `index.ts`: inicializa Firebase Admin, Express, helmet, rate-limit, JSON parser
+  (com `verify` para raw body do webhook), CORS, status e `onRequest`.
 - `routes.ts`: delega prefixos para mini-roteadores dos modulos.
 - `modules/*`: regras de dominio, controllers, routes, services, helpers e types locais.
 - `modules/types`: contratos compartilhados de modelo quando usados por mais de um dominio.
@@ -105,12 +109,113 @@ Use fachadas como `RifasService` ou `TesourariaService` quando o dominio ja tive
 - Nao altere nomes de campos persistidos sem plano de migracao.
 - Preserve campos usados pelo frontend ate atualizar frontend e testes juntos.
 
+## Transacoes (ACID)
+
+Controllers e services financeiros DEVEM usar `runTransaction` do Firestore.
+
+Regras:
+- leia documentos DENTRO da transacao, nunca fora (evita condicao de corrida);
+- se a operacao toca duas colecoes ou le+ecreve o mesmo documento, use transacao;
+- helpers puros (que nao acessam Firestore) nao precisam de transacao.
+
+Exemplo de estrutura esperada:
+
+```ts
+await db.runTransaction(async (transaction) => {
+  const ref = db.collection("bilhetes").doc(id);
+  const doc = await transaction.get(ref);
+  if (!doc.exists) throw new AppError("NOT_FOUND", "...", 404);
+  transaction.update(ref, { status: "pago" });
+});
+```
+
+## Error Handling
+
+Use `AppError` (em `shared/classes/AppError.ts`) para erros conhecidos:
+
+```ts
+throw new AppError("PIX_NOT_CONFIRMED", "Pagamento ainda nao confirmado", 409);
+```
+
+Crie middleware de erro global em `shared/middlewares/errorHandler.ts`:
+
+```ts
+(err, req, res, next) => {
+  if (err instanceof AppError) {
+    return res.status(err.status).json({ error: err.message, code: err.code });
+  }
+  console.error("[ErrorHandler]", err);
+  return res.status(500).json({ error: "Erro interno do servidor" });
+};
+```
+
+Nao exponha `error.stack` ou mensagens internas em producao.
+
+## Schema Validation (Middleware)
+
+Para validar payloads de entrada, use o middleware `validate` em
+`shared/middlewares/validate.ts` com um schema yup:
+
+```ts
+import { validate } from "../../shared/middlewares/validate";
+import { checkoutPixSchema } from "../schemas/checkoutPixSchema";
+
+router.post("/checkout/pix", validate(checkoutPixSchema), controller.criar);
+```
+
+O middleware usa `stripUnknown: true` e `abortEarly: false` para reportar todos
+os erros de uma vez com status 400.
+
+Crie schemas em `modules/<dominio>/schemas/` ao lado dos types.
+
+## Logging
+
+Use `console` com prefixo do modulo (`[RifasController]`, `[TesourariaService]`).
+
+Crie um helper `shared/utils/logger.ts` quando houver necessidade de niveis ou
+serializacao consistente.
+
+Nao logue dados sensiveis: tokens Firebase, chaves de API, links de reset completos,
+dados de cartao ou documentos pessoais.
+
+## Contrato de API
+
+Cada arquivo de rota DEVE exportar as interfaces de request e response.
+
+Exemplo:
+
+```ts
+// modules/rifas/types/checkoutTypes.ts
+export interface CheckoutPixRequest { rifasIds: string[]; ... }
+export interface CheckoutPixResponse { pagamentoId: string; pixCopiaECola: string; }
+```
+
+O controller usa esses tipos no retorno. Isso permite que o frontend importe os
+mesmos contratos (por copia ate haver monorepo).
+
 ## Auth E Permissoes
 
 - `validateToken` e o contrato minimo para rotas autenticadas.
 - Use middlewares compartilhados quando a regra vale para varios dominios.
 - Para regras especificas, prefira middleware pequeno e testado.
 - Nao alterar roles/cargos aceitos sem validar impacto no frontend e nas contas existentes.
+- Nao hardcode super-admins. Use `process.env.SUPER_ADMIN_EMAILS` ou consulta ao Firestore.
+- Crie `requireCargo(...cargos)` generico quando houver 2+ rotas com a mesma verificacao.
+
+## Comentarios No Codigo
+
+Comente apenas o que ajuda manutencao. Nao comente o obvio.
+
+Situacoes que merecem comentario:
+
+- **regra de negocio**: explicar o "por que", nao o "o que";
+- **decisao de arquitetura**: por que escolheu este padrao;
+- **fallback temporario**: `// TEMP: <motivo>` com issue vinculada;
+- **compatibilidade legada**: porque um campo antigo ainda existe;
+- **integracao externa**: contrato esperado do provedor;
+- **ponto nao obvio**: algoritmo, formula ou edge case contra-intuitivo.
+
+Nao comente: nomes auto-explicativos, chamadas de API padrao, uso obvio do Firestore/Express.
 
 ## Scripts
 

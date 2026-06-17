@@ -5,7 +5,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 
-import { ModalAdicionarAderido } from "@/features/secretaria/components/ModalAdicionarAderido";
+import { ModalAdicionarAderido } from "@/features/secretaria/components/shared/ModalAdicionarAderido";
 
 describe("Componente <ModalAdicionarAderido />", () => {
   it("Deve impedir submissão sem e-mail", async () => {
@@ -20,7 +20,7 @@ describe("Componente <ModalAdicionarAderido />", () => {
     );
 
     const botaoSalvar = screen.getByRole("button", {
-      name: /Autorizar Adesão/i,
+      name: /Adicionar membro/i,
     });
 
     fireEvent.click(botaoSalvar);
@@ -46,7 +46,7 @@ describe("Componente <ModalAdicionarAderido />", () => {
     ).toBeInTheDocument();
   });
 
-  it("Deve expandir os cargos ao clicar no checkbox da Comissão", async () => {
+  it("Deve expandir os cargos ao selecionar vínculo de Comissão", async () => {
     render(
       <ModalAdicionarAderido
         open={true}
@@ -59,15 +59,30 @@ describe("Componente <ModalAdicionarAderido />", () => {
 
     expect(areaComissao).not.toBeVisible();
 
-    const checkbox = screen.getByRole("checkbox", {
-      name: "Checkbox Comissão",
-    });
-
-    fireEvent.click(checkbox);
+    fireEvent.mouseDown(screen.getByLabelText("Vínculo"));
+    fireEvent.click(screen.getByRole("option", { name: "Comissão" }));
 
     await waitFor(() => {
       expect(areaComissao).toBeVisible();
     });
+
+    expect(
+      screen.queryByText(/Defina cargo apenas quando fizer parte da equipe/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("Deve oferecer curso Não informado", () => {
+    render(
+      <ModalAdicionarAderido
+        open={true}
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+      />,
+    );
+
+    fireEvent.mouseDown(screen.getByLabelText("Curso"));
+
+    expect(screen.getByRole("option", { name: "Não informado" })).toBeInTheDocument();
   });
 
   it("Deve recolher os dados corretos e invocar o onConfirm como aderido completo por padrão", async () => {
@@ -87,21 +102,20 @@ describe("Componente <ModalAdicionarAderido />", () => {
       "novo@unifei.br",
     );
 
-    await user.type(
-      screen.getByRole("textbox", { name: /Nome completo/i }),
-      "João Teste",
-    );
+    fireEvent.change(screen.getByRole("textbox", { name: /Nome completo/i }), {
+      target: { value: "  jOÃO   da SILVA  " },
+    });
 
     await user.click(
       screen.getByRole("button", {
-        name: /Autorizar Adesão/i,
+        name: /Adicionar membro/i,
       }),
     );
 
     expect(mockOnConfirm).toHaveBeenCalledWith(
       expect.objectContaining({
         email: "novo@unifei.br",
-        nome: "João Teste",
+        nome: "João da Silva",
         cargo: "aderido",
         modalidade_adesao: "completo",
       }),
@@ -130,7 +144,7 @@ describe("Componente <ModalAdicionarAderido />", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: /Autorizar Adesão/i,
+        name: /Adicionar membro/i,
       }),
     );
 

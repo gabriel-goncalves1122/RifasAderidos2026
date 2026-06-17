@@ -61,7 +61,7 @@ describe("Service: CheckoutPixWebhookService", () => {
       CheckoutPixWebhookService.processarWebhook({
         payload: { id: "ORDE_001" },
         rawBody: JSON.stringify({ id: "ORDE_001" }),
-        assinatura: "assinatura-invalida",
+        assinatura: "aW52YWxpZA==",
       }),
     ).rejects.toThrow("INVALID_SIGNATURE");
 

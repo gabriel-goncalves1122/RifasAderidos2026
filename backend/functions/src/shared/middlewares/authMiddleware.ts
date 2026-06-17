@@ -11,7 +11,14 @@ export interface AuthRequest extends Request {
   };
 }
 
-const SUPER_ADMINS = ["comissao0026@gmail.com"];
+function obterSuperAdmins(): string[] {
+  const envValue = process.env.SUPER_ADMIN_EMAILS || "";
+
+  return envValue
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter((email) => email.length > 0);
+}
 
 const CARGOS_TESOURARIA_OU_ADMIN = [
   "admin",
@@ -120,10 +127,14 @@ export const requireTesourariaOrAdmin = async (
     return;
   }
 
-  // Libera acesso emergencial mesmo se o documento do Firestore estiver inconsistente.
-  if (user.email && SUPER_ADMINS.includes(user.email)) {
-    next();
-    return;
+  // Libera acesso para super-admins configurados via env var SUPERVISOR_ADMIN_EMAILS
+  if (user.email) {
+    const superAdmins = obterSuperAdmins();
+
+    if (superAdmins.includes(user.email.toLowerCase())) {
+      next();
+      return;
+    }
   }
 
   const cargoEfetivo = user.role || user.cargo || "aderido";

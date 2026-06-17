@@ -1,5 +1,5 @@
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../shared/config/firebase";
+import { storage } from "@/shared/config/firebase";
 
 // Tipagem rigorosa para garantir que nunca enviaremos uma imagem sem os dados vitais
 export interface MetadadosComprovante {
@@ -46,5 +46,11 @@ export const storageService = {
       console.error("Erro ao fazer upload do comprovante:", error);
       throw new Error("Falha ao enviar a imagem do comprovante.");
     }
+  },
+
+  async uploadImagem(arquivo: File, pasta = "premios"): Promise<string> {
+    const storageRef = ref(storage, `${pasta}/${Date.now()}_${arquivo.name}`);
+    await uploadBytes(storageRef, arquivo);
+    return getDownloadURL(storageRef);
   },
 };

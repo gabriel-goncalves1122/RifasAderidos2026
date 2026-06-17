@@ -1,9 +1,9 @@
 // ============================================================================
-// ARQUIVO: frontend/src/types/secretaria.ts
+// ARQUIVO: frontend/src/shared/types/secretaria.ts
 // ============================================================================
-export * from "@/shared/types/secretaria";
 
 export type StatusCadastro = "ativo" | "pendente" | "inativo";
+export type StatusCadastroSecretaria = StatusCadastro;
 
 export type ModalidadeAdesao = "completo" | "meio";
 
@@ -25,7 +25,7 @@ export interface AderidoSecretaria {
   curso?: string;
   genero?: string;
   data_nascimento?: string;
-  dataNascimento?: string;
+  dataNascimento?: string; // Legado frontend fallback
 
   cargo?: string | null;
   modalidade_adesao?: ModalidadeAdesao;
@@ -42,8 +42,10 @@ export interface AderidoSecretaria {
 
   uid?: string | null;
   criado_em?: string;
-  cadastrado_em?: string;
+  cadastrado_em?: string; // Legado frontend fallback
 }
+
+export type GetAderidosResponse = AderidoSecretaria[];
 
 export interface FormNovoAderido {
   email: string;
@@ -65,4 +67,18 @@ export interface FormEditarAderido {
   data_nascimento: string;
   cargo: string;
   status_cadastro: StatusCadastro;
+}
+
+export type PostAderidoRequest = FormNovoAderido;
+export interface PostAderidoResponse {
+  idAderido: string;
+  modalidade?: ModalidadeAdesao;
+  bilhetesGerados: number;
+  faixaRifas: FaixaRifasSecretaria;
+}
+
+export type PutAderidoRequest = FormEditarAderido;
+export interface PutAderidoResponse {
+  idAderido: string;
+  camposAtualizados: string[];
 }

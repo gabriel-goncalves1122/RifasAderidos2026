@@ -1,14 +1,14 @@
-// ============================================================================
-// ARQUIVO: frontend/src/features/secretaria/components/detalhesAderido/FormEditarAderido.tsx
-// ============================================================================
 import {
   Alert,
+  Chip,
+  Divider,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 
 import {
@@ -26,6 +26,8 @@ import {
   formatarTelefone,
   somenteNumeros,
 } from "../../utils/formatadoresSecretaria";
+import { secretariaColors } from "../../styles/colors";
+import { secretariaComponents } from "../../styles/components";
 
 interface FormEditarAderidoProps {
   aderido: AderidoSecretaria;
@@ -53,6 +55,27 @@ function obterLabelStatus(status?: string) {
   return "Pendente";
 }
 
+function SectionTitle({ children }: { children: string }) {
+  return (
+    <Typography
+      variant="subtitle2"
+      color="primary.dark"
+      fontWeight={900}
+      sx={{ letterSpacing: "0.01em" }}
+    >
+      {children}
+    </Typography>
+  );
+}
+
+const chipSx = {
+  borderRadius: 2,
+  bgcolor: secretariaColors.verdeClaro,
+  color: secretariaColors.verdeEscuro,
+  border: `1px solid ${secretariaColors.borda}`,
+  fontWeight: 800,
+} as const;
+
 export function FormEditarAderido({
   aderido,
   form,
@@ -62,85 +85,111 @@ export function FormEditarAderido({
   const cursoLegadoForaDaLista = !!form.curso && !cursoSelecionado;
 
   return (
-    <Stack spacing={3}>
-      <Alert severity="info" sx={{ borderRadius: 2 }}>
-        Edite apenas dados cadastrais. Status, modalidade, faixa de rifas,
-        vendas, arrecadação e UID são dados operacionais preservados.
-      </Alert>
-
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-        <TextField
-          label="Nome"
-          value={form.nome}
-          onChange={(event) => onChange("nome", event.target.value)}
-          fullWidth
+    <Stack spacing={2.25}>
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+        <Chip
+          size="small"
+          label={`Status: ${obterLabelStatus(aderido.status_cadastro)}`}
+          sx={chipSx}
         />
-
-        <TextField
-          label="E-mail"
-          value={form.email}
-          onChange={(event) => onChange("email", event.target.value)}
-          fullWidth
+        <Chip
+          size="small"
+          label={`Modalidade: ${obterLabelModalidade(aderido)}`}
+          sx={chipSx}
         />
       </Stack>
 
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-        <TextField
-          label="CPF"
-          value={formatarCpf(form.cpf)}
-          onChange={(event) => {
-            // Mantém o estado limpo para persistência, mas exibe formatado na tela.
-            onChange("cpf", somenteNumeros(event.target.value).slice(0, 11));
-          }}
-          fullWidth
-          inputProps={{
-            inputMode: "numeric",
-            maxLength: 14,
-          }}
-        />
+      <Stack spacing={1.5}>
+        <SectionTitle>Contato</SectionTitle>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+          <TextField
+            label="Nome"
+            value={form.nome}
+            onChange={(event) => onChange("nome", event.target.value)}
+            fullWidth
+            size="small"
+            sx={secretariaComponents.formField}
+          />
 
-        <TextField
-          label="Telefone"
-          value={formatarTelefone(form.telefone)}
-          onChange={(event) => {
-            // Mantém o estado limpo para persistência, mas exibe formatado na tela.
-            onChange(
-              "telefone",
-              somenteNumeros(event.target.value).slice(0, 11),
-            );
-          }}
-          fullWidth
-          inputProps={{
-            inputMode: "numeric",
-            maxLength: 15,
-          }}
-        />
+          <TextField
+            label="E-mail"
+            value={form.email}
+            onChange={(event) => onChange("email", event.target.value)}
+            fullWidth
+            size="small"
+            sx={secretariaComponents.formField}
+          />
+        </Stack>
       </Stack>
 
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-        <FormControl fullWidth>
-          <InputLabel>Curso</InputLabel>
-          <Select
-            value={cursoSelecionado}
-            label="Curso"
-            onChange={(event) => onChange("curso", event.target.value)}
-          >
-            <MenuItem value="">Não informado</MenuItem>
+      <Divider />
 
-            {CURSOS_UNIFEI.map((curso) => (
-              <MenuItem key={curso} value={curso.toUpperCase()}>
-                {curso}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      <Stack spacing={1.5}>
+        <SectionTitle>Dados pessoais</SectionTitle>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+          <TextField
+            label="CPF"
+            value={formatarCpf(form.cpf)}
+            onChange={(event) => {
+              // Mantém o estado limpo para persistência, mas exibe formatado na tela.
+              onChange("cpf", somenteNumeros(event.target.value).slice(0, 11));
+            }}
+            fullWidth
+            size="small"
+            sx={secretariaComponents.formField}
+            inputProps={{
+              inputMode: "numeric",
+              maxLength: 14,
+            }}
+          />
 
-        <TextField
-          label="Data de nascimento"
-          value={form.data_nascimento}
-          onChange={(event) => onChange("data_nascimento", event.target.value)}
-          fullWidth
-        />
+          <TextField
+            label="Telefone"
+            value={formatarTelefone(form.telefone)}
+            onChange={(event) => {
+              // Mantém o estado limpo para persistência, mas exibe formatado na tela.
+              onChange(
+                "telefone",
+                somenteNumeros(event.target.value).slice(0, 11),
+              );
+            }}
+            fullWidth
+            size="small"
+            sx={secretariaComponents.formField}
+            inputProps={{
+              inputMode: "numeric",
+              maxLength: 15,
+            }}
+          />
+        </Stack>
+
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+          <FormControl fullWidth size="small" sx={secretariaComponents.selectField}>
+            <InputLabel>Curso</InputLabel>
+            <Select
+              value={cursoSelecionado}
+              label="Curso"
+              onChange={(event) => onChange("curso", event.target.value)}
+            >
+              <MenuItem value="">Não informado</MenuItem>
+
+              {CURSOS_UNIFEI.map((curso) => (
+                <MenuItem key={curso} value={curso.toUpperCase()}>
+                  {curso}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <TextField
+            label="Data de nascimento"
+            value={form.data_nascimento}
+            onChange={(event) => onChange("data_nascimento", event.target.value)}
+            fullWidth
+            size="small"
+            sx={secretariaComponents.formField}
+          />
+        </Stack>
       </Stack>
 
       {cursoLegadoForaDaLista && (
@@ -150,46 +199,35 @@ export function FormEditarAderido({
         </Alert>
       )}
 
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-        <TextField
-          label="Gênero"
-          value={form.genero}
-          onChange={(event) => onChange("genero", event.target.value)}
-          fullWidth
-        />
+      <Divider />
 
-        <FormControl fullWidth>
-          <InputLabel>Cargo</InputLabel>
-          <Select
-            value={form.cargo}
-            label="Cargo"
-            onChange={(event) => onChange("cargo", event.target.value)}
-          >
-            {CARGOS_COMISSAO.map((cargo) => (
-              <MenuItem key={cargo.id} value={cargo.id}>
-                {cargo.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Stack>
+      <Stack spacing={1.5}>
+        <SectionTitle>Vínculo</SectionTitle>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+          <TextField
+            label="Gênero"
+            value={form.genero}
+            onChange={(event) => onChange("genero", event.target.value)}
+            fullWidth
+            size="small"
+            sx={secretariaComponents.formField}
+          />
 
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-        <TextField
-          label="Modalidade"
-          value={obterLabelModalidade(aderido)}
-          fullWidth
-          disabled
-          helperText="A modalidade é definida na criação e não pode ser alterada."
-        />
-
-        <TextField
-          label="Status"
-          value={obterLabelStatus(aderido.status_cadastro)}
-          fullWidth
-          disabled
-          helperText="O status não pode ser alterado pela edição cadastral."
-        />
+          <FormControl fullWidth size="small" sx={secretariaComponents.selectField}>
+            <InputLabel>Cargo</InputLabel>
+            <Select
+              value={form.cargo}
+              label="Cargo"
+              onChange={(event) => onChange("cargo", event.target.value)}
+            >
+              {CARGOS_COMISSAO.map((cargo) => (
+                <MenuItem key={cargo.id} value={cargo.id}>
+                  {cargo.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
       </Stack>
     </Stack>
   );

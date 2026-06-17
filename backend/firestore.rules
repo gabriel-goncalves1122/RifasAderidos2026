@@ -7,8 +7,29 @@ service cloud.firestore {
     // 1. USUÁRIOS
     // ========================================================================
     match /usuarios/{documentId} {
-      // Qualquer usuário logado pode ler a lista de usuários (necessário para a aba da Secretaria)
+      // =====================================================================
+      // REGRA DEV (ativa)
+      // Qualquer autenticado pode ler usuarios.
+      // =====================================================================
       allow read: if request.auth != null;
+
+      // =====================================================================
+      // REGRA PROD (comente a de cima e descomente esta antes do deploy)
+      // Pré-requisito: rodar `npm run backfill:claims` para backfill
+      //                de usuarios existentes.
+      // A regra usa request.auth.token.cargo que é definido via
+      // admin.auth().setCustomUserClaims() em:
+      //   - authService.completarRegisto() (vinculo uid)
+      //   - secretariaService.atualizarAderido() (alteracao de cargo)
+      //   - authTriggers.onCreateUserSetClaims (novo cadastro Auth)
+      // =====================================================================
+      // allow read: if request.auth != null && (
+      //   request.auth.uid == documentId
+      //   || request.auth.token.cargo in [
+      //     "admin", "presidencia", "diretor_tesouraria",
+      //     "membro_tesouraria", "tesouraria", "secretaria"
+      //   ]
+      // );
       
       // ATUALIZAÇÃO (Cadastro inicial): Permite que o usuário insira o próprio CPF/UID
       // Bloqueia tentativas de hackear cargo ou saldo.

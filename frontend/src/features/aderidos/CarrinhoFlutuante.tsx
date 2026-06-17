@@ -4,9 +4,9 @@
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 import { Box, Button, Collapse, Paper, Typography } from "@mui/material";
 
-import { useKeyboardHeight } from "./hooks/useKeyboardHeight";
+import { useKeyboardHeight } from "@/shared/hooks/useKeyboardHeight";
 import { painelAderidoStyles } from "./styles/painelAderidoStyles";
-import { formatarMoedaBR } from "./utils/formatadoresAderido";
+import { formatarMoeda } from "@/shared/utils/formatadores";
 
 interface CarrinhoFlutuanteProps {
   quantidade: number;
@@ -52,7 +52,7 @@ export function CarrinhoFlutuante({
                   </Typography>
 
                   <Typography sx={painelAderidoStyles.carrinhoFixoDescricao}>
-                    {formatarMoedaBR(valorTotal)}
+                    {formatarMoeda(valorTotal)}
                   </Typography>
                 </Box>
               </Box>

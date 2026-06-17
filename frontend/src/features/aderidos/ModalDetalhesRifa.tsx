@@ -13,7 +13,7 @@ import {
 
 import { painelAderidoStyles } from "./styles/painelAderidoStyles";
 import { RifaAderido } from "./types/painelAderido";
-import { formatarDataHoraBR } from "./utils/formatadoresAderido";
+import { formatarData } from "@/shared/utils/formatadores";
 import { DetalheRifaItem } from "./components/detalhesRifa/DetalheRifaItem";
 import { StatusRifaDetalhe } from "./components/detalhesRifa/StatusRifaDetalhe";
 
@@ -56,12 +56,12 @@ export function ModalDetalhesRifa({
 
           <DetalheRifaItem
             label="Data da reserva"
-            value={formatarDataHoraBR(rifa.data_reserva)}
+            value={formatarData(rifa.data_reserva)}
           />
 
           <DetalheRifaItem
             label="Data de aprovação"
-            value={formatarDataHoraBR(rifa.data_pagamento)}
+            value={formatarData(rifa.data_pagamento)}
           />
         </Stack>
       </DialogContent>

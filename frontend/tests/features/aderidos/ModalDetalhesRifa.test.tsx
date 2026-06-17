@@ -36,7 +36,7 @@ describe("Componente <ModalDetalhesRifa />", () => {
     expect(screen.getByText("Ana Beatriz")).toBeInTheDocument();
     expect(screen.getByText("(11) 98765-4321")).toBeInTheDocument();
     expect(screen.getByText("ana@email.com")).toBeInTheDocument();
-    expect(screen.getByText(/Data não registrada/i)).toBeInTheDocument();
+    expect(screen.getByText(/Data não informada/i)).toBeInTheDocument();
   });
 
   it("Deve fechar o modal ao clicar no botão Fechar", () => {

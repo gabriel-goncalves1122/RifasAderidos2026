@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   useKeyboardHeight: vi.fn(() => 0),
 }));
 
-vi.mock("@/features/aderidos/hooks/useKeyboardHeight", () => ({
+vi.mock("@/shared/hooks/useKeyboardHeight", () => ({
   useKeyboardHeight: mocks.useKeyboardHeight,
 }));
 

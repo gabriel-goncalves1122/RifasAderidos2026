@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { createHash } = require("crypto");
+const { createHmac } = require("crypto");
 
 function lerArg(nome, padrao) {
   const indice = process.argv.indexOf(`--${nome}`);
@@ -11,7 +11,7 @@ function lerArg(nome, padrao) {
 }
 
 function assinatura(rawBody, token) {
-  return createHash("sha256").update(`${token}-${rawBody}`).digest("hex");
+  return createHmac("sha256", token).update(rawBody, "utf8").digest("base64");
 }
 
 async function main() {
@@ -46,7 +46,7 @@ async function main() {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-authenticity-token": assinatura(rawBody, token),
+      "x-pagbank-signature": assinatura(rawBody, token),
     },
     body: rawBody,
   });

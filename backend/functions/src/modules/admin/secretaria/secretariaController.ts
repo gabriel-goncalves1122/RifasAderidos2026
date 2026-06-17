@@ -1,46 +1,43 @@
 // ============================================================================
 // ARQUIVO: backend/functions/src/modules/admin/secretaria/secretariaController.ts
 // ============================================================================
-import { Response } from "express";
+import { NextFunction, Response } from "express";
 
 import { AuthRequest } from "../../../shared/middlewares/authMiddleware";
+import { AppError } from "../../../shared/classes/AppError";
 import { secretariaService } from "./secretariaService";
 
 export const secretariaController = {
-  async adicionarAderido(req: AuthRequest, res: Response): Promise<any> {
+  async listarAderidos(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const lista = await secretariaService.listarAderidos();
+      res.status(200).json(lista);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async adicionarAderido(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const dadosNovos = req.body;
-
-      if (!dadosNovos.email) {
-        return res.status(400).json({ error: "O e-mail é obrigatório." });
-      }
-
       const resultado = await secretariaService.adicionarAderido(dadosNovos);
 
-      return res.status(201).json({
+      res.status(201).json({
         sucesso: true,
         mensagem: "Aderido e bilhetes gerados com sucesso!",
         ...resultado,
       });
     } catch (error: any) {
-      console.error(
-        "[Secretaria Controller] Erro ao adicionar aderido:",
-        error,
-      );
-
-      return res.status(400).json({
-        error: error.message || "Erro desconhecido ao adicionar aderido.",
-      });
+      next(error);
     }
   },
 
-  async atualizarAderido(req: AuthRequest, res: Response): Promise<any> {
+  async atualizarAderido(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const idParam = req.params.id;
 
-      // Garante que a rota recebeu um único ID válido antes de chamar o service.
       if (!idParam || Array.isArray(idParam)) {
-        return res.status(400).json({ error: "ID do aderido inválido." });
+        throw new AppError("ID_INVALIDO", "ID do aderido inválido.", 400);
       }
 
       const resultado = await secretariaService.atualizarAderido(
@@ -48,23 +45,13 @@ export const secretariaController = {
         req.body,
       );
 
-      return res.status(200).json({
+      res.status(200).json({
         sucesso: true,
         mensagem: "Dados do aderido atualizados com sucesso.",
         ...resultado,
       });
     } catch (error: any) {
-      console.error(
-        "[Secretaria Controller] Erro ao atualizar aderido:",
-        error,
-      );
-
-      const statusCode =
-        error.message === "Aderido não encontrado." ? 404 : 400;
-
-      return res.status(statusCode).json({
-        error: error.message || "Erro desconhecido ao atualizar aderido.",
-      });
+      next(error);
     }
   },
 };

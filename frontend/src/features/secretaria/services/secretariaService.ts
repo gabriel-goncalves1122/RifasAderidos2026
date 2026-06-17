@@ -1,9 +1,6 @@
 // ============================================================================
 // ARQUIVO: frontend/src/features/secretaria/services/secretariaService.ts
 // ============================================================================
-import { collection, getDocs } from "firebase/firestore";
-
-import { db } from "../../../shared/config/firebase";
 import { fetchAPI } from "@/shared/services/api";
 
 import {
@@ -16,24 +13,16 @@ import { normalizarAderidoSecretaria } from "../mappers/secretariaMapper";
 
 export const secretariaService = {
   async buscarAderidos(): Promise<AderidoSecretaria[]> {
-    const querySnapshot = await getDocs(collection(db, "usuarios"));
+    // A API já deve retornar a lista com o contrato preenchido e na ordem correta
+    const dados = await fetchAPI("/admin/aderidos", "GET");
 
-    const lista = querySnapshot.docs.map((docSnap) =>
-      normalizarAderidoSecretaria(docSnap.id, docSnap.data()),
+    // Mantemos a normalização para segurança (defensiva) 
+    // caso ainda haja dados legados que o backend não tratou.
+    const lista = (dados as any[]).map((d) =>
+      normalizarAderidoSecretaria(d.id, d),
     );
 
-    // Ordenação fica no service porque é regra padrão da listagem administrativa.
-    return lista.sort((a, b) => {
-      if (a.status_cadastro === "ativo" && b.status_cadastro !== "ativo") {
-        return -1;
-      }
-
-      if (a.status_cadastro !== "ativo" && b.status_cadastro === "ativo") {
-        return 1;
-      }
-
-      return (a.nome || a.email).localeCompare(b.nome || b.email);
-    });
+    return lista;
   },
 
   async adicionarAderidoIndividual(dados: FormNovoAderido) {

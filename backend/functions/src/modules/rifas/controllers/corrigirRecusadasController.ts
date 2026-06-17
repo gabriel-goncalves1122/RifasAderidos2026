@@ -9,7 +9,7 @@ import { RifasService } from "../rifasService";
 export async function corrigirRecusadas(
   req: AuthRequest,
   res: Response,
-): Promise<void> {
+): Promise<any> {
   try {
     const emailLogado = req.user?.email;
     const { numerosRifas, nome, telefone, email, comprovanteUrl } = req.body;

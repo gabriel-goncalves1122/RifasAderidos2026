@@ -35,6 +35,8 @@ jest.mock("../../../src/shared/config/firebaseAdmin", () => {
 const mockTransactionSet: any = jest.fn();
 const mockTransactionGet: any = jest.fn();
 
+const mockTransactionUpdate: any = jest.fn();
+
 describe("Service: secretariaService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -43,6 +45,7 @@ describe("Service: secretariaService", () => {
       return callback({
         get: mockTransactionGet,
         set: mockTransactionSet,
+        update: mockTransactionUpdate,
       });
     });
   });
@@ -178,15 +181,7 @@ describe("Service: secretariaService", () => {
   });
 
   it("Deve atualizar apenas campos cadastrais do aderido", async () => {
-    const mockUpdate = jest.fn();
-
-    mockDoc.mockReturnValueOnce({
-      id: "ADERIDO_001",
-      get: mockGet,
-      update: mockUpdate,
-    });
-
-    mockGet.mockResolvedValueOnce({
+    mockTransactionGet.mockResolvedValueOnce({
       exists: true,
       data: () => ({
         status_cadastro: "ativo",
@@ -200,7 +195,8 @@ describe("Service: secretariaService", () => {
       status_cadastro: "ativo",
     });
 
-    expect(mockUpdate).toHaveBeenCalledWith(
+    expect(mockTransactionUpdate).toHaveBeenCalledWith(
+      expect.anything(),
       expect.objectContaining({
         nome: "GABRIEL SAMPAIO",
         telefone: "35999999999",
@@ -219,6 +215,42 @@ describe("Service: secretariaService", () => {
         "status",
         "atualizado_em",
       ]),
+    });
+  });
+
+  it("Deve listar aderidos preservando campos originais legados", async () => {
+    mockGet.mockReset();
+    mockGet.mockResolvedValue({
+      docs: [
+        {
+          id: "ADERIDO_001",
+          data: () => ({
+            Nome: "LEGADO 1",
+            status: "Aderido",
+          }),
+        },
+        {
+          id: "ADERIDO_002",
+          data: () => ({
+            nome: "NOVO 2",
+            status_cadastro: "pendente",
+          }),
+        },
+      ],
+    });
+
+    const resultado = await secretariaService.listarAderidos();
+
+    expect(resultado).toHaveLength(2);
+    expect(resultado[0]).toEqual({
+      id: "ADERIDO_001",
+      Nome: "LEGADO 1",
+      status: "Aderido",
+    });
+    expect(resultado[1]).toEqual({
+      id: "ADERIDO_002",
+      nome: "NOVO 2",
+      status_cadastro: "pendente",
     });
   });
 });

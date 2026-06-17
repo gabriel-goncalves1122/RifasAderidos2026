@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { StatusChip } from "@/features/secretaria/components/StatusChip";
+import { StatusChip } from "@/features/secretaria/components/shared/StatusChip";
 
 describe("Componente <StatusChip />", () => {
   it("Deve mostrar 'Conta Ativa' quando o status for ativo", () => {

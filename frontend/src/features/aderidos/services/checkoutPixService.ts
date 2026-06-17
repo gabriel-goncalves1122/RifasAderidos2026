@@ -18,7 +18,7 @@ import {
   CheckoutPixCobranca,
   CriarCobrancaPixParams,
 } from "../types/checkoutPix";
-import { sanitizarDadosCliente } from "../utils/sanitizadores";
+import { sanitizarDadosCliente } from "@/shared/utils/sanitizadores";
 
 let requisicaoEmAndamento = false;
 
@@ -93,5 +93,17 @@ export const checkoutPixService = {
     } finally {
       requisicaoEmAndamento = false;
     }
+  },
+
+  // ------------------------------------------------------------------
+  // Consulta o status de uma cobranca Pix pelo ID.
+  //
+  // Usado para polling apos a geracao da cobranca para detectar
+  // quando o pagamento foi confirmado pelo banco.
+  // ------------------------------------------------------------------
+  async consultarCobrancaPix(id: string) {
+    const resposta = await fetchAPI(`/rifas/checkout/pix/${id}`, "GET");
+
+    return normalizarCobrancaPix(resposta);
   },
 };

@@ -26,10 +26,16 @@ PAGBANK_API_TOKEN
 PAGBANK_API_BASE_URL
 PAGBANK_WEBHOOK_TOKEN
 API_PUBLIC_BASE_URL
+SUPER_ADMIN_EMAILS
+SMTP_USER
+SMTP_PASS
 ```
 
 `PAGBANK_API_BASE_URL` usa sandbox como fallback. `API_PUBLIC_BASE_URL`
 deve apontar para a base publica das Functions para montar `notification_urls`.
+
+`SUPER_ADMIN_EMAILS` e uma lista separada por virgula de emails com acesso irrestrito.
+Fallback: consulta ao documento `configuracoes/sistema` no Firestore.
 
 ## Fluxo
 
@@ -89,12 +95,54 @@ Authorization: Bearer <tesouraria-token>
 }
 ```
 
+## Webhook
+
+O webhook `POST /rifas/checkout/pix/webhook` e aberto (sem `validateToken`) e
+valida autenticidade via assinatura HMAC-SHA256.
+
+### Header de Assinatura
+
+- Header: `x-pagbank-signature` (padrao PagBank).
+- Fallback legado: `x-authenticity-token`.
+- Algoritmo: HMAC-SHA256, chave = `PAGBANK_WEBHOOK_TOKEN`, mensagem = raw body.
+- Output: base64.
+- Comparacao: `crypto.timingSafeEqual` para evitar timing attack.
+
+### Fluxo de Processamento
+
+1. Recebe raw body (buffered pelo JSON parser configurado com `verify`).
+2. Extrai `id` do pedido e `status` do evento.
+3. Valida assinatura conforme algoritmo acima.
+4. Executa `runTransaction`:
+   - Le `pagamentos_pix` do pedido.
+   - Atualiza status do pagamento.
+   - Para cada rifa: atualiza status.
+   - Cria notificacao (`rifa_liberada` se negado/recusado).
+5. Responde 200.
+
 Sincronizar abertas:
 
 ```http
 POST /tesouraria/transacoes-bancarias/sincronizar
 Authorization: Bearer <tesouraria-token>
 ```
+
+## Polling
+
+Apos criar o checkout, o frontend inicia polling automaticamente:
+
+- Intervalo: 10 segundos.
+- Maximo de tentativas: 36 (~6 minutos).
+- Rota: `GET /rifas/checkout/pix/:id`.
+- Service: `checkoutPixService.consultarCobrancaPix`.
+- Estados exibidos no frontend:
+  - **Aguardando pagamento** — banner amarelo com spinner e instrucoes.
+  - **Confirmado** — banner verde com icone de check.
+  - **Expirado** — banner de alerta vermelho/laranja.
+
+A consulta retorna o status atual do banco (`WAITING`, `PAID`, `DECLINED`, etc.).
+Se o banco confirmar (`PAID`/`AUTHORIZED`), `onSuccess()` e chamado para limpar
+selecao e invalidar cache.
 
 ## Webhook Simulado
 
@@ -109,8 +157,9 @@ node scripts/simular-webhook-pix.js \
   --status PAID
 ```
 
-O script monta o raw body e envia `x-authenticity-token` com SHA-256 de
-`{PAGBANK_WEBHOOK_TOKEN}-{rawBody}`.
+O script monta o raw body e envia `x-pagbank-signature` com HMAC-SHA256 de
+`{PAGBANK_WEBHOOK_TOKEN}` + raw body em base64. Para compatibilidade legada,
+o backend aceita `x-authenticity-token` como fallback.
 
 ## Testes Relacionados
 

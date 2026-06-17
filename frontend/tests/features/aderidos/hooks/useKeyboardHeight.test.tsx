@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { useKeyboardHeight } from "@/features/aderidos/hooks/useKeyboardHeight";
+import { useKeyboardHeight } from "@/shared/hooks/useKeyboardHeight";
 
 describe("Hook: useKeyboardHeight", () => {
   const viewportOriginal = window.visualViewport;

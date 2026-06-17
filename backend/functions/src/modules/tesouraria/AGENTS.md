@@ -71,6 +71,10 @@ Regras atuais:
 - `aceitar` exige banco `PAID` ou `AUTHORIZED`, marca rifas como `pago`, grava `status_validacao: "aceita"` e pode enviar recibo aprovado;
 - `negar` exige motivo, marca rifas como `recusado`, grava `status_validacao: "negada"` e cria notificacao `correcao_dados`.
 
+**ACID:** tanto `aceitar` quanto `negar` DEVEM usar `runTransaction` para garantir
+que a mudanca de status das rifas e o registro de auditoria ocorram atomicamente.
+Nao use `update` individuais separados.
+
 As regras puras de agrupamento, mapeamento, montagem e resumo Pix ficam em `helpers/pixTransacoesHelper.ts`.
 
 O service deve buscar documentos e chamar helpers. Helpers nao devem acessar Firestore/Admin SDK, Express, `Request` ou `Response`.
