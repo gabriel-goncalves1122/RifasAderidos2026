@@ -99,12 +99,16 @@ describe("Componente <ModalAdicionarAderido />", () => {
 
     await user.type(
       screen.getByLabelText(/E-mail da Keeper/i),
-      "novo@unifei.br",
+      "  NOVO@UNIFEI.BR  ",
     );
 
     fireEvent.change(screen.getByRole("textbox", { name: /Nome completo/i }), {
       target: { value: "  jOÃO   da SILVA  " },
     });
+
+    await user.type(screen.getByLabelText(/Telefone/i), "35999998888");
+
+    expect(screen.getByLabelText(/Telefone/i)).toHaveValue("(35) 99999-8888");
 
     await user.click(
       screen.getByRole("button", {
@@ -116,6 +120,7 @@ describe("Componente <ModalAdicionarAderido />", () => {
       expect.objectContaining({
         email: "novo@unifei.br",
         nome: "João da Silva",
+        telefone: "35999998888",
         cargo: "aderido",
         modalidade_adesao: "completo",
       }),

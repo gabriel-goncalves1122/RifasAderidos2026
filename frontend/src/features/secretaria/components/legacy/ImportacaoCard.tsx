@@ -13,7 +13,8 @@ import FolderZipIcon from "@mui/icons-material/FolderZip";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRef, useState } from "react";
-import { useCompactacao } from "../../../../shared/hooks/useCompactacao";
+
+import { useCompactacao } from "../../legacy/hooks/useCompactacao";
 
 interface ImportacaoCardProps {
   onImportar: (ficheiro: File) => Promise<void>;

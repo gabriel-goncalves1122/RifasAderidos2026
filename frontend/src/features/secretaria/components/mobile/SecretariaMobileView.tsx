@@ -13,7 +13,8 @@ import { SecretariaMobileFAB } from "./SecretariaMobileFAB";
 import { SecretariaMobileSwipeableCard } from "./SecretariaMobileSwipeableCard";
 import { SkeletonSecretariaList } from "../shared/SkeletonSecretariaList";
 import { EmptyState } from "../../../../shared/components/EmptyState";
-import type { AderidoSecretaria } from "../../types";
+import type { AderidoSecretaria } from "@/shared/types/secretaria";
+import { safeAreaStickyTop } from "@/shared/tokens/safeArea";
 import { secretariaComponents } from "../../styles/components";
 
 interface SecretariaMobileViewProps {
@@ -46,7 +47,19 @@ export function SecretariaMobileView({
 
   return (
     <>
-      <Box sx={{ position: "sticky", top: 0, zIndex: 10, bgcolor: "#fafafa", pt: 1, pb: 1, mx: -2, px: 2, mb: 0.5 }}>
+      <Box
+        sx={{
+          position: "sticky",
+          ...safeAreaStickyTop,
+          zIndex: 10,
+          bgcolor: "#fafafa",
+          pt: 1,
+          pb: 1,
+          mx: -2,
+          px: 2,
+          mb: 0.5,
+        }}
+      >
         <TextField
           fullWidth
           variant="outlined"

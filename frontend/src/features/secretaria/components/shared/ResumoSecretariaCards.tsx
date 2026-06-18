@@ -8,7 +8,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
-import { aderidosMotion } from "../../../aderidos/tokens/motion";
+import { aderidosMotion } from "@/shared/tokens/motion";
 import { secretariaColors } from "../../styles/colors";
 import { surfaces } from "../../styles/surfaces";
 

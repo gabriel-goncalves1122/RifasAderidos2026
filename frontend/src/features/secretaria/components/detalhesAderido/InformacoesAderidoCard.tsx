@@ -10,7 +10,7 @@ import {
   formatarNomeMembro,
   formatarTelefone,
 } from "../../utils/formatadoresSecretaria";
-import type { AderidoSecretaria } from "../../types";
+import type { AderidoSecretaria } from "@/shared/types/secretaria";
 
 interface InformacoesAderidoCardProps {
   aderido: AderidoSecretaria;

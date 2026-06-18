@@ -17,8 +17,8 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 import { CargoChip } from "./CargoChip";
 import { StatusChip } from "./StatusChip";
-import type { AderidoSecretaria } from "../../types";
-import type { SortDir } from "../../types";
+import type { AderidoSecretaria } from "@/shared/types/secretaria";
+import type { SortDir } from "../../types/secretariaLocalTypes";
 import { surfaces } from "../../styles/surfaces";
 
 interface SecretariaTableProps {

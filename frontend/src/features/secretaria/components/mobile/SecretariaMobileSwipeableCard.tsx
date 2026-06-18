@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 import { CargoChip } from "../shared/CargoChip";
-import type { AderidoSecretaria } from "../../types";
+import type { AderidoSecretaria } from "@/shared/types/secretaria";
 import { surfaces } from "../../styles/surfaces";
 
 const STATUS_DOT: Record<string, string> = {

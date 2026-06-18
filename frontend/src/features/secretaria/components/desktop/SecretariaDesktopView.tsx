@@ -8,8 +8,11 @@ import { SecretariaDesktopDetailPane } from "./SecretariaDesktopDetailPane";
 import { SecretariaTable } from "../shared/SecretariaTable";
 import { SkeletonSecretariaList } from "../shared/SkeletonSecretariaList";
 import { EmptyState } from "../../../../shared/components/EmptyState";
-import type { AderidoSecretaria } from "../../types";
-import type { SortDir } from "../../types";
+import type {
+  AderidoSecretaria,
+  FormEditarAderido,
+} from "@/shared/types/secretaria";
+import type { SortDir } from "../../types/secretariaLocalTypes";
 
 interface SecretariaDesktopViewProps {
   aderidosFiltrados: AderidoSecretaria[];
@@ -27,8 +30,7 @@ interface SecretariaDesktopViewProps {
   onToggleSelect: (id: string) => void;
   onSelectAll: () => void;
   onClearSelection: () => void;
-  onExportarSelecionados: () => void;
-  onSalvarAderido: (id: string, dados: any) => Promise<void>;
+  onSalvarAderido: (id: string, dados: FormEditarAderido) => Promise<void>;
 }
 
 export function SecretariaDesktopView({
@@ -47,7 +49,6 @@ export function SecretariaDesktopView({
   onToggleSelect,
   onSelectAll,
   onClearSelection,
-  onExportarSelecionados,
   onSalvarAderido,
 }: SecretariaDesktopViewProps) {
   if (loading) {
@@ -105,9 +106,6 @@ export function SecretariaDesktopView({
             <SecretariaDesktopBatchBar
               selectedCount={selectedIds.size}
               onClearSelection={onClearSelection}
-              onExportarSelecionados={onExportarSelecionados}
-              onAtivarSelecionados={() => {}}
-              onAlterarCargoSelecionados={() => {}}
             />
           </>
         )}

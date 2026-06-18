@@ -5,8 +5,8 @@ import type {
   AderidoSecretaria,
   FormEditarAderido,
   FormNovoAderido,
-  Notificacao,
-} from "../types";
+} from "@/shared/types/secretaria";
+import type { Notificacao } from "../types/secretariaLocalTypes";
 export function useSecretariaController() {
   const [aderidos, setAderidos] = useState<AderidoSecretaria[]>([]);
   const [loading, setLoading] = useState(false);

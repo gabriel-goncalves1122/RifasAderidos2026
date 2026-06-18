@@ -11,16 +11,28 @@ import {
 
 import { normalizarAderidoSecretaria } from "../mappers/secretariaMapper";
 
+function obterIdRegistroSecretaria(registro: unknown): string | null {
+  if (!registro || typeof registro !== "object") return null;
+
+  const dados = registro as Record<string, unknown>;
+  const id = dados.id ?? dados.id_aderido;
+  const idNormalizado = String(id || "").trim();
+
+  return idNormalizado || null;
+}
+
 export const secretariaService = {
   async buscarAderidos(): Promise<AderidoSecretaria[]> {
     // A API já deve retornar a lista com o contrato preenchido e na ordem correta
     const dados = await fetchAPI("/admin/aderidos", "GET");
 
-    // Mantemos a normalização para segurança (defensiva) 
+    // Mantemos a normalização para segurança (defensiva)
     // caso ainda haja dados legados que o backend não tratou.
-    const lista = (dados as any[]).map((d) =>
-      normalizarAderidoSecretaria(d.id, d),
-    );
+    const lista = (Array.isArray(dados) ? dados : []).flatMap((registro) => {
+      const id = obterIdRegistroSecretaria(registro);
+
+      return id ? [normalizarAderidoSecretaria(id, registro)] : [];
+    });
 
     return lista;
   },
@@ -31,7 +43,17 @@ export const secretariaService = {
   },
 
   async atualizarAderidoSecretaria(id: string, dados: FormEditarAderido) {
+    const idSeguro = id.trim();
+
+    if (!idSeguro) {
+      throw new Error("ID do aderido não informado para atualização.");
+    }
+
     // O backend deve usar update/merge para preservar documentos legados do Firestore.
-    return fetchAPI(`/admin/aderidos/${id}`, "PUT", dados);
+    return fetchAPI(
+      `/admin/aderidos/${encodeURIComponent(idSeguro)}`,
+      "PUT",
+      dados,
+    );
   },
 };

@@ -118,7 +118,6 @@ export function SecretariaView() {
           onToggleSelect={toggleSelectId}
           onSelectAll={handleSelectAll}
           onClearSelection={limparSelecao}
-          onExportarSelecionados={() => {}}
           onSalvarAderido={atualizarAderidoSecretaria}
         />
       )}

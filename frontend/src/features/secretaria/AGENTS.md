@@ -23,7 +23,6 @@ secretaria/
 │   ├── mobile/
 │   │   ├── SecretariaMobileView.tsx          (cards + FAB + filtros rápidos)
 │   │   ├── SecretariaMobileFAB.tsx           (floating action button)
-│   │   ├── SecretariaMobileFilterChips.tsx   (legado; não usar em novas telas)
 │   │   └── SecretariaMobileSwipeableCard.tsx (card estático que abre detalhes)
 │   └── shared/
 │       ├── SecretariaHeader.tsx         (titulo + contagem + botao Nova Adesao; prop showButton)
@@ -32,7 +31,6 @@ secretaria/
 │       ├── SecretariaTable.tsx          (tabela com colunas ordenaveis + checkboxes opcionais)
 │       ├── SecretariaCardList.tsx       (cards simplificados com status dot)
 │       ├── ResumoSecretariaCards.tsx    (cards de resumo)
-│       ├── ImportacaoCard.tsx           (import/export CSV/ZIP)
 │       ├── SecretariaDetailPanel.tsx    (Drawer para detalhes, usado apenas em fallback)
 │       ├── SkeletonSecretariaList.tsx   (skeleton loading)
 │       ├── CargoChip.tsx
@@ -55,20 +53,27 @@ secretaria/
 │   └── secretariaService.ts          (Consumo exclusivo via fetchAPI REST do Backend, zero Firebase Web SDK)
 │
 ├── styles/
-│   ├── index.ts
 │   ├── surfaces.ts
 │   └── layout.ts
 │
 ├── types/
-│   └── index.ts                      (tipos locais + re-export de shared)
+│   └── secretariaLocalTypes.ts       (tipos locais)
+│
+├── legacy/
+│   └── hooks/
+│       └── useCompactacao.ts         (usado apenas por ImportacaoCard legado)
 │
 ├── utils/
 │   ├── calcularResumoSecretaria.ts
 │   ├── filtrarAderidos.ts
 │   └── formatadoresSecretaria.ts
 │
-└── mappers/
-    └── secretariaMapper.ts
+├── mappers/
+│   └── secretariaMapper.ts
+│
+└── components/legacy/
+    ├── ImportacaoCard.tsx            (legado; não usar em novas telas)
+    └── SecretariaMobileFilterChips.tsx (legado; não usar em novas telas)
 ```
 
 ## Views Desktop/Mobile
@@ -96,7 +101,7 @@ Pesquisa compacta
 - `SecretariaDesktopDetailPane` é coluna fixa à direita (não Drawer). Mostra placeholder "Selecione um aderido" quando vazio
 - `SecretariaTable` com checkboxes (`selectable`, `selectedIds`, `onToggleSelect`, `onSelectAll`)
 - `SecretariaDesktopBatchBar` aparece quando `selectedIds.size > 0`
-- Ações em lote: exportar selecionados (stub)
+- Ações em lote só devem aparecer quando houver contrato seguro. Hoje a barra mostra contagem e limpar seleção; não reintroduza botões stub.
 - `SecretariaHeader` exibe botão "Nova Adesão" (`showButton` padrão `true`)
 
 ### Mobile — Experiência "Touch-first"
@@ -113,7 +118,7 @@ Search
 ```
 
 - `SecretariaMobileView` renderiza search + cards + FAB
-- `SecretariaMobileFilterChips` é legado; não reintroduza filtros rápidos sem nova decisão de produto
+- `components/legacy/SecretariaMobileFilterChips` é legado; não reintroduza filtros rápidos sem nova decisão de produto
 - `SecretariaMobileSwipeableCard` — card estático; clique abre detalhes. Editar/excluir ficam no painel/modal de detalhes
 - `SecretariaMobileFAB` substitui o botão "Nova Adesão" do header no mobile
 - `SecretariaHeader` com `showButton={false}` no mobile
@@ -139,6 +144,7 @@ Search
 - `SecretariaCardList` versão simplificada com status dot (círculo colorido) em vez de StatusChip
 - `SecretariaDesktopDetailPane` renderiza placeholder "Selecione um aderido" quando `aderido === null`
 - Detalhes de leitura usam `InformacoesAderidoCard`: um único card hierárquico, sem grade de vários cards de informação
+- `components/legacy/ImportacaoCard`, `components/legacy/SecretariaMobileFilterChips` e `legacy/hooks/useCompactacao` são legado administrativo/visual; não importe no fluxo principal sem nova decisão de produto.
 
 ## Notificacoes
 

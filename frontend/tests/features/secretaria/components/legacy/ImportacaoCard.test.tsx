@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   solicitarCompactacao: vi.fn(),
 }));
 
-vi.mock("@/shared/hooks/useCompactacao", () => ({
+vi.mock("@/features/secretaria/legacy/hooks/useCompactacao", () => ({
   useCompactacao: () => ({
     solicitarCompactacao: mocks.solicitarCompactacao,
     loadingCompactacao: false,

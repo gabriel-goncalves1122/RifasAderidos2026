@@ -3,10 +3,19 @@
 // ============================================================================
 import {
   AderidoSecretaria,
+  FaixaRifasSecretaria,
   ModalidadeAdesao,
   StatusCadastro,
 } from "../../../shared/types/secretaria";
 import { formatarNomeMembro } from "../utils/formatadoresSecretaria";
+
+type RegistroSecretaria = Record<string, unknown>;
+
+function normalizarRegistro(data: unknown): RegistroSecretaria {
+  if (!data || typeof data !== "object") return {};
+
+  return data as RegistroSecretaria;
+}
 
 function normalizarTexto(valor: unknown): string {
   if (valor === null || valor === undefined) return "";
@@ -23,7 +32,7 @@ function obterPrimeiroTextoValido(...valores: unknown[]): string {
   return normalizarTexto(valorEncontrado);
 }
 
-function normalizarStatus(data: any): StatusCadastro {
+function normalizarStatus(data: RegistroSecretaria): StatusCadastro {
   const statusCadastro = normalizarTexto(data.status_cadastro).toLowerCase();
   const statusLegado = normalizarTexto(data.status).toLowerCase();
 
@@ -39,14 +48,30 @@ function normalizarStatus(data: any): StatusCadastro {
   return data.uid ? "ativo" : "pendente";
 }
 
-function normalizarModalidade(data: any): ModalidadeAdesao {
+function normalizarModalidade(data: RegistroSecretaria): ModalidadeAdesao {
   return data.modalidade_adesao === "meio" ? "meio" : "completo";
+}
+
+function normalizarNumero(valor: unknown): number {
+  const numero = Number(valor || 0);
+
+  return Number.isFinite(numero) ? numero : 0;
+}
+
+function normalizarFaixaRifas(
+  valor: unknown,
+): FaixaRifasSecretaria | undefined {
+  if (!valor || typeof valor !== "object") return undefined;
+
+  return valor as FaixaRifasSecretaria;
 }
 
 export function normalizarAderidoSecretaria(
   idDocumento: string,
-  data: any,
+  dataBruta: unknown,
 ): AderidoSecretaria {
+  const data = normalizarRegistro(dataBruta);
+
   const nome = formatarNomeMembro(
     obterPrimeiroTextoValido(data.nome, data.Nome, data["Nome Completo"]),
   );
@@ -83,7 +108,7 @@ export function normalizarAderidoSecretaria(
     id: idDocumento,
 
     // Mantém compatibilidade com documentos antigos e novos.
-    id_aderido: data.id_aderido || data.id || idDocumento,
+    id_aderido: obterPrimeiroTextoValido(data.id_aderido, data.id, idDocumento),
 
     nome,
     email,
@@ -100,17 +125,20 @@ export function normalizarAderidoSecretaria(
     modalidade_adesao: normalizarModalidade(data),
 
     status_cadastro: normalizarStatus(data),
-    status: data.status,
+    status: obterPrimeiroTextoValido(data.status) || undefined,
 
-    posicao_adesao: data.posicao_adesao,
-    faixa_rifas: data.faixa_rifas,
+    posicao_adesao:
+      data.posicao_adesao === undefined
+        ? undefined
+        : normalizarNumero(data.posicao_adesao),
+    faixa_rifas: normalizarFaixaRifas(data.faixa_rifas),
 
-    meta_vendas: Number(data.meta_vendas || 0),
-    total_arrecadado: Number(data.total_arrecadado || 0),
-    rifas_vendidas: Number(data.rifas_vendidas || 0),
+    meta_vendas: normalizarNumero(data.meta_vendas),
+    total_arrecadado: normalizarNumero(data.total_arrecadado),
+    rifas_vendidas: normalizarNumero(data.rifas_vendidas),
 
-    uid: data.uid ?? null,
-    criado_em: data.criado_em,
-    cadastrado_em: data.cadastrado_em,
+    uid: obterPrimeiroTextoValido(data.uid) || null,
+    criado_em: obterPrimeiroTextoValido(data.criado_em) || undefined,
+    cadastrado_em: obterPrimeiroTextoValido(data.cadastrado_em) || undefined,
   };
 }

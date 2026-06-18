@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ChangeEvent, type MouseEvent, useState } from "react";
 import {
   Button,
   CircularProgress,
@@ -18,6 +18,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import type { SelectChangeEvent } from "@mui/material/Select";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 
 import {
@@ -27,7 +28,11 @@ import {
 import type { FormNovoAderido, ModalidadeAdesao } from "../../../../shared/types/secretaria";
 import { secretariaColors } from "../../styles/colors";
 import { secretariaComponents } from "../../styles/components";
-import { formatarNomeMembro } from "../../utils/formatadoresSecretaria";
+import {
+  formatarNomeMembro,
+  formatarTelefone,
+  somenteNumeros,
+} from "../../utils/formatadoresSecretaria";
 
 interface ModalAdicionarAderidoProps {
   open: boolean;
@@ -47,6 +52,10 @@ const formInicial: FormNovoAderido = {
 };
 
 type VinculoMembro = "aderido" | "comissao";
+type CampoNovoAderido = keyof FormNovoAderido;
+type ModalAdicionarChangeEvent =
+  | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  | SelectChangeEvent<string>;
 
 function SectionTitle({ children }: { children: string }) {
   return (
@@ -76,13 +85,26 @@ export function ModalAdicionarAderido({
 
   const cargosMenu = CARGOS_COMISSAO.filter((cargo) => cargo.id !== "aderido");
 
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
+  const handleChange = (e: ModalAdicionarChangeEvent) => {
+    const name = e.target.name as CampoNovoAderido;
+    const value = e.target.value;
+
+    if (!name) return;
+
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleTelefoneChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      telefone: somenteNumeros(event.target.value).slice(0, 11),
+    }));
+  };
+
   const handleModalidadeChange = (
-    _: React.MouseEvent<HTMLElement>,
+    _: MouseEvent<HTMLElement>,
     novaModalidade: ModalidadeAdesao | null,
   ) => {
     if (!novaModalidade) return;
@@ -111,6 +133,8 @@ export function ModalAdicionarAderido({
       await onConfirm({
         ...form,
         nome: formatarNomeMembro(form.nome),
+        email: form.email.trim().toLocaleLowerCase("pt-BR"),
+        telefone: somenteNumeros(form.telefone).slice(0, 11),
         cargo: isComissao ? form.cargo : "aderido",
       });
       limparFormulario();
@@ -239,11 +263,15 @@ export function ModalAdicionarAderido({
               label="Telefone"
               fullWidth
               placeholder="(35) 9..."
-              value={form.telefone}
-              onChange={handleChange}
+              value={formatarTelefone(form.telefone)}
+              onChange={handleTelefoneChange}
               disabled={isSubmitting}
               size="small"
               sx={secretariaComponents.formField}
+              inputProps={{
+                inputMode: "numeric",
+                maxLength: 15,
+              }}
             />
           </Stack>
 

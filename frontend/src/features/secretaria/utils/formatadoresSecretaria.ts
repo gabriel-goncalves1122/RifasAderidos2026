@@ -1,9 +1,13 @@
 // ============================================================================
 // ARQUIVO: frontend/src/features/secretaria/utils/formatadoresSecretaria.ts
 // ============================================================================
+import {
+  formatarTelefone as formatarTelefoneCompartilhado,
+  somenteNumeros as somenteNumerosCompartilhado,
+} from "@/shared/utils/formatadores";
 
 export function somenteNumeros(valor?: string | number | null): string {
-  return String(valor || "").replace(/\D/g, "");
+  return somenteNumerosCompartilhado(String(valor || ""));
 }
 
 const PARTICULAS_NOME = new Set(["da", "das", "de", "do", "dos", "e"]);
@@ -40,17 +44,7 @@ export function formatarNomeMembro(valor?: string | null): string {
 }
 
 export function formatarTelefone(valor?: string | number | null): string {
-  const numeros = somenteNumeros(valor).slice(0, 11);
-
-  if (!numeros) return "";
-  if (numeros.length <= 2) return numeros;
-  if (numeros.length <= 6)
-    return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
-  if (numeros.length <= 10) {
-    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(6)}`;
-  }
-
-  return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+  return formatarTelefoneCompartilhado(String(valor || ""));
 }
 
 export function formatarCpf(valor?: string | number | null): string {

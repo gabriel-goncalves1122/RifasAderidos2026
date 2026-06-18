@@ -18,7 +18,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 
 import { formatarNomeMembro } from "../../utils/formatadoresSecretaria";
-import type { AderidoSecretaria, FormEditarAderido as FormEditarAderidoData } from "../../types";
+import type { AderidoSecretaria, FormEditarAderido as FormEditarAderidoData } from "@/shared/types/secretaria";
 import { InformacoesAderidoCard } from "../detalhesAderido/InformacoesAderidoCard";
 import { FormEditarAderido } from "../detalhesAderido/FormEditarAderido";
 

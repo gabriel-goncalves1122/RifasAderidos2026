@@ -22,7 +22,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import { InformacoesAderidoCard } from "../detalhesAderido/InformacoesAderidoCard";
 import { FormEditarAderido } from "../detalhesAderido/FormEditarAderido";
 import { formatarNomeMembro } from "../../utils/formatadoresSecretaria";
-import type { AderidoSecretaria, FormEditarAderido as FormEditarAderidoData } from "../../types";
+import type { AderidoSecretaria, FormEditarAderido as FormEditarAderidoData } from "@/shared/types/secretaria";
 
 interface SecretariaDesktopDetailPaneProps {
   aderido: AderidoSecretaria | null;

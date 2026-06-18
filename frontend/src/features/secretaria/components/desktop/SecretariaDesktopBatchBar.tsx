@@ -1,33 +1,17 @@
-import { Box, Button, Chip, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import GroupIcon from "@mui/icons-material/Group";
 
 interface SecretariaDesktopBatchBarProps {
   selectedCount: number;
   onClearSelection: () => void;
-  onExportarSelecionados: () => void;
-  onAtivarSelecionados: () => void;
-  onAlterarCargoSelecionados: () => void;
 }
 
 export function SecretariaDesktopBatchBar({
   selectedCount,
   onClearSelection,
-  onExportarSelecionados,
-  onAtivarSelecionados,
-  onAlterarCargoSelecionados,
 }: SecretariaDesktopBatchBarProps) {
   if (selectedCount === 0) return null;
-
-  const btnSx = {
-    color: "text.primary",
-    borderColor: "divider",
-    "&:hover": { borderColor: "text.primary", bgcolor: "action.hover" },
-    borderRadius: 4,
-  };
 
   return (
     <Box
@@ -55,36 +39,6 @@ export function SecretariaDesktopBatchBar({
       </Typography>
 
       <Box sx={{ flex: 1 }} />
-
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<CheckCircleOutlineIcon />}
-        onClick={onAtivarSelecionados}
-        sx={btnSx}
-      >
-        Ativar
-      </Button>
-
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<ManageAccountsIcon />}
-        onClick={onAlterarCargoSelecionados}
-        sx={btnSx}
-      >
-        Alterar cargo
-      </Button>
-
-      <Button
-        size="small"
-        variant="outlined"
-        startIcon={<FileDownloadIcon />}
-        onClick={onExportarSelecionados}
-        sx={btnSx}
-      >
-        Exportar
-      </Button>
 
       <Chip
         label="Limpar seleção"

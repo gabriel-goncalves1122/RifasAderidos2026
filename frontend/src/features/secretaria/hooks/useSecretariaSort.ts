@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
-import type { AderidoSecretaria } from "../types";
-import type { SortDir } from "../types";
+import type { AderidoSecretaria } from "@/shared/types/secretaria";
+import type { SortDir } from "../types/secretariaLocalTypes";
 
 function compararValores(a: unknown, b: unknown, dir: SortDir): number {
   const va = a ?? "";

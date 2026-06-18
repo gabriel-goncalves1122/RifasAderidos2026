@@ -1,6 +1,6 @@
 import { Box, Tab, Tabs } from "@mui/material";
 
-import type { SecretariaTipoUsuarioTab } from "../../types";
+import type { SecretariaTipoUsuarioTab } from "../../types/secretariaLocalTypes";
 import { secretariaColors } from "../../styles/colors";
 
 interface SecretariaTipoUsuarioTabsProps {
