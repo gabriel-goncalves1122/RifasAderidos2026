@@ -80,8 +80,6 @@ describe("Service: CorrecaoDadosRifasService", () => {
       expect.objectContaining({
         status: "pendente",
         comprador_nome: "Comprador Corrigido",
-        comprador_email: "comprador@teste.com",
-        comprador_telefone: "35999990000",
         status_validacao: null,
       }),
     );

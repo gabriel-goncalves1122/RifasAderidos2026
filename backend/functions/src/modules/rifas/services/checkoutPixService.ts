@@ -148,8 +148,6 @@ export class CheckoutPixService {
             status: "reservado",
             comprador_id: compradorRef.id,
             comprador_nome: dados.nome,
-            comprador_email: dados.email || null,
-            comprador_telefone: dados.telefone,
             vendedor_nome: contextoAderido.vendedorNome,
             vendedor_cpf: contextoAderido.vendedorCpf,
             vendedor_id: contextoAderido.idAderido,

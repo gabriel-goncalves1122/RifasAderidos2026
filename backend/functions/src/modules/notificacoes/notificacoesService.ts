@@ -51,18 +51,40 @@ export class NotificacoesService {
     }
   }
 
-  static async marcarComoLidas(ids: string[]) {
+  static async marcarComoLidas(ids: string[], email: string) {
     // Se não vier IDs, sai fora para não dar erro de batch vazio
     if (!ids || ids.length === 0) return;
 
     const db = admin.firestore();
+
+    // 1. Busca o usuário com segurança
+    const userDocs = await db
+      .collection("usuarios")
+      .where("email", "==", email)
+      .limit(1)
+      .get();
+
+    if (userDocs.empty) return;
+    const userData = userDocs.docs[0].data();
+    const idBusca = userData.id_aderido || userDocs.docs[0].id;
+    if (!idBusca) return;
+
+    // 2. Busca todas as notificações para garantir que pertencem ao usuário (evitar IDOR)
+    // Limite de 30 para evitar o limite do operador 'in' do Firestore (que permite até 30 na v2)
+    // Se o frontend enviar mais de 30, pegaremos as 30 primeiras (normalmente são poucas).
+    const idsSeguros = ids.slice(0, 30);
+    const snap = await db
+      .collection("notificacoes")
+      .where(admin.firestore.FieldPath.documentId(), "in", idsSeguros)
+      .where("vendedor_id", "==", idBusca)
+      .get();
+
+    if (snap.empty) return;
+
     const batch = db.batch();
 
-    ids.forEach((id) => {
-      if (id) {
-        // Proteção contra IDs nulos/undefined
-        batch.update(db.collection("notificacoes").doc(id), { lida: true });
-      }
+    snap.docs.forEach((doc) => {
+      batch.update(doc.ref, { lida: true });
     });
 
     await batch.commit();

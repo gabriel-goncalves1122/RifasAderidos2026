@@ -49,8 +49,6 @@ export class CorrecaoDadosRifasService {
         transaction.update(bilheteRef, {
           status: "pendente",
           comprador_nome: dadosAtualizados.nome,
-          comprador_email: dadosAtualizados.email || null,
-          comprador_telefone: dadosAtualizados.telefone,
           status_validacao: null,
           motivo_recusa: null,
           log_automacao: null,

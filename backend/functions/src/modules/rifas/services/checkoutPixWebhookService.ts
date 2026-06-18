@@ -145,8 +145,6 @@ async function aplicarPayloadBanco(payload: any) {
             status: "disponivel",
             comprador_id: null,
             comprador_nome: null,
-            comprador_email: null,
-            comprador_telefone: null,
             vendedor_id: null,
             vendedor_nome: null,
             vendedor_cpf: null,

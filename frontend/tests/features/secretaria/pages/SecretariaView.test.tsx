@@ -79,7 +79,7 @@ describe("Página <SecretariaView />", () => {
   it("Deve renderizar o header e os cards de resumo", () => {
     render(React.createElement(SecretariaView));
 
-    expect(screen.getByText("Painel da Secretaria")).toBeInTheDocument();
+    expect(screen.getByText("Secretaria")).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Resumo Total" })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Resumo Aderidos" })).toBeInTheDocument();
   });

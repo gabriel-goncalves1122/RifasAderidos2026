@@ -25,4 +25,18 @@ export default defineConfig({
     clearMocks: true,
     restoreMocks: true,
   },
+
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-mui": ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
+          "vendor-firebase": ["firebase"],
+          "vendor-framer": ["framer-motion"],
+          "vendor-utils": ["axios", "yup", "papaparse", "clsx", "tailwind-merge", "phosphor-react", "recharts"]
+        },
+      },
+    },
+  },
 });

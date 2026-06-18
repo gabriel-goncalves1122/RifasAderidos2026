@@ -173,8 +173,6 @@ describe("Service: CorrecaoRifasService", () => {
       expect.objectContaining({
         status: "pendente",
         comprador_nome: "Comprador Corrigido",
-        comprador_email: "novo@email.com",
-        comprador_telefone: "11999999999",
         comprovante_url: "https://novo-comprovativo.pdf",
         motivo_recusa: null,
         log_automacao: null,

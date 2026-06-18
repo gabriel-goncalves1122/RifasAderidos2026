@@ -325,6 +325,21 @@ que hooks de cache (useQuery, useMutation) funcionem em toda a aplicação.
 
 ## Integrações
 
-O frontend não deve chamar diretamente APIs sensíveis externas, como PagBank.
-
 O frontend deve consumir o backend do sistema.
+
+## Otimização, Transições e Code Splitting
+
+**Code Splitting (Lazy Loading):**
+Todas as rotas de página (`*Page.tsx`) DEVEM ser importadas dinamicamente usando `React.lazy()` no arquivo de rotas. O componente principal de roteamento deve ser envolvido em `<Suspense fallback={<CircularProgress />}>` para garantir o split do bundle.
+
+**Transições Fluidas (Framer Motion):**
+O projeto utiliza `framer-motion` para garantir micro-animações dinâmicas e transições visuais de rota de alto nível que causam uma excelente impressão (fator WOW).
+Sempre que orquestrar a troca de rotas ou montagem/desmontagem condicional de componentes complexos, utilize `<AnimatePresence>` e `<motion.div>` em vez de montagem abrupta.
+
+**Cache (React Query):**
+- Por padrão, o `staleTime` global é definido para otimizar requisições repetidas (ex: 5 minutos).
+- Para listagens altamente estáticas (como lista de prêmios), declare explicitamente `{ staleTime: Infinity }`.
+- Para dados em tempo real, use a revalidação imediata com `queryClient.invalidateQueries`.
+
+**Vite Build:**
+A configuração do `vite.config.ts` utiliza `manualChunks` no `rollupOptions` para separar dependências de terceiros (vendors) como react, firebase, mui e framer. Sempre que adicionar uma biblioteca grande, registre-a no `vendor` correspondente para melhorar o cache de build.

@@ -17,15 +17,21 @@ jest.mock("firebase-admin", () => {
     get: mockGet,
   };
 
-  return {
-    firestore: jest.fn().mockReturnValue({
-      collection: jest.fn().mockReturnValue(collectionMock),
-      batch: jest.fn().mockReturnValue({
-        update: mockBatchUpdate,
-        set: mockBatchSet,
-        commit: mockBatchCommit,
-      }),
+  const firestoreMock = jest.fn().mockReturnValue({
+    collection: jest.fn().mockReturnValue(collectionMock),
+    batch: jest.fn().mockReturnValue({
+      update: mockBatchUpdate,
+      set: mockBatchSet,
+      commit: mockBatchCommit,
     }),
+  }) as any;
+
+  firestoreMock.FieldPath = {
+    documentId: jest.fn().mockReturnValue("mocked-document-id"),
+  };
+
+  return {
+    firestore: firestoreMock,
   };
 });
 
@@ -77,7 +83,22 @@ describe("Notificações Service", () => {
     it("Deve atualizar em lote as notificações enviadas para lida=true", async () => {
       const ids = ["id_001", "id_002"];
 
-      await NotificacoesService.marcarComoLidas(ids);
+      // Mock para a busca de usuário
+      mockGet.mockResolvedValueOnce({
+        empty: false,
+        docs: [{ data: () => ({ id_aderido: "ADERIDO_TESTE" }) }],
+      });
+
+      // Mock para a busca das notificações
+      mockGet.mockResolvedValueOnce({
+        empty: false,
+        docs: [
+          { ref: { id: "id_001" } },
+          { ref: { id: "id_002" } },
+        ]
+      });
+
+      await NotificacoesService.marcarComoLidas(ids, "teste@teste.com");
 
       expect(mockBatchUpdate).toHaveBeenCalledTimes(2);
       expect(mockBatchUpdate).toHaveBeenCalledWith(

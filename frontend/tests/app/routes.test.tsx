@@ -1,7 +1,7 @@
 // ============================================================================
 // ARQUIVO: frontend/tests/app/routes.test.tsx
 // ============================================================================
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
@@ -28,13 +28,15 @@ vi.mock("@/views/pages/DashboardPage", () => ({
 }));
 
 describe("Rotas da aplicação", () => {
-  it("Deve renderizar LoginPage em /login", () => {
+  it("Deve renderizar LoginPage em /login", async () => {
     render(
       <MemoryRouter initialEntries={["/login"]}>
         <AppRoutes />
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Pagina de Login")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Pagina de Login")).toBeInTheDocument();
+    });
   });
 });

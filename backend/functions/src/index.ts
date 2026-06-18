@@ -64,7 +64,8 @@ app.use(apiLimiter);
 const corsOptions: cors.CorsOptions = {
   origin(origin, callback) {
     if (!origin) {
-      callback(null, true);
+      // Bloqueia se a requisição não tiver origem (ex: scripts automatizados sem falsificação de header)
+      callback(new Error(`Origem ausente / bloqueada pelo CORS.`));
       return;
     }
 
@@ -74,8 +75,8 @@ const corsOptions: cors.CorsOptions = {
       /^http:\/\/192\.168\.0\.\d+:\d+$/,
       /^http:\/\/10\.\d+\.\d+\.\d+:\d+$/,
       /^http:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+:\d+$/,
-      /^https:\/\/.*\.web\.app$/,
-      /^https:\/\/.*\.firebaseapp\.com$/,
+      /^https:\/\/rifasaderidos2026\.web\.app$/,
+      /^https:\/\/rifasaderidos2026\.firebaseapp\.com$/,
     ];
 
     const origemPermitida = origensPermitidas.some((regex) =>

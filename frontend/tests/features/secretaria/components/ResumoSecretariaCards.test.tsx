@@ -29,7 +29,7 @@ describe("Componente: ResumoSecretariaCards", () => {
 
     expect(screen.getByRole("article", { name: "Resumo Total" })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Resumo Aderidos" })).toBeInTheDocument();
-    expect(screen.getByRole("article", { name: "Resumo Meio-aderidos" })).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "Resumo Meios" })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Resumo Pendentes" })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Resumo Comissão" })).toBeInTheDocument();
   });

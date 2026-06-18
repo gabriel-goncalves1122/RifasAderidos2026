@@ -23,7 +23,7 @@ describe("Componente: SecretariaHeader", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /painel da secretaria/i,
+        name: /secretaria/i,
       }),
     ).toBeInTheDocument();
   });
@@ -33,7 +33,7 @@ describe("Componente: SecretariaHeader", () => {
 
     expect(
       screen.getByText(
-        /gestão da lista oficial de aderidos e membros da comissão/i,
+        /gestão de membros e aderidos da comissão/i,
       ),
     ).toBeInTheDocument();
   });

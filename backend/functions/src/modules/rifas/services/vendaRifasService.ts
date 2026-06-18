@@ -45,8 +45,6 @@ export class VendaRifasService {
         status: "pendente",
         comprador_id: compradorRef.id,
         comprador_nome: nome,
-        comprador_telefone: telefone || null,
-        comprador_email: email || null,
         vendedor_nome: contextoAderido.vendedorNome,
         vendedor_cpf: contextoAderido.vendedorCpf,
         vendedor_id: contextoAderido.idAderido,
