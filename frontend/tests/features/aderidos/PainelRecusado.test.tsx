@@ -3,7 +3,7 @@
 // ============================================================================
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { PainelRecusadas } from "@/features/aderidos/PainelRecusado";
+import { PainelRecusadas } from "@/features/aderidos/legacy/PainelRecusado";
 
 describe("Componente: PainelRecusadas", () => {
   const mockRifasRecusadas = [

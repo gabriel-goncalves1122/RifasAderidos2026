@@ -62,6 +62,11 @@ describe("Componente <GrelhaRifas />", () => {
   });
 
   it("Deve usar grid XS respirado e cards com affordance forte", () => {
+    expect(painelAderidoStyles.gridRifasWrapper).toMatchObject({
+      overflow: "visible",
+    });
+    expect(painelAderidoStyles.gridRifasWrapper).not.toHaveProperty("maxHeight");
+    expect(painelAderidoStyles.gridRifasWrapper).not.toHaveProperty("overflowY");
     expect(painelAderidoStyles.gridRifas).toMatchObject({
       gridTemplateColumns: {
         xs: "repeat(3, minmax(76px, 1fr))",

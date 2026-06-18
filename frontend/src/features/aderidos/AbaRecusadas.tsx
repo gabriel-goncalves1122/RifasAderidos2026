@@ -1,21 +1,21 @@
 // ============================================================================
 // ARQUIVO: frontend/src/views/components/aderidos/AbaRecusadas.tsx
 // ============================================================================
+import { useEffect, useRef } from "react";
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
-  Divider,
+  Paper,
   Button,
   Chip,
-  IconButton,
+  Stack,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 import BuildCircleIcon from "@mui/icons-material/BuildCircle";
 
 import { GrupoRifasRecusadas } from "./types/painelAderido";
+import { formatarDataCurta } from "@/shared/utils/formatadores";
 
 interface AbaRecusadasProps {
   gruposRecusados: GrupoRifasRecusadas[];
@@ -28,30 +28,89 @@ export function AbaRecusadas({
   onVoltar,
   onAbrirCorrecao,
 }: AbaRecusadasProps) {
-  return (
-    <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-        <IconButton
-          onClick={onVoltar}
-          color="primary"
-          sx={{ bgcolor: "rgba(0,0,0,0.05)" }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography
-          variant="h5"
-          fontWeight="bold"
-          color="error.main"
-          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-        >
-          <ReportGmailerrorredIcon fontSize="large" /> Vendas recusadas - ação
-          necessária
-        </Typography>
-      </Box>
+  const inicioRef = useRef<HTMLDivElement | null>(null);
 
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Atualize os dados solicitados para que a venda volte para análise.
-      </Typography>
+  useEffect(() => {
+    inicioRef.current?.focus();
+  }, []);
+
+  return (
+    <Box ref={inicioRef} tabIndex={-1} sx={{ outline: "none" }}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        justifyContent="space-between"
+        alignItems={{ xs: "stretch", sm: "flex-start" }}
+        gap={2}
+        sx={{
+          mb: 3.5,
+        }}
+      >
+        <Stack
+          sx={{
+            pl: { xs: 1.35, md: 1.75 },
+            borderLeft: { xs: "4px solid #0A7A5B", md: "5px solid #0A7A5B" },
+            gap: 0.65,
+            minWidth: 0,
+          }}
+        >
+          <Typography
+            sx={{
+              color: "#0A7A5B",
+              fontWeight: 900,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              fontSize: { xs: "0.7rem", md: "0.75rem" },
+              lineHeight: 1.2,
+            }}
+          >
+            Correção de dados
+          </Typography>
+
+          <Typography
+            component="h1"
+            sx={{
+              color: "#021B16",
+              fontWeight: 950,
+              letterSpacing: 0,
+              lineHeight: 1.08,
+              fontSize: { xs: "1.38rem", sm: "1.55rem", md: "1.72rem" },
+            }}
+          >
+            Vendas recusadas
+          </Typography>
+
+          <Typography
+            sx={{
+              color: "#526760",
+              fontWeight: 650,
+              lineHeight: 1.45,
+              maxWidth: 560,
+              fontSize: { xs: "0.92rem", sm: "0.98rem" },
+            }}
+          >
+            Corrija os dados apontados para devolver a venda à análise.
+          </Typography>
+        </Stack>
+
+        <Button
+          variant="text"
+          startIcon={<ArrowBackIcon />}
+          onClick={onVoltar}
+          sx={{
+            alignSelf: { xs: "flex-start", sm: "center" },
+            color: "#063D31",
+            fontWeight: 850,
+            textTransform: "none",
+            borderRadius: 2,
+            px: 1.25,
+            "&:hover": {
+              bgcolor: "#EAF3EF",
+            },
+          }}
+        >
+          Voltar às rifas
+        </Button>
+      </Stack>
 
       <Box
         display="grid"
@@ -59,77 +118,157 @@ export function AbaRecusadas({
         gap={3}
       >
         {gruposRecusados.map((grupo, idx) => (
-          <Card
+          <Paper
+            elevation={0}
             key={idx}
             sx={{
-              borderLeft: "6px solid",
-              borderColor: "#7A1F1F",
-              boxShadow: "0 10px 28px rgba(2, 27, 22, 0.08)",
-              border: "1px solid rgba(122, 31, 31, 0.14)",
-              borderRadius: 2,
+              p: { xs: 2, sm: 2.35 },
+              borderRadius: 2.25,
+              bgcolor: "#FFFFFF",
+              border: "1px solid rgba(6, 61, 49, 0.10)",
+              boxShadow:
+                "0 18px 42px rgba(2, 27, 22, 0.075), 0 2px 8px rgba(6, 61, 49, 0.045)",
             }}
           >
-            <CardContent>
+            <Stack spacing={2.15}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="flex-start"
+                gap={1.5}
+              >
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    sx={{
+                      color: "#021B16",
+                      fontWeight: 900,
+                      fontSize: "1rem",
+                      lineHeight: 1.18,
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {grupo.comprador}
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      mt: 0.35,
+                      color: "#526760",
+                      fontWeight: 700,
+                      fontSize: "0.78rem",
+                    }}
+                  >
+                    {formatarDataCurta(grupo.data)}
+                  </Typography>
+                </Box>
+
+                <Chip
+                  size="small"
+                  label={
+                    grupo.bilhetes.length === 1
+                      ? "1 rifa"
+                      : `${grupo.bilhetes.length} rifas`
+                  }
+                  sx={{
+                    height: 28,
+                    borderRadius: 1.5,
+                    bgcolor: "#EAF3EF",
+                    color: "#063D31",
+                    border: "1px solid rgba(6, 61, 49, 0.12)",
+                    fontWeight: 850,
+                  }}
+                />
+              </Stack>
+
               <Box
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 1,
+                  p: 1.35,
+                  borderRadius: 2,
+                  bgcolor: "#FFF7E0",
+                  border: "1px solid rgba(107, 78, 0, 0.12)",
                 }}
               >
-                <Typography variant="subtitle1" fontWeight="bold">
-                  {grupo.comprador}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {grupo.data
-                    ? new Date(grupo.data).toLocaleDateString("pt-BR")
-                    : "Data Indisponível"}
-                </Typography>
-              </Box>
-              <Divider sx={{ my: 1.5 }} />
-
-              <Typography
-                variant="body2"
-                color="error.dark"
-                fontWeight="bold"
-                sx={{ mb: 2 }}
-              >
-                {grupo.motivo}
-              </Typography>
-
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={800}
-                sx={{ display: "block", mb: 0.75 }}
-              >
-                Rifas para revisar
-              </Typography>
-
-              <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mb: 3 }}>
-                {grupo.bilhetes.map((b) => (
-                  <Chip
-                    key={b}
-                    size="small"
-                    color="error"
-                    variant="filled"
-                    label={b}
+                <Stack direction="row" gap={1} alignItems="flex-start">
+                  <ReportGmailerrorredIcon
+                    fontSize="small"
+                    sx={{ color: "#6B4E00", mt: 0.1 }}
                   />
-                ))}
+                  <Box>
+                    <Typography
+                      sx={{
+                        color: "#6B4E00",
+                        fontWeight: 900,
+                        fontSize: "0.75rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      Motivo
+                    </Typography>
+                    <Typography
+                      sx={{
+                        mt: 0.35,
+                        color: "#463500",
+                        fontWeight: 750,
+                        fontSize: "0.9rem",
+                        lineHeight: 1.35,
+                      }}
+                    >
+                      {grupo.motivo}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+
+              <Box>
+                <Typography
+                  sx={{
+                    color: "#526760",
+                    fontWeight: 850,
+                    fontSize: "0.78rem",
+                    mb: 0.85,
+                  }}
+                >
+                  Rifas para revisar
+                </Typography>
+
+                <Stack direction="row" gap={0.65} flexWrap="wrap">
+                  {grupo.bilhetes.map((b) => (
+                    <Chip
+                      key={b}
+                      size="small"
+                      label={b}
+                      sx={{
+                        borderRadius: 1.5,
+                        bgcolor: "#FDF0F0",
+                        color: "#7A1F1F",
+                        border: "1px solid rgba(122, 31, 31, 0.12)",
+                        fontWeight: 850,
+                      }}
+                    />
+                  ))}
+                </Stack>
               </Box>
 
               <Button
                 fullWidth
                 variant="contained"
-                color="error"
                 startIcon={<BuildCircleIcon />}
                 onClick={() => onAbrirCorrecao(grupo)}
+                sx={{
+                  minHeight: 44,
+                  borderRadius: 2,
+                  bgcolor: "#063D31",
+                  fontWeight: 900,
+                  "&:hover": {
+                    bgcolor: "#021B16",
+                  },
+                }}
               >
                 Corrigir dados
               </Button>
-            </CardContent>
-          </Card>
+            </Stack>
+          </Paper>
         ))}
       </Box>
     </Box>

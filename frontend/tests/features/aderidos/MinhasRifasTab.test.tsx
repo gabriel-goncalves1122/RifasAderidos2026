@@ -42,6 +42,14 @@ function criarPainelMock(
 
     primeiroNome: "Gabriel",
     valorArrecadado: 10,
+    contadoresRifas: {
+      todas: 2,
+      disponivel: 1,
+      reservado: 0,
+      pendente: 0,
+      pago: 1,
+      recusado: 0,
+    },
     notificacoesNaoLidas: 0,
 
     modalCheckoutAberto: false,
@@ -59,6 +67,8 @@ function criarPainelMock(
     setRifaParaDetalhes: vi.fn(),
 
     abrirSidebarNotificacoes: vi.fn(),
+    abrirRecusadas: vi.fn(),
+    voltarParaRifas: vi.fn(),
     alternarSelecaoRifa: vi.fn(),
     finalizarVendaComSucesso: vi.fn(),
     corrigirDadosRecusados: vi.fn(),
@@ -89,6 +99,10 @@ describe("Componente <MinhasRifasTab />", () => {
 
     render(<MinhasRifasTab />);
 
+    expect(screen.getByTestId("aderidos-swipe-transition")).toHaveAttribute(
+      "data-visao",
+      "geral",
+    );
     expect(screen.getByText(/Olá, Gabriel/i)).toBeInTheDocument();
     expect(screen.getByText(/Suas rifas/i)).toBeInTheDocument();
     expect(screen.getByText("001")).toBeInTheDocument();
@@ -130,6 +144,13 @@ describe("Componente <MinhasRifasTab />", () => {
 
     render(<MinhasRifasTab />);
 
+    expect(screen.getByTestId("aderidos-swipe-transition")).toHaveAttribute(
+      "data-visao",
+      "recusadas",
+    );
     expect(screen.getByText(/Comprovante ilegível/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voltar às rifas/i })).toBeInTheDocument();
+    expect(screen.queryByText(/Olá, Gabriel/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Suas rifas/i)).not.toBeInTheDocument();
   });
 });

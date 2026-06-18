@@ -26,7 +26,8 @@ import {
   filtrarApenasRifasValidas,
 } from "../utils/validadores";
 
-const QUERY_STALE_TIME = 60_000;
+const QUERY_STALE_TIME = 180_000; // 3 minutos
+const QUERY_GC_TIME = 600_000; // 10 minutos
 
 export function useRifasData() {
   const { buscarNotificacoes, marcarNotificacoesLidas } = useNotificacoes();
@@ -57,6 +58,8 @@ export function useRifasData() {
     },
     enabled: consultasAtivas,
     staleTime: QUERY_STALE_TIME,
+    gcTime: QUERY_GC_TIME,
+    refetchOnWindowFocus: false,
     placeholderData: (dadosAnteriores) => dadosAnteriores ?? [],
   });
 
@@ -68,6 +71,8 @@ export function useRifasData() {
     },
     enabled: consultasAtivas,
     staleTime: QUERY_STALE_TIME,
+    gcTime: QUERY_GC_TIME,
+    refetchOnWindowFocus: false,
     placeholderData: (dadosAnteriores) => dadosAnteriores ?? [],
   });
 

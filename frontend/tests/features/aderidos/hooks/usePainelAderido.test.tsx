@@ -160,6 +160,12 @@ describe("Hook: usePainelAderidoController", () => {
 
     expect(result.current.minhasRifas[0].numero).toBe("001");
     expect(result.current.notificacoes).toHaveLength(1);
+    expect(result.current.contadoresRifas).toMatchObject({
+      todas: 3,
+      disponivel: 1,
+      pago: 1,
+      recusado: 1,
+    });
   });
 
   it("Deve selecionar e remover uma rifa disponivel da selecao", async () => {

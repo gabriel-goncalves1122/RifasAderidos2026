@@ -3,16 +3,17 @@ import { Box } from "@mui/material";
 import { EstatisticasAderido } from "../../EstatisticasAderido";
 import { AbaRecusadas } from "../../AbaRecusadas";
 import { CarrinhoFlutuante } from "../../CarrinhoFlutuante";
-import { BlocoVendasHeader } from "../BlocoVendasHeader";
-import { FiltrosRifas } from "../FiltrosRifas";
-import { GrelhaRifas } from "../GrelhaRifas";
+import { AderidosSwipeTransition } from "../shared/AderidosSwipeTransition";
+import { PainelRifasPrincipal } from "../shared/PainelRifasPrincipal";
 import { painelAderidoStyles } from "../../styles/painelAderidoStyles";
-import type { GrupoRifasRecusadas, FiltroRifasAderido, RifaAderido } from "../../types/painelAderido";
+import type { GrupoRifasRecusadas, FiltroRifasAderido, RifaAderido, VisaoPainelAderido } from "../../types/painelAderido";
+import type { ContadoresRifas } from "../../utils/filtrosRifas";
 
 interface MinhasRifasDesktopViewProps {
-  visaoAtual: string;
+  visaoAtual: VisaoPainelAderido;
   primeiroNome: string;
   valorArrecadado: number;
+  contadoresRifas: ContadoresRifas;
   notificacoesNaoLidas: number;
   totalPendencias: number;
   onAbrirNotificacoes: () => void;
@@ -35,6 +36,7 @@ export function MinhasRifasDesktopView({
   visaoAtual,
   primeiroNome,
   valorArrecadado,
+  contadoresRifas,
   notificacoesNaoLidas,
   totalPendencias,
   onAbrirNotificacoes,
@@ -53,47 +55,45 @@ export function MinhasRifasDesktopView({
   onVenderClick,
 }: MinhasRifasDesktopViewProps) {
   return (
-    <Box sx={painelAderidoStyles.root}>
-      <EstatisticasAderido
-        primeiroNome={primeiroNome}
-        valorArrecadado={valorArrecadado}
-        notificacoesNaoLidas={notificacoesNaoLidas}
-        totalPendencias={totalPendencias}
-        onAbrirNotificacoes={onAbrirNotificacoes}
-        onAbrirRecusadas={onAbrirRecusadas}
-      />
-
-      {visaoAtual === "geral" ? (
-        <Box sx={painelAderidoStyles.blocoVendasArea}>
-          <BlocoVendasHeader />
-
-          <FiltrosRifas
-            filtro={filtro}
-            onChangeFiltro={onChangeFiltro}
+    <AderidosSwipeTransition visaoAtual={visaoAtual}>
+      {visaoAtual === "recusadas" ? (
+        <Box sx={painelAderidoStyles.root}>
+          <AbaRecusadas
+            gruposRecusados={gruposRecusados}
+            onVoltar={onVoltar}
+            onAbrirCorrecao={onAbrirCorrecao}
+          />
+        </Box>
+      ) : (
+        <Box sx={painelAderidoStyles.root}>
+          <EstatisticasAderido
+            primeiroNome={primeiroNome}
+            valorArrecadado={valorArrecadado}
+            notificacoesNaoLidas={notificacoesNaoLidas}
+            totalPendencias={totalPendencias}
+            onAbrirNotificacoes={onAbrirNotificacoes}
+            onAbrirRecusadas={onAbrirRecusadas}
           />
 
-          <GrelhaRifas
-            rifas={rifasFiltradas}
+          <PainelRifasPrincipal
+            filtro={filtro}
+            onChangeFiltro={onChangeFiltro}
+            rifasFiltradas={rifasFiltradas}
+            contadoresRifas={contadoresRifas}
             selecionadas={selecionadas}
             onToggleSelecao={onToggleSelecao}
             onAbrirDetalhes={onAbrirDetalhes}
           />
-        </Box>
-      ) : (
-        <AbaRecusadas
-          gruposRecusados={gruposRecusados}
-          onVoltar={onVoltar}
-          onAbrirCorrecao={onAbrirCorrecao}
-        />
-      )}
 
-      {possuiSelecao && visaoAtual === "geral" && (
-        <CarrinhoFlutuante
-          quantidade={selecionadas.length}
-          valorTotal={valorTotalSelecionado}
-          onVenderClick={onVenderClick}
-        />
+          {possuiSelecao && (
+            <CarrinhoFlutuante
+              quantidade={selecionadas.length}
+              valorTotal={valorTotalSelecionado}
+              onVenderClick={onVenderClick}
+            />
+          )}
+        </Box>
       )}
-    </Box>
+    </AderidosSwipeTransition>
   );
 }

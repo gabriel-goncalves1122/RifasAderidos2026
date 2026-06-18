@@ -36,10 +36,11 @@ export function MinhasRifasTab() {
           visaoAtual={painel.visaoAtual}
           primeiroNome={painel.primeiroNome}
           valorArrecadado={painel.valorArrecadado}
+          contadoresRifas={painel.contadoresRifas}
           notificacoesNaoLidas={painel.notificacoesNaoLidas}
           totalPendencias={painel.gruposRecusados.length}
           onAbrirNotificacoes={painel.abrirSidebarNotificacoes}
-          onAbrirRecusadas={() => painel.setVisaoAtual("recusadas")}
+          onAbrirRecusadas={painel.abrirRecusadas}
           filtro={painel.filtro}
           onChangeFiltro={painel.setFiltro}
           rifasFiltradas={painel.rifasFiltradas}
@@ -47,7 +48,7 @@ export function MinhasRifasTab() {
           onToggleSelecao={painel.alternarSelecaoRifa}
           onAbrirDetalhes={painel.setRifaParaDetalhes}
           gruposRecusados={painel.gruposRecusados}
-          onVoltar={() => painel.setVisaoAtual("geral")}
+          onVoltar={painel.voltarParaRifas}
           onAbrirCorrecao={(grupo) => {
             painel.setGrupoParaCorrigir(grupo);
             painel.setModalCorrecaoAberto(true);

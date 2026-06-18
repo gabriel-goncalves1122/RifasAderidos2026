@@ -1,11 +1,8 @@
 import { SxProps, Theme } from "@mui/material";
 
-import {
-  aderidosColors,
-  aderidosMotion,
-  reduceMotionSx,
-  typographyScale,
-} from "../tokens";
+import { aderidosColors } from "@/shared/tokens/colors";
+import { aderidosMotion, reduceMotionSx } from "@/shared/tokens/motion";
+import { typographyScale } from "@/shared/tokens/typography";
 
 const focusVisibleSx = {
   "&:focus-visible": {
@@ -22,6 +19,7 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
   blocoVendasTituloLinha: {
     display: "flex",
     alignItems: "center",
+    flexWrap: "wrap",
     gap: 1,
     mb: 0.9,
     pl: {
@@ -34,6 +32,21 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     ...typographyScale.pageTitle,
     color: aderidosColors.greenBlack,
     letterSpacing: 0,
+  },
+
+  blocoVendasContador: {
+    height: 30,
+    borderRadius: 2,
+    bgcolor: aderidosColors.greenSoft,
+    color: aderidosColors.greenDark,
+    border: "1px solid rgba(6, 61, 49, 0.12)",
+    fontWeight: 850,
+    boxShadow: "0 6px 14px rgba(2, 27, 22, 0.045)",
+
+    "& .MuiChip-label": {
+      px: 1.2,
+      fontSize: "0.78rem",
+    },
   },
 
   blocoVendasDescricao: {
@@ -86,17 +99,8 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
   },
 
   gridRifasWrapper: {
-    maxHeight: {
-      xs: "48vh",
-      sm: 480,
-      md: 540,
-    },
-    minHeight: {
-      xs: 340,
-      sm: 380,
-    },
-    overflowY: "auto",
-    overflowX: "hidden",
+    width: "100%",
+    overflow: "visible",
     px: {
       xs: 0,
       sm: 0.25,
@@ -106,26 +110,8 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
       sm: 0.5,
     },
     pr: {
-      xs: 0.4,
-      sm: 0.75,
-    },
-    bgcolor: "transparent",
-    border: "none",
-    boxShadow: "none",
-    scrollbarWidth: "thin",
-    scrollbarColor: "rgba(5, 46, 35, 0.24) transparent",
-
-    "&::-webkit-scrollbar": {
-      width: 6,
-    },
-
-    "&::-webkit-scrollbar-track": {
-      background: "transparent",
-    },
-
-    "&::-webkit-scrollbar-thumb": {
-      background: "rgba(6, 61, 49, 0.24)",
-      borderRadius: 999,
+      xs: 0,
+      sm: 0,
     },
   },
 
@@ -176,6 +162,108 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
       xs: 3.5,
       sm: 4,
     },
+  },
+
+  pendenciaAcao: {
+    minHeight: 72,
+    alignSelf: {
+      xs: "stretch",
+      sm: "start",
+    },
+    justifyContent: "space-between",
+    borderRadius: 2,
+    px: 1.6,
+    py: 1.35,
+    bgcolor: aderidosColors.warningSoft,
+    color: aderidosColors.warningStrong,
+    border: "1.5px solid rgba(184, 123, 0, 0.22)",
+    textTransform: "none",
+    boxShadow: "0 10px 22px rgba(107, 78, 0, 0.06)",
+    transition: `background-color ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}, border-color ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}, transform ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}`,
+    ...focusVisibleSx,
+    ...reduceMotionSx,
+
+    "&:hover": {
+      bgcolor: "#FFF2C4",
+      borderColor: "rgba(184, 123, 0, 0.34)",
+      transform: "translateY(-1px)",
+    },
+
+    "& .MuiButton-endIcon": {
+      ml: 1,
+      color: "inherit",
+    },
+  },
+
+  pendenciaAcaoIcone: {
+    width: 34,
+    height: 34,
+    borderRadius: 1.6,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    bgcolor: "rgba(107, 78, 0, 0.10)",
+    color: aderidosColors.warningStrong,
+    flexShrink: 0,
+  },
+
+  pendenciaAcaoTitulo: {
+    color: aderidosColors.greenBlack,
+    fontWeight: 900,
+    fontSize: "0.95rem",
+    lineHeight: 1.15,
+  },
+
+  pendenciaAcaoSubtitulo: {
+    color: aderidosColors.warningStrong,
+    fontWeight: 750,
+    fontSize: "0.78rem",
+    lineHeight: 1.2,
+    mt: 0.25,
+  },
+
+  pendenciaAcaoContador: {
+    height: 28,
+    minWidth: 28,
+    borderRadius: 1.5,
+    bgcolor: aderidosColors.white,
+    color: aderidosColors.warningStrong,
+    border: "1px solid rgba(107, 78, 0, 0.14)",
+    fontWeight: 950,
+    flexShrink: 0,
+
+    "& .MuiChip-label": {
+      px: 0.9,
+      fontSize: "0.78rem",
+    },
+  },
+
+  pendenciaOk: {
+    minHeight: 48,
+    alignSelf: {
+      xs: "stretch",
+      sm: "start",
+    },
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: {
+      xs: "flex-start",
+      sm: "center",
+    },
+    gap: 0.8,
+    px: 1.35,
+    py: 1.1,
+    borderRadius: 2,
+    bgcolor: aderidosColors.greenSoft,
+    color: aderidosColors.greenDark,
+    border: "1px solid rgba(6, 61, 49, 0.10)",
+  },
+
+  pendenciaOkTexto: {
+    color: aderidosColors.greenDark,
+    fontWeight: 850,
+    fontSize: "0.9rem",
+    lineHeight: 1.2,
   },
 
 };

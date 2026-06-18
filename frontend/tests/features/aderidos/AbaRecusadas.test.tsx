@@ -9,6 +9,8 @@ describe("Componente: AbaRecusadas", () => {
   const mockGrupos = [
     {
       comprador: "Gabriel Sampaio",
+      email: "gabriel@email.com",
+      telefone: "(35) 99999-9999",
       data: "2026-04-19T10:00:00.000Z",
       motivo: "Telefone divergente.",
       bilhetes: ["015", "016"],
@@ -25,8 +27,10 @@ describe("Componente: AbaRecusadas", () => {
     );
 
     expect(
-      screen.getByText(/Vendas recusadas - ação necessária/i),
-    ).toBeInTheDocument();
+      screen.queryByText(/Vendas recusadas - ação necessária/i),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(/Correção de dados/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Vendas recusadas/i })).toBeInTheDocument();
     expect(screen.getByText(/Rifas para revisar/i)).toBeInTheDocument();
 
     expect(screen.getByText("Gabriel Sampaio")).toBeInTheDocument();
@@ -37,7 +41,7 @@ describe("Componente: AbaRecusadas", () => {
 
   it("Deve chamar a função onVoltar ao clicar no botão de voltar", () => {
     const mockVoltar = vi.fn();
-    const { container } = render(
+    render(
       <AbaRecusadas
         gruposRecusados={mockGrupos}
         onVoltar={mockVoltar}
@@ -45,9 +49,7 @@ describe("Componente: AbaRecusadas", () => {
       />,
     );
 
-    // Encontra o botão de voltar (como tem o ícone ArrowBack, podemos buscar pelo componente do botão)
-    const btnVoltar = container.querySelector("button");
-    if (btnVoltar) fireEvent.click(btnVoltar);
+    fireEvent.click(screen.getByRole("button", { name: /Voltar às rifas/i }));
 
     expect(mockVoltar).toHaveBeenCalledTimes(1);
   });
@@ -65,6 +67,8 @@ describe("Componente: AbaRecusadas", () => {
     const btnCorrigir = screen.getByRole("button", {
       name: /Corrigir dados/i,
     });
+    expect(btnCorrigir).toHaveStyle({ backgroundColor: "#063D31" });
+
     fireEvent.click(btnCorrigir);
 
     expect(mockAbrirCorrecao).toHaveBeenCalledTimes(1);

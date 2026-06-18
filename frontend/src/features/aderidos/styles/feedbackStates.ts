@@ -1,6 +1,6 @@
 import { SxProps, Theme } from "@mui/material";
 
-import { aderidosColors } from "../tokens";
+import { aderidosColors } from "@/shared/tokens/colors";
 
 export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
   emptyState: {

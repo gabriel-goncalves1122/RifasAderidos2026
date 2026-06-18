@@ -1,12 +1,12 @@
 // ============================================================================
-// ARQUIVO: frontend/src/features/aderidos/components/checkout/CheckoutUploadComprovante.tsx
+// ARQUIVO: frontend/src/features/aderidos/legacy/checkout/CheckoutUploadComprovante.tsx
 // ============================================================================
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { Box, Button, Typography } from "@mui/material";
 import { FieldErrors, UseFormSetValue } from "react-hook-form";
 
-import { CheckoutFormData } from "./checkoutSchema";
+import { CheckoutFormData } from "../../components/checkout/checkoutSchema";
 
 type CheckoutUploadComprovanteFormData = CheckoutFormData & {
   comprovante?: File;

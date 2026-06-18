@@ -25,10 +25,30 @@ import {
   filtrarRifasPorStatus,
 } from "../utils/calcularResumoRifas";
 import { obterPrimeiroNomeAderido } from "../utils/obterPrimeiroNomeAderido";
+import { calcularContadoresRifas } from "../utils/filtrosRifas";
 import { useCheckoutFlow } from "./useCheckoutFlow";
 import { useModalStack } from "./useModalStack";
 import { useRifasData } from "./useRifasData";
 import { useRifasSelection } from "./useRifasSelection";
+
+function rolarParaInicioDoPainel() {
+  if (typeof window === "undefined") return;
+
+  const executarScroll = () => {
+    try {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      // JSDOM não implementa scrollTo; no navegador, isso mantém o fluxo no topo.
+    }
+  };
+
+  if (typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(executarScroll);
+    return;
+  }
+
+  executarScroll();
+}
 
 export function usePainelAderidoController() {
   const [visaoAtual, setVisaoAtual] = useState<VisaoPainelAderido>("geral");
@@ -74,6 +94,11 @@ export function usePainelAderidoController() {
     [dadosPainel.minhasRifas],
   );
 
+  const contadoresRifas = useMemo(
+    () => calcularContadoresRifas(dadosPainel.minhasRifas),
+    [dadosPainel.minhasRifas],
+  );
+
   const notificacoesNaoLidas = useMemo(
     () => contarNotificacoesNaoLidas(dadosPainel.notificacoes),
     [dadosPainel.notificacoes],
@@ -116,6 +141,17 @@ export function usePainelAderidoController() {
     modais.setDrawerNotificacoesAberto,
   ]);
 
+  const abrirRecusadas = useCallback(() => {
+    selecao.limparSelecao();
+    setVisaoAtual("recusadas");
+    rolarParaInicioDoPainel();
+  }, [selecao.limparSelecao]);
+
+  const voltarParaRifas = useCallback(() => {
+    setVisaoAtual("geral");
+    rolarParaInicioDoPainel();
+  }, []);
+
   const corrigirDadosRecusados = useCallback(
     async (numeros: string[], dadosAtualizados: DadosCorrecaoRecusa) => {
       const sucesso = await dadosPainel.corrigirDadosRecusados(
@@ -156,6 +192,7 @@ export function usePainelAderidoController() {
 
     primeiroNome,
     valorArrecadado,
+    contadoresRifas,
     notificacoesNaoLidas,
 
     modalCheckoutAberto: modais.modalCheckoutAberto,
@@ -173,6 +210,8 @@ export function usePainelAderidoController() {
     setRifaParaDetalhes: modais.setRifaParaDetalhes,
 
     abrirSidebarNotificacoes,
+    abrirRecusadas,
+    voltarParaRifas,
     alternarSelecaoRifa: selecao.alternarSelecaoRifa,
     finalizarVendaComSucesso,
     corrigirDadosRecusados,

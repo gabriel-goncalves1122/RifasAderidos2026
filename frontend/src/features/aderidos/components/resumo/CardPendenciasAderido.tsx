@@ -2,11 +2,11 @@
 // ARQUIVO: frontend/src/features/aderidos/components/resumo/CardPendenciasAderido.tsx
 // ============================================================================
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import { Button } from "@mui/material";
+import { Box, Button, Chip, Stack, Typography } from "@mui/material";
 
 import { painelAderidoStyles } from "../../styles/painelAderidoStyles";
-import { ResumoCard } from "./ResumoCard";
 
 interface CardPendenciasAderidoProps {
   totalPendencias: number;
@@ -19,35 +19,45 @@ export function CardPendenciasAderido({
 }: CardPendenciasAderidoProps) {
   const possuiPendencias = totalPendencias > 0;
 
-  const textoPendencia =
-    totalPendencias === 1
-      ? "1 correção aberta"
-      : `${totalPendencias} correções abertas`;
-  const acaoPendencia = possuiPendencias ? (
-    <Button
-      variant="outlined"
-      size="small"
-      onClick={onAbrirRecusadas}
-      sx={painelAderidoStyles.pendenciaBotao}
-    >
-      Revisar
-    </Button>
-  ) : undefined;
+  if (!possuiPendencias) {
+    return (
+      <Box sx={painelAderidoStyles.pendenciaOk}>
+        <TaskAltIcon fontSize="small" />
+        <Typography sx={painelAderidoStyles.pendenciaOkTexto}>
+          Sem pendências
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
-    <ResumoCard
-      icon={
-        possuiPendencias ? (
+    <Button
+      type="button"
+      variant="text"
+      onClick={onAbrirRecusadas}
+      endIcon={<ArrowForwardIcon fontSize="small" />}
+      sx={painelAderidoStyles.pendenciaAcao}
+    >
+      <Stack direction="row" alignItems="center" gap={1.2} sx={{ minWidth: 0 }}>
+        <Box sx={painelAderidoStyles.pendenciaAcaoIcone}>
           <ErrorOutlineIcon fontSize="small" />
-        ) : (
-          <TaskAltIcon fontSize="small" />
-        )
-      }
-      label="Pendências"
-      valor={possuiPendencias ? totalPendencias : 0}
-      descricao={possuiPendencias ? textoPendencia : "Tudo certo agora."}
-      acao={acaoPendencia}
-      variant={possuiPendencias ? "alert" : "success"}
-    />
+        </Box>
+
+        <Box sx={{ minWidth: 0, textAlign: "left" }}>
+          <Typography sx={painelAderidoStyles.pendenciaAcaoTitulo}>
+            Vendas recusadas
+          </Typography>
+          <Typography sx={painelAderidoStyles.pendenciaAcaoSubtitulo}>
+            Corrigir dados
+          </Typography>
+        </Box>
+
+        <Chip
+          size="small"
+          label={totalPendencias}
+          sx={painelAderidoStyles.pendenciaAcaoContador}
+        />
+      </Stack>
+    </Button>
   );
 }

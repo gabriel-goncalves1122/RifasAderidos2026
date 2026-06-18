@@ -24,7 +24,8 @@ describe("Componente <EstatisticasAderido />", () => {
       screen.getByText(/Confirmado nas vendas aprovadas/i),
     ).toBeInTheDocument();
     expect(screen.getByText(/R\$\s*250,00/i)).toBeInTheDocument();
-    expect(screen.getByText(/Tudo certo agora/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sem pendências/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Mapa de rifas/i)).not.toBeInTheDocument();
   });
 
   it("Deve abrir notificações ao clicar no botão de avisos", () => {
@@ -64,9 +65,10 @@ describe("Componente <EstatisticasAderido />", () => {
       />,
     );
 
-    expect(screen.getByText(/1 correção aberta/i)).toBeInTheDocument();
+    expect(screen.getByText(/Vendas recusadas/i)).toBeInTheDocument();
+    expect(screen.getByText(/Corrigir dados/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Revisar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Vendas recusadas/i }));
 
     expect(mockAbrirRecusadas).toHaveBeenCalledTimes(1);
   });

@@ -52,14 +52,16 @@ describe("Componente <CarrinhoFlutuante />", () => {
     expect(screen.getByText("R$ 30,00")).toBeInTheDocument();
   });
 
-  it("Deve usar superfície sólida, borda forte e animação de entrada", () => {
+  it("Deve flutuar sem faixa branca full-width", () => {
     expect(painelAderidoStyles.carrinhoFixoArea).toMatchObject({
-      bgcolor: "#FFFFFF",
+      bgcolor: "transparent",
       maxHeight: "100dvh",
+      pointerEvents: "none",
     });
     expect(painelAderidoStyles.carrinhoFixoCard).toMatchObject({
       bgcolor: "#FFFFFF",
       border: "2px solid rgba(6,61,49,0.16)",
+      pointerEvents: "auto",
     });
     expect(painelAderidoStyles.carrinhoAnimado).toMatchObject({
       opacity: 1,

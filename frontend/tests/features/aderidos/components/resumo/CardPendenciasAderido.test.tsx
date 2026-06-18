@@ -12,9 +12,10 @@ describe("Componente <CardPendenciasAderido />", () => {
       <CardPendenciasAderido totalPendencias={0} onAbrirRecusadas={vi.fn()} />,
     );
 
-    expect(screen.getByText(/Pendências/i)).toBeInTheDocument();
-    expect(screen.getByText("0")).toBeInTheDocument();
-    expect(screen.getByText(/Tudo certo agora/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sem pendências/i)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Vendas recusadas/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("Deve mostrar aviso quando houver uma pendência", () => {
@@ -22,16 +23,13 @@ describe("Componente <CardPendenciasAderido />", () => {
       <CardPendenciasAderido totalPendencias={1} onAbrirRecusadas={vi.fn()} />,
     );
 
-    expect(
-      screen.getByText(/1 correção aberta/i),
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole("button", { name: /Revisar/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Vendas recusadas/i)).toBeInTheDocument();
+    expect(screen.getByText(/Corrigir dados/i)).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Vendas recusadas/i })).toBeInTheDocument();
   });
 
-  it("Deve chamar onAbrirRecusadas ao clicar em Revisar", () => {
+  it("Deve chamar onAbrirRecusadas ao clicar em Vendas recusadas", () => {
     const mockOnAbrirRecusadas = vi.fn();
 
     render(
@@ -41,7 +39,7 @@ describe("Componente <CardPendenciasAderido />", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Revisar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Vendas recusadas/i }));
 
     expect(mockOnAbrirRecusadas).toHaveBeenCalledTimes(1);
   });
@@ -51,8 +49,6 @@ describe("Componente <CardPendenciasAderido />", () => {
       <CardPendenciasAderido totalPendencias={3} onAbrirRecusadas={vi.fn()} />,
     );
 
-    expect(
-      screen.getByText(/3 correções abertas/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
   });
 });
