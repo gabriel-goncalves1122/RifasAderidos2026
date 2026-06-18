@@ -1,9 +1,9 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import React, { useEffect, useState, Suspense } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { Box, CircularProgress } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { AppLoadingScreen } from "@/shared/components/AppLoadingScreen";
 import { auth } from "../shared/config/firebase";
 
 // ----------------------------------------------------------------------------
@@ -44,18 +44,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (loading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <AppLoadingScreen label="Carregando acesso" />;
   }
   return user ? <>{children}</> : <Navigate to="/" />;
 }
@@ -69,7 +58,7 @@ export function AppRoutes() {
         <Route
           path="/"
           element={
-            <Suspense fallback={<CircularProgress />}>
+            <Suspense fallback={<AppLoadingScreen />}>
               <PageTransition><LoginPage /></PageTransition>
             </Suspense>
           }
@@ -77,7 +66,7 @@ export function AppRoutes() {
         <Route
           path="/login"
           element={
-            <Suspense fallback={<CircularProgress />}>
+            <Suspense fallback={<AppLoadingScreen />}>
               <PageTransition><LoginPage /></PageTransition>
             </Suspense>
           }
@@ -85,7 +74,7 @@ export function AppRoutes() {
         <Route
           path="/register"
           element={
-            <Suspense fallback={<CircularProgress />}>
+            <Suspense fallback={<AppLoadingScreen />}>
               <PageTransition><RegisterPage /></PageTransition>
             </Suspense>
           }
@@ -95,7 +84,7 @@ export function AppRoutes() {
           path="/dashboard"
           element={
             <PrivateRoute>
-              <Suspense fallback={<CircularProgress />}>
+              <Suspense fallback={<AppLoadingScreen label="Carregando painel" />}>
                 <PageTransition><DashboardPage /></PageTransition>
               </Suspense>
             </PrivateRoute>

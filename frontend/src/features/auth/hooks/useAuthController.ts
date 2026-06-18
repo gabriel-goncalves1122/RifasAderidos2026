@@ -95,7 +95,9 @@ export function useAuthController() {
           setLoading(false);
         },
         (erro) => {
-          console.error("[Auth] Erro ao observar usuário:", erro);
+          if (import.meta.env.DEV) {
+            console.error("[Auth] Erro ao observar usuário:", erro);
+          }
 
           // Mantém o usuário logado com permissão mínima caso o Firestore falhe.
           setUsuarioAtual({
@@ -125,7 +127,9 @@ export function useAuthController() {
       // Mantém loading true até o onAuthStateChanged buscar nome e cargo.
       return true;
     } catch (erro) {
-      console.error("[Auth] Erro ao fazer login:", erro);
+      if (import.meta.env.DEV) {
+        console.error("[Auth] Erro ao fazer login:", erro);
+      }
 
       setError("E-mail ou senha incorretos.");
 
@@ -142,7 +146,9 @@ export function useAuthController() {
     try {
       await authService.logout();
     } catch (erro) {
-      console.error("[Auth] Erro ao fazer logout:", erro);
+      if (import.meta.env.DEV) {
+        console.error("[Auth] Erro ao fazer logout:", erro);
+      }
     }
   };
 
@@ -154,7 +160,9 @@ export function useAuthController() {
       await authService.enviarRecuperacaoSenha(emailToReset);
       return true;
     } catch (erro: any) {
-      console.error("[Auth] Erro na recuperação de senha:", erro);
+      if (import.meta.env.DEV) {
+        console.error("[Auth] Erro na recuperação de senha:", erro);
+      }
 
       setError(obterMensagemErroRecuperacao(erro.code));
       return false;
@@ -175,7 +183,9 @@ export function useAuthController() {
     try {
       return await authService.registrarUsuario(nome, email, senha, cpf);
     } catch (erro: any) {
-      console.error("[Auth] Erro no cadastro:", erro);
+      if (import.meta.env.DEV) {
+        console.error("[Auth] Erro no cadastro:", erro);
+      }
 
       setError(obterMensagemErroRegistro(erro));
       throw erro;

@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import {
   Box,
-  CircularProgress,
   Container,
   useMediaQuery,
   useTheme,
@@ -17,6 +16,7 @@ import { SecretariaView } from "@/features/secretaria";
 import { AuditoriaComprasPage } from "@/features/tesouraria/pages/AuditoriaComprasPage";
 import { DesempenhoPage } from "@/features/tesouraria/pages/DesempenhoPage";
 import { TesourariaPixPage } from "@/features/tesouraria/pages/TesourariaPixPage";
+import { AppLoadingScreen } from "@/shared/components/AppLoadingScreen";
 import { DashboardSidebar } from "@/shared/components/DashboardSidebar";
 import { DashboardHeader } from "@/views/components/dashboard/DashboardHeader";
 
@@ -92,26 +92,19 @@ export function DashboardPage() {
   };
 
   if (loading) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "grid",
-          placeItems: "center",
-          bgcolor: "background.default",
-        }}
-      >
-        <CircularProgress color="primary" />
-      </Box>
-    );
+    return <AppLoadingScreen label="Carregando painel" />;
   }
 
   return (
     <Box
+      data-testid="dashboard-shell"
       sx={{
+        position: "relative",
         flexGrow: 1,
-        minHeight: "100vh",
+        minHeight: "100dvh",
         bgcolor: "background.default",
+        overscrollBehaviorY: "none",
+        WebkitOverflowScrolling: "touch",
       }}
     >
       <DashboardHeader

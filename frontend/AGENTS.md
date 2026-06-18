@@ -43,6 +43,14 @@ Componentes visuais não devem chamar backend nem manipular query keys diretamen
 
 Prefira query keys explícitas por feature e usuário quando o dado for sensível ao usuário autenticado.
 
+## Mocks, Stubs E Legado
+
+Mocks não devem alimentar fluxos reais automaticamente. Mantenha mocks em testes ou fixtures/dev explícitos.
+
+Não deixe botão visível com callback vazio. Se não houver endpoint seguro ou comportamento local real, remova a ação da UI ou isole como legado.
+
+Código em `legacy/` não deve ser importado por telas novas sem nova decisão de produto.
+
 ## Naming Convention
 
 Hooks controller seguem o padrão `use<Nome>Controller` (ex: `usePremiosController`, `usePixController`).
@@ -334,7 +342,9 @@ Todas as rotas de página (`*Page.tsx`) DEVEM ser importadas dinamicamente usand
 
 **Transições Fluidas (Framer Motion):**
 O projeto utiliza `framer-motion` para garantir micro-animações dinâmicas e transições visuais de rota de alto nível que causam uma excelente impressão (fator WOW).
-Sempre que orquestrar a troca de rotas ou montagem/desmontagem condicional de componentes complexos, utilize `<AnimatePresence>` e `<motion.div>` em vez de montagem abrupta.
+- Sempre que orquestrar a troca de rotas ou montagem/desmontagem condicional de componentes complexos, utilize `<AnimatePresence>` e `<motion.div>` em vez de montagem abrupta.
+- **Micro-interações (Tabs, Sidebars, Listas, Grids):** Devem possuir um tempo de resposta "snappy" (rápido). Use `staggerChildren` baixo (ex: `0.01` a `0.05`) para listas muito grandes, e transições de entrada de até `0.15s` de duração ou configurações de `spring` secas (`stiffness: 300, damping: 25`).
+- **Atenção aos Testes (Vitest):** Transições muito longas no Framer Motion ou animações aninhadas podem causar timeouts intermitentes em ambientes de testes paralelos. Se um teste começar a falhar por timeout após adicionar animações pesadas, considere aumentar o limite do timeout no teste isolado.
 
 **Cache (React Query):**
 - Por padrão, o `staleTime` global é definido para otimizar requisições repetidas (ex: 5 minutos).

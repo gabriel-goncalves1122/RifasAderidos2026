@@ -4,10 +4,48 @@
 
 export const dashboardHeaderStyles = {
   appBar: {
+    position: "relative",
+    zIndex: 1200,
     bgcolor: "#063D31",
     color: "#FFFFFF",
     borderBottom: "1px solid rgba(255, 255, 255, 0.14)",
     boxShadow: "0 10px 30px rgba(2, 27, 22, 0.18)",
+  },
+
+  statusBarUnderlay: {
+    display: {
+      xs: "block",
+      sm: "none",
+    },
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "env(safe-area-inset-top, 0px)",
+    zIndex: 1301,
+    bgcolor: "#063D31",
+    pointerEvents: "none",
+
+    "@supports (-webkit-touch-callout: none)": {
+      height: "max(env(safe-area-inset-top), 20px)",
+      minHeight: 20,
+    },
+  },
+
+  statusBarSpacer: {
+    display: {
+      xs: "block",
+      sm: "none",
+    },
+    height: "env(safe-area-inset-top, 0px)",
+    minHeight: 0,
+    flexShrink: 0,
+    bgcolor: "#063D31",
+
+    "@supports (-webkit-touch-callout: none)": {
+      height: "max(env(safe-area-inset-top), 20px)",
+      minHeight: 20,
+    },
   },
 
   toolbar: {

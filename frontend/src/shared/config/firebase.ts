@@ -88,8 +88,10 @@ if (deveUsarEmuladores && !window.__FIREBASE_EMULATORS_CONNECTED__) {
 
   window.__FIREBASE_EMULATORS_CONNECTED__ = true;
 
-  console.log("🔌 Firebase Client conectado aos Emuladores Locais");
-  console.log(`✅ Auth Emulator: http://${emulatorHost}:${authPort}`);
-  console.log(`✅ Firestore Emulator: ${emulatorHost}:${firestorePort}`);
-  console.log(`✅ Storage Emulator: ${emulatorHost}:${storagePort}`);
+  if (import.meta.env.DEV) {
+    console.log("Firebase Client conectado aos Emuladores Locais");
+    console.log(`Auth Emulator: http://${emulatorHost}:${authPort}`);
+    console.log(`Firestore Emulator: ${emulatorHost}:${firestorePort}`);
+    console.log(`Storage Emulator: ${emulatorHost}:${storagePort}`);
+  }
 }

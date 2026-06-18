@@ -13,7 +13,9 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import { Contexto } from "../views/pages/DashboardPage";
+
+import { dashboardSidebarStyles } from "@/shared/styles/dashboardSidebarStyles";
+import { Contexto } from "@/views/pages/DashboardPage";
 
 interface Props {
   open: boolean;
@@ -36,7 +38,6 @@ export function DashboardSidebar({
   onMudarContexto,
   onLogout,
 }: Props) {
-  // Rótulo Dinâmico do Perfil
   const getCargoLabel = () => {
     if (isSuperAdmin) return "Administração Geral";
     if (hasTesourariaAccess) return "Tesouraria";
@@ -44,19 +45,21 @@ export function DashboardSidebar({
     return "Aderido";
   };
 
+  const itemAderidoSelecionado = contextoAtual === "aderido";
+  const itemSecretariaSelecionado = contextoAtual === "secretaria";
+  const itemTesourariaSelecionado = contextoAtual === "tesouraria";
+
   return (
-    <Drawer anchor="left" open={open} onClose={onClose}>
-      <Box sx={{ width: 280 }} role="presentation">
+    <Drawer
+      anchor="left"
+      open={open}
+      onClose={onClose}
+      PaperProps={{ sx: dashboardSidebarStyles.drawerPaper }}
+    >
+      <Box sx={dashboardSidebarStyles.root} role="presentation">
         <Box
-          sx={{
-            p: 3,
-            bgcolor: "primary.main",
-            color: "white",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            borderBottom: "4px solid var(--cor-dourado-brilho)",
-          }}
+          sx={dashboardSidebarStyles.header}
+          data-testid="dashboard-sidebar-header"
         >
           <img
             src="/images/PNG (1080x1080).png"
@@ -68,43 +71,33 @@ export function DashboardSidebar({
           </Typography>
           <Typography
             variant="body2"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-              mt: 1,
-              color: "secondary.light",
-            }}
+            sx={dashboardSidebarStyles.cargo}
           >
             <AccountCircleIcon fontSize="small" />
             {getCargoLabel()}
           </Typography>
         </Box>
 
-        <List sx={{ mt: 1 }}>
+        <List sx={dashboardSidebarStyles.list}>
           <ListItem disablePadding>
             <ListItemButton
-              selected={contextoAtual === "aderido"}
+              selected={itemAderidoSelecionado}
               data-testid="dashboard-contexto-aderido"
+              sx={dashboardSidebarStyles.itemButton(itemAderidoSelecionado)}
               onClick={() => {
                 onMudarContexto("aderido");
                 onClose();
               }}
             >
-              <ListItemIcon>
-                <AccountCircleIcon
-                  sx={{
-                    color:
-                      contextoAtual === "aderido"
-                        ? "secondary.main"
-                        : "inherit",
-                  }}
-                />
+              <ListItemIcon
+                sx={dashboardSidebarStyles.itemIcon(itemAderidoSelecionado)}
+              >
+                <AccountCircleIcon />
               </ListItemIcon>
               <ListItemText
                 primary="Área do Aderido"
-                sx={{
-                  fontWeight: contextoAtual === "aderido" ? "bold" : "normal",
+                primaryTypographyProps={{
+                  fontWeight: itemAderidoSelecionado ? 900 : 700,
                 }}
               />
             </ListItemButton>
@@ -113,28 +106,27 @@ export function DashboardSidebar({
           {hasSecretariaAccess && (
             <ListItem disablePadding>
               <ListItemButton
-                selected={contextoAtual === "secretaria"}
+                selected={itemSecretariaSelecionado}
                 data-testid="dashboard-contexto-secretaria"
+                sx={dashboardSidebarStyles.itemButton(
+                  itemSecretariaSelecionado,
+                )}
                 onClick={() => {
                   onMudarContexto("secretaria");
                   onClose();
                 }}
               >
-                <ListItemIcon>
-                  <GroupAddIcon
-                    sx={{
-                      color:
-                        contextoAtual === "secretaria"
-                          ? "secondary.main"
-                          : "inherit",
-                    }}
-                  />
+                <ListItemIcon
+                  sx={dashboardSidebarStyles.itemIcon(
+                    itemSecretariaSelecionado,
+                  )}
+                >
+                  <GroupAddIcon />
                 </ListItemIcon>
                 <ListItemText
                   primary="Painel da Secretaria"
-                  sx={{
-                    fontWeight:
-                      contextoAtual === "secretaria" ? "bold" : "normal",
+                  primaryTypographyProps={{
+                    fontWeight: itemSecretariaSelecionado ? 900 : 700,
                   }}
                 />
               </ListItemButton>
@@ -144,28 +136,27 @@ export function DashboardSidebar({
           {hasTesourariaAccess && (
             <ListItem disablePadding>
               <ListItemButton
-                selected={contextoAtual === "tesouraria"}
+                selected={itemTesourariaSelecionado}
                 data-testid="dashboard-contexto-tesouraria"
+                sx={dashboardSidebarStyles.itemButton(
+                  itemTesourariaSelecionado,
+                )}
                 onClick={() => {
                   onMudarContexto("tesouraria");
                   onClose();
                 }}
               >
-                <ListItemIcon>
-                  <AdminPanelSettingsIcon
-                    sx={{
-                      color:
-                        contextoAtual === "tesouraria"
-                          ? "secondary.main"
-                          : "inherit",
-                    }}
-                  />
+                <ListItemIcon
+                  sx={dashboardSidebarStyles.itemIcon(
+                    itemTesourariaSelecionado,
+                  )}
+                >
+                  <AdminPanelSettingsIcon />
                 </ListItemIcon>
                 <ListItemText
                   primary="Painel da Tesouraria"
-                  sx={{
-                    fontWeight:
-                      contextoAtual === "tesouraria" ? "bold" : "normal",
+                  primaryTypographyProps={{
+                    fontWeight: itemTesourariaSelecionado ? 900 : 700,
                   }}
                 />
               </ListItemButton>
@@ -173,8 +164,8 @@ export function DashboardSidebar({
           )}
         </List>
 
-        <Divider sx={{ mt: "auto" }} />
-        <List>
+        <Divider sx={dashboardSidebarStyles.divider} />
+        <List sx={{ px: 1 }}>
           <ListItem disablePadding>
             <ListItemButton onClick={onLogout}>
               <ListItemIcon>

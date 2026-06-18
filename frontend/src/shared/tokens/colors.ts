@@ -1,0 +1,15 @@
+export const aderidosColors = {
+  greenDark: "#063D31",
+  greenBlack: "#021B16",
+  greenAccent: "#0A5A42",
+  greenBright: "#0B7A61",
+  textMuted: "#526760",
+  background: "#F6F8F7",
+  greenSoft: "#EAF3EF",
+  white: "#FFFFFF",
+  warningSoft: "#FFF4D8",
+  warningStrong: "#6B4A00",
+  errorSoft: "#FAD6D6",
+  errorStrong: "#8E1F1F",
+  errorBorder: "#C84F4F",
+} as const;

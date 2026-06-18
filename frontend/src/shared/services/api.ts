@@ -63,8 +63,9 @@ function aguardarUsuarioAutenticado(timeoutMs = 3500): Promise<User | null> {
 export async function fetchAPI(
   endpoint: string,
   method = "GET",
-  body?: any,
+  body?: unknown,
   precisaAutenticacao = true,
+  responseType: "json" | "blob" = "json",
 ) {
   try {
     const headers: Record<string, string> = {};
@@ -102,6 +103,11 @@ export async function fetchAPI(
     }
 
     const response = await fetch(url, options);
+
+    if (responseType === "blob" && response.ok) {
+      return response.blob();
+    }
+
     const rawText = await response.text();
 
     let data;
@@ -137,7 +143,7 @@ export async function fetchAPI(
     }
 
     return data;
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (import.meta.env.DEV) {
       console.error(`Erro na requisicao [${method}] ${endpoint}:`, err);
     }

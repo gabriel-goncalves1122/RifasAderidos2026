@@ -4,6 +4,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { DashboardSidebar } from "@/shared/components/DashboardSidebar";
+import { dashboardSidebarStyles } from "@/shared/styles/dashboardSidebarStyles";
 
 describe("Componente <DashboardSidebar />", () => {
   const mockOnClose = vi.fn();
@@ -86,5 +87,27 @@ describe("Componente <DashboardSidebar />", () => {
     const btnLogout = screen.getByText("Sair da Conta");
     fireEvent.click(btnLogout);
     expect(mockOnLogout).toHaveBeenCalledTimes(1);
+  });
+
+  it("Deve usar o topo verde do dashboard sem a borda dourada antiga", () => {
+    expect(dashboardSidebarStyles.drawerPaper).toMatchObject({
+      bgcolor: "#F6F8F7",
+      backgroundImage: "linear-gradient(#063D31, #063D31)",
+      backgroundSize: "100% env(safe-area-inset-top, 0px)",
+    });
+
+    expect(dashboardSidebarStyles.header).toMatchObject({
+      bgcolor: "#063D31",
+      borderBottom: "1px solid rgba(255, 255, 255, 0.14)",
+    });
+    expect(dashboardSidebarStyles.header).not.toHaveProperty(
+      "borderBottom",
+      "4px solid var(--cor-dourado-brilho)",
+    );
+
+    expect(dashboardSidebarStyles.itemButton(true)).toMatchObject({
+      bgcolor: "#EAF3EF",
+      color: "#063D31",
+    });
   });
 });

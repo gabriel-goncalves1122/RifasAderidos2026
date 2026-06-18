@@ -6,7 +6,7 @@ import { colors } from "../../styles/colors";
 import { surfaces } from "../../styles/surfaces";
 import { typography } from "../../styles/typography";
 import { components } from "../../styles/components";
-import { aderidosMotion, reduceMotionSx } from "../../../aderidos/tokens/motion";
+import { aderidosMotion, reduceMotionSx } from "@/shared/tokens/motion";
 import type { PremioData } from "../../types/premio";
 
 interface PremioCardProps {

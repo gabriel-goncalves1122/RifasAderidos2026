@@ -100,7 +100,9 @@ export function usePremiosController() {
         urlDaImagem = await uploadImagemPremio(arquivoFoto);
         revogarPreview();
       } catch (error) {
-        console.error("Falha no upload");
+        if (import.meta.env.DEV) {
+          console.error("Falha no upload", error);
+        }
       }
     }
 

@@ -79,10 +79,12 @@ export function useLoginPage() {
         setResetEmail("");
       }, 3000);
     } catch (erro) {
-      console.error(
-        "[LoginPage] Erro ao solicitar recuperação de senha:",
-        erro,
-      );
+      if (import.meta.env.DEV) {
+        console.error(
+          "[LoginPage] Erro ao solicitar recuperação de senha:",
+          erro,
+        );
+      }
 
       setResetError("Ocorreu um erro ao enviar. Verifique o seu e-mail.");
     } finally {

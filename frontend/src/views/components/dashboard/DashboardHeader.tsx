@@ -28,6 +28,9 @@ export function DashboardHeader({
 
   return (
     <AppBar position="static" elevation={0} sx={dashboardHeaderStyles.appBar}>
+      <Box aria-hidden="true" sx={dashboardHeaderStyles.statusBarUnderlay} />
+      <Box aria-hidden="true" sx={dashboardHeaderStyles.statusBarSpacer} />
+
       <Toolbar sx={dashboardHeaderStyles.toolbar}>
         <IconButton
           size="large"

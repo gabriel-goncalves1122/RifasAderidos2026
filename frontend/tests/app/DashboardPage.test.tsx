@@ -40,6 +40,24 @@ describe("Página <DashboardPage />", () => {
     sessionStorage.clear();
   });
 
+  it("Deve renderizar loading claro e centralizado enquanto autenticação carrega", () => {
+    (useAuthController as any).mockReturnValue({
+      usuarioAtual: null,
+      handleLogout: mockHandleLogout,
+      loading: true,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByTestId("app-loading-screen")).toHaveStyle({
+      backgroundColor: "#FFFFFF",
+      display: "grid",
+      placeItems: "center",
+    });
+    expect(screen.getByText("Carregando painel")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+  });
+
   it("Deve renderizar o Portal do Aderido para usuários normais", () => {
     (useAuthController as any).mockReturnValue({
       usuarioAtual: { cargo: "aderido" },
@@ -49,6 +67,9 @@ describe("Página <DashboardPage />", () => {
 
     render(<DashboardPage />);
 
+    expect(screen.getByTestId("dashboard-shell")).toHaveStyle({
+      overscrollBehaviorY: "none",
+    });
     expect(screen.getByText("Portal do aderido")).toBeInTheDocument();
     expect(screen.getByText("Minhas Rifas")).toBeInTheDocument();
     expect(screen.getByText("Prêmios")).toBeInTheDocument();

@@ -6,7 +6,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { colors } from "../../styles/colors";
 import { surfaces } from "../../styles/surfaces";
 import { typography } from "../../styles/typography";
-import { reduceMotionSx } from "../../../aderidos/tokens/motion";
+import { reduceMotionSx } from "@/shared/tokens/motion";
 import { formatarDataExtenso, calcularDiasRestantes } from "../../utils/dateUtils";
 import type { InfoSorteio } from "../../types/sorteio";
 

@@ -174,4 +174,23 @@ describe("Funcao Mestra: fetchAPI", () => {
 
     consoleWarnSpy.mockRestore();
   });
+
+  it("Deve retornar Blob quando responseType for blob", async () => {
+    const blob = new Blob(["zip"], { type: "application/zip" });
+
+    (global.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      blob: async () => blob,
+    });
+
+    const resposta = await fetchAPI(
+      "/admin/compactar",
+      "POST",
+      { nomePacote: "Backup", ficheiros: ["backup_geral"] },
+      true,
+      "blob",
+    );
+
+    expect(resposta).toBe(blob);
+  });
 });
