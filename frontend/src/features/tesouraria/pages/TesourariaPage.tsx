@@ -1,4 +1,5 @@
 import { Box, CircularProgress } from "@mui/material";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { PixTransacoesDesktopView } from "../components/pix/transacoes/desktop/PixTransacoesDesktopView";
 import { PixTransacoesMobileView } from "../components/pix/transacoes/mobile/PixTransacoesMobileView";
@@ -43,24 +44,61 @@ export function TesourariaPage({ variante = "desktop" }: TesourariaPageProps) {
 
       <PixTabs abaAtual={abaVisivel} onChangeAba={setAbaAtual} />
 
-      {abaVisivel === "visao-geral" && (
-        <PixVisaoGeralTab resumo={resumo} transacoes={transacoes} />
-      )}
+      <Box sx={{ position: "relative", mt: 2 }}>
+        <AnimatePresence mode="popLayout">
+          {abaVisivel === "visao-geral" && (
+            <motion.div
+              key="visao-geral"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              <PixVisaoGeralTab resumo={resumo} transacoes={transacoes} />
+            </motion.div>
+          )}
 
-      {abaVisivel === "transacoes" &&
-        (variante === "mobile" ? (
-          <PixTransacoesMobileView {...pixProps} />
-        ) : (
-          <PixTransacoesDesktopView {...pixProps} />
-        ))}
+          {abaVisivel === "transacoes" && (
+            <motion.div
+              key="transacoes"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              {variante === "mobile" ? (
+                <PixTransacoesMobileView {...pixProps} />
+              ) : (
+                <PixTransacoesDesktopView {...pixProps} />
+              )}
+            </motion.div>
+          )}
 
-      {abaVisivel === "conciliacao" && (
-        <PixConciliacaoTab transacoes={transacoes} />
-      )}
+          {abaVisivel === "conciliacao" && (
+            <motion.div
+              key="conciliacao"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              <PixConciliacaoTab transacoes={transacoes} />
+            </motion.div>
+          )}
 
-      {abaVisivel === "aderidos" && (
-        <PixAderidosTab transacoes={transacoes} />
-      )}
+          {abaVisivel === "aderidos" && (
+            <motion.div
+              key="aderidos"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              <PixAderidosTab transacoes={transacoes} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Box>
     </Box>
   );
 }

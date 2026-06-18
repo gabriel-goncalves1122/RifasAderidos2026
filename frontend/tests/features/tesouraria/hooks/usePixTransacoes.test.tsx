@@ -2,7 +2,6 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { usePixTransacoes } from "@/features/tesouraria/hooks/usePixTransacoes";
-import { pixTransacoesMock } from "@/features/tesouraria/mocks/pixTransacoesMock";
 import { pixTransacoesService } from "@/features/tesouraria/services/pixTransacoesService";
 import {
   PixTransacoesResumo,
@@ -150,7 +149,7 @@ describe("Hook: usePixTransacoes", () => {
     expect(result.current.resumo.ticketMedio).toBe(25);
   });
 
-  it("Deve usar mock local em DEV quando transações reais não existirem", async () => {
+  it("Não deve usar mock local em DEV quando transações reais não existirem", async () => {
     vi.stubEnv("DEV", true);
     vi.mocked(pixTransacoesService.buscarTransacoes).mockResolvedValueOnce(
       [],
@@ -165,8 +164,9 @@ describe("Hook: usePixTransacoes", () => {
       expect(result.current.carregando).toBe(false);
     });
 
-    expect(result.current.transacoes).toEqual(pixTransacoesMock);
-    expect(result.current.resumo.totalRecebido).toBe(50);
+    expect(result.current.transacoes).toEqual([]);
+    expect(result.current.resumo.totalRecebido).toBe(resumoApi.totalRecebido);
+    expect(result.current.resumo.ticketMedio).toBe(resumoApi.ticketMedio);
   });
 
   it("Deve filtrar transações usando CPF, documento do comprador e rifas", async () => {

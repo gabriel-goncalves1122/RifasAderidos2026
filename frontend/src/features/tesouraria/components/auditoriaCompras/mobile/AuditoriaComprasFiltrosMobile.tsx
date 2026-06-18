@@ -20,6 +20,7 @@ import {
   Typography,
 } from "@mui/material";
 
+import { safeAreaStickyTop } from "@/shared/tokens/safeArea";
 import { AuditoriaComprasFiltrosProps } from "../shared/auditoriaComprasFiltrosTypes";
 import { FiltroComprovante } from "../../../types/auditoriaCompras";
 import { STATUS_FILTROS_AUDITORIA_COMPRAS } from "../../../utils/auditoriaComprasUtils";
@@ -46,7 +47,7 @@ export function AuditoriaComprasFiltrosMobile({
         border: "1px solid rgba(2, 27, 22, 0.10)",
         boxShadow: "0 10px 24px rgba(2, 27, 22, 0.06)",
         position: "sticky",
-        top: 0,
+        ...safeAreaStickyTop,
         zIndex: 5,
       }}
     >

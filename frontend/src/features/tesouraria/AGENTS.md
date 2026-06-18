@@ -61,6 +61,7 @@ frontend/src/features/tesouraria/
 - `styles`: objetos sx compartilhados (cores, tipografia, superficies, componentes). Componentes importam de `styles/` em vez de repetir hex colors e valores inline. Ver seção **Estilos** abaixo.
 - `mocks`: dados locais de desenvolvimento/teste, sem credenciais e sem contrato sensivel real.
 - `legacy`: codigo isolado para compatibilidade ou fluxos antigos. Codigo novo nao deve importar de `legacy`.
+- Mocks nunca devem alimentar tela real automaticamente. Use-os apenas em testes ou em fixture/dev explícito.
 
 ## Dominios
 
@@ -76,6 +77,7 @@ Regras:
 - `usePixController` controla a pagina Pix;
 - `usePixTransacoes` controla carregamento, filtros e sincronizacao de transacoes;
 - `pixTransacoesService` e o unico ponto da feature para consultar dados Pix no backend;
+- `usePixTransacoes` deve exibir lista vazia real quando a API retornar vazio, sem fallback automatico para mocks;
 - nao chamar APIs externas sensiveis diretamente do frontend.
 
 ### Auditoria De Compras

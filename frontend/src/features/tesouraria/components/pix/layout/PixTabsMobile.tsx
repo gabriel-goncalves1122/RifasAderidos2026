@@ -1,5 +1,6 @@
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 
+import { safeAreaStickyTop } from "@/shared/tokens/safeArea";
 import { colors } from "../../../styles/colors";
 import { surfaces } from "../../../styles/surfaces";
 import { ABAS_PIX } from "./pixTabsConfig";
@@ -21,7 +22,7 @@ export function PixTabsMobile({
     <Box
       sx={{
         position: "sticky",
-        top: 0,
+        ...safeAreaStickyTop,
         zIndex: 6,
         mb: 2,
         ...surfaces.paper,

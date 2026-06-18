@@ -1,7 +1,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { pixTransacoesMock } from "../mocks/pixTransacoesMock";
 import { pixTransacoesService } from "../services/pixTransacoesService";
 import {
   AcaoValidacaoPix,
@@ -59,15 +58,11 @@ export function usePixTransacoes() {
     const dadosResumo =
       resultadoResumo.status === "fulfilled" ? resultadoResumo.value : null;
 
-    const deveUsarMockLocal = import.meta.env.DEV && dadosTransacoes.length === 0;
-
-    const transacoesBase = deveUsarMockLocal
-      ? pixTransacoesMock
-      : dadosTransacoes;
+    const transacoesBase = dadosTransacoes;
 
     setTransacoes(transacoesBase);
     setResumo(
-      !deveUsarMockLocal && resumoPossuiDados(dadosResumo)
+      resumoPossuiDados(dadosResumo)
         ? dadosResumo
         : calcularResumoPixTransacoes(transacoesBase),
     );
