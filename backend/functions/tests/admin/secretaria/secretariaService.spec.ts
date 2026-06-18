@@ -153,6 +153,125 @@ describe("Service: secretariaService", () => {
     );
   });
 
+  it("Deve criar aderido quando o contador legado não existe e não há dados prévios", async () => {
+    mockGet.mockResolvedValueOnce({ empty: true });
+    mockDocGet.mockResolvedValueOnce({ exists: false });
+    mockGet.mockResolvedValueOnce({ docs: [] });
+    mockGet.mockResolvedValueOnce({ docs: [] });
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: false,
+      data: () => undefined,
+    });
+
+    const resultado = await secretariaService.adicionarAderido({
+      email: "semcontador@teste.com",
+      nome: "Sem Contador",
+      modalidade_adesao: "completo",
+    });
+
+    expect(resultado).toEqual({
+      idAderido: "ADERIDO_001",
+      modalidade: "completo",
+      bilhetesGerados: 120,
+      faixaRifas: {
+        inicio: "00001",
+        fim: "00120",
+      },
+    });
+
+    expect(mockTransactionSet).toHaveBeenLastCalledWith(
+      expect.anything(),
+      {
+        ultima_posicao: 1,
+        ultimo_bilhete: 120,
+      },
+      { merge: true },
+    );
+  });
+
+  it("Deve reconstruir contador ausente a partir de usuários e bilhetes legados", async () => {
+    mockGet.mockResolvedValueOnce({ empty: true });
+    mockDocGet.mockResolvedValueOnce({ exists: false });
+    mockGet.mockResolvedValueOnce({
+      docs: [
+        {
+          id: "ADERIDO_009",
+          data: () => ({ faixa_rifas: { fim: "00120" } }),
+        },
+        {
+          id: "usuario-legado",
+          data: () => ({ posicao_adesao: 11, faixa_rifas: { fim: "00150" } }),
+        },
+      ],
+    });
+    mockGet.mockResolvedValueOnce({
+      docs: [
+        {
+          id: "00179",
+          data: () => ({}),
+        },
+        {
+          id: "bilhete-legado",
+          data: () => ({ numero: "00180" }),
+        },
+      ],
+    });
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: false,
+      data: () => undefined,
+    });
+
+    const resultado = await secretariaService.adicionarAderido({
+      email: "legado@teste.com",
+      nome: "Aluno Legado",
+      modalidade_adesao: "completo",
+    });
+
+    expect(resultado.idAderido).toBe("ADERIDO_012");
+    expect(resultado.faixaRifas).toEqual({
+      inicio: "00181",
+      fim: "00300",
+    });
+
+    expect(mockDoc).toHaveBeenCalledWith("ADERIDO_012");
+    expect(mockDoc).toHaveBeenCalledWith("00181");
+    expect(mockTransactionSet).toHaveBeenLastCalledWith(
+      expect.anything(),
+      {
+        ultima_posicao: 12,
+        ultimo_bilhete: 300,
+      },
+      { merge: true },
+    );
+  });
+
+  it("Deve usar contador criado por outra requisição se a transação já o enxergar", async () => {
+    mockGet.mockResolvedValueOnce({ empty: true });
+    mockDocGet.mockResolvedValueOnce({ exists: false });
+    mockGet.mockResolvedValueOnce({ docs: [] });
+    mockGet.mockResolvedValueOnce({ docs: [] });
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ ultima_posicao: 3, ultimo_bilhete: 360 }),
+    });
+
+    const resultado = await secretariaService.adicionarAderido({
+      email: "concorrente@teste.com",
+      nome: "Criacao Concorrente",
+      modalidade_adesao: "meio",
+    });
+
+    expect(resultado).toEqual({
+      idAderido: "ADERIDO_004",
+      modalidade: "meio",
+      bilhetesGerados: 60,
+      faixaRifas: {
+        inicio: "00361",
+        fim: "00420",
+      },
+    });
+  });
+
   it("Deve continuar a contagem se já existirem usuários e bilhetes", async () => {
     mockGet.mockResolvedValueOnce({ empty: true });
     mockDocGet.mockResolvedValueOnce({

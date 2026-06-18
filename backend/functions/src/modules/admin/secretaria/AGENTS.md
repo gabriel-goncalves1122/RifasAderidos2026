@@ -6,6 +6,7 @@ Este módulo lida com as operações de administração (CRUD) de Aderidos e mem
 ## Regras de Transação ACID (Firestore)
 - **Criação (`POST /admin/aderidos`)**: A leitura do contador, reserva de bilhetes e gravação do aderido ocorrem **dentro da mesma transação (`runTransaction`)**.
   *Nota sobre TOCTOU (Time of check to time of use)*: Consultas (`.where()`) não são permitidas dentro de transações do Firestore. A checagem de e-mail único é feita antes da transação, mas a gravação final do usuário é transacional.
+  *Compatibilidade legada*: se `contadores/aderidos` não existir ou estiver incompleto, o service reconstrói um fallback a partir de `usuarios` e `bilhetes` antes da transação, relê o contador dentro da transação e inicializa/continua a faixa sem exigir criação manual no Firestore.
 - **Edição (`PUT /admin/aderidos/:id`)**: A leitura do estado atual do aderido (`.get()`) e a atualização (`.update()`) ocorrem dentro da mesma transação para prevenir condições de corrida. Validações de mudança de status (`ativo` para `pendente` restrito) ocorrem em memória dentro do *handler* da transação.
 - **Custom Claims**: A atualização das *custom claims* via Auth Admin SDK não participa das transações do Firestore. Deve sempre ser executada *após* o commit com sucesso da transação do banco.
 

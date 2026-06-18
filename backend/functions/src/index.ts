@@ -19,6 +19,7 @@ import { errorHandler } from "./shared/middlewares/errorHandler";
 // ============================================================================
 
 const app = express();
+app.set("trust proxy", true);
 
 // ============================================================================
 // SEGURANÇA — HEADERS HTTP
@@ -30,11 +31,17 @@ app.use(helmet());
 // RATE LIMITING
 // ============================================================================
 
+const getIpFallback = (req: express.Request) => {
+  return req.ip || (req.headers["x-forwarded-for"] as string) || "unknown";
+};
+
 const apiLimiter = rateLimit({
   windowMs: 60_000,
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: getIpFallback,
+  validate: { ip: false },
   message: { error: "Muitas requisições. Tente novamente em instantes.", code: "RATE_LIMIT" },
 });
 
@@ -43,6 +50,8 @@ app.use("/auth", rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: getIpFallback,
+  validate: { ip: false },
   message: { error: "Muitas tentativas de autenticação. Aguarde.", code: "RATE_LIMIT" },
 }));
 
@@ -51,6 +60,8 @@ app.use("/rifas/checkout/pix/webhook", rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: getIpFallback,
+  validate: { ip: false },
   message: { error: "Muitas requisições de webhook.", code: "RATE_LIMIT" },
 }));
 

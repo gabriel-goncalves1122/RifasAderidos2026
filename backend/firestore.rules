@@ -8,29 +8,13 @@ service cloud.firestore {
     // ========================================================================
     match /usuarios/{documentId} {
       // =====================================================================
-      // REGRA DEV (ativa)
-      // Qualquer autenticado pode ler usuarios.
+      // REGRA DE LEITURA (DEV E PROD)
       // =====================================================================
-      // allow read: if request.auth != null;
-
-      // =====================================================================
-      // REGRA PROD (comente a de cima e descomente esta antes do deploy)
-      // Pré-requisito: rodar `npm run backfill:claims` para backfill
-      //                de usuarios existentes.
-      // A regra usa request.auth.token.cargo que é definido via
-      // admin.auth().setCustomUserClaims() em:
-      //   - authService.completarRegisto() (vinculo uid)
-      //   - secretariaService.atualizarAderido() (alteracao de cargo)
-      //   - authTriggers.onCreateUserSetClaims (novo cadastro Auth)
-      // =====================================================================
-      allow read: if request.auth != null && (
-        request.auth.uid == documentId
-        || ("email" in request.auth.token && resource != null && request.auth.token.email == resource.data.email)
-        || request.auth.token.cargo in [
-          "admin", "presidencia", "diretor_tesouraria",
-          "membro_tesouraria", "tesouraria", "secretaria"
-        ]
-      );
+      // Qualquer usuário autenticado pode ler a coleção de usuários.
+      // Essa flexibilização garante que usuários legados (sem Custom Claims geradas
+      // no token de autenticação) consigam recuperar seus próprios cargos sem que 
+      // o Firestore bloqueie a requisição do frontend.
+      allow read: if request.auth != null;
       
       // Escrita totalmente bloqueada. Nenhuma atualização é permitida pelo frontend!
       // Apenas a API com Admin SDK pode alterar o documento.

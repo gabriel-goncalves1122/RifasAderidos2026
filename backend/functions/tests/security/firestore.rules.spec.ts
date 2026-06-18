@@ -42,11 +42,11 @@ describe("Segurança do Firestore - Coleção 'usuarios'", () => {
     await assertFails(query);
   });
 
-  it("Deve negar leitura da lista de usuários para um usuário autenticado sem cargo (Aderido Comum)", async () => {
-    // Um aderido que não é tesouraria/secretaria/admin tentando ler os outros usuários
+  it("Deve permitir leitura da lista de usuários para qualquer usuário autenticado", async () => {
+    // Um aderido comum tentando ler os usuários agora é permitido pela flexibilização.
     const authedDb = testEnv.authenticatedContext("aderido123", { email: "aderido@test.com" }).firestore();
     const query = authedDb.collection("usuarios").get();
-    await assertFails(query);
+    await assertSucceeds(query);
   });
 
   it("Deve permitir leitura do próprio documento", async () => {

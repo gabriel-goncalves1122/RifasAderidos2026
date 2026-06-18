@@ -16,6 +16,11 @@ import {
   montarCamposAtualizacaoAderido,
   normalizarDadosNovoAderido,
 } from "./secretariaMapper";
+import {
+  EstadoContadorAderidos,
+  normalizarEstadoContadorAderidos,
+  reconstruirEstadoContadorAderidosLegado,
+} from "./helpers/contadorAderidosHelper";
 
 const META_VENDAS_POR_MODALIDADE: Record<ModalidadeAdesao, number> = {
   completo: 1200,
@@ -26,6 +31,18 @@ const BILHETES_POR_MODALIDADE: Record<ModalidadeAdesao, number> = {
   completo: 120,
   meio: 60,
 };
+
+async function carregarFallbackContadorLegado(): Promise<EstadoContadorAderidos> {
+  const [usuariosSnapshot, bilhetesSnapshot] = await Promise.all([
+    db.collection("usuarios").get(),
+    db.collection("bilhetes").get(),
+  ]);
+
+  return reconstruirEstadoContadorAderidosLegado(
+    usuariosSnapshot.docs || [],
+    bilhetesSnapshot.docs || [],
+  );
+}
 
 export const secretariaService = {
   async listarAderidos(): Promise<AderidoSecretaria[]> {
@@ -61,6 +78,23 @@ export const secretariaService = {
     }
 
     const contadorRef = db.collection("contadores").doc("aderidos");
+    const contadorPrecheck = await contadorRef.get();
+    const dadosContadorPrecheck = contadorPrecheck.exists
+      ? contadorPrecheck.data()
+      : undefined;
+    const contadorPrecheckNormalizado = normalizarEstadoContadorAderidos(
+      dadosContadorPrecheck,
+    );
+    const contadorPrecisaFallback =
+      !contadorPrecheck.exists ||
+      !contadorPrecheckNormalizado.ultimaPosicao ||
+      !contadorPrecheckNormalizado.ultimoBilhete;
+
+    // Compatibilidade legada: bases antigas podem não ter o contador,
+    // mas já possuem usuários/bilhetes suficientes para reconstruir a próxima faixa.
+    const contadorLegadoFallback = contadorPrecisaFallback
+      ? await carregarFallbackContadorLegado()
+      : undefined;
     
     let idAderido = "";
     let numeroInicio = "";
@@ -68,16 +102,13 @@ export const secretariaService = {
 
     await db.runTransaction(async (transaction) => {
       const contadorExistente = await transaction.get(contadorRef);
-      let ultimaPosicao = 0;
-      let ultimoBilhete = 0;
-
-      if (!contadorExistente.exists) {
-        throw new AppError("CONTADOR_NAO_INICIALIZADO", "O contador de aderidos não foi inicializado. Crie-o manualmente no Firestore primeiro.", 500);
-      } else {
-        const dadosContador = contadorExistente.data()!;
-        ultimaPosicao = dadosContador.ultima_posicao || 0;
-        ultimoBilhete = dadosContador.ultimo_bilhete || 0;
-      }
+      const dadosContador = contadorExistente.exists
+        ? contadorExistente.data()
+        : undefined;
+      const { ultimaPosicao, ultimoBilhete } = normalizarEstadoContadorAderidos(
+        dadosContador,
+        contadorLegadoFallback,
+      );
 
       const proximaPosicao = ultimaPosicao + 1;
       const proximoNumeroBilhete = ultimoBilhete + 1;
@@ -152,7 +183,7 @@ export const secretariaService = {
       transaction.set(contadorRef, {
         ultima_posicao: proximaPosicao,
         ultimo_bilhete: fim - 1,
-      });
+      }, { merge: true });
     });
 
     return {
