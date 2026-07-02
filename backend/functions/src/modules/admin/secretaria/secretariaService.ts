@@ -21,6 +21,7 @@ import {
   normalizarEstadoContadorAderidos,
   reconstruirEstadoContadorAderidosLegado,
 } from "./helpers/contadorAderidosHelper";
+import { gerarIdIndiceEmailSecretaria } from "./helpers/emailIndexHelper";
 
 const META_VENDAS_POR_MODALIDADE: Record<ModalidadeAdesao, number> = {
   completo: 1200,
@@ -31,6 +32,8 @@ const BILHETES_POR_MODALIDADE: Record<ModalidadeAdesao, number> = {
   completo: 120,
   meio: 60,
 };
+
+const COLECAO_INDICES_EMAIL = "indices_usuarios_email";
 
 async function carregarFallbackContadorLegado(): Promise<EstadoContadorAderidos> {
   const [usuariosSnapshot, bilhetesSnapshot] = await Promise.all([
@@ -95,6 +98,7 @@ export const secretariaService = {
     const contadorLegadoFallback = contadorPrecisaFallback
       ? await carregarFallbackContadorLegado()
       : undefined;
+    const indiceEmailId = gerarIdIndiceEmailSecretaria(dados.email);
     
     let idAderido = "";
     let numeroInicio = "";
@@ -115,9 +119,50 @@ export const secretariaService = {
 
       idAderido = `ADERIDO_${String(proximaPosicao).padStart(3, "0")}`;
       const userRef = db.collection("usuarios").doc(idAderido);
+      const indiceEmailRef = db
+        .collection(COLECAO_INDICES_EMAIL)
+        .doc(indiceEmailId);
 
       numeroInicio = String(proximoNumeroBilhete).padStart(5, "0");
       numeroFim = String(proximoNumeroBilhete + bilhetesPorPessoa - 1).padStart(5, "0");
+
+      const bilheteRefs = Array.from({ length: bilhetesPorPessoa }, (_, index) => {
+        const numeroString = String(proximoNumeroBilhete + index).padStart(5, "0");
+        return db.collection("bilhetes").doc(numeroString);
+      });
+
+      const [indiceEmailSnap, usuarioSnap, ...bilheteSnaps] =
+        await Promise.all([
+          transaction.get(indiceEmailRef),
+          transaction.get(userRef),
+          ...bilheteRefs.map((bilheteRef) => transaction.get(bilheteRef)),
+        ]);
+
+      if (indiceEmailSnap.exists) {
+        throw new AppError(
+          "EMAIL_DUPLICADO",
+          "Este e-mail já foi autorizado anteriormente.",
+          400,
+        );
+      }
+
+      if (usuarioSnap.exists) {
+        throw new AppError(
+          "ID_ADERIDO_JA_EXISTE",
+          "Não foi possível reservar a próxima posição de aderido.",
+          409,
+        );
+      }
+
+      const bilheteOcupado = bilheteSnaps.find((bilheteSnap) => bilheteSnap.exists);
+
+      if (bilheteOcupado) {
+        throw new AppError(
+          "FAIXA_RIFAS_INDISPONIVEL",
+          "A faixa de rifas calculada já possui bilhetes cadastrados.",
+          409,
+        );
+      }
 
       const novoUsuario: Usuario & {
         posicao_adesao: number;
@@ -157,6 +202,11 @@ export const secretariaService = {
       };
 
       transaction.set(userRef, novoUsuario);
+      transaction.set(indiceEmailRef, {
+        email: dados.email,
+        usuario_id: idAderido,
+        criado_em: novoUsuario.criado_em,
+      });
 
       let b = proximoNumeroBilhete;
       const fim = proximoNumeroBilhete + bilhetesPorPessoa;

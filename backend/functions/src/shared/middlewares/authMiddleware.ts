@@ -29,6 +29,15 @@ const CARGOS_TESOURARIA_OU_ADMIN = [
   "secretaria",
 ];
 
+const CARGOS_SECRETARIA_OU_ADMIN = [
+  "admin",
+  "presidencia",
+  "secretaria",
+  "diretor_secretaria",
+  "vice_secretaria",
+  "membro_secretaria",
+];
+
 export const validateToken = async (
   req: AuthRequest,
   res: Response,
@@ -140,6 +149,41 @@ export const requireTesourariaOrAdmin = async (
   const cargoEfetivo = user.role || user.cargo || "aderido";
 
   if (!CARGOS_TESOURARIA_OU_ADMIN.includes(cargoEfetivo)) {
+    res.status(403).json({
+      error: `Acesso negado. Seu cargo atual é: ${cargoEfetivo}`,
+    });
+    return;
+  }
+
+  next();
+};
+
+export const requireSecretariaOrAdmin = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  const user = req.user;
+
+  if (!user) {
+    res.status(401).json({
+      error: "Usuário não autenticado.",
+    });
+    return;
+  }
+
+  if (user.email) {
+    const superAdmins = obterSuperAdmins();
+
+    if (superAdmins.includes(user.email.toLowerCase())) {
+      next();
+      return;
+    }
+  }
+
+  const cargoEfetivo = user.role || user.cargo || "aderido";
+
+  if (!CARGOS_SECRETARIA_OU_ADMIN.includes(cargoEfetivo)) {
     res.status(403).json({
       error: `Acesso negado. Seu cargo atual é: ${cargoEfetivo}`,
     });

@@ -11,8 +11,11 @@ import { validate } from "../../../shared/middlewares/validate";
 
 import { secretariaController } from "./secretariaController";
 import { atualizarAderidoSchema, criarAderidoSchema } from "./schemas/secretariaSchemas";
+import documentosSecretariaRoutes from "./documentos/documentosSecretariaRoutes";
 
 const router = Router();
+
+router.use("/documentos", documentosSecretariaRoutes);
 
 // [NEW] Lista aderidos
 router.get(

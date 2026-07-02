@@ -18,6 +18,9 @@ const COLECOES_PARA_COPIAR = [
   "configuracoes",
   "notificacoes",
   "rifas",
+  "pagamentos_pix",
+  "contadores",
+  "documentos_secretaria",
 ];
 
 // ============================================================================
@@ -25,7 +28,7 @@ const COLECOES_PARA_COPIAR = [
 // ============================================================================
 //
 // O script é executado depois de compilado em:
-// lib/src/scripts/copiarProducao.js
+// lib/scripts/copiarProducao.js
 //
 // Mas a chave fica no código-fonte:
 // src/scripts/chave-privada.json
