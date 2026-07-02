@@ -243,3 +243,8 @@ cd backend/functions
 npm run build
 npm test
 ```
+
+O build de producao usa `tsconfig.build.json`, compila somente `src` em
+`lib/index.js` e limpa a saida antes de emitir. Nao inclua testes na pasta
+observada pelo emulador. Para
+desenvolvimento completo, use `npm run dev:emulators` na raiz do repositorio.

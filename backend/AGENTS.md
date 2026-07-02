@@ -113,16 +113,15 @@ npm run build
 npm test
 ```
 
-Emuladores a partir de `backend`:
+Emuladores a partir da raiz do repositorio, em terminal separado do frontend:
 
 ```bash
-cd backend
-firebase emulators:start \
-  --project rifasaderidos2026 \
-  --only firestore,auth,storage,functions \
-  --import banco-local \
-  --export-on-exit banco-local
+npm run dev:emulators
 ```
+
+O `firebase.json` da raiz e a unica configuracao Firebase. O comando executa
+build limpo, TypeScript watch e Firebase com encerramento coordenado. Consulte
+`docs/desenvolvimento-local.md` para setup Linux e diagnostico de portas.
 
 Nao rode `firebase deploy` sem pedido explicito.
 

@@ -271,7 +271,8 @@ Não comente:
 Rodar frontend:
 
 ```bash
-npm run dev -- --host 0.0.0.0
+npm run dev
+npm run dev:network
 ```
 
 Rodar testes:
@@ -352,4 +353,8 @@ O projeto utiliza `framer-motion` para garantir micro-animações dinâmicas e t
 - Para dados em tempo real, use a revalidação imediata com `queryClient.invalidateQueries`.
 
 **Vite Build:**
-A configuração do `vite.config.ts` utiliza `manualChunks` no `rollupOptions` para separar dependências de terceiros (vendors) como react, firebase, mui e framer. Sempre que adicionar uma biblioteca grande, registre-a no `vendor` correspondente para melhorar o cache de build.
+A configuração do `vite.config.ts` separa apenas grupos com fronteiras claras:
+React, MUI, Firebase, graficos e Framer Motion. Nao crie um chunk generico de
+utils com bibliotecas que dependam de MUI/React, pois isso pode gerar ciclos
+entre chunks. Bibliotecas pequenas devem permanecer sob decisao automatica do
+Rollup.

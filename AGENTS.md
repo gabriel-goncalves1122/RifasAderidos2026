@@ -206,33 +206,33 @@ Se encontrar credencial local, nao abra nem copie conteudo salvo necessidade ext
 
 ## Comandos Uteis
 
-Frontend:
+Na raiz, use os scripts canonicos:
 
 ```bash
-cd frontend
-npm run dev -- --host 0.0.0.0
-npm run test:run
-npm run build
-```
-
-Backend:
-
-```bash
-cd backend/functions
-npm run build
+npm run dev:vite
+npm run dev:vite:network
+npm run dev:backend:local
 npm test
+npm run build
 ```
 
-Emuladores:
+Os dois comandos `dev:*` rodam em terminais separados. O `firebase.json` da
+raiz e a unica fonte de verdade para emuladores, rules e deploy.
+
+Para validar pacotes isoladamente:
 
 ```bash
-cd backend
-firebase emulators:start \
-  --project rifasaderidos2026 \
-  --only firestore,auth,storage,functions \
-  --import banco-local \
-  --export-on-exit banco-local
+npm --prefix frontend run test:run
+npm --prefix backend/functions test
 ```
+
+No Linux, prepare os limites de watchers uma vez:
+
+```bash
+npm run setup:linux
+```
+
+Consulte `docs/desenvolvimento-local.md` para portas e diagnostico.
 
 Nao rode deploy sem pedido explicito.
 

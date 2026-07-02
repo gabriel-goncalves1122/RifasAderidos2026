@@ -27,4 +27,4 @@ O módulo `auth` gerencia a autenticação de usuários da aplicação utilizand
 
 ## Notas de Manutenção
 
-- Ao modificar provedores de login, garanta compatibilidade no Emulador (`firebase emulators:start`) utilizando contas fakes providenciadas no `banco-local`.
+- Ao modificar provedores de login, garanta compatibilidade com `npm run dev:emulators` na raiz, utilizando as contas locais fornecidas por `backend/banco-local`.

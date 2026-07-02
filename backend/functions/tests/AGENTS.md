@@ -95,6 +95,10 @@ cd backend/functions
 npm test
 ```
 
+`npm test` executa primeiro os testes unitarios e depois inicia um Firestore
+efemero com `emulators:exec` para os testes de rules. Use `npm run test:unit`
+quando nao precisar validar regras e `npm run test:rules` para rules isoladas.
+
 Quando alterar TypeScript em `src` ou testes tipados:
 
 ```bash
