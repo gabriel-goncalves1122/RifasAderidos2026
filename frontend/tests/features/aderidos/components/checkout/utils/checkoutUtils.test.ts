@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  aplicarMascaraCpf,
   aplicarMascaraTelefone,
   calcularValorTotalRifas,
   formatarExpiracaoPix,
@@ -33,6 +34,11 @@ describe("Utils: checkoutUtils", () => {
 
   it("Deve limitar o telefone ao tamanho máximo da máscara", () => {
     expect(aplicarMascaraTelefone("119876543219999")).toBe("(11) 98765-4321");
+  });
+
+  it("Deve aplicar máscara de CPF", () => {
+    expect(aplicarMascaraCpf("12345678909")).toBe("123.456.789-09");
+    expect(aplicarMascaraCpf("123abc456")).toBe("123.456");
   });
 
   it("Deve formatar a expiração do pagamento via Pix", () => {

@@ -11,6 +11,7 @@ describe("Schema: checkoutSchema", () => {
       nome: "Ana Beatriz",
       telefone: "(35) 99999-8888",
       email: "ana@email.com",
+      documento: "123.456.789-09",
     };
 
     await expect(checkoutSchema.validate(dadosValidos)).resolves.toEqual(
@@ -27,6 +28,31 @@ describe("Schema: checkoutSchema", () => {
 
     await expect(checkoutSchema.validate(dadosSemEmail)).resolves.toEqual(
       dadosSemEmail,
+    );
+  });
+
+  it("Deve aceitar CPF vazio ou ausente", async () => {
+    const dadosSemDocumento = {
+      nome: "Ana Beatriz",
+      telefone: "(35) 99999-8888",
+      email: "",
+      documento: "",
+    };
+
+    await expect(checkoutSchema.validate(dadosSemDocumento)).resolves.toEqual(
+      dadosSemDocumento,
+    );
+  });
+
+  it("Deve rejeitar CPF incompleto", async () => {
+    const dadosInvalidos = {
+      nome: "Ana Beatriz",
+      telefone: "(35) 99999-8888",
+      documento: "123.456",
+    };
+
+    await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
+      "CPF incompleto. Use 11 dígitos.",
     );
   });
 

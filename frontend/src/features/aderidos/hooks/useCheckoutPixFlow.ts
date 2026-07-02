@@ -11,12 +11,14 @@ export type CheckoutPollingStatus =
   | "idle"
   | "polling"
   | "confirmado"
-  | "expirado";
+  | "expirado"
+  | "cancelado";
 
 interface DadosGerarCobrancaPix {
   nome: string;
   telefone: string;
   email?: string;
+  documento?: string;
 }
 
 interface UseCheckoutPixFlowParams {
@@ -80,6 +82,16 @@ export function useCheckoutPixFlow({
           setPollingStatus("confirmado");
           onSuccess();
         }
+
+        if (atualizada.status === "expirado") {
+          limparPolling();
+          setPollingStatus("expirado");
+        }
+
+        if (atualizada.status === "cancelado") {
+          limparPolling();
+          setPollingStatus("cancelado");
+        }
       } catch {
         // Mantem o polling resiliente a falhas transitórias da consulta.
       }
@@ -99,6 +111,7 @@ export function useCheckoutPixFlow({
           nome: dados.nome.trim(),
           telefone: dados.telefone,
           email: dados.email?.trim() || "",
+          documento: dados.documento?.trim() || "",
           numerosRifas,
         });
 

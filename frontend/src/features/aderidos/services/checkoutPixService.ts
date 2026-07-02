@@ -16,14 +16,31 @@ import { fetchAPI } from "@/shared/services/api";
 
 import {
   CheckoutPixCobranca,
+  CheckoutPixStatus,
   CriarCobrancaPixParams,
 } from "../types/checkoutPix";
-import { sanitizarDadosCliente } from "@/shared/utils/sanitizadores";
+import {
+  sanitizarDadosCliente,
+  sanitizarDocumento,
+} from "@/shared/utils/sanitizadores";
 
 let requisicaoEmAndamento = false;
 
 function normalizarTexto(valor: unknown) {
   return typeof valor === "string" ? valor : "";
+}
+
+function normalizarStatusCheckoutPix(status: unknown): CheckoutPixStatus {
+  if (
+    status === "aguardando_pagamento" ||
+    status === "pago" ||
+    status === "expirado" ||
+    status === "cancelado"
+  ) {
+    return status;
+  }
+
+  return "aguardando_pagamento";
 }
 
 function normalizarCobrancaPix(resposta: unknown): CheckoutPixCobranca {
@@ -41,7 +58,7 @@ function normalizarCobrancaPix(resposta: unknown): CheckoutPixCobranca {
 
   return {
     id,
-    status: dados.status || "aguardando_pagamento",
+    status: normalizarStatusCheckoutPix(dados.status),
     qrCodeImagemUrl: dados.qrCodeImagemUrl || null,
     qrCodeBase64: dados.qrCodeBase64 || null,
     copiaECola,
@@ -70,6 +87,7 @@ export const checkoutPixService = {
       telefone: params.telefone,
       email: params.email || "",
     });
+    const documento = sanitizarDocumento(params.documento);
 
     const numerosRifas = params.numerosRifas.filter(Boolean);
 
@@ -86,6 +104,7 @@ export const checkoutPixService = {
         nome: sanitizados.nome,
         telefone: sanitizados.telefone,
         email: sanitizados.email,
+        documento,
         numerosRifas,
       });
 

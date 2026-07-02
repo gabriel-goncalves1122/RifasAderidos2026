@@ -7,6 +7,7 @@ export interface CheckoutFormData {
   nome: string;
   telefone: string;
   email?: string;
+  documento?: string;
 }
 
 export const checkoutSchema = yup
@@ -28,6 +29,19 @@ export const checkoutSchema = yup
           !value ||
           value.trim() === "" ||
           yup.string().email().isValidSync(value),
+      ),
+
+    documento: yup
+      .string()
+      .optional()
+      .test(
+        "cpf-valido-ou-vazio",
+        "CPF incompleto. Use 11 dígitos.",
+        (value) => {
+          const apenasNumeros = String(value || "").replace(/\D/g, "");
+
+          return !apenasNumeros || apenasNumeros.length === 11;
+        },
       ),
   })
   .required();

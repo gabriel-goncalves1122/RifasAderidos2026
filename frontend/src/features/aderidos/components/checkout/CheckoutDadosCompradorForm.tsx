@@ -2,13 +2,17 @@
 // ARQUIVO: frontend/src/features/aderidos/components/checkout/CheckoutDadosCompradorForm.tsx
 // ============================================================================
 import EmailIcon from "@mui/icons-material/Email";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 import { InputAdornment, Stack, TextField } from "@mui/material";
 import { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form";
 
 import { CheckoutFormData } from "./checkoutSchema";
-import { aplicarMascaraTelefone } from "./utils/checkoutUtils";
+import {
+  aplicarMascaraCpf,
+  aplicarMascaraTelefone,
+} from "./utils/checkoutUtils";
 
 interface CheckoutDadosCompradorFormProps {
   register: UseFormRegister<CheckoutFormData>;
@@ -77,6 +81,36 @@ export function CheckoutDadosCompradorForm({
           startAdornment: (
             <InputAdornment position="start">
               <EmailIcon fontSize="small" />
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      <TextField
+        label="CPF opcional"
+        fullWidth
+        inputProps={{
+          "data-testid": "checkout-documento",
+          inputMode: "numeric",
+          maxLength: 14,
+        }}
+        error={Boolean(errors.documento)}
+        helperText={
+          errors.documento?.message || "Ajuda na validação do pagamento."
+        }
+        {...register("documento")}
+        onChange={(event) => {
+          const valorFormatado = aplicarMascaraCpf(event.target.value);
+
+          setValue("documento", valorFormatado, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <BadgeOutlinedIcon fontSize="small" />
             </InputAdornment>
           ),
         }}

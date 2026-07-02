@@ -7,6 +7,7 @@ import {
   CheckoutPixActions,
   CheckoutPixCopiaECola,
   CheckoutPixConfirmed,
+  CheckoutPixCanceledNotice,
   CheckoutPixEmpty,
   CheckoutPixError,
   CheckoutPixExpiredNotice,
@@ -87,6 +88,7 @@ export function CheckoutPixBox({
         <Stack spacing={1.5}>
           {pollingStatus === "polling" && <CheckoutPixPollingNotice />}
           {pollingStatus === "expirado" && <CheckoutPixExpiredNotice />}
+          {pollingStatus === "cancelado" && <CheckoutPixCanceledNotice />}
 
           <CheckoutQrCodeDisplay qrCodeSrc={qrCodeSrc} />
           <CheckoutPixCopiaECola codigo={cobranca.copiaECola} />

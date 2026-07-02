@@ -49,6 +49,41 @@ describe("Componente: CheckoutDadosCompradorForm", () => {
     });
   });
 
+  it("Deve aplicar máscara de CPF usando setValue", () => {
+    const setValue = vi.fn();
+
+    render(
+      <CheckoutDadosCompradorForm
+        register={criarRegister()}
+        setValue={setValue as unknown as UseFormSetValue<CheckoutFormData>}
+        errors={{}}
+      />,
+    );
+
+    fireEvent.change(screen.getByTestId("checkout-documento"), {
+      target: { value: "12345678909" },
+    });
+
+    expect(setValue).toHaveBeenCalledWith("documento", "123.456.789-09", {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  });
+
+  it("Deve exibir helper simples para CPF opcional", () => {
+    render(
+      <CheckoutDadosCompradorForm
+        register={criarRegister()}
+        setValue={vi.fn() as unknown as UseFormSetValue<CheckoutFormData>}
+        errors={{}}
+      />,
+    );
+
+    expect(
+      screen.getByText(/Ajuda na validação do pagamento/i),
+    ).toBeInTheDocument();
+  });
+
   it("Deve priorizar mensagem de erro do e-mail", () => {
     render(
       <CheckoutDadosCompradorForm

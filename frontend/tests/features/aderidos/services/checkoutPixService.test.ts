@@ -28,6 +28,7 @@ describe("Service: checkoutPixService", () => {
       nome: "Ana Beatriz",
       telefone: "(35) 99999-8888",
       email: "ana@email.com",
+      documento: "123.456.789-09",
       numerosRifas: ["001", "002"],
     });
 
@@ -36,6 +37,7 @@ describe("Service: checkoutPixService", () => {
       nome: "Ana Beatriz",
       telefone: "35999998888",
       email: "ana@email.com",
+      documento: "12345678909",
       numerosRifas: ["001", "002"],
     });
     expect(resultado).toEqual({
@@ -64,6 +66,7 @@ describe("Service: checkoutPixService", () => {
       nome: "Ana Beatriz",
       telefone: "35999998888",
       email: "",
+      documento: "",
       numerosRifas: ["001"],
     });
   });
@@ -184,6 +187,7 @@ describe("Service: checkoutPixService", () => {
       nome: "Carlos",
       telefone: "5535999998888",
       email: "",
+      documento: "",
       numerosRifas: ["001"],
     });
   });
@@ -206,5 +210,28 @@ describe("Service: checkoutPixService", () => {
     const chamada = vi.mocked(fetchAPI).mock.calls[0][2] as any;
     expect(chamada.nome.length).toBe(120);
     expect(chamada.telefone.length).toBe(20);
+  });
+
+  it("Deve sanitizar CPF opcional antes de enviar ao backend", async () => {
+    vi.mocked(fetchAPI).mockResolvedValueOnce({
+      id: "pix_001",
+      copiaECola: "000201PIXTESTE",
+    });
+
+    await checkoutPixService.criarCobrancaPix({
+      nome: "Ana",
+      telefone: "35999998888",
+      email: " ANA@EMAIL.COM ",
+      documento: "123.456.789-09",
+      numerosRifas: ["001"],
+    });
+
+    expect(fetchAPI).toHaveBeenCalledWith("/rifas/checkout/pix", "POST", {
+      nome: "Ana",
+      telefone: "35999998888",
+      email: "ANA@EMAIL.COM",
+      documento: "12345678909",
+      numerosRifas: ["001"],
+    });
   });
 });

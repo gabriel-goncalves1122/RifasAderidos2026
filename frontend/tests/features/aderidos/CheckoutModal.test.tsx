@@ -11,6 +11,7 @@ import { painelAderidoStyles } from "@/features/aderidos/styles/painelAderidoSty
 vi.mock("@/features/aderidos/services/checkoutPixService", () => ({
   checkoutPixService: {
     criarCobrancaPix: vi.fn(),
+    consultarCobrancaPix: vi.fn(),
   },
 }));
 
@@ -113,6 +114,9 @@ describe("Componente <CheckoutModal />", () => {
     fireEvent.change(screen.getByTestId("checkout-email"), {
       target: { value: "ana@email.com" },
     });
+    fireEvent.change(screen.getByTestId("checkout-documento"), {
+      target: { value: "12345678909" },
+    });
 
     fireEvent.click(screen.getByRole("button", { name: /gerar pagamento/i }));
 
@@ -121,6 +125,7 @@ describe("Componente <CheckoutModal />", () => {
         nome: "Ana Beatriz",
         telefone: "(35) 99999-8888",
         email: "ana@email.com",
+        documento: "123.456.789-09",
         numerosRifas: ["001", "002"],
       });
     });

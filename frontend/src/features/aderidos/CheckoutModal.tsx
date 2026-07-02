@@ -79,13 +79,15 @@ export function CheckoutModal({
       nome: "",
       telefone: "",
       email: "",
+      documento: "",
     },
   });
 
   const nome = watch("nome");
   const telefone = watch("telefone");
   const email = watch("email");
-  const dadosCompradorKey = `${nome}|${telefone}|${email}`;
+  const documento = watch("documento");
+  const dadosCompradorKey = `${nome}|${telefone}|${email}|${documento}`;
   const dadosCompradorKeyRef = useRef(dadosCompradorKey);
 
   useEffect(() => {
@@ -119,12 +121,16 @@ export function CheckoutModal({
   const etapaTitulo =
     pollingStatus === "confirmado"
       ? "Pagamento confirmado!"
+      : pollingStatus === "cancelado"
+        ? "Pagamento cancelado"
       : cobrancaPix
         ? "Pagamento gerado"
         : "Preencher dados";
   const etapaDescricao =
     pollingStatus === "confirmado"
       ? "O pagamento foi confirmado com sucesso."
+      : pollingStatus === "cancelado"
+        ? "O banco recusou ou cancelou o pagamento."
       : pollingStatus === "expirado"
         ? "O tempo de espera expirou. Verifique o status no painel."
         : pollingStatus === "polling"

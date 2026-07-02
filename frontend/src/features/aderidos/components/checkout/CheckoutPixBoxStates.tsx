@@ -152,6 +152,23 @@ export function CheckoutPixExpiredNotice() {
   );
 }
 
+export function CheckoutPixCanceledNotice() {
+  return (
+    <Alert
+      severity="error"
+      sx={{
+        borderRadius: 2,
+        bgcolor: "#FDF0F0",
+        color: "#7A1F1F",
+        "& .MuiAlert-icon": { color: "#7A1F1F" },
+      }}
+    >
+      O pagamento foi cancelado ou recusado pelo banco. As rifas voltam a ficar
+      disponíveis.
+    </Alert>
+  );
+}
+
 export function CheckoutQrCodeDisplay({ qrCodeSrc }: { qrCodeSrc: string }) {
   return (
     <Box
