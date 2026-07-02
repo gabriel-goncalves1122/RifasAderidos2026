@@ -1,7 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import React from "react";
 
 const secretariaMocks = vi.hoisted(() => {
   const aderidos = [
@@ -57,19 +56,29 @@ vi.mock("@/features/premios/hooks/usePremiosLayout", () => ({
   usePremiosLayout: vi.fn(() => ({ isMobile: false, isDesktop: true })),
 }));
 
-vi.mock("@/features/secretaria/hooks/useSecretariaController", () => ({
+vi.mock("@/features/secretaria/membros/hooks/useSecretariaController", () => ({
   useSecretariaController: vi.fn(() => secretariaMocks.controllerReturn),
 }));
 
-vi.mock("@/features/secretaria/hooks/useSecretariaSort", () => ({
+vi.mock("@/features/secretaria/membros/hooks/useSecretariaSort", () => ({
   useSecretariaSort: vi.fn(() => secretariaMocks.sortReturn),
 }));
 
-vi.mock("@/features/secretaria/hooks/useSecretariaKeyboard", () => ({
+vi.mock("@/features/secretaria/membros/hooks/useSecretariaKeyboard", () => ({
   useSecretariaKeyboard: vi.fn(),
 }));
 
+vi.mock("@/features/secretaria/documentos/services/documentosSecretariaService", () => ({
+  documentosSecretariaService: {
+    listarDocumentos: vi.fn().mockResolvedValue([]),
+    criarDocumento: vi.fn(),
+    atualizarDocumento: vi.fn(),
+    baixarConteudo: vi.fn(),
+  },
+}));
+
 import { SecretariaView } from "@/features/secretaria";
+import { MembrosSecretariaView } from "@/features/secretaria/membros/MembrosSecretariaView";
 
 describe("Página <SecretariaView />", () => {
   beforeEach(() => {
@@ -77,32 +86,52 @@ describe("Página <SecretariaView />", () => {
   });
 
   it("Deve renderizar o header e os cards de resumo", () => {
-    render(React.createElement(SecretariaView));
+    render(<MembrosSecretariaView />);
 
     expect(screen.getByText("Secretaria")).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Resumo Total" })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Resumo Aderidos" })).toBeInTheDocument();
   });
 
-  it("Deve renderizar a view desktop por padrão", () => {
-    render(React.createElement(SecretariaView));
+  it("Deve renderizar a view desktop sem duplicar as tabs do Dashboard", () => {
+    render(<MembrosSecretariaView />);
 
+    expect(
+      screen.queryByRole("tablist", { name: "Áreas da secretaria" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("Resultados (1)")).toBeInTheDocument();
   });
 
-  it("Deve iniciar na aba Aderidos e alternar para Comissão", async () => {
-    render(React.createElement(SecretariaView));
+  it("Deve delegar a aba ativa para a subfeature correta", async () => {
+    const { rerender } = render(<SecretariaView abaAtual={0} />);
 
-    expect(screen.getByRole("tab", { name: "Aderidos" })).toHaveAttribute(
+    expect(screen.getByRole("heading", { name: "Secretaria" })).toBeInTheDocument();
+
+    rerender(<SecretariaView abaAtual={1} />);
+
+    expect(
+      await screen.findByText("Atas, contratos e arquivos organizados por área."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Secretaria" })).not.toBeInTheDocument();
+  });
+
+  it("Deve iniciar na aba Aderidos e alternar para Comissão", async () => {
+    render(<MembrosSecretariaView />);
+
+    const abasTipoUsuario = screen.getByRole("tablist", {
+      name: "Seções da secretaria",
+    });
+
+    expect(within(abasTipoUsuario).getByRole("tab", { name: "Aderidos" })).toHaveAttribute(
       "aria-selected",
       "true",
     );
     expect(screen.getByText("Aderido User")).toBeInTheDocument();
     expect(screen.queryByText("Admin User")).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("tab", { name: "Comissão" }));
+    await userEvent.click(within(abasTipoUsuario).getByRole("tab", { name: "Comissão" }));
 
-    expect(screen.getByRole("tab", { name: "Comissão" })).toHaveAttribute(
+    expect(within(abasTipoUsuario).getByRole("tab", { name: "Comissão" })).toHaveAttribute(
       "aria-selected",
       "true",
     );
@@ -111,10 +140,13 @@ describe("Página <SecretariaView />", () => {
   });
 
   it("Deve posicionar as abas abaixo dos cards de resumo", () => {
-    render(React.createElement(SecretariaView));
+    render(<MembrosSecretariaView />);
 
     const resumoComissao = screen.getByRole("article", { name: "Resumo Comissão" });
-    const tabAderidos = screen.getByRole("tab", { name: "Aderidos" });
+    const abasTipoUsuario = screen.getByRole("tablist", {
+      name: "Seções da secretaria",
+    });
+    const tabAderidos = within(abasTipoUsuario).getByRole("tab", { name: "Aderidos" });
 
     expect(
       resumoComissao.compareDocumentPosition(tabAderidos) &
@@ -123,7 +155,7 @@ describe("Página <SecretariaView />", () => {
   });
 
   it("Deve mostrar somente pesquisa como filtro visual", () => {
-    render(React.createElement(SecretariaView));
+    render(<MembrosSecretariaView />);
 
     expect(screen.getByPlaceholderText(/Pesquisar por nome ou e-mail/i)).toBeInTheDocument();
     expect(screen.queryByLabelText("Filtrar por modalidade")).not.toBeInTheDocument();
@@ -131,7 +163,7 @@ describe("Página <SecretariaView />", () => {
   });
 
   it("Deve renderizar com notificacao fechada", () => {
-    render(React.createElement(SecretariaView));
+    render(<MembrosSecretariaView />);
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });

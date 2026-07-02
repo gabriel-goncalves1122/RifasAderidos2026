@@ -3,6 +3,7 @@
 // ============================================================================
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import userEvent from "@testing-library/user-event";
 import { DashboardPage } from "@/views/pages/DashboardPage";
 import { useAuthController } from "@/features/auth/hooks/useAuthController";
 
@@ -29,7 +30,9 @@ vi.mock("@/features/tesouraria/pages/AuditoriaComprasPage", () => ({
   AuditoriaComprasPage: () => <div>Conteudo: Auditoria de compras</div>,
 }));
 vi.mock("@/features/secretaria", () => ({
-  SecretariaView: () => <div>Conteudo: Secretaria</div>,
+  SecretariaView: ({ abaAtual }: { abaAtual: number }) => (
+    <div>Conteudo: Secretaria {abaAtual === 1 ? "Documentos" : "Aderidos"}</div>
+  ),
 }));
 
 describe("Página <DashboardPage />", () => {
@@ -96,7 +99,7 @@ describe("Página <DashboardPage />", () => {
     expect(screen.getByText("Conteudo: Pix")).toBeInTheDocument();
   });
 
-  it("Deve renderizar a Secretaria para membros com esse cargo", () => {
+  it("Deve renderizar as tabs superiores da Secretaria e alternar conteúdo", async () => {
     sessionStorage.setItem("dashboard_contexto", "secretaria");
 
     (useAuthController as any).mockReturnValue({
@@ -110,7 +113,12 @@ describe("Página <DashboardPage />", () => {
     expect(screen.getByText("Secretaria")).toBeInTheDocument();
     expect(screen.getByText("Gestão de aderidos")).toBeInTheDocument();
     expect(screen.getByText("Aderidos")).toBeInTheDocument();
-    expect(screen.getByText("Conteudo: Secretaria")).toBeInTheDocument();
+    expect(screen.getByText("Documentos")).toBeInTheDocument();
+    expect(screen.getByText("Conteudo: Secretaria Aderidos")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("tab", { name: "Documentos" }));
+
+    expect(screen.getByText("Conteudo: Secretaria Documentos")).toBeInTheDocument();
   });
 
   it("MECANISMO DE SEGURANÇA: Deve expulsar um Aderido que tente acessar a Tesouraria", async () => {

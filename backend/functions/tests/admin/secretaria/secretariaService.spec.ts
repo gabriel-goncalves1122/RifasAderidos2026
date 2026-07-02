@@ -40,6 +40,10 @@ const mockTransactionUpdate: any = jest.fn();
 describe("Service: secretariaService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockTransactionGet.mockResolvedValue({
+      exists: false,
+      data: () => undefined,
+    });
 
     mockRunTransaction.mockImplementation(async (callback: any) => {
       return callback({
@@ -87,7 +91,7 @@ describe("Service: secretariaService", () => {
       },
     });
 
-    expect(mockTransactionSet).toHaveBeenCalledTimes(122);
+    expect(mockTransactionSet).toHaveBeenCalledTimes(123);
     expect(mockRunTransaction).toHaveBeenCalledTimes(1);
 
     expect(mockDoc).toHaveBeenCalledWith("ADERIDO_001");
@@ -95,6 +99,7 @@ describe("Service: secretariaService", () => {
     expect(mockDoc).toHaveBeenCalledWith("00120");
 
     const novoUsuario = mockTransactionSet.mock.calls[0][1];
+    const indiceEmail = mockTransactionSet.mock.calls[1][1];
 
     expect(novoUsuario).toEqual(
       expect.objectContaining({
@@ -107,6 +112,12 @@ describe("Service: secretariaService", () => {
         meta_vendas: 1200,
         status: "pendente",
         status_cadastro: "pendente",
+      }),
+    );
+    expect(indiceEmail).toEqual(
+      expect.objectContaining({
+        email: "primeiro@teste.com",
+        usuario_id: "ADERIDO_001",
       }),
     );
   });
@@ -137,7 +148,7 @@ describe("Service: secretariaService", () => {
       },
     });
 
-    expect(mockTransactionSet).toHaveBeenCalledTimes(62);
+    expect(mockTransactionSet).toHaveBeenCalledTimes(63);
 
     const novoUsuario = mockTransactionSet.mock.calls[0][1];
 
@@ -270,6 +281,99 @@ describe("Service: secretariaService", () => {
         fim: "00420",
       },
     });
+  });
+
+  it("Deve rejeitar criação quando o índice transacional de e-mail já existe", async () => {
+    mockGet.mockResolvedValueOnce({ empty: true });
+    mockDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ ultima_posicao: 1, ultimo_bilhete: 60 }),
+    });
+    mockTransactionGet
+      .mockResolvedValueOnce({
+        exists: true,
+        data: () => ({ ultima_posicao: 1, ultimo_bilhete: 60 }),
+      })
+      .mockResolvedValueOnce({
+        exists: true,
+        data: () => ({ usuario_id: "ADERIDO_999" }),
+      });
+
+    await expect(
+      secretariaService.adicionarAderido({
+        email: "duplicado@teste.com",
+        nome: "Duplicado",
+        modalidade_adesao: "meio",
+      }),
+    ).rejects.toThrow("Este e-mail já foi autorizado anteriormente.");
+
+    expect(mockTransactionSet).not.toHaveBeenCalled();
+  });
+
+  it("Deve rejeitar criação quando a próxima posição de aderido já existe", async () => {
+    mockGet.mockResolvedValueOnce({ empty: true });
+    mockDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ ultima_posicao: 1, ultimo_bilhete: 60 }),
+    });
+    mockTransactionGet
+      .mockResolvedValueOnce({
+        exists: true,
+        data: () => ({ ultima_posicao: 1, ultimo_bilhete: 60 }),
+      })
+      .mockResolvedValueOnce({
+        exists: false,
+        data: () => undefined,
+      })
+      .mockResolvedValueOnce({
+        exists: true,
+        data: () => ({ id: "ADERIDO_001" }),
+      });
+
+    await expect(
+      secretariaService.adicionarAderido({
+        email: "posicao@teste.com",
+        nome: "Posicao Ocupada",
+        modalidade_adesao: "meio",
+      }),
+    ).rejects.toThrow("Não foi possível reservar a próxima posição de aderido.");
+
+    expect(mockTransactionSet).not.toHaveBeenCalled();
+  });
+
+  it("Deve rejeitar criação quando a faixa calculada já possui bilhete", async () => {
+    mockGet.mockResolvedValueOnce({ empty: true });
+    mockDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ ultima_posicao: 1, ultimo_bilhete: 60 }),
+    });
+    mockTransactionGet
+      .mockResolvedValueOnce({
+        exists: true,
+        data: () => ({ ultima_posicao: 1, ultimo_bilhete: 60 }),
+      })
+      .mockResolvedValueOnce({
+        exists: false,
+        data: () => undefined,
+      })
+      .mockResolvedValueOnce({
+        exists: false,
+        data: () => undefined,
+      })
+      .mockResolvedValueOnce({
+        exists: true,
+        data: () => ({ numero: "00001" }),
+      });
+
+    await expect(
+      secretariaService.adicionarAderido({
+        email: "faixa@teste.com",
+        nome: "Faixa Ocupada",
+        modalidade_adesao: "meio",
+      }),
+    ).rejects.toThrow("A faixa de rifas calculada já possui bilhetes cadastrados.");
+
+    expect(mockTransactionSet).not.toHaveBeenCalled();
   });
 
   it("Deve continuar a contagem se já existirem usuários e bilhetes", async () => {

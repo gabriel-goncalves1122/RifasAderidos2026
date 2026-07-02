@@ -27,9 +27,25 @@ jest.mock("../../src/modules/admin/compac/compacController", () => ({
   },
 }));
 
+jest.mock("../../src/modules/admin/secretaria/documentos/documentosSecretariaController", () => ({
+  documentosSecretariaController: {
+    listar: (_req: any, res: any) => res.status(200).json([{ mock: "documentos" }]),
+    criar: (_req: any, res: any) => res.status(201).json({ mock: "documento" }),
+    atualizar: (_req: any, res: any) =>
+      res.status(200).json({ mock: "documento-atualizado" }),
+    conteudo: (_req: any, res: any) => res.status(200).send("arquivo"),
+  },
+}));
+
+jest.mock("../../src/modules/admin/secretaria/documentos/documentosSecretariaMultipart", () => ({
+  parseDocumentoSecretariaMultipart: () =>
+    (_req: any, _res: any, next: any) => next(),
+}));
+
 jest.mock("../../src/shared/middlewares/authMiddleware", () => ({
   validateToken: (_req: any, _res: any, next: any) => next(),
   requireTesourariaOrAdmin: (_req: any, _res: any, next: any) => next(),
+  requireSecretariaOrAdmin: (_req: any, _res: any, next: any) => next(),
 }));
 
 jest.mock("../../src/shared/middlewares/validate", () => ({
@@ -64,6 +80,27 @@ describe("Rotas: /admin", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ mock: "compactar" });
+  });
+
+  it("GET /admin/documentos deve chamar documentosSecretariaController.listar", async () => {
+    const response = await request(app).get("/admin/documentos");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([{ mock: "documentos" }]);
+  });
+
+  it("POST /admin/documentos deve chamar documentosSecretariaController.criar", async () => {
+    const response = await request(app).post("/admin/documentos");
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual({ mock: "documento" });
+  });
+
+  it("GET /admin/documentos/:id/conteudo deve entregar o arquivo", async () => {
+    const response = await request(app).get("/admin/documentos/doc-1/conteudo");
+
+    expect(response.status).toBe(200);
+    expect(response.text).toBe("arquivo");
   });
 
   it("GET /admin/compactar deve retornar 404 por método incorreto", async () => {
