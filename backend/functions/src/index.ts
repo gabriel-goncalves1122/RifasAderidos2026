@@ -8,7 +8,7 @@ import "./shared/config/firebaseAdmin";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { onRequest } from "firebase-functions/v2/https";
 
 import masterRouter from "./routes";
@@ -19,7 +19,9 @@ import { errorHandler } from "./shared/middlewares/errorHandler";
 // ============================================================================
 
 const app = express();
-app.set("trust proxy", true);
+// Cloud Functions adiciona um proxy na frente do Express. Limitar a confianca
+// a um salto evita aceitar uma cadeia X-Forwarded-For inteiramente forjada.
+app.set("trust proxy", 1);
 
 // ============================================================================
 // SEGURANÇA — HEADERS HTTP
@@ -31,17 +33,15 @@ app.use(helmet());
 // RATE LIMITING
 // ============================================================================
 
-const getIpFallback = (req: express.Request) => {
-  return req.ip || (req.headers["x-forwarded-for"] as string) || "unknown";
-};
+const getIpRateLimitKey = (req: express.Request) =>
+  ipKeyGenerator(req.ip || req.socket.remoteAddress || "unknown");
 
 const apiLimiter = rateLimit({
   windowMs: 60_000,
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: getIpFallback,
-  validate: { ip: false },
+  keyGenerator: getIpRateLimitKey,
   message: { error: "Muitas requisições. Tente novamente em instantes.", code: "RATE_LIMIT" },
 });
 
@@ -50,8 +50,7 @@ app.use("/auth", rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: getIpFallback,
-  validate: { ip: false },
+  keyGenerator: getIpRateLimitKey,
   message: { error: "Muitas tentativas de autenticação. Aguarde.", code: "RATE_LIMIT" },
 }));
 
@@ -60,8 +59,7 @@ app.use("/rifas/checkout/pix/webhook", rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: getIpFallback,
-  validate: { ip: false },
+  keyGenerator: getIpRateLimitKey,
   message: { error: "Muitas requisições de webhook.", code: "RATE_LIMIT" },
 }));
 

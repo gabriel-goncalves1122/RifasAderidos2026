@@ -8,6 +8,27 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
 
+  server: {
+    host: "0.0.0.0",
+    port: 5173,
+    strictPort: true,
+    allowedHosts: [".trycloudflare.com"],
+
+    watch: {
+      // Os scripts padrao usam polling para funcionar mesmo antes do setup
+      // Linux. `dev:inotify` usa este mesmo escopo com eventos nativos.
+      ignored: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/coverage/**",
+        "**/docs/**",
+        "**/test-results/**",
+        "**/playwright-report/**",
+        "**/tests/e2e/**",
+      ],
+    },
+  },
+
   resolve: {
     alias: {
       // Evita imports relativos frágeis dentro de tests/features/*.
@@ -31,9 +52,20 @@ export default defineConfig({
       output: {
         manualChunks: {
           "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-mui": ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
+          "vendor-mui": [
+            "@mui/material",
+            "@mui/icons-material",
+            "@emotion/react",
+            "@emotion/styled",
+          ],
+          "vendor-firebase": [
+            "firebase/app",
+            "firebase/auth",
+            "firebase/firestore",
+            "firebase/storage",
+          ],
           "vendor-framer": ["framer-motion"],
-          "vendor-utils": ["axios", "yup", "papaparse", "clsx", "tailwind-merge", "phosphor-react", "recharts"]
+          "vendor-charts": ["recharts"],
         },
       },
     },

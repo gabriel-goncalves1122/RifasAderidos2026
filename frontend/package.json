@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "CHOKIDAR_USEPOLLING=true CHOKIDAR_INTERVAL=500 vite",
+    "dev:network": "CHOKIDAR_USEPOLLING=true CHOKIDAR_INTERVAL=500 vite --host 0.0.0.0",
+    "dev:inotify": "vite",
+    "dev:poll": "CHOKIDAR_USEPOLLING=true CHOKIDAR_INTERVAL=500 vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint src tests --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -23,7 +26,7 @@
     "test:auth": "vitest run tests/features/auth",
     "test:coverage": "vitest run --coverage",
     "test:e2e:tesouraria": "playwright test --config playwright.config.ts tests/e2e/tesouraria/venda-pix-pendente.spec.ts",
-    "test:e2e:tesouraria:emulators": "cd ../backend/functions && npm run build && npx firebase emulators:exec --config ../firebase.json --project rifasaderidos2026 --only auth,firestore,storage,functions \"cd ../../frontend && npm run test:e2e:tesouraria\""
+    "test:e2e:tesouraria:emulators": "cd ../backend/functions && npm run build && npx firebase emulators:exec --config ../../firebase.json --project rifasaderidos2026 --only auth,firestore,storage,functions \"cd ../../frontend && npm run test:e2e:tesouraria\""
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
