@@ -7,6 +7,7 @@ import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import GroupAddOutlinedIcon from "@mui/icons-material/GroupAddOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
+import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 
 import { Contexto } from "@/views/pages/DashboardPage";
 
@@ -71,6 +72,10 @@ export const DASHBOARD_HEADER_CONFIG: Record<
       {
         label: "Aderidos",
         icon: <GroupAddOutlinedIcon />,
+      },
+      {
+        label: "Documentos",
+        icon: <FolderOutlinedIcon />,
       },
     ],
   },

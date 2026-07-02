@@ -75,7 +75,7 @@ export function DashboardPage() {
   const limiteAbasPorContexto: Record<Contexto, number> = {
     aderido: 1,
     tesouraria: 2,
-    secretaria: 0,
+    secretaria: 1,
   };
 
   const abaSegura =
@@ -145,9 +145,9 @@ export function DashboardPage() {
           abaSegura === 2 &&
           hasTesourariaAccess && <AuditoriaComprasPage />}
 
-        {contextoAtual === "secretaria" &&
-          abaSegura === 0 &&
-          hasSecretariaAccess && <SecretariaView />}
+        {contextoAtual === "secretaria" && hasSecretariaAccess && (
+          <SecretariaView abaAtual={abaSegura} />
+        )}
       </Container>
     </Box>
   );

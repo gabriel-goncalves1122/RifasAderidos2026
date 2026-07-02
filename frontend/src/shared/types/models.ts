@@ -13,6 +13,9 @@ export type CargoComissao =
   | "marketing"
   | "eventos"
   | "secretaria"
+  | "diretor_secretaria"
+  | "vice_secretaria"
+  | "membro_secretaria"
   | "membro"
   | "aderido"; // <-- Adicionado para alinhar com a lógica do Frontend
 
