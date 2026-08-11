@@ -6,7 +6,10 @@
 ![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)
 
-Plataforma web completa desenvolvida para automatizar a arrecadação financeira da comissão de formatura da Universidade Federal de Itajubá (UNIFEI). O sistema digitaliza o processo de venda de rifas, auditoria de pagamentos via PIX e fornece métricas de desempenho em tempo real.
+
+Este sistema nasceu de uma necessidade real de negócio que enfrentei atuando como Diretor de Tesouraria da minha Comissão de Formatura. A gestão manual da venda de rifas para arrecadação de fundos gerava gargalos de controle, lentidão na conferência de pagamentos e risco de inconsistências no fluxo de caixa.
+
+Para resolver esse problema, desenvolvi esta aplicação web com o objetivo de centralizar as vendas, automatizar o controle de pagamentos dos aderidos e gerar total transparência financeira. O projeto foi desenhado para ser intuitivo para os usuários finais e fornecer dados precisos para a gestão do orçamento dos eventos
 
 ---
 
