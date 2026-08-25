@@ -14,7 +14,7 @@ export function AppLoadingScreen({
         minHeight: "100vh",
         display: "grid",
         placeItems: "center",
-        bgcolor: "#FFFFFF",
+        bgcolor: "background.default",
         px: 2,
         "@supports (height: 100dvh)": {
           minHeight: "100dvh",

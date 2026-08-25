@@ -2,22 +2,22 @@ import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 
 import { AuditoriaCompraActions } from "../shared/AuditoriaCompraActions";
 import { AuditoriaStatusChip } from "../shared/AuditoriaStatusChip";
-import { CompraAuditavel } from "../../../types/auditoriaCompras";
+import { TransacaoTesouraria } from "../../../types/auditoriaCompras";
 import {
   formatarDataAuditoria,
   formatarMoedaAuditoria,
 } from "../../../utils/auditoriaComprasUtils";
-import { colors } from "../../../styles/colors";
-import { surfaces } from "../../../styles/surfaces";
-import { components } from "../../../styles/components";
-import { typography } from "../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { components } from "@/shared/tokens/components";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 
 interface AuditoriaComprasCardProps {
-  compra: CompraAuditavel;
-  onVerComprovante: (compra: CompraAuditavel) => void;
-  onEditar: (compra: CompraAuditavel) => void;
-  onVerDetalhes: (compra: CompraAuditavel) => void;
-  onReenviarEmailComprovante: (compra: CompraAuditavel) => void;
+  compra: TransacaoTesouraria;
+  onVerComprovante: (compra: TransacaoTesouraria) => void;
+  onEditar: (compra: TransacaoTesouraria) => void;
+  onVerDetalhes: (compra: TransacaoTesouraria) => void;
+  onReenviarEmailComprovante: (compra: TransacaoTesouraria) => void;
   reenviandoEmailComprovante?: boolean;
 }
 
@@ -59,10 +59,10 @@ export function AuditoriaCompraCard({
                 lineHeight: 1.18,
               }}
             >
-              {compra.comprador_nome}
+              {compra.compradorNome}
             </Typography>
             <Typography sx={{ ...typography.bodyPequeno, mt: 0.35 }}>
-              {formatarDataAuditoria(compra.data_reserva)}
+              {formatarDataAuditoria(compra.dataReserva)}
             </Typography>
           </Box>
           <Box sx={{ textAlign: "right", flexShrink: 0 }}>
@@ -74,7 +74,7 @@ export function AuditoriaCompraCard({
                 whiteSpace: "nowrap",
               }}
             >
-              {formatarMoedaAuditoria(compra.valor_total)}
+              {formatarMoedaAuditoria(compra.valorTotal)}
             </Typography>
             <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.74rem", mt: 0.25 }}>
               {compra.bilhetes.length} rifa(s)
@@ -85,7 +85,7 @@ export function AuditoriaCompraCard({
         <Stack spacing={1.25} sx={{ p: 1.5 }}>
           <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
             <AuditoriaStatusChip status={compra.status} />
-            {compra.comprovante_url ? (
+            {compra.comprovanteUrl ? (
               <Chip
                 label="Com comprovante"
                 size="small"
@@ -124,10 +124,10 @@ export function AuditoriaCompraCard({
                   overflowWrap: "anywhere",
                 }}
               >
-                {compra.comprador_email || "Sem e-mail"}
+                {compra.compradorEmail || "Sem e-mail"}
               </Typography>
               <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.8rem", mt: 0.2 }}>
-                {compra.comprador_telefone || "Sem telefone"}
+                {compra.compradorTelefone || "Sem telefone"}
               </Typography>
             </Box>
 
@@ -144,7 +144,7 @@ export function AuditoriaCompraCard({
                 Vendedor responsável
               </Typography>
               <Typography sx={{ ...typography.bodyDestaque, mt: 0.25 }}>
-                {compra.vendedor_nome}
+                {compra.vendedorNome}
               </Typography>
             </Box>
           </Box>

@@ -2,10 +2,10 @@ import { Card, CardMedia, CardContent, Typography, IconButton, Box } from "@mui/
 import EditIcon from "@mui/icons-material/Edit";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 
-import { colors } from "../../styles/colors";
-import { surfaces } from "../../styles/surfaces";
-import { typography } from "../../styles/typography";
-import { components } from "../../styles/components";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { typographyScale as typography } from "@/shared/tokens/typography";
+import { components } from "@/shared/tokens/components";
 import { aderidosMotion, reduceMotionSx } from "@/shared/tokens/motion";
 import type { PremioData } from "../../types/premio";
 

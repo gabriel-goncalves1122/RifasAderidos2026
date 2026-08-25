@@ -10,12 +10,12 @@ async function backfillCustomClaims() {
   for (const doc of snapshot.docs) {
     const data = doc.data();
     const uid = data.uid;
-    const cargo = data.cargo || data.role || "aderido";
+    const role = data.role || "aderido";
 
     if (!uid || typeof uid !== "string") continue;
 
     try {
-      await auth.setCustomUserClaims(uid, { cargo });
+      await auth.setCustomUserClaims(uid, { role });
       atualizados++;
     } catch (error) {
       console.error(`[Backfill] Erro ao atualizar ${doc.id} (uid: ${uid}):`, error);

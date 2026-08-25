@@ -1,0 +1,403 @@
+Title: Live Content
+
+Description: Fetched live
+
+Source: https://www.mercadopago.com.br/developers/pt/docs/qr-code/notifications
+
+---
+
+Documentación - Mercado Pago DevelopersConfigurar notificações de orders - Configurar notificações - Mercado Pago Developers*:focus{box-shadow: 0 0 0 2px #fff, 0 0 0 3px #007EB5, 0 0 0 5px rgba(71, 154, 209, 0.3); outline: none;} *:focus-visible{box-shadow: 0 0 0 2px #fff, 0 0 0 3px #007EB5, 0 0 0 5px rgba(71, 154, 209, 0.3); outline: none;} *:focus:not(:focus-visible){box-shadow: none; outline: none;}.n-img-blur{background-position:center;background-size:cover;background-repeat:no-repeat;}/*! * Web Fonts from Fontspring.com * * All OpenType features and all extended glyphs have been removed. * Fully installable fonts can be purchased at https://www.fontspring.com * * The fonts included in this stylesheet are subject to the End User License you purchased * from Fontspring. The fonts are protected under domestic and international trademark and * copyright law. You are prohibited from modifying, reverse engineering, duplicating, or * distributing this font software. * * (c) 2010-2023 Fontspring * * * * * The fonts included are copyrighted by the vendor listed below. * * Vendor: Mark Simonson Studio * License URL: https://www.fontspring.com/licenses/mark-simonson-studio/webfont * * */ @font-face{font-family:'Proxima Nova';font-weight:300;font-display:swap;font-style:normal;src:url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff2') format('woff2'),url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff') format('woff');}@font-face{font-family:'Proxima Nova';font-weight:400;font-display:swap;font-style:normal;src:url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff2') format('woff2'),url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff') format('woff');}@font-face{font-family:'Proxima Nova';font-weight:600;font-display:swap;font-style:normal;src:url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.woff2') format('woff2'),url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.woff') format('woff');}window._n={ctx:{},img:{h:function(){}},islands:{}};1&&void 0!==arguments[1]?arguments[1]:{};window.dispatchEvent(new CustomEvent(n(t,e.id),{detail:e.payload}))}}();window.__wminit = {"client_version":"1.5.7","harvester":{"enable":true,"buffer":{"flushTime":5000},"flushTime":2500,"bufferSize":50},"custom_attributes":{"traceparent":"00-00000000000000002871665a21583f17-2871665a21583f17-00","application":"dx-devsite","scope":"prod-serverless2","criticality":"medium","environment":"production","path":"/:language(es|pt|en)/docs","service-name":"prod-serverless2.dx-devsite","service-version":"5.4.6-rc-3","platform":"mercadopago","platformId":"MP","site":"MLB","browser_name":"unknown","browser_version":"0","device":"/web/desktop","webview":false,"requestId":"671a13d7-43df-4421-a624-f128ab5fee3c","d2id":"671a13d7-43df-4421-a624-f128ab5fee3c","userIp":"74.125.217.100, 15.158.216.229, 10.53.202.133"},"instruments":{"features":{"error_js":{"sampling":1,"auto_instrument":true,"enabled":true},"failed_load_resources":{"sampling":1,"auto_instrument":true,"enabled":true},"heaviest_resources":{"sampling":1,"auto_instrument":true,"enabled":true},"resource_timing":{"sampling":1,"auto_instrument":true,"enabled":true},"session_trace":{"sampling":1,"auto_instrument":true,"enabled":true},"web_vitals":{"sampling":1,"auto_instrument":true,"enabled":true},"browser_navigation":{"sampling":1,"auto_instrument":true,"enabled":true},"performance":{"sampling":1,"auto_instrument":true,"enabled":true}},"signals":{"logs":{"sampling":1,"headers":{"Content-Type":"application/json"},"required_key":"false"},"metrics":{"sampling":1,"headers":{"Content-Type":"application/json"},"required_key":"false"},"spans":{"sampling":0.1,"headers":{"Content-Type":"application/json"},"required_key":"false"},"traces":{"sampling":0.1,"headers":{"Content-Type":"application/json"},"required_key":"false"}}},"otel":{"resources":{}}};(function(n){if(n){n.addRelease("dx-devsite","5.4.6-rc-3");n.setApplicationVersion("5.4.6-rc-3");n.setCustomAttribute("nordicVersion","9.7.1");}})(window.newrelic);if(window.WMANS){WMANS.setCustomAttributes({"nordicVersion":"9.7.1","nordicModulesVersion":"9.14.0","nordicWebkitVersion":"9.11.1","platformType":"web"});}_n.ctx.c={"deviceType":"desktop","platformType":"web","platform":{"siteId":"MLB","countryId":"BR","id":"MP","domain":"mercadopago.com.br"},"deviceInfo":{},"networkState":{"isConnectionExpensive":false,"isConnectionSlow":false}};_n.ctx.r={"flags":{"isBot":true,"loadable":false,"islands":false,"pipeableStream":false,"stream":false,"staticMarkup":true},"assets":{"cdn":"https:\u002F\u002Fhttp2.mlstatic.com","prefix":"https:\u002F\u002Fhttp2.mlstatic.com\u002Ffrontend-assets\u002Fdx-devsite\u002F"},"support":{"customElements":{"define":true,"builtIn":true},"imgLoading":true,"prefetch":true,"sameSite":true,"outdated":false,"share":false},"title":"Documentación - Mercado Pago Developers","framework":"nordic","nonce":"Qy1Cc7o7IMZHkbJ+nVnRJA==","csrfToken":"AQC3txPj-wcKOZtA1l74IQEH1rjQQr02e-os"};_n.ctx.r.assets.manifest=new Map();_n.ctx.r.assets.mainAssetsNames={scripts:new Set(),styles:new Set()};window._gt={ctx:{}};(function(w,r){w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,"melidata");0,1)},emit:function(e,t){(n[e]||[]).map(function(n){n(t)}),(n["*"]||[]).map(function(n){n(e,t)})}}}return n});window.freya = mitt();{if(t===r)return;t=r,e.dispatchEvent("page",{id:r});const o=performance.now();var i,a;n&&(i=r,a=o-n,"undefined"!=typeof WMANS&&WMANS.recordHistogram&&WMANS.recordHistogram("nordic.hydration.time",a,"ms",{state:i,metric_version:"1.0.0"})),n=o}})}(),e.pageState="started"}();window.navigationHydrateWrapperStructure = [{"type":"wrapper"},{"type":"wrapper","childNodes":[{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper","childNodes":[{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper","childNodes":[{"type":"wrapper","childNodes":[{"type":"wrapper","childNodes":[{"type":"app"}]}]},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"}]}]}]}];
+  :root {
+    --andes-color-yellow-500: #ffe600;
+    --andes-color-blue-100: rgba(65, 137, 230, 0.1);
+    --andes-color-blue-150: rgba(65, 137, 230, 0.15);
+    --andes-color-blue-200: rgba(65, 137, 230, 0.2);
+    --andes-color-blue-300: rgba(65, 137, 230, 0.3);
+    --andes-color-blue-400: rgba(65, 137, 230, 0.4);
+    --andes-color-blue-500: #3483fa;
+    --andes-color-blue-600: #2968c8;
+    --andes-color-blue-700: #1f4e96;
+    --andes-color-blue-800: #183c73;
+    --andes-color-fill-brand: var(--andes-color-yellow-500);
+    --andes-color-text-brand: rgba(0, 0, 0, 0.9);
+    --andes-landings-color-fill-brand: var(--andes-color-yellow-500);
+    --andes-landings-color-fill-brand-secondary: #ffd400;
+    --andes-landings-color-fill-brand-tertiary: #ffe600;
+    --andes-landings-color-middle: #333333;
+    --andes-landings-button-theme-white-background: #3483fa;
+    --andes-landings-button-theme-white-text-color: #ffffff;
+    --andes-landings-button-theme-white-hover-background: #2968c8;
+    --andes-landings-button-theme-white-pressed-background: #1f4e96;
+  }
+@font-face{font-family:'Proxima Nova';font-weight:300;font-style:normal;src:url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff2) format("woff2"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff) format("woff"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.ttf) format("truetype")}@font-face{font-family:'Proxima Nova';font-weight:400;font-style:normal;src:url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff2) format("woff2"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff) format("woff"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.ttf) format("truetype")}@font-face{font-family:'Proxima Nova';font-weight:600;font-style:normal;src:url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.woff2) format("woff2"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.woff) format("woff"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.ttf) format("truetype")}@font-face{ font-family:'Proxima Nova'; font-weight: 800; font-style: bolder; src: url("https://http2.mlstatic.com/frontend-assets/dx-devsite/fonts/proximanova-extrabold-webfont.woff2") format("woff2"), url("https://http2.mlstatic.com/frontend-assets/dx-devsite/fonts/proximanova-extrabold-webfont.woff") format("woff"); } @font-face{font-family:'Proxima Nova';font-weight:700;font-style:normal;src:url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-bold.woff2) format("woff2"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-bold.woff) format("woff"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-bold.ttf) format("truetype")}InicioDocumentaçãoRecursosParceriasComunidadeEntrarCriar a sua contaDocumentaçãoConsulte as informações necessárias para integrar nossas soluções.Pagamentos onlinePagamentos presenciaisPlataformas de e-commerceTeste o funcionamento das soluçõesMCP ServerNovoReferência APIBibliotecas SDKMercado Pago CLINovoComeçando agora?Visite a página de Primeiros passos para aprender a integrar.RecursosConfira as atualizações das nossas soluções e do funcionamento do sistema ou peça suporte técnico.ChangelogStatus Mercado PagoSuporteCom minha contaCom minha integraçãoParceriasConheça nosso programa para agências ou desenvolvedores que oferecem serviços de integração e vendedores que desejam contratá-los.Sobre o programaPara agênciasPara desenvolvedoresPara plataformasComunidadeFique por dentro das últimas novidades, peça ajuda a outros integradores e compartilhe seu conhecimento.NotíciasNewsletterComunidade no DiscordCanal no Youtube{if(!t.target||1!==t.target.nodeType)return;const o=t.target.closest('[data-dx-action-type="dropdown"]');if(o){if("Enter"!==t.key)return;n(o);const A=e.querySelector(".dx-navigation-header-card__content--active a");A&&A.focus()}})})(document)Pagamentos online Sem programaçãoLink de pagamentoPagamento com link ou botão.Planos de assinaturaPagamentos recorrentes sem programação.Com programaçãoCheckout ProPronto para configurar.Checkout BricksMódulos para montar.Checkout TransparenteControle total.AssinaturasPagamentos recorrentes com programação.PlataformasShopifyWooCommerceVTEXLoja IntegradaPrestashopCommerce CloudWixMostrar maisPagamentos presenciais Mercado Pago PointMaquininhas de cartões.QR CodeCódigo para escanear.Ferramentas e recursos Gerenciamento de integraçõesIntegraçõesSoluções de pagamento integradas.Detalhes da aplicaçãoGuia para gerenciar integrações.CredenciaisChaves de acesso seguro.TestesTestes de funcionamento.QualidadeMedição de desempenho.ColaboradoresGestão de acessosFerramentasIntegrações com IAGuia para desenvolver com LLMs.Biblioteca de promptsNovoComandos para IAMCP ServerRecurso para agentes de IA.Mercado Pago CLINovoInterface de linha de comando.RelatóriosDetalhamento de operações.SegurançaProtocolos e normativas.AtualizaçõesChangelogHistórico de alterações.Status Mercado PagoOperacionalidade do serviço.APIs e SDKs Referência APIEndpoints e parâmetros.Bibliotecas SDKKit técnico de desenvolvimento. {
+            group.addEventListener('mouseenter', handleMouseEnter);
+            group.addEventListener('keypress', handleMouseEnter);
+            group.addEventListener('mouseleave', handleMouseLeave);
+          });
+        })();
+  
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5TD2V4H');
+  
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-XJRJL56B0Z', {
+      send_page_view: true,
+      scroll: true,
+      click: true,
+      view_search_results: true,
+      file_download: true,
+      form_start: true,
+      form_submit: true,
+      video_start: true,
+      video_progress: true,
+      video_complete: true
+    });
+
+    window.gtag = gtag;
+  QR CodeCódigo para escanear.Visão geralEtapas de integraçãoCriar aplicaçãoCriar loja e caixaIntegrar o processamento de pagamentosConfigurar notificaçõesConfigurar notificações de ordersConfigurar notificações opcionaisTestar a integraçãoRealizar compra testeMedir a qualidade da integraçãoSubir em produçãoRecursosStatus de uma order e de uma transaçãoMigrar para a API de OrdersComo migrar da API Pedidos Presenciais para a API de OrdersComo migrar da API Pedidos Presenciais V2 para a API de OrdersComo migrar da API QR Modelo Dinâmico para a API de OrdersCredenciaisDados da integraçãoSegurançaContas de testeCartões de testeRelatóriosLiberaçõesUsos do relatórioGerar relatórioCampos do relatórioDinheiro em contaUsos do relatórioGerar relatórioCampos do relatórioDocumentaçãoQR CodeEtapas de integraçãoConfigurar notificaçõesConfigurar notificações de ordersRecursos para IACopiar página para LLMsExibir como MarkdownConfigurar notificações
+As notificações Webhooks, também conhecidas como devoluções de chamada web, são um método eficaz que permitem aos servidores do Mercado Pago enviar informações em tempo real quando ocorre um evento específico relacionado à sua integração. Em vez de seu sistema realizar consultas constantes para verificar atualizações, os Webhooks permitem a transmissão de dados de maneira passiva e automática entre Mercado Pago e sua integração através de uma solicitação HTTPS POST, otimizando a comunicação e reduzindo a carga nos servidores.
+Configurar Webhooks
+A seguir, apresentaremos um passo a passo para poder receber notificações de pagamento em integrações com QR Code.  Uma vez configuradas, as notificações Webhook serão enviadas sempre que ocorrer um evento relevante, como pagamento aprovado (processamento), reembolso, falha, cancelamento ou expiração.
+Se você estiver desenvolvendo utilizando credenciais de testeChaves de acesso únicas com as quais identificamos uma integração na sua conta, vinculadas à sua aplicação. Para mais informações, acesse o link abaixo.Credenciais, acesse o Mercado Pago Developers, faça login com o usuário e a senha do Seller Test User (disponíveis em Informações gerais da sua aplicação) e configure os Webhooks em modo produção para essa conta de teste. Dessa forma, você conseguirá testar as notificações corretamente. Por outro lado, no caso de integrações para terceirosIntegrações de QR Code  ao seu sistema em nome de um vendedor e configuradas a partir de credenciais obtidas por meio do protocolo de segurança OAuth. Para mais informações, acesse o link abaixo.Authorization code, as notificações Webhooks devem ser configuradas na aplicaçãoEntidade registrada no Mercado Pago que atua como um identificador para gerenciar suas integrações. Para mais informações, acesse o link abaixo.Dados da integração da sua conta principal como integrador, que obteve permissões para transações em nome de terceiros.
+
+Acesse Suas integrações e selecione a aplicação integrada com QR Code  para a qual deseja ativar as notificações.
+
+
+
+No menu à esquerda, selecione Webhooks &gt; Configurar notificações.
+
+
+
+Selecione a aba Modo de produção e forneça uma URL HTTPS para receber notificações com sua integração produtiva.
+
+
+
+Selecione o evento Order (Mercado Pago) para receber notificações, que serão enviadas em formato JSON através de um HTTPS POST para a URL especificada anteriormente.
+
+
+
+Por fim, clique em Salvar configuração. Uma chave secreta exclusiva será gerada para a aplicação, o que permitirá validar a autenticidade das notificações recebidas e garantir que sejam enviadas pelo Mercado Pago. Tenha em mente que esta chave não tem prazo de validade e sua renovação periódica não é obrigatória, embora seja recomendada. Para isso, basta clicar no botão Redefinir.
+
+Ao concluir, suas notificações Webhooks para QR Code  estarão configuradas e você poderá receber os seguintes alertas sobre a order:
+
+Processada (order.processed)
+Cancelada (order.canceled)
+Reembolsada (order.refunded)
+Expirada (order.expired)
+
+Simular a recepção da notificação
+Para garantir que as notificações sejam configuradas corretamente, é necessário simular sua recepção. Para isso, siga o passo a passo abaixo.
+
+Após configurar a URL e o evento, clique em Salvar configuração.
+Depois, clique em Simular para testar se a URL indicada está recebendo as notificações corretamente.
+Na tela de simulação, selecione a URL que será testada.
+Em seguida, selecione o tipo de evento e insira a identificação que será enviada no corpo da notificação (Data ID).
+
+
+
+Por fim, clique em Enviar teste para verificar a solicitação, a resposta fornecida pelo servidor e a descrição do evento. Você receberá uma resposta conforme os exemplos abaixo, que representam o body da notificação recebida em seu servidor.
+
+ProcesadaExpiradaCanceladaReembolsadajsonCopiar{
+  &quot;action&quot;: &quot;order.processed&quot;,
+  &quot;api_version&quot;: &quot;v1&quot;,
+  &quot;application_id&quot;: &quot;7364289770550796&quot;,
+  &quot;data&quot;: {
+    &quot;external_reference&quot;: &quot;ER_123456&quot;,
+    &quot;id&quot;: &quot;ORD01JV3AW3NFSTSTB669F41NACDX&quot;,
+    &quot;status&quot;: &quot;processed&quot;,
+    &quot;status_detail&quot;: &quot;accredited&quot;,
+    &quot;total_amount&quot;: &quot;30.00&quot;,
+    &quot;total_paid_amount&quot;: &quot;30.00&quot;,
+    &quot;transactions&quot;: {
+      &quot;payments&quot;: [
+        {
+          &quot;amount&quot;: &quot;30.00&quot;,
+          &quot;id&quot;: &quot;PAY01JV3AW3NFSTSTB669F4JSAA6C&quot;,
+          &quot;paid_amount&quot;: &quot;30.00&quot;,
+          &quot;payment_method&quot;: {
+            &quot;id&quot;: &quot;account_money&quot;,
+            &quot;installments&quot;: 1,
+            &quot;type&quot;: &quot;account_money&quot;
+          },
+          &quot;reference&quot;: {
+            &quot;id&quot;: &quot;92937960454&quot;
+          },
+          &quot;status&quot;: &quot;processed&quot;,
+          &quot;status_detail&quot;: &quot;accredited&quot;
+        }
+      ]
+    },
+    &quot;type&quot;: &quot;qr&quot;,
+    &quot;version&quot;: 2
+  },
+  &quot;date_created&quot;: &quot;2025-05-12T22:46:59.635090485Z&quot;,
+  &quot;live_mode&quot;: false,
+  &quot;type&quot;: &quot;order&quot;,
+  &quot;user_id&quot;: &quot;1403498245&quot;
+}
+Validar a origem da notificação
+A validação da origem de uma notificação é fundamental para garantir a segurança e a autenticidade das informações recebidas. Este processo ajuda a prevenir fraudes e garante que somente as notificações legítimas sejam processadas.
+O Mercado Pago enviará ao seu servidor uma notificação similar ao exemplo abaixo para um alerta do tema order. Neste exemplo, está incluída a notificação completa, que contém os query params, o body e o header da notificação.
+
+Query params: São parâmetros de consulta que acompanham a URL. No exemplo, temos data.id=ORD01JQ4S4KY8HWQ6NA5PXB65B3D3 e type=order.
+Body: O corpo da notificação contém informações detalhadas sobre o evento, como action, api_version, application_id, date_created, id, live_mode, type, user_id e data.
+Header: O cabeçalho contém metadados importantes, incluindo a assinatura secreta da notificação x-signature.
+
+plainCopiarPOST /test?data.id=ORD01JQ4S4KY8HWQ6NA5PXB65B3D3&amp;type=order HTTP/1.1
+Host: prueba.requestcatcher.com
+Accept: */*
+Accept-Encoding: *
+Connection: keep-alive
+Content-Length: 177
+Content-Type: application/json
+Newrelic: eyJ2IjpbMCwxXSwiZCI6eyJ0eSI6IkFwcCIsImFjIjoiOTg5NTg2IiwiYXAiOiI5NjA2MzYwOTQiLCJ0eCI6ImY4MzljZjg4ODg2MGRmZTIiLCJ0ciI6ImMwOGMwZGMyMjNjZDY2YjJkZWQwMjUxZmYxNWNiNGQ1IiwicHIiOjEuMjUwMzIsInNhIjp0cnVlLCJ0aSI6MTc0Mjg0MjU4MDE2NCwiaWQiOiIxOGI2NDcxNjNkNzI3NjU4IiwidGsiOiIxNzA5NzA3In19=
+Traceparent: 00-c08c0dc223cd66b2ded0251ff15cb4d5-18b647163d727658-01
+Tracestate: 1709707@nr=0-0-989586-960636094-18b647163d727658-f839cf888860dfe2-1-1.250320-1742842580164
+User-Agent: restclient-node/4.15.3
+X-Request-Id: 2066ca19-c6f1-498a-be75-1923005edd06
+X-Rest-Pool-Name: /services/webhooks.js
+X-Retry: 0
+X-Signature: ts=1742505638683,v1=ced36ab6d33566bb1e16c125819b8d840d6b8ef136b0b9127c76064466f5229b
+X-Socket-Timeout: 22000
+{&quot;action&quot;:&quot;order.action_required&quot;,&quot;api_version&quot;:&quot;v1&quot;,&quot;application_id&quot;:&quot;76506430185983&quot;,&quot;date_created&quot;:&quot;2021-11-01T02:02:02Z&quot;,&quot;id&quot;:&quot;123456&quot;,&quot;live_mode&quot;:false,&quot;type&quot;:&quot;order&quot;,&quot;user_id&quot;:2025701502,&quot;data&quot;:{&quot;id&quot;:&quot;ORD01JQ4S4KY8HWQ6NA5PXB65B3D3&quot;}}
+A partir da notificação Webhook recebida, você poderá validar a autenticidade da sua origem. O Mercado Pago sempre incluirá a chave secreta nas notificações Webhooks que serão recebidas, o que permitirá validar sua autenticidade. Esta chave será enviada no header x-signature, que será similar ao exemplo abaixo.
+plainCopiarts=1742505638683,v1=ced36ab6d33566bb1e16c125819b8d840d6b8ef136b0b9127c76064466f5229b
+Para confirmar a validação, é necessário extrair a chave contida no header e compará-la com a chave fornecida para a sua aplicação em Suas integrações.
+Siga uma das abordagens abaixo para validar a autenticidade da notificação.
+Com SDKsSem SDKsO SDK oficial implementa verificação de assinatura baseada em HMAC (HMAC-based Webhook Signature Verification) para autenticar a origem de cada notificação recebida.Para obter sua chave secreta (secret), selecione a aplicação em Suas integrações, clique em Webhooks &gt; Configurar notificação e revele a chave gerada.  
+    
+         
+        
+          csharp
+        
+         
+        
+          go
+        
+         
+        
+          java
+        
+         
+        
+          javascript
+        
+         
+        
+          php
+        
+         
+        
+          python
+        
+         
+        
+          ruby
+        
+      
+      
+    php
+  
+    javascript
+  
+    python
+  
+    go
+  
+    csharp
+  
+    java
+  
+    ruby
+  
+    
+    
+    
+      &lt;?php
+use MercadoPago\Webhook\WebhookSignatureValidator;
+use MercadoPago\Exceptions\InvalidWebhookSignatureException;
+
+try {
+    WebhookSignatureValidator::validate(
+        $_SERVER[&#x27;HTTP_X_SIGNATURE&#x27;],
+        $_SERVER[&#x27;HTTP_X_REQUEST_ID&#x27;],
+        $_GET[&#x27;data_id&#x27;],
+        $secret
+    );
+    http_response_code(200);
+} catch (InvalidWebhookSignatureException $e) {
+    http_response_code(401);
+}
+      
+      Copiar
+  
+    
+    
+      import { WebhookSignatureValidator, InvalidWebhookSignatureError } from &#x27;mercadopago&#x27;;
+
+try {
+    WebhookSignatureValidator.validate({
+        xSignature: req.headers[&#x27;x-signature&#x27;],
+        xRequestId: req.headers[&#x27;x-request-id&#x27;],
+        dataId:     req.query[&#x27;data.id&#x27;],
+        secret,
+    });
+    res.sendStatus(200);
+} catch (err) {
+    if (err instanceof InvalidWebhookSignatureError) res.status(401).end();
+    else throw err;
+}
+      
+      Copiar
+  
+    
+    
+      from mercadopago.webhook import WebhookSignatureValidator, InvalidWebhookSignatureError
+
+try:
+    WebhookSignatureValidator.validate(
+        request.headers.get(“x-signature”),
+        request.headers.get(“x-request-id”),
+        request.args.get(“data.id”),
+        secret,
+    )
+    return “”, 200
+except InvalidWebhookSignatureError:
+    return “”, 401
+      
+      Copiar
+  
+    
+    
+      import “github.com/mercadopago/sdk-go/pkg/webhook”
+
+err := webhook.ValidateSignature(
+    r.Header.Get(“x-signature”),
+    r.Header.Get(“x-request-id”),
+    r.URL.Query().Get(“data.id”),
+    secret,
+)
+if err != nil {
+    w.WriteHeader(http.StatusUnauthorized)
+    return
+}
+w.WriteHeader(http.StatusOK)
+      
+      Copiar
+  
+    
+    
+      using MercadoPago.Error;
+using MercadoPago.Webhook;
+
+try {
+    WebhookSignatureValidator.Validate(
+        xSignature: Request.Headers[“x-signature”],
+        xRequestId: Request.Headers[“x-request-id”],
+        dataId:     Request.Query[“data.id”],
+        secret:     secret);
+    return Ok();
+} catch (InvalidWebhookSignatureException) {
+    return Unauthorized();
+}
+      
+      Copiar
+  
+    
+    
+      import com.mercadopago.webhook.WebhookSignatureValidator;
+import com.mercadopago.exceptions.MPInvalidWebhookSignatureException;
+
+try {
+    WebhookSignatureValidator.validate(
+        request.getHeader(“x-signature”),
+        request.getHeader(“x-request-id”),
+        request.getParameter(“data.id”),
+        secret);
+    response.setStatus(200);
+} catch (MPInvalidWebhookSignatureException e) {
+    response.setStatus(401);
+}
+      
+      Copiar
+  
+    
+    
+      require &#x27;mercadopago/webhook/validator&#x27;
+
+begin
+    Mercadopago::Webhook::Validator.validate(
+        request.headers[&#x27;x-signature&#x27;],
+        request.headers[&#x27;x-request-id&#x27;],
+        request.params[&#x27;data.id&#x27;],
+        secret
+    )
+    head :ok
+rescue Mercadopago::Webhook::InvalidWebhookSignatureError
+    head :unauthorized
+end
+      
+      Copiar
+  
+    
+  
+  
+Ações necessárias após receber a notificação
+Quando você recebe uma notificação em sua plataforma, o Mercado Pago espera uma resposta para validar que essa recepção foi correta. Para isso, você deve devolver um HTTP STATUS 200 (OK) ou 201 (CREATED).
+O tempo de espera para essa confirmação será de 22 segundos. Se essa confirmação não for enviada, o sistema entenderá que a notificação não foi recebida e realizará uma nova tentativa de envio a cada 15 minutos, até que receba a resposta. Após a terceira tentativa, o prazo será prorrogado, mas os envios continuarão acontecendo.
+Após responder à notificação Webhook e confirmar seu recebimento, somente se as informações recebidas não forem suficientes e você necessite de informações adicionais, é possível obter todos os dados sobre o recurso notificado enviando um GET ao endpoint /v1/orders/{id}API.
+Com essa informação, você poderá realizar as atualizações necessárias em sua plataforma, como atualizar um pagamento aprovado. Anterior  Integrar el procesamiento de pagos  Descubre cómo integrar Código QR, permitiendo que el comprador realice el pago de forma presencial.  Próximo  Configurar notificaciones opcionales  Configura notificaciones opcionales para recibir alertas sobre otros eventos de tu integración con Código QR window.TETRIS_VERSION = "5.13.6";xVamos te redirecionar para o Mercado PagoA gestão de Colaboradores é feita através da sua conta Mercado Pago.Ir para o Mercado PagoCancelar {
+              const goButton = document.querySelector('.dx-collaborators-go-button');
+              const cancelButton = document.querySelector('.dx-collaborators-cancel-button');
+              const closeButton = document.querySelector('.dx-custom-modal__close-button');
+              
+              if (goButton) {
+                goButton.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open('/collaborators', '_blank');
+                  window.closeCollaboratorsModal();
+                });
+              }
+
+              if (cancelButton) {
+                cancelButton.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.closeCollaboratorsModal();
+                });
+              }
+
+              if (closeButton) {
+                closeButton.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.closeCollaboratorsModal();
+                });
+              }
+
+              const modalContainer = document.getElementById('dx-collaborators-modal-container');
+              if (modalContainer) {
+                modalContainer.addEventListener('click', function(e) {
+                  if (e.target === modalContainer || e.target.classList.contains('dx-custom-modal__backdrop')) {
+                    window.closeCollaboratorsModal();
+                  }
+                });
+              }
+
+              document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && window.dxCollaboratorsModalOpen) {
+                  window.closeCollaboratorsModal();
+                }
+              });
+            }, 100);
+          }
+          })();
+        NavegaçãoIntegraçõesDocumentaçãoReferência APIBiblioteca SDKRecursos e ComunidadeChangelogStatus Mercado PagoRelatório de errosSuporteContato comercialNotíciasNewsletterPrograma de parceriasMercado PagoSua contaTermos de usoPolíticas de privacidadePaís e idiomaBrasilArgentinaBrasilMéxicoUruguayColombiaChilePerúPortuguêsEspañolEnglishPortuguêsCopyright © 2026 Mercado Pago Instituição de Pagamento Ltda. CNPJ n.º 10.573.521/0001-91 / Av. das Nações Unidas, nº 3.003, Bonfim, Osasco/SP - CEP 06233-903DiscordYoutubeUsamos cookies para melhorar sua experiência no Mercado Pago. Consulte mais informações na nossa Central de privacidade.Aceitar cookiesConfigurar cookiesPronto! Suas preferências foram salvas.FecharOcorreu um erro. Por favor, tente novamente.Fechar(function(w,ccb){w[ccb]=w[ccb]||function(){(w[ccb].q=w[ccb].q||[]).push(arguments)};}(window,'_cookiesConsentBanner'));_cookiesConsentBanner('set','platformId','"MP"');_cookiesConsentBanner('set','siteId','"MLB"');_cookiesConsentBanner('set','domain','"mercadopago.com.br"');_cookiesConsentBanner('set','subdomain','"www"');_cookiesConsentBanner('set','preferences','{"advertising":true,"traceability":true,"performance":true,"functionality":true}');_cookiesConsentBanner('set','apiData','null');_cookiesConsentBanner('set','cookieDataList','[{"userId":null,"cookieName":"cookiesPreferencesNotLogged","path":"/","domain":"mercadopago.com.br","secure":true,"sameSite":"none","maxAge":31556900}]');_cookiesConsentBanner('send','start');{a.pageState="complete"},n)}();").replace(/&lt;/g,"<").replace(/&amp;/g,"&")}r.fullUrl=a,i&&(r.previousReferrer=i);var n,o,v,s,p=document.currentScript,d=p?p.dataset:{},l=d.userId;try{var u=c(d.isBot);s=u&&""!==u?JSON.parse(u):u}catch(e){s=d.isBot}try{var g=c(d.nativeWebview);n=g&&""!==g?JSON.parse(g):g}catch(e){n=d.nativeWebview}try{var b=c(d.webkit);o=b&&""!==b?JSON.parse(b):b}catch(e){o=d.webkit}try{var f=c(d.inApp);v=f&&""!==f?JSON.parse(f):f}catch(e){v=d.inApp}void 0!==l&&(r.userId=l),void 0===n&&void 0===o||(r.device={},void 0!==n&&(r.device.nativeWebview=n),void 0!==o&&(r.device.webkit=o)),void 0!==v&&(r.browser={inApp:v}),"true"===s&&(r.isAllowedBot=s),status=navigator.sendBeacon(t,JSON.stringify(r))}();melidata("configure","bfcache_tracking_enabled",false);melidata("add","id","dfb27f75-86ca-4694-aea1-5b2e3ff65bd0");melidata("add","path","/developers/docs");melidata("add","server_id","dfb27f75-86ca-4694-aea1-5b2e3ff65bd0");melidata("add","application",{"technologies":["nordic"],"version":"5.4.6-rc-3","server_hostname":"prod-serverless2.dx-devsite.t1784253631-fttnd","server_poolname":"dx-devsite-prod-serverless2","app_name":"dx-devsite","sdk_version":{"node_version":"7.4.0"},"business":"mercadopago","site_id":"MLB","secured":{}});melidata("add","user",{"uid":"671a13d7-43df-4421-a624-f128ab5fee3c","user_tags":[],"privacy_consents":{"advertising":true,"traceability":true,"performance":true,"functionality":true}});melidata("add","device",{"platform":"/web/desktop","user_agent":"Google-Jetski-Antigravity"});melidata("add","platform",{"http":{"cookies":{},"headers":{"host":"www.mercadopago.com.br","x-request-id":"671a13d7-43df-4421-a624-f128ab5fee3c","x-d2id":"671a13d7-43df-4421-a624-f128ab5fee3c","x-device-js":"true","x-platform":"newMP-mp"},"http_url":"https://www.mercadopago.com.br/developers/pt/docs/qr-code/notifications"}});melidata("add","event_data",{"partial_path":"/docs/qr-code/notifications/","language_selected":"pt","section":"docs","product":"qr-code"});melidata("send","view",{path:"/developers/docs",data:{}},"melidata");
+

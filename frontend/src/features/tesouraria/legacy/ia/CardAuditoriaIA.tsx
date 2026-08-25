@@ -56,7 +56,7 @@ export function CardAuditoriaIA({
             sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
           >
             <AssignmentIndIcon fontSize="small" color="primary" /> Vendedor:{" "}
-            {transacao.vendedor_nome}
+            {transacao.vendedorNome}
           </Typography>
           <Typography
             variant="body2"
@@ -64,7 +64,7 @@ export function CardAuditoriaIA({
             sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}
           >
             <PersonSearchIcon fontSize="small" color="action" /> Comprador
-            Esperado: <strong>{transacao.comprador_nome}</strong>
+            Esperado: <strong>{transacao.compradorNome}</strong>
           </Typography>
         </Box>
         <Box sx={{ textAlign: { xs: "left", sm: "right" } }}>
@@ -184,7 +184,7 @@ export function CardAuditoriaIA({
           variant="outlined"
           color="primary"
           startIcon={<VisibilityIcon />}
-          disabled={!transacao.comprovante_url}
+          disabled={!transacao.comprovanteUrl}
           onClick={onInspecionar}
           sx={{ width: { xs: "100%", md: "auto" } }}
         >

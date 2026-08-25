@@ -1,14 +1,14 @@
 import { Stack } from "@mui/material";
 
-import { CompraAuditavel } from "../../../types/auditoriaCompras";
+import { TransacaoTesouraria } from "../../../types/auditoriaCompras";
 import { AuditoriaCompraCard } from "./AuditoriaCompraCard";
 
 interface AuditoriaComprasCardListProps {
-  compras: CompraAuditavel[];
-  onVerComprovante: (compra: CompraAuditavel) => void;
-  onEditar: (compra: CompraAuditavel) => void;
-  onVerDetalhes: (compra: CompraAuditavel) => void;
-  onReenviarEmailComprovante: (compra: CompraAuditavel) => void;
+  compras: TransacaoTesouraria[];
+  onVerComprovante: (compra: TransacaoTesouraria) => void;
+  onEditar: (compra: TransacaoTesouraria) => void;
+  onVerDetalhes: (compra: TransacaoTesouraria) => void;
+  onReenviarEmailComprovante: (compra: TransacaoTesouraria) => void;
   reenviandoEmailComprovanteId?: string | null;
 }
 
@@ -31,8 +31,8 @@ export function AuditoriaComprasCardList({
           onVerDetalhes={onVerDetalhes}
           onReenviarEmailComprovante={onReenviarEmailComprovante}
           reenviandoEmailComprovante={
-            Boolean(compra.comprador_id) &&
-            compra.comprador_id === reenviandoEmailComprovanteId
+            Boolean(compra.compradorId) &&
+            compra.compradorId === reenviandoEmailComprovanteId
           }
         />
       ))}

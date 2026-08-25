@@ -3,7 +3,7 @@ import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumb
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import { Box, Stack } from "@mui/material";
 
-import { colors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 
 import { TesourariaSectionHeader } from "../../shared/TesourariaSectionHeader";
 import {

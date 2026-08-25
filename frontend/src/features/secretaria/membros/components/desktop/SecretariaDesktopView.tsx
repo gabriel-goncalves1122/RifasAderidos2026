@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import GroupIcon from "@mui/icons-material/Group";
 
-import { surfaces } from "../../../styles/surfaces";
+import { surfaces } from "@/shared/tokens/surfaces";
 import { SecretariaDesktopFilterBar } from "./SecretariaDesktopFilterBar";
 import { SecretariaDesktopBatchBar } from "./SecretariaDesktopBatchBar";
 import { SecretariaDesktopDetailPane } from "./SecretariaDesktopDetailPane";

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
 
-import { secretariaColors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 import { StatusChip } from "../shared/StatusChip";
 import { ModalidadeChip } from "../shared/ModalidadeChip";
 import { CargoChip } from "../shared/CargoChip";
@@ -34,7 +34,7 @@ function LinhaInformacao({ label, valor }: LinhaInformacaoProps) {
       </Typography>
       <Typography
         variant="body2"
-        color={valor ? secretariaColors.pretoEsverdeado : "text.disabled"}
+        color={valor ? colors.pretoEsverdeado : "text.disabled"}
         fontWeight={valor ? 750 : 600}
         sx={{ overflowWrap: "anywhere", lineHeight: 1.35 }}
       >
@@ -78,9 +78,9 @@ export function InformacoesAderidoCard({ aderido }: InformacoesAderidoCardProps)
       sx={{
         p: { xs: 2, sm: 2.25 },
         borderRadius: 2,
-        border: `1px solid ${secretariaColors.borda}`,
-        bgcolor: secretariaColors.branco,
-        boxShadow: `0 12px 28px ${secretariaColors.sombra}`,
+        border: `1px solid ${colors.borda}`,
+        bgcolor: colors.branco,
+        boxShadow: `0 12px 28px ${colors.sombra}`,
       }}
     >
       <Stack spacing={2.25} divider={<Divider flexItem />}>

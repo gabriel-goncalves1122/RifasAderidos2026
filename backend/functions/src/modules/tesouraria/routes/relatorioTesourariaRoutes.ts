@@ -3,11 +3,10 @@
 // ============================================================================
 import { Router } from "express";
 
-import {
-  requireTesourariaOrAdmin,
-  validateToken,
-} from "../../../shared/middlewares/authMiddleware";
+import { validateToken, requireTesourariaOrAdmin } from "../../../shared/middlewares/authMiddleware";
 import { tesourariaController } from "../tesourariaController";
+import { atualizarCompradorCompraSchema } from "../schemas/relatorioTesourariaSchema";
+import { validate } from "../../../shared/middlewares/validate";
 
 const relatorioTesourariaRoutes = Router();
 
@@ -29,6 +28,7 @@ relatorioTesourariaRoutes.patch(
   "/historico/compras/:compradorId",
   validateToken,
   requireTesourariaOrAdmin,
+  validate(atualizarCompradorCompraSchema),
   tesourariaController.atualizarCompradorCompra,
 );
 
@@ -37,6 +37,13 @@ relatorioTesourariaRoutes.post(
   validateToken,
   requireTesourariaOrAdmin,
   tesourariaController.reenviarEmailComprovante,
+);
+
+relatorioTesourariaRoutes.post(
+  "/historico/compras/:compradorId/notificar-correcao",
+  validateToken,
+  requireTesourariaOrAdmin,
+  tesourariaController.notificarCorrecaoDados,
 );
 
 export default relatorioTesourariaRoutes;

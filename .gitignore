@@ -30,6 +30,8 @@ backend/.runtimeconfig.json
 *chave*.json
 *credentials*.json
 *secret*.json
+docs/pagbank/credenciais.local.md
+docs/pagbank/*.secrets.md
 
 # ----------------------------------------------------------------------------
 # 3. PASTAS DE BUILD E COMPILAÇÃO

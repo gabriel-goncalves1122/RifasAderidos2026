@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 
-import { secretariaColors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 import { documentosSecretariaStyles } from "../../styles/documentosSecretariaStyles";
 
 interface DocumentosSecretariaHeaderProps {
@@ -20,7 +20,7 @@ export function DocumentosSecretariaHeader({
         <Typography
           variant="h5"
           sx={{
-            color: secretariaColors.pretoEsverdeado,
+            color: colors.pretoEsverdeado,
             fontWeight: 950,
             lineHeight: 1.1,
           }}
@@ -30,7 +30,7 @@ export function DocumentosSecretariaHeader({
         <Typography
           sx={{
             mt: 0.75,
-            color: secretariaColors.cinzaTexto,
+            color: colors.cinzaTexto,
             fontSize: "0.92rem",
             lineHeight: 1.35,
           }}
@@ -48,7 +48,7 @@ export function DocumentosSecretariaHeader({
           px: 1.5,
           py: 1,
           borderRadius: 2,
-          color: secretariaColors.verdeEscuro,
+          color: colors.verdeEscuro,
           bgcolor: "rgba(6, 61, 49, 0.08)",
           fontWeight: 850,
         }}

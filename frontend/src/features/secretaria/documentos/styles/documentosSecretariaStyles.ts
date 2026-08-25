@@ -1,5 +1,5 @@
-import { secretariaColors } from "../../styles/colors";
-import { secretariaComponents } from "../../styles/components";
+import { colors } from "@/shared/tokens/colors";
+import { components } from "@/shared/tokens/components";
 
 export const documentosSecretariaStyles = {
   header: {
@@ -9,10 +9,10 @@ export const documentosSecretariaStyles = {
     gap: 2,
     mb: 2.5,
     pl: 2,
-    borderLeft: `4px solid ${secretariaColors.verdeEscuro}`,
+    borderLeft: `4px solid ${colors.verdeEscuro}`,
   },
   headerEyebrow: {
-    color: secretariaColors.cinzaTexto,
+    color: colors.cinzaTexto,
     fontSize: "0.76rem",
     fontWeight: 850,
     textTransform: "uppercase",
@@ -30,7 +30,7 @@ export const documentosSecretariaStyles = {
     bgcolor: "#F6F8F7",
   },
   areaSelect: {
-    ...secretariaComponents.formField,
+    ...components.formField,
     minWidth: 0,
   },
   desktopGrid: {
@@ -49,7 +49,7 @@ export const documentosSecretariaStyles = {
     pb: 2,
   },
   card: {
-    ...secretariaComponents.surface,
+    ...components.surface,
     height: "100%",
     overflow: "hidden",
     transition: "transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease",
@@ -67,13 +67,13 @@ export const documentosSecretariaStyles = {
     alignItems: "stretch",
     textAlign: "left",
     p: 2,
-    ...secretariaComponents.focusRing,
+    ...components.focusRing,
   },
   previewFrame: {
     width: "100%",
     minHeight: { xs: "62dvh", sm: "68dvh" },
-    border: `1px solid ${secretariaColors.borda}`,
+    border: `1px solid ${colors.borda}`,
     borderRadius: 2,
-    bgcolor: secretariaColors.branco,
+    bgcolor: colors.branco,
   },
 } as const;

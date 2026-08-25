@@ -6,14 +6,8 @@ export type StatusPagamentoPix =
   | "AUTHORIZED"
   | "IN_ANALYSIS"
   | "DECLINED"
-  | "CANCELED";
-
-export type StatusConciliacaoPix =
-  | "pendente"
-  | "conciliada"
-  | "nao_identificada"
-  | "divergente"
-  | "cancelada";
+  | "CANCELED"
+  | "ERROR";
 
 export type StatusValidacaoPix = "aceita" | "negada";
 
@@ -21,6 +15,10 @@ export interface AderidoResumoTransacao {
   id?: string;
   nome: string;
   cpf?: string;
+  email?: string;
+  telefone?: string;
+  modalidade_adesao?: "completo" | "meio";
+  cargo?: string;
 }
 
 export interface RifaResumoTransacao {
@@ -34,53 +32,52 @@ export interface BilheteComNumero extends Bilhete {
 
 export interface PixTransacao {
   id: string;
+
   pixOrderId?: string;
-  pixChargeId?: string;
-  pixQrCodeId?: string;
-  referenceId: string;
+  codigoAutenticacao?: string;
+  nsu?: string;
+
   metodo: "PIX";
   statusPagamento: StatusPagamentoPix;
-  statusConciliacao: StatusConciliacaoPix;
-  statusValidacao?: StatusValidacaoPix;
+
   valorBruto: number;
   valorPago: number;
   valorEstornado?: number;
   moeda: "BRL";
+
   descricao?: string;
   dataCriacao: string;
   dataPagamento?: string | null;
   dataExpiracao?: string | null;
+
   compradorNome?: string;
-  compradorEmail?: string | null;
-  compradorDocumento?: string | null;
-  compradorTelefone?: string | null;
+  compradorEmail?: string;
+  compradorDocumento?: string;
+  compradorTelefone?: string;
+
   aderido?: AderidoResumoTransacao;
   rifas?: RifaResumoTransacao[];
   quantidadeRifas?: number;
-  vendaId?: string | null;
-  qrCodeTexto?: string | null;
-  qrCodeImagemUrl?: string | null;
+  compradorId?: string | null;
+
+  qrCodeTexto?: string;
+  qrCodeImagemUrl?: string;
+
   observacao?: string;
-  validadoEm?: string | null;
-  validadoPor?: string | null;
-  motivoNegacao?: string | null;
 }
 
 export interface PixTransacoesResumo {
   totalRecebido: number;
   totalPendente: number;
   totalCancelado: number;
-  totalDivergente: number;
+  totalErros: number;
+
   quantidadePagas: number;
   quantidadeAguardando: number;
   quantidadeCanceladas: number;
-  quantidadeNaoIdentificadas: number;
-  quantidadeAguardandoValidacao: number;
-  quantidadeAceitas: number;
-  quantidadeNegadas: number;
-  quantidadeSemConfirmacaoBancaria: number;
-  quantidadeComRifas: number;
-  quantidadeSemVinculo: number;
+  quantidadeErros: number;
+  totalTransacoes: number;
+
   ticketMedio: number;
 }
 
@@ -102,4 +99,21 @@ export interface ResultadoReenvioEmailComprovante {
   email: string;
   rifas: string[];
   status: "aprovado";
+}
+
+export interface TransacaoTesouraria {
+  id: string;
+  dataReserva: string | null;
+  dataPagamento: string | null;
+  vendedorId?: string;
+  vendedorNome: string;
+  vendedorCpf: string;
+  compradorId: string | null;
+  compradorNome: string;
+  compradorEmail: string;
+  compradorTelefone: string;
+  status: string;
+  comprovanteUrl: string | null;
+  bilhetes: string[];
+  valorTotal: number;
 }

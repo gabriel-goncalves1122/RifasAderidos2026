@@ -26,8 +26,8 @@ import {
   CARGOS_COMISSAO,
 } from "../../../../../shared/types/constants";
 import type { FormNovoAderido, ModalidadeAdesao } from "../../../../../shared/types/secretaria";
-import { secretariaColors } from "../../../styles/colors";
-import { secretariaComponents } from "../../../styles/components";
+import { colors } from "@/shared/tokens/colors";
+import { components } from "@/shared/tokens/components";
 import {
   formatarNomeMembro,
   formatarTelefone,
@@ -153,7 +153,7 @@ export function ModalAdicionarAderido({
       TransitionProps={{ timeout: 300 }}
       PaperProps={{
         sx: {
-          ...secretariaComponents.surface,
+          ...components.surface,
           overflow: "hidden",
         },
       }}
@@ -162,7 +162,7 @@ export function ModalAdicionarAderido({
         sx={{
           px: 3,
           py: 2.5,
-          borderBottom: `1px solid ${secretariaColors.borda}`,
+          borderBottom: `1px solid ${colors.borda}`,
           color: "primary.dark",
           fontWeight: 900,
         }}
@@ -170,7 +170,7 @@ export function ModalAdicionarAderido({
         Adicionar membro
       </DialogTitle>
 
-      <DialogContent sx={{ p: 3, bgcolor: secretariaColors.branco }}>
+      <DialogContent sx={{ p: 3, bgcolor: colors.branco }}>
         <Stack spacing={2.25}>
           <Stack spacing={1.5}>
             <SectionTitle>Tipo de cadastro</SectionTitle>
@@ -208,7 +208,7 @@ export function ModalAdicionarAderido({
               placeholder="exemplo@unifei.br"
               disabled={isSubmitting}
               size="small"
-              sx={secretariaComponents.formField}
+              sx={components.formField}
             />
 
             <TextField
@@ -219,7 +219,7 @@ export function ModalAdicionarAderido({
               onChange={handleChange}
               disabled={isSubmitting}
               size="small"
-              sx={secretariaComponents.formField}
+              sx={components.formField}
             />
           </Stack>
 
@@ -228,7 +228,7 @@ export function ModalAdicionarAderido({
           <Stack spacing={1.5}>
             <SectionTitle>Dados opcionais</SectionTitle>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-              <FormControl fullWidth disabled={isSubmitting} size="small" sx={secretariaComponents.selectField}>
+              <FormControl fullWidth disabled={isSubmitting} size="small" sx={components.selectField}>
                 <InputLabel id="curso-label">Curso</InputLabel>
                 <Select
                   labelId="curso-label"
@@ -254,7 +254,7 @@ export function ModalAdicionarAderido({
                 onChange={handleChange}
                 disabled={isSubmitting}
                 size="small"
-                sx={secretariaComponents.formField}
+                sx={components.formField}
               />
             </Stack>
 
@@ -267,7 +267,7 @@ export function ModalAdicionarAderido({
               onChange={handleTelefoneChange}
               disabled={isSubmitting}
               size="small"
-              sx={secretariaComponents.formField}
+              sx={components.formField}
               inputProps={{
                 inputMode: "numeric",
                 maxLength: 15,
@@ -280,7 +280,7 @@ export function ModalAdicionarAderido({
           <Stack spacing={1.5}>
             <SectionTitle>Vínculo</SectionTitle>
 
-            <FormControl fullWidth disabled={isSubmitting} size="small" sx={secretariaComponents.selectField}>
+            <FormControl fullWidth disabled={isSubmitting} size="small" sx={components.selectField}>
               <InputLabel id="vinculo-membro-label">Vínculo</InputLabel>
               <Select
                 labelId="vinculo-membro-label"
@@ -294,7 +294,7 @@ export function ModalAdicionarAderido({
             </FormControl>
 
             <Collapse in={isComissao} data-testid="area-comissao">
-              <FormControl fullWidth disabled={isSubmitting} size="small" sx={secretariaComponents.selectField}>
+              <FormControl fullWidth disabled={isSubmitting} size="small" sx={components.selectField}>
                 <InputLabel id="cargo-comissao-label">Cargo na Comissão</InputLabel>
                 <Select
                   labelId="cargo-comissao-label"
@@ -313,12 +313,12 @@ export function ModalAdicionarAderido({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, px: 3, borderTop: `1px solid ${secretariaColors.borda}` }}>
+      <DialogActions sx={{ p: 2, px: 3, borderTop: `1px solid ${colors.borda}` }}>
         <Button
           onClick={onClose}
           color="inherit"
           disabled={isSubmitting}
-          sx={secretariaComponents.secondaryAction}
+          sx={components.secondaryAction}
         >
           Cancelar
         </Button>
@@ -328,7 +328,7 @@ export function ModalAdicionarAderido({
           variant="contained"
           disabled={isSubmitting || !form.email}
           startIcon={isSubmitting ? <CircularProgress size={18} color="inherit" /> : <PersonAddAlt1Icon />}
-          sx={secretariaComponents.primaryAction}
+          sx={components.primaryAction}
         >
           {isSubmitting ? "Adicionando..." : "Adicionar membro"}
         </Button>

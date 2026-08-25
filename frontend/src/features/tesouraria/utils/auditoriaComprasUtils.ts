@@ -4,17 +4,13 @@ import {
   somenteNumeros,
 } from "./formatadores";
 import {
-  CompraAuditavel,
+  TransacaoTesouraria,
   AuditoriaComprasFiltros,
   ResumoAuditoriaCompras,
   StatusAuditoriaCompras,
-  TransacaoAuditoriaComprasBase,
 } from "../types/auditoriaCompras";
 
-export {
-  formatarDataAuditoria,
-  formatarMoedaAuditoria,
-};
+export { formatarDataAuditoria, formatarMoedaAuditoria };
 
 export const STATUS_FILTROS_AUDITORIA_COMPRAS: Array<{
   label: string;
@@ -28,7 +24,7 @@ export const STATUS_FILTROS_AUDITORIA_COMPRAS: Array<{
 ];
 
 export const FILTROS_AUDITORIA_COMPRAS_VAZIOS: AuditoriaComprasFiltros = {
-  termoBusca: "",
+  busca: "",
   status: "todas",
   dataInicio: "",
   dataFim: "",
@@ -51,21 +47,6 @@ export function dataParaInputAuditoria(data?: string | null) {
   if (Number.isNaN(dataConvertida.getTime())) return "";
 
   return dataConvertida.toISOString().slice(0, 10);
-}
-
-export function obterNumeroBilhete(transacao: TransacaoAuditoriaComprasBase) {
-  return transacao.numero_rifa || transacao.numero || "00";
-}
-
-export function obterChaveCompra(transacao: TransacaoAuditoriaComprasBase) {
-  if (transacao.comprador_id) return `comprador:${transacao.comprador_id}`;
-
-  return [
-    "fallback",
-    transacao.data_reserva || "-",
-    normalizarTexto(transacao.comprador_nome),
-    somenteNumeros(transacao.vendedor_cpf),
-  ].join(":");
 }
 
 export function statusLabelAuditoria(status: string) {
@@ -113,60 +94,12 @@ export function statusSxAuditoria(status: string) {
   };
 }
 
-export function agruparComprasAuditaveis(transacoes: TransacaoAuditoriaComprasBase[]) {
-  const agrupado = transacoes.reduce<Record<string, CompraAuditavel>>(
-    (acc, transacao) => {
-      const chave = obterChaveCompra(transacao);
-      const bilhete = obterNumeroBilhete(transacao);
-
-      if (!acc[chave]) {
-        acc[chave] = {
-          id: chave,
-          data_reserva: transacao.data_reserva || null,
-          data_pagamento: transacao.data_pagamento || null,
-          vendedor_id: transacao.vendedor_id,
-          vendedor_nome: transacao.vendedor_nome || "Vendedor não informado",
-          vendedor_cpf: transacao.vendedor_cpf || "-",
-          comprador_id: transacao.comprador_id || null,
-          comprador_nome: transacao.comprador_nome || "Comprador não informado",
-          comprador_email: transacao.comprador_email || "",
-          comprador_telefone: transacao.comprador_telefone || "",
-          status: transacao.status || "N/A",
-          comprovante_url: transacao.comprovante_url || null,
-          bilhetes: [bilhete],
-          valor_total: transacao.valor || 10,
-        };
-
-        return acc;
-      }
-
-      if (!acc[chave].bilhetes.includes(bilhete)) {
-        acc[chave].bilhetes.push(bilhete);
-      }
-
-      acc[chave].valor_total += transacao.valor || 10;
-      acc[chave].comprovante_url =
-        acc[chave].comprovante_url || transacao.comprovante_url || null;
-
-      return acc;
-    },
-    {},
-  );
-
-  return Object.values(agrupado).sort((a, b) => {
-    const dataA = new Date(a.data_reserva || 0).getTime() || 0;
-    const dataB = new Date(b.data_reserva || 0).getTime() || 0;
-
-    return dataB - dataA;
-  });
-}
-
 function compraPassaPeriodo(
-  compra: CompraAuditavel,
+  compra: TransacaoTesouraria,
   dataInicio: string,
   dataFim: string,
 ) {
-  const dataCompra = dataParaInputAuditoria(compra.data_reserva);
+  const dataCompra = dataParaInputAuditoria(compra.dataReserva);
 
   if (!dataCompra) return !dataInicio && !dataFim;
   if (dataInicio && dataCompra < dataInicio) return false;
@@ -175,22 +108,22 @@ function compraPassaPeriodo(
   return true;
 }
 
-function compraPassaBusca(compra: CompraAuditavel, termoBusca: string) {
-  const termo = normalizarTexto(termoBusca);
-  const termoNumerico = somenteNumeros(termoBusca);
+function compraPassaBusca(compra: TransacaoTesouraria, busca: string) {
+  const termo = normalizarTexto(busca);
+  const termoNumerico = somenteNumeros(busca);
 
   if (!termo && !termoNumerico) return true;
 
   const campos = [
-    compra.comprador_nome,
-    compra.comprador_email,
-    compra.comprador_telefone,
-    compra.comprador_id || "",
-    compra.vendedor_nome,
-    compra.vendedor_cpf,
-    compra.vendedor_id || "",
+    compra.compradorNome,
+    compra.compradorEmail,
+    compra.compradorTelefone,
+    compra.compradorId || "",
+    compra.vendedorNome,
+    compra.vendedorCpf,
+    compra.vendedorId || "",
     compra.status,
-    formatarDataAuditoria(compra.data_reserva),
+    formatarDataAuditoria(compra.dataReserva),
     compra.bilhetes.join(" "),
   ];
 
@@ -206,7 +139,7 @@ function compraPassaBusca(compra: CompraAuditavel, termoBusca: string) {
 }
 
 export function filtrarComprasAuditaveis(
-  compras: CompraAuditavel[],
+  compras: TransacaoTesouraria[],
   filtros: AuditoriaComprasFiltros,
 ) {
   return compras.filter((compra) => {
@@ -216,27 +149,27 @@ export function filtrarComprasAuditaveis(
 
     const comprovanteValido =
       filtros.comprovante === "todos" ||
-      (filtros.comprovante === "com" && Boolean(compra.comprovante_url)) ||
-      (filtros.comprovante === "sem" && !compra.comprovante_url);
+      (filtros.comprovante === "com" && Boolean(compra.comprovanteUrl)) ||
+      (filtros.comprovante === "sem" && !compra.comprovanteUrl);
 
     return (
       statusValido &&
       comprovanteValido &&
       compraPassaPeriodo(compra, filtros.dataInicio, filtros.dataFim) &&
-      compraPassaBusca(compra, filtros.termoBusca)
+      compraPassaBusca(compra, filtros.busca)
     );
   });
 }
 
 export function calcularResumoAuditoria(
-  compras: CompraAuditavel[],
+  compras: TransacaoTesouraria[],
 ): ResumoAuditoriaCompras {
   const totalRifas = compras.reduce(
     (acc, compra) => acc + compra.bilhetes.length,
     0,
   );
   const valorTotal = compras.reduce(
-    (acc, compra) => acc + compra.valor_total,
+    (acc, compra) => acc + compra.valorTotal,
     0,
   );
   const pagas = compras.filter(
@@ -261,7 +194,7 @@ export function calcularResumoAuditoria(
 
 export function filtrosAuditoriaAtivos(filtros: AuditoriaComprasFiltros) {
   return Boolean(
-    filtros.termoBusca.trim() ||
+    filtros.busca.trim() ||
       filtros.status !== "todas" ||
       filtros.dataInicio ||
       filtros.dataFim ||
@@ -269,7 +202,7 @@ export function filtrosAuditoriaAtivos(filtros: AuditoriaComprasFiltros) {
   );
 }
 
-export function criarCsvAuditoriaCompras(compras: CompraAuditavel[]) {
+export function criarCsvAuditoriaCompras(compras: TransacaoTesouraria[]) {
   const headers = [
     "Data Reserva",
     "Data Pagamento",
@@ -285,18 +218,18 @@ export function criarCsvAuditoriaCompras(compras: CompraAuditavel[]) {
     "Comprovante",
   ];
   const linhas = compras.map((compra) => [
-    formatarDataAuditoria(compra.data_reserva),
-    formatarDataAuditoria(compra.data_pagamento),
+    formatarDataAuditoria(compra.dataReserva),
+    formatarDataAuditoria(compra.dataPagamento),
     statusLabelAuditoria(compra.status),
     `"${compra.bilhetes.join(", ")}"`,
     compra.bilhetes.length,
-    compra.valor_total,
-    `"${compra.vendedor_nome}"`,
-    `"${compra.vendedor_cpf}"`,
-    `"${compra.comprador_nome}"`,
-    `"${compra.comprador_email}"`,
-    `"${compra.comprador_telefone}"`,
-    compra.comprovante_url ? "Sim" : "Não",
+    compra.valorTotal,
+    `"${compra.vendedorNome}"`,
+    `"${compra.vendedorCpf}"`,
+    `"${compra.compradorNome}"`,
+    `"${compra.compradorEmail}"`,
+    `"${compra.compradorTelefone}"`,
+    compra.comprovanteUrl ? "Sim" : "Não",
   ]);
 
   return [headers.join(";"), ...linhas.map((linha) => linha.join(";"))].join(

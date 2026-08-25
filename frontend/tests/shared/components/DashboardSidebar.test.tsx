@@ -110,4 +110,34 @@ describe("Componente <DashboardSidebar />", () => {
       color: "#063D31",
     });
   });
+
+  it("Deve chamar onMudarContexto e onClose ao clicar nos itens do menu", () => {
+    render(
+      <DashboardSidebar
+        open={true}
+        isSuperAdmin={true}
+        hasTesourariaAccess={true}
+        hasSecretariaAccess={true}
+        contextoAtual="aderido"
+        onClose={mockOnClose}
+        onMudarContexto={mockOnMudarContexto}
+        onLogout={mockOnLogout}
+      />
+    );
+
+    const aderidoMenu = screen.getByText("Área do Aderido");
+    fireEvent.click(aderidoMenu);
+    expect(mockOnMudarContexto).toHaveBeenCalledWith("aderido");
+    expect(mockOnClose).toHaveBeenCalled();
+
+    const secretariaMenu = screen.getByText("Painel da Secretaria");
+    fireEvent.click(secretariaMenu);
+    expect(mockOnMudarContexto).toHaveBeenCalledWith("secretaria");
+    expect(mockOnClose).toHaveBeenCalledTimes(2);
+
+    const tesourariaMenu = screen.getByText("Painel da Tesouraria");
+    fireEvent.click(tesourariaMenu);
+    expect(mockOnMudarContexto).toHaveBeenCalledWith("tesouraria");
+    expect(mockOnClose).toHaveBeenCalledTimes(3);
+  });
 });

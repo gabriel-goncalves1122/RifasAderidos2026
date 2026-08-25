@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 
-import { colors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 
 interface DesempenhoEmptyStateProps {
   mensagem: string;

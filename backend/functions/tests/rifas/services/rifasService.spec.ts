@@ -42,22 +42,6 @@ jest.mock(
   }),
 );
 
-jest.mock("../../../src/modules/rifas/services/checkoutPixService", () => ({
-  CheckoutPixService: {
-    criarCobrancaPix: mocks.criarCobrancaPix,
-    consultarCobrancaPix: mocks.consultarCobrancaPix,
-  },
-}));
-
-jest.mock(
-  "../../../src/modules/rifas/services/checkoutPixWebhookService",
-  () => ({
-    CheckoutPixWebhookService: {
-      processarWebhook: mocks.processarWebhook,
-    },
-  }),
-);
-
 jest.mock("../../../src/modules/rifas/services/relatorioRifasService", () => ({
   RelatorioRifasService: {
     obterRelatorioTesouraria: mocks.obterRelatorioTesouraria,
@@ -150,62 +134,6 @@ describe("Fachada: RifasService", () => {
       dadosCorrecao,
     );
     expect(resultado).toBe(true);
-  });
-
-  it("Deve delegar criarCheckoutPix para CheckoutPixService", async () => {
-    const payload = {
-      nome: "Comprador",
-      telefone: "11999999999",
-      numerosRifas: ["001"],
-    };
-    const cobranca = { id: "ORDE_001", copiaECola: "000201PIX" };
-
-    mocks.criarCobrancaPix.mockResolvedValueOnce(cobranca);
-
-    const resultado = await RifasService.criarCheckoutPix(
-      "UID_001",
-      "aderido@email.com",
-      payload,
-    );
-
-    expect(mocks.criarCobrancaPix).toHaveBeenCalledWith(
-      "UID_001",
-      "aderido@email.com",
-      payload,
-    );
-    expect(resultado).toBe(cobranca);
-  });
-
-  it("Deve delegar consultarCheckoutPix para CheckoutPixService", async () => {
-    const cobranca = { id: "ORDE_001", status: "pago" };
-
-    mocks.consultarCobrancaPix.mockResolvedValueOnce(cobranca);
-
-    const resultado = await RifasService.consultarCheckoutPix(
-      "aderido@email.com",
-      "ORDE_001",
-    );
-
-    expect(mocks.consultarCobrancaPix).toHaveBeenCalledWith(
-      "aderido@email.com",
-      "ORDE_001",
-    );
-    expect(resultado).toBe(cobranca);
-  });
-
-  it("Deve delegar processarWebhookCheckoutPix para CheckoutPixWebhookService", async () => {
-    const params = {
-      payload: { id: "ORDE_001" },
-      rawBody: '{"id":"ORDE_001"}',
-      assinatura: "assinatura",
-    };
-
-    mocks.processarWebhook.mockResolvedValueOnce({ sucesso: true });
-
-    const resultado = await RifasService.processarWebhookCheckoutPix(params);
-
-    expect(mocks.processarWebhook).toHaveBeenCalledWith(params);
-    expect(resultado).toEqual({ sucesso: true });
   });
 
   it("Deve delegar obterRelatorioTesouraria para RelatorioRifasService", async () => {

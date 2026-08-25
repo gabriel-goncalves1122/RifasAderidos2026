@@ -59,7 +59,7 @@ describe("Helper: pixTransacoesHelper", () => {
     expect(normalizarId("  comprovante://abc 123 !!  ")).toBe(
       "comprovante-abc-123",
     );
-    expect(normalizarId("a".repeat(150))).toHaveLength(120);
+    expect(normalizarId("a".repeat(300))).toHaveLength(255);
   });
 
   it("Deve mapear status de pagamento para o contrato Pix", () => {
@@ -70,25 +70,7 @@ describe("Helper: pixTransacoesHelper", () => {
     expect(statusPagamento("reservado", "PAID")).toBe("PAID");
   });
 
-  it("Deve calcular status de conciliação por grupo de bilhetes", () => {
-    expect(
-      statusConciliacao([
-        criarBilhete({ status: "pago", vendedor_id: "ADERIDO_001" }),
-      ]),
-    ).toBe("conciliada");
 
-    expect(statusConciliacao([criarBilhete({ status: "pago" })])).toBe(
-      "nao_identificada",
-    );
-
-    expect(statusConciliacao([criarBilhete({ status: "recusado" })])).toBe(
-      "divergente",
-    );
-
-    expect(statusConciliacao([criarBilhete({ status: "pendente" })])).toBe(
-      "pendente",
-    );
-  });
 
   it("Deve montar uma transação Pix ordenando rifas numericamente", () => {
     const transacao = montarPixTransacao([
@@ -121,10 +103,9 @@ describe("Helper: pixTransacoesHelper", () => {
 
     expect(transacao).toEqual(
       expect.objectContaining({
-        referenceId: "rifas-002-010",
+        
         metodo: "PIX",
         statusPagamento: "PAID",
-        statusConciliacao: "conciliada",
         valorBruto: 20,
         valorPago: 20,
         compradorNome: "Ana",
@@ -197,24 +178,30 @@ describe("Helper: pixTransacoesHelper", () => {
         moeda: "BRL",
         dataCriacao: "2026-01-04T00:00:00.000Z",
       },
+      {
+        id: "com-erro",
+        referenceId: "com-erro",
+        metodo: "PIX",
+        statusPagamento: "ERROR",
+        statusConciliacao: "nao_identificada",
+        valorBruto: 50,
+        valorPago: 0,
+        moeda: "BRL",
+        dataCriacao: "2026-01-05T00:00:00.000Z",
+      },
     ]);
 
     expect(resumo).toEqual({
       totalRecebido: 130,
       totalPendente: 20,
       totalCancelado: 10,
-      totalDivergente: 40,
       quantidadePagas: 2,
       quantidadeAguardando: 1,
       quantidadeCanceladas: 1,
-      quantidadeNaoIdentificadas: 1,
-      quantidadeAguardandoValidacao: 2,
-      quantidadeAceitas: 0,
-      quantidadeNegadas: 0,
-      quantidadeSemConfirmacaoBancaria: 2,
-      quantidadeComRifas: 0,
-      quantidadeSemVinculo: 4,
       ticketMedio: 65,
+      quantidadeErros: 1,
+      totalErros: 50,
+      totalTransacoes: 5,
     });
   });
 });

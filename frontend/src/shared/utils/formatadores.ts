@@ -2,6 +2,14 @@ export function somenteNumeros(valor?: string | null) {
   return String(valor || "").replace(/\D/g, "");
 }
 
+export function formatarCpf(valor?: string | null) {
+  const apenasNumeros = somenteNumeros(valor).slice(0, 11);
+  if (apenasNumeros.length <= 3) return apenasNumeros;
+  if (apenasNumeros.length <= 6) return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(3)}`;
+  if (apenasNumeros.length <= 9) return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(3, 6)}.${apenasNumeros.slice(6)}`;
+  return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(3, 6)}.${apenasNumeros.slice(6, 9)}-${apenasNumeros.slice(9)}`;
+}
+
 export function formatarMoeda(valor?: number | null) {
   const valorSeguro = Number.isFinite(valor) ? Number(valor) : 0;
 

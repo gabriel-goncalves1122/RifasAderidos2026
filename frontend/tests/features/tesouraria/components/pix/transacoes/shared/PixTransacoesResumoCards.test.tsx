@@ -23,28 +23,26 @@ const resumoMock: PixTransacoesResumo = {
 };
 
 describe("Componente: PixTransacoesResumoCards", () => {
-  it("Deve renderizar os cards da fila de auditoria Pix", () => {
+  it("Deve renderizar os cards de resumo Pix", () => {
     render(<PixTransacoesResumoCards resumo={resumoMock} />);
 
-    expect(screen.getByText("Aguardando validação")).toBeInTheDocument();
-    expect(screen.getByText("Validadas")).toBeInTheDocument();
-    expect(screen.getByText("Pendências de vínculo")).toBeInTheDocument();
+    expect(screen.getByText("Total Recebido")).toBeInTheDocument();
+    expect(screen.getByText("Ticket Médio")).toBeInTheDocument();
+    expect(screen.getByText("Aguardando Pagamento")).toBeInTheDocument();
     expect(screen.getByText("Canceladas/Erros")).toBeInTheDocument();
-
-    expect(screen.getByText("R$ 10,00")).toBeInTheDocument();
   });
 
   it("Deve mostrar as quantidades relevantes para tesouraria", () => {
     render(<PixTransacoesResumoCards resumo={resumoMock} />);
 
     expect(
-      screen.getByText("Transações pendentes de análise"),
+      screen.getByText("2 pagamentos confirmados"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Confirmadas e vinculadas a aderido/rifa"),
+      screen.getByText("Gasto médio por pix pago"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Recebidas mas não associadas a aderido"),
+      screen.getByText("Total pendente: R$ 10,00"),
     ).toBeInTheDocument();
   });
 });

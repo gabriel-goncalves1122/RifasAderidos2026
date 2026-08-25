@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from "@mui/material";
 
-import { aderidosColors } from "@/shared/tokens/colors";
+import { colors } from "@/shared/tokens/colors";
 import { aderidosMotion, reduceMotionSx } from "@/shared/tokens/motion";
 
 import { focusVisibleSx } from "./surfaceSharedStyles";
@@ -48,7 +48,7 @@ export const painelAderidoCarrinhoSurfaceStyles: Record<
       xs: 2,
       sm: 2.25,
     },
-    bgcolor: aderidosColors.white,
+    bgcolor: colors.branco,
     border: "2px solid rgba(6,61,49,0.16)",
     boxShadow:
       "0 18px 40px rgba(2, 27, 22, 0.14), 0 2px 8px rgba(6, 61, 49, 0.08)",
@@ -92,8 +92,8 @@ export const painelAderidoCarrinhoSurfaceStyles: Record<
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    bgcolor: aderidosColors.greenDark,
-    color: aderidosColors.white,
+    bgcolor: colors.verdeEscuro,
+    color: colors.branco,
     fontWeight: 950,
     fontSize: {
       xs: "1rem",
@@ -110,7 +110,7 @@ export const painelAderidoCarrinhoSurfaceStyles: Record<
   },
 
   carrinhoFixoTitulo: {
-    color: aderidosColors.textMuted,
+    color: colors.cinzaTexto,
     fontWeight: 800,
     lineHeight: 1.15,
     fontSize: {
@@ -124,7 +124,7 @@ export const painelAderidoCarrinhoSurfaceStyles: Record<
 
   carrinhoFixoDescricao: {
     mt: 0.15,
-    color: aderidosColors.greenBlack,
+    color: colors.pretoEsverdeado,
     fontWeight: 950,
     letterSpacing: 0,
     fontSize: {
@@ -149,8 +149,8 @@ export const painelAderidoCarrinhoSurfaceStyles: Record<
       xs: 1.7,
       sm: 2.6,
     },
-    bgcolor: aderidosColors.greenDark,
-    color: aderidosColors.white,
+    bgcolor: colors.verdeEscuro,
+    color: colors.branco,
     fontWeight: 950,
     fontSize: {
       xs: "0.95rem",
@@ -170,7 +170,7 @@ export const painelAderidoCarrinhoSurfaceStyles: Record<
     },
 
     "&:hover": {
-      bgcolor: aderidosColors.greenBlack,
+      bgcolor: colors.pretoEsverdeado,
       boxShadow: "0 14px 28px rgba(6, 61, 49, 0.28)",
       transform: "translateY(-1px)",
     },

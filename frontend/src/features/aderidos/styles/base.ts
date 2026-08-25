@@ -1,12 +1,12 @@
 import { SxProps, Theme } from "@mui/material";
 
-import { aderidosColors } from "@/shared/tokens/colors";
+import { colors } from "@/shared/tokens/colors";
 
 export const painelAderidoBaseStyles: Record<string, SxProps<Theme>> = {
   page: {
     width: "100%",
     minHeight: "100%",
-    bgcolor: aderidosColors.background,
+    bgcolor: colors.fundoSuave,
   },
 
   root: {

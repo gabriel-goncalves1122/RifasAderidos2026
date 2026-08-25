@@ -10,6 +10,8 @@ jest.mock("firebase-admin", () => ({
   firestore: jest.fn().mockReturnValue({
     collection: jest.fn().mockReturnValue({
       doc: jest.fn().mockReturnValue({}),
+      where: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
     }),
     runTransaction: mockRunTransaction,
   }),
@@ -59,6 +61,7 @@ describe("Service: PixValidacaoService", () => {
     mockRunTransaction.mockImplementation(async (callback: any) => {
       return callback({
         get: mockTransactionGet,
+        getAll: jest.fn().mockResolvedValue([{ exists: true, ref: {} }]),
         set: mockTransactionSet,
       });
     });
@@ -67,8 +70,13 @@ describe("Service: PixValidacaoService", () => {
   it("Deve aceitar Pix confirmado pelo banco", async () => {
     mockBuscarTransacoes.mockResolvedValueOnce([transacaoBase()]);
     mockTransactionGet.mockResolvedValueOnce({
-      exists: true,
-      data: () => ({ status_pagamento_banco: "PAID" }),
+      empty: false,
+      docs: [
+        {
+          ref: {},
+          data: () => ({ status_pagamento_banco: "PAID" }),
+        }
+      ]
     });
 
     const resultado = await PixValidacaoService.aceitarTransacao({
@@ -105,8 +113,13 @@ describe("Service: PixValidacaoService", () => {
       transacaoBase({ statusPagamento: "WAITING", valorPago: 0 }),
     ]);
     mockTransactionGet.mockResolvedValueOnce({
-      exists: true,
-      data: () => ({ status_pagamento_banco: "WAITING" }),
+      empty: false,
+      docs: [
+        {
+          ref: {},
+          data: () => ({ status_pagamento_banco: "WAITING" }),
+        }
+      ]
     });
 
     await expect(
@@ -122,11 +135,16 @@ describe("Service: PixValidacaoService", () => {
       transacaoBase(),
     ]);
     mockTransactionGet.mockResolvedValueOnce({
-      exists: true,
-      data: () => ({
-        status_pagamento_banco: "PAID",
-        status_validacao: "aceita",
-      }),
+      empty: false,
+      docs: [
+        {
+          ref: {},
+          data: () => ({
+            status_pagamento_banco: "PAID",
+            status_validacao: "aceita",
+          }),
+        }
+      ]
     });
 
     await expect(
@@ -150,8 +168,13 @@ describe("Service: PixValidacaoService", () => {
   it("Deve negar Pix confirmado e notificar correção de dados", async () => {
     mockBuscarTransacoes.mockResolvedValueOnce([transacaoBase()]);
     mockTransactionGet.mockResolvedValueOnce({
-      exists: true,
-      data: () => ({ status_pagamento_banco: "PAID" }),
+      empty: false,
+      docs: [
+        {
+          ref: {},
+          data: () => ({ status_pagamento_banco: "PAID" }),
+        }
+      ]
     });
 
     const resultado = await PixValidacaoService.negarTransacao({

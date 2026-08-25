@@ -1,5 +1,9 @@
 import SearchIcon from "@mui/icons-material/Search";
-import { InputAdornment, TextField } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { IconButton, InputAdornment, TextField } from "@mui/material";
+
+import { colors } from "@/shared/tokens/colors";
+import { components } from "@/shared/tokens/components";
 
 import { PixTransacoesFiltrosProps } from "./pixTransacoesFiltrosTypes";
 
@@ -16,14 +20,24 @@ export function PixTransacoesCampoBusca({ filtros, onChangeFiltros }: PixTransac
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
-            <SearchIcon sx={{ color: "#526760" }} />
+            <SearchIcon sx={{ color: colors.textoSuave }} />
           </InputAdornment>
         ),
+        endAdornment: filtros.busca ? (
+          <InputAdornment position="end">
+            <IconButton
+              size="small"
+              onClick={() => onChangeFiltros({ ...filtros, busca: "" })}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </InputAdornment>
+        ) : null,
       }}
       sx={{
         "& .MuiOutlinedInput-root": {
           borderRadius: 2,
-          bgcolor: "#F6F8F7",
+          bgcolor: components.searchField.backgroundColor,
         },
       }}
     />

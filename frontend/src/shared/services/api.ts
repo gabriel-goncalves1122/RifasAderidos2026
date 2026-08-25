@@ -19,12 +19,40 @@ function obterApiBaseUrl() {
   }
 
   const hostname = window.location.hostname;
-  const hostApi =
+  const apiLocalConfigurada = String(
+    import.meta.env.VITE_API_BASE_URL_LOCAL || "",
+  ).trim();
+
+  if (apiLocalConfigurada && !ehHostRedeLocal(hostname)) {
+    return apiLocalConfigurada.replace(/\/$/, "");
+  }
+
+  const hostApi = normalizarHostParaUrl(
     hostname === "localhost" || hostname === "127.0.0.1"
       ? "127.0.0.1"
-      : hostname;
+      : hostname,
+  );
 
   return `http://${hostApi}:5001/rifasaderidos2026/us-central1/api`;
+}
+
+function ehHostRedeLocal(hostname: string) {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    /^192\.168\.\d+\.\d+$/.test(hostname) ||
+    /^10\.\d+\.\d+\.\d+$/.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+$/.test(hostname) ||
+    hostname.includes(":")
+  );
+}
+
+function normalizarHostParaUrl(hostname: string) {
+  if (hostname.includes(":") && !hostname.startsWith("[")) {
+    return `[${hostname}]`;
+  }
+
+  return hostname;
 }
 
 const API_BASE_URL = obterApiBaseUrl();

@@ -54,7 +54,7 @@ app.use("/auth", rateLimit({
   message: { error: "Muitas tentativas de autenticação. Aguarde.", code: "RATE_LIMIT" },
 }));
 
-app.use("/rifas/checkout/pix/webhook", rateLimit({
+app.use("/tesouraria/checkout/pix/webhook", rateLimit({
   windowMs: 60_000,
   max: 30,
   standardHeaders: true,
@@ -70,10 +70,16 @@ app.use(apiLimiter);
 // ============================================================================
 // Esse CORS vale apenas para a Cloud Function /api.
 // Ele não controla o CORS do Firestore Emulator, Auth Emulator ou Storage Emulator.
-const corsOptions: cors.CorsOptions = {
+const criarCorsOptions = (req: express.Request): cors.CorsOptions => ({
   origin(origin, callback) {
     if (!origin) {
-      // Bloqueia se a requisição não tiver origem (ex: scripts automatizados sem falsificação de header)
+      if (req.path === "/tesouraria/checkout/pix/webhook") {
+        callback(null, true);
+        return;
+      }
+
+      // Bloqueia scripts automatizados nas rotas de navegador, mas permite
+      // webhooks server-to-server no endpoint Pix acima.
       callback(new Error(`Origem ausente / bloqueada pelo CORS.`));
       return;
     }
@@ -81,9 +87,11 @@ const corsOptions: cors.CorsOptions = {
     const origensPermitidas = [
       /^http:\/\/localhost:\d+$/,
       /^http:\/\/127\.0\.0\.1:\d+$/,
-      /^http:\/\/192\.168\.0\.\d+:\d+$/,
+      /^http:\/\/192\.168\.\d+\.\d+:\d+$/,
       /^http:\/\/10\.\d+\.\d+\.\d+:\d+$/,
       /^http:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+:\d+$/,
+      /^http:\/\/\[[0-9a-f:]+\]:\d+$/i,
+      /^http:\/\/[a-z0-9.-]+\.local:\d+$/i,
       /^https:\/\/rifasaderidos2026\.web\.app$/,
       /^https:\/\/rifasaderidos2026\.firebaseapp\.com$/,
     ];
@@ -107,15 +115,16 @@ const corsOptions: cors.CorsOptions = {
     "Authorization",
     "X-Requested-With",
     "Accept",
+    "x-authenticity-token",
   ],
 
   credentials: true,
   optionsSuccessStatus: 204,
-};
+});
 
 // Aplica CORS antes das rotas.
 // Não use app.options("*") aqui, porque essa versão do Express quebra com "*".
-app.use(cors(corsOptions));
+app.use((req, res, next) => cors(criarCorsOptions(req))(req, res, next));
 
 // Libera leitura de JSON e preserva o corpo bruto para validação de webhooks.
 app.use(

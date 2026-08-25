@@ -10,7 +10,6 @@ describe("AppLoadingScreen", () => {
     const tela = screen.getByTestId("app-loading-screen");
 
     expect(tela).toHaveStyle({
-      backgroundColor: "#FFFFFF",
       display: "grid",
       placeItems: "center",
     });

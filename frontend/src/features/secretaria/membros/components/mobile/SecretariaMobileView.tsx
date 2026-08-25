@@ -15,7 +15,7 @@ import { SkeletonSecretariaList } from "../shared/SkeletonSecretariaList";
 import { EmptyState } from "../../../../../shared/components/EmptyState";
 import type { AderidoSecretaria } from "@/shared/types/secretaria";
 import { safeAreaStickyTop } from "@/shared/tokens/safeArea";
-import { secretariaComponents } from "../../../styles/components";
+import { components } from "@/shared/tokens/components";
 
 interface SecretariaMobileViewProps {
   aderidosFiltrados: AderidoSecretaria[];
@@ -68,7 +68,7 @@ export function SecretariaMobileView({
           onChange={(e) => setInputValue(e.target.value)}
           inputRef={searchInputRef}
           size="small"
-          sx={secretariaComponents.searchField}
+          sx={components.searchField}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">

@@ -6,7 +6,6 @@ import {
   calcularResumoPixTransacoes,
   filtrarPixTransacoes,
   formatarMoedaPix,
-  obterLabelStatusConciliacao,
   obterLabelStatusPagamento,
 } from "@/features/tesouraria/utils/pixTransacoesUtils";
 
@@ -18,7 +17,7 @@ function criarTransacao(
     referenceId: parcial.referenceId || "ref_teste",
     metodo: "PIX",
     statusPagamento: parcial.statusPagamento || "PAID",
-    statusConciliacao: parcial.statusConciliacao || "conciliada",
+
     valorBruto: parcial.valorBruto ?? 10,
     valorPago: parcial.valorPago ?? 10,
     moeda: "BRL",
@@ -38,23 +37,13 @@ describe("Utils: pixTransacoesUtils", () => {
     expect(obterLabelStatusPagamento("CANCELED")).toBe("Cancelado");
   });
 
-  it("Deve traduzir status de conciliação", () => {
-    expect(obterLabelStatusConciliacao("conciliada")).toBe("Conciliada");
-    expect(obterLabelStatusConciliacao("nao_identificada")).toBe(
-      "Não identificada",
-    );
-  });
-
   it("Deve calcular resumo financeiro a partir das transações mockadas do banco", () => {
     const resumo = calcularResumoPixTransacoes(pixTransacoesMock);
 
     expect(resumo.totalRecebido).toBe(50);
     expect(resumo.quantidadePagas).toBe(2);
-    expect(resumo.quantidadeNaoIdentificadas).toBe(1);
-    expect(resumo.quantidadeAguardandoValidacao).toBe(2);
-    expect(resumo.quantidadeSemConfirmacaoBancaria).toBe(1);
     expect(resumo.quantidadeComRifas).toBe(2);
-    expect(resumo.quantidadeSemVinculo).toBe(2);
+
     expect(resumo.ticketMedio).toBe(25);
   });
 
@@ -127,30 +116,18 @@ describe("Utils: pixTransacoesUtils", () => {
   it("Deve filtrar a fila de auditoria Pix por critérios operacionais", () => {
     const transacoes = [
       criarTransacao({
-        id: "tx_para_validar",
-        vendaId: "venda_001",
-        aderido: { id: "aderido_001", nome: "Ana Costa" },
-        rifas: [{ numero: "010", status: "pago" }],
-      }),
-      criarTransacao({
-        id: "tx_sem_vinculo",
-        vendaId: null,
-        aderido: { nome: "Sem aderido vinculado" },
-        rifas: [],
-      }),
-      criarTransacao({
         id: "tx_pendente_banco",
         statusPagamento: "WAITING",
         valorPago: 0,
         dataPagamento: null,
-        vendaId: "venda_002",
+        compradorId: "venda_002",
         aderido: { id: "aderido_002", nome: "Bruno Lima" },
         rifas: [{ numero: "020", status: "pendente" }],
       }),
       criarTransacao({
         id: "tx_aceita",
-        statusValidacao: "aceita",
-        vendaId: "venda_003",
+        statusPagamento: "PAID",
+        compradorId: "venda_003",
         aderido: { id: "aderido_003", nome: "Carla Dias" },
         rifas: [{ numero: "030", status: "pago" }],
       }),
@@ -158,30 +135,16 @@ describe("Utils: pixTransacoesUtils", () => {
 
     expect(
       filtrarPixTransacoes(transacoes, {
-        status: "para_validar",
+        status: "com_rifas",
         busca: "",
       }),
     ).toEqual([transacoes[0], transacoes[1]]);
 
     expect(
       filtrarPixTransacoes(transacoes, {
-        status: "com_rifas",
-        busca: "",
-      }),
-    ).toEqual([transacoes[0], transacoes[2], transacoes[3]]);
-
-    expect(
-      filtrarPixTransacoes(transacoes, {
-        status: "sem_vinculo",
-        busca: "",
-      }),
-    ).toEqual([transacoes[1]]);
-
-    expect(
-      filtrarPixTransacoes(transacoes, {
         status: "pendentes_banco",
         busca: "",
       }),
-    ).toEqual([transacoes[2]]);
+    ).toEqual([transacoes[0]]);
   });
 });

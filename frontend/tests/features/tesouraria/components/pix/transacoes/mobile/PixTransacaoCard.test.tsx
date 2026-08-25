@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PixTransacaoCard } from "@/features/tesouraria/components/pix/transacoes/mobile/PixTransacaoCard";
@@ -16,8 +16,6 @@ describe("Componente: PixTransacaoCard", () => {
     expect(screen.getByText("Gabriel Sampaio")).toBeInTheDocument();
 
     expect(screen.getByText("Rifas 010, 011, 012")).toBeInTheDocument();
-
-    expect(screen.getByText("Aguardando validação")).toBeInTheDocument();
     expect(screen.getByText(/R\$\s*30,00/)).toBeInTheDocument();
     expect(screen.queryByText("Reference ID")).not.toBeInTheDocument();
   });
@@ -28,25 +26,6 @@ describe("Componente: PixTransacaoCard", () => {
     expect(screen.getByText("Pagador Não Identificado")).toBeInTheDocument();
     expect(screen.getByText("Sem aderido vinculado")).toBeInTheDocument();
     expect(screen.getByText("Sem rifas vinculadas")).toBeInTheDocument();
-  });
-
-  it("Deve permitir ações de validação no card mobile para Pix confirmado", () => {
-    const onAceitarTransacao = vi.fn();
-    const onNegarTransacao = vi.fn();
-
-    render(
-      <PixTransacaoCard
-        transacao={pixTransacoesMock[0]}
-        onAceitarTransacao={onAceitarTransacao}
-        onNegarTransacao={onNegarTransacao}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /aceitar/i }));
-    fireEvent.click(screen.getByRole("button", { name: /negar/i }));
-
-    expect(onAceitarTransacao).toHaveBeenCalledWith("tx_001");
-    expect(onNegarTransacao).toHaveBeenCalledWith("tx_001");
   });
 
   it("Não deve renderizar reference ID ou botão de cópia", () => {

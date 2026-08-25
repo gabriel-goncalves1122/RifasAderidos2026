@@ -50,7 +50,7 @@ export function normalizarDadosNovoAderido(dados: DadosNovoAderido) {
     email: normalizarEmail(dados.email),
     nome: normalizarTextoMaiusculo(dados.nome),
     curso: normalizarTextoMaiusculo(dados.curso),
-    dataNascimento: normalizarTexto(dados.dataNascimento),
+    data_nascimento: normalizarTexto(dados.data_nascimento),
     telefone: normalizarTexto(dados.telefone),
     cargo: dados.cargo || "aderido",
     modalidade_adesao: dados.modalidade_adesao || "completo",

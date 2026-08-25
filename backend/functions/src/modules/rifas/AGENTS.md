@@ -8,13 +8,15 @@ Ele cobre:
 
 - listagem de rifas do aderido;
 - venda legada por comprovante;
-- checkout Pix via backend do sistema;
-- webhook Pix assinado;
-- correcao de dados de vendas recusadas;
+- correcao de dados de vendas recusadas ou com pendências;
 - aliases de relatorio/historico preservados para compatibilidade.
 
-O frontend nunca deve chamar provedor financeiro direto. Pix externo fica isolado
-em services/provider backend.
+**Regra Crítica - Correção de Dados (`correcaoDadosRifasService`):**
+A alteração de bilhetes pode ser engatilhada de duas formas distintas:
+1. `status === 'recusado'`: A tesouraria ativamente negou um PIX ou compra. Ao enviar a correção, a rifa deve voltar para o status transacional de `pendente`.
+2. `correcao_pendente === true`: O pagamento foi feito com sucesso (está `pago`), porém há erros nos dados de cadastro (ex: nome, upload, etc.). Ao enviar a correção, o serviço deve **limpar a flag** (`correcao_pendente = null`) e preservar o `status` transacional intacto (como `pago`).
+
+**Nota:** A geracao de novos pagamentos (Checkout Pix), webhooks de Mercado Pago e a conciliacao Pix foram unificados no modulo `tesouraria`. O frontend nunca deve chamar provedor financeiro direto.
 
 ## Estrutura
 
@@ -30,46 +32,6 @@ modules/rifas/
 ├── services/
 └── types/
 ```
-
-## Checkout Pix
-
-Rotas canonicas:
-
-```txt
-POST /rifas/checkout/pix           (validateToken + validate(checkoutPixSchema))
-GET  /rifas/checkout/pix/:id       (validateToken)
-POST /rifas/checkout/pix/webhook   (raw body, assinatura HMAC-SHA256)
-POST /rifas/corrigir-dados
-```
-
-Regras:
-
-- `/checkout/pix` exige `validateToken` + schema validation via yup;
-- `/checkout/pix/webhook` nao usa Firebase Auth e valida assinatura por raw body;
-  - header: `x-pagbank-signature` (fallback: `x-authenticity-token`);
-  - algoritmo: HMAC-SHA256 com `PAGBANK_WEBHOOK_TOKEN` como chave, raw body como mensagem;
-  - output: base64.
-- o provider externo e `shared/services/pagBankPixClient.ts`;
-- o checkout faz **pre-check** de disponibilidade antes de chamar PagBank
-  (para evitar chamada desnecessaria), mas re-valida cada rifa DENTRO da
-  `runTransaction` para eliminar TOCTOU;
-- o checkout reserva rifas como `reservado` ate o banco confirmar;
-- banco `PAID`/`AUTHORIZED` muda rifas para `pendente`;
-- banco `DECLINED`/`CANCELED` libera rifas e cria notificacao `rifa_liberada`;
-- correcao de dados so atualiza rifas `recusado` do aderido logado.
-
-**ACID:** tanto o checkout (reserva atomica + criacao do pagamento) quanto o webhook
-(atualizacao de status + notificacao) DEVEM usar `runTransaction` do Firestore para
-garantir consistencia. Nunca atualize rifas e crie notificacoes em operacoes separadas.
-
-## Polling (Frontend)
-
-Apos `POST /rifas/checkout/pix`, o frontend inicia polling a cada 10s por ate
-36 tentativas (~6 min) contra `GET /rifas/checkout/pix/:id`. O service
-`checkoutPixService.consultarCobrancaPix` implementa a consulta no backend.
-
-O banco PagBank pode levar de alguns segundos a alguns minutos para processar.
-O polling evita que o usuario precise recarregar a pagina manualmente.
 
 ## Compatibilidade
 
@@ -87,8 +49,6 @@ Campos novos em `bilhetes` devem ser opcionais para dados legados.
 ## Tests
 
 Testes especificos ficam em `backend/functions/tests/rifas`.
-
-Ao alterar checkout Pix, rode pelo menos:
 
 ```bash
 cd backend/functions

@@ -12,7 +12,7 @@ export interface AderidoMetricaDesempenho {
 
 export interface TransacaoDesempenho {
   status: string;
-  data_reserva: string;
+  dataReserva: string;
   valor: number;
 }
 

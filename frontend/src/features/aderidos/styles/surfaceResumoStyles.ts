@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from "@mui/material";
 
-import { aderidosColors } from "@/shared/tokens/colors";
+import { colors } from "@/shared/tokens/colors";
 import { aderidosMotion, reduceMotionSx } from "@/shared/tokens/motion";
 import { typographyScale } from "@/shared/tokens/typography";
 
@@ -35,8 +35,8 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
       md: 1.75,
     },
     borderLeft: {
-      xs: `4px solid ${aderidosColors.greenBright}`,
-      md: `5px solid ${aderidosColors.greenBright}`,
+      xs: `4px solid ${colors.verdeForte}`,
+      md: `5px solid ${colors.verdeForte}`,
     },
     minWidth: 0,
     maxWidth: {
@@ -47,7 +47,7 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
   },
 
   aderidoHeaderEyebrow: {
-    color: aderidosColors.greenBright,
+    color: colors.verdeForte,
     fontWeight: 900,
     textTransform: "uppercase",
     letterSpacing: "0.08em",
@@ -59,7 +59,7 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
   },
 
   aderidoHeaderTitulo: {
-    color: aderidosColors.greenBlack,
+    color: colors.pretoEsverdeado,
     fontWeight: 900,
     letterSpacing: 0,
     lineHeight: 1.08,
@@ -89,8 +89,8 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
     height: 46,
     flexShrink: 0,
     borderRadius: 2,
-    bgcolor: aderidosColors.white,
-    color: aderidosColors.greenDark,
+    bgcolor: colors.branco,
+    color: colors.verdeEscuro,
     border: "1px solid rgba(6, 61, 49, 0.10)",
     boxShadow: "0 8px 24px rgba(2, 27, 22, 0.12)",
     transition: `background-color ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}, border-color ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}`,
@@ -98,7 +98,7 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
     ...reduceMotionSx,
 
     "&:hover": {
-      bgcolor: aderidosColors.greenSoft,
+      bgcolor: colors.verdeClaro,
       borderColor: "rgba(6, 61, 49, 0.20)",
     },
   },
@@ -140,7 +140,7 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
       xs: 2,
       sm: 2.25,
     },
-    bgcolor: aderidosColors.white,
+    bgcolor: colors.branco,
     border: "2px solid rgba(6, 61, 49, 0.10)",
     boxShadow:
       "0 18px 42px rgba(2, 27, 22, 0.075), 0 2px 8px rgba(6, 61, 49, 0.045)",
@@ -180,16 +180,16 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    bgcolor: aderidosColors.greenSoft,
-    color: aderidosColors.greenDark,
+    bgcolor: colors.verdeClaro,
+    color: colors.verdeEscuro,
     flexShrink: 0,
     position: "relative",
     zIndex: 1,
   },
 
   resumoIconBoxAlerta: {
-    bgcolor: aderidosColors.warningSoft,
-    color: aderidosColors.warningStrong,
+    bgcolor: colors.alertaFundo,
+    color: colors.alertaTextoForte,
   },
 
   resumoIconBoxOk: {
@@ -198,7 +198,7 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
   },
 
   resumoCardLabel: {
-    color: aderidosColors.greenAccent,
+    color: colors.verdeAccent,
     fontWeight: 800,
     textTransform: "uppercase",
     letterSpacing: "0.08em",
@@ -211,7 +211,7 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
 
   resumoCardValor: {
     ...typographyScale.cardValue,
-    color: aderidosColors.greenDark,
+    color: colors.verdeEscuro,
     letterSpacing: 0,
     whiteSpace: "nowrap",
   },
@@ -247,7 +247,7 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
 
   pendenciaBotao: {
     mt: 0.2,
-    color: aderidosColors.warningStrong,
+    color: colors.alertaTextoForte,
     borderColor: "rgba(203, 166, 77, 0.55)",
     fontWeight: 800,
     textTransform: "none",
@@ -260,7 +260,7 @@ export const painelAderidoResumoSurfaceStyles: Record<string, SxProps<Theme>> = 
 
     "&:hover": {
       borderColor: "#A88123",
-      bgcolor: aderidosColors.warningSoft,
+      bgcolor: colors.alertaFundo,
     },
   },
 };

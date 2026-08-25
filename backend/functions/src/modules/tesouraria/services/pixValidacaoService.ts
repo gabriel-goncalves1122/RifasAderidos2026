@@ -4,7 +4,7 @@
 import * as admin from "firebase-admin";
 
 import { enviarEmailRecibo } from "../../rifas/emailService";
-import { PixTransacao } from "../types/tesourariaTypes";
+import { PixTransacao } from "../../tesouraria/types/tesourariaTypes";
 import { PixTransacoesService } from "./pixTransacoesService";
 
 interface ValidarPixParams {
@@ -26,7 +26,7 @@ async function buscarTransacao(transacaoId: string): Promise<PixTransacao> {
 }
 
 function obterNumerosRifas(transacao: PixTransacao) {
-  return (transacao.rifas || []).map((rifa) => rifa.numero).filter(Boolean);
+  return (transacao.rifas || []).map((rifa: any) => rifa.numero).filter(Boolean);
 }
 
 export class PixValidacaoService {
@@ -47,26 +47,40 @@ export class PixValidacaoService {
     const validadoPor = params.emailTesouraria || params.uidTesouraria;
 
     await db.runTransaction(async (transaction) => {
-      const pagRef = db.collection("pagamentos_pix").doc(transacao.pixOrderId!);
-      const pagSnap = await transaction.get(pagRef);
+      const querySnap = await transaction.get(
+        db.collection("pagamentos_pix").where("pix_order_id", "==", transacao.pixOrderId!).limit(1)
+      );
 
-      if (!pagSnap.exists) {
+      if (querySnap.empty) {
         throw new Error("PAGAMENTO_NOT_FOUND");
       }
 
-      const pagamento = pagSnap.data() as any;
+      const pagRef = querySnap.docs[0].ref;
+      const pagamento = querySnap.docs[0].data() as any;
 
       if (pagamento.status_validacao) {
         throw new Error("PIX_ALREADY_VALIDATED");
       }
 
-      if (!["PAID", "AUTHORIZED"].includes(pagamento.status_pagamento_banco)) {
+      if (!["PAID", "AUTHORIZED", "approved", "authorized"].includes(pagamento.status_pagamento_banco)) {
         throw new Error("PIX_NOT_CONFIRMED");
       }
 
-      numerosRifas.forEach((numero) => {
+      const bilhetesRefs = numerosRifas.map((numero: string) =>
+        db.collection("bilhetes").doc(numero)
+      );
+      
+      const bilhetesSnaps = await transaction.getAll(...bilhetesRefs);
+      
+      // Validação opcional: garantir que os bilhetes existam
+      const bilhetesInexistentes = bilhetesSnaps.filter(snap => !snap.exists);
+      if (bilhetesInexistentes.length > 0) {
+        throw new Error("UM_OU_MAIS_BILHETES_NAO_ENCONTRADOS");
+      }
+
+      bilhetesSnaps.forEach((snap) => {
         transaction.set(
-          db.collection("bilhetes").doc(numero),
+          snap.ref,
           {
             status: "pago",
             status_validacao: "aceita",
@@ -132,26 +146,35 @@ export class PixValidacaoService {
     const validadoPor = params.emailTesouraria || params.uidTesouraria;
 
     await db.runTransaction(async (transaction) => {
-      const pagRef = db.collection("pagamentos_pix").doc(transacao.pixOrderId!);
-      const pagSnap = await transaction.get(pagRef);
+      const querySnap = await transaction.get(
+        db.collection("pagamentos_pix").where("pix_order_id", "==", transacao.pixOrderId!).limit(1)
+      );
 
-      if (!pagSnap.exists) {
+      if (querySnap.empty) {
         throw new Error("PAGAMENTO_NOT_FOUND");
       }
 
-      const pagamento = pagSnap.data() as any;
+      const pagRef = querySnap.docs[0].ref;
+      const pagamento = querySnap.docs[0].data() as any;
 
       if (pagamento.status_validacao) {
         throw new Error("PIX_ALREADY_VALIDATED");
       }
 
-      if (!["PAID", "AUTHORIZED"].includes(pagamento.status_pagamento_banco)) {
-        throw new Error("PIX_NOT_CONFIRMED");
+      const bilhetesRefs = numerosRifas.map((numero: string) =>
+        db.collection("bilhetes").doc(numero)
+      );
+      
+      const bilhetesSnaps = await transaction.getAll(...bilhetesRefs);
+      
+      const bilhetesInexistentes = bilhetesSnaps.filter(snap => !snap.exists);
+      if (bilhetesInexistentes.length > 0) {
+        throw new Error("UM_OU_MAIS_BILHETES_NAO_ENCONTRADOS");
       }
 
-      numerosRifas.forEach((numero) => {
+      bilhetesSnaps.forEach((snap) => {
         transaction.set(
-          db.collection("bilhetes").doc(numero),
+          snap.ref,
           {
             status: "recusado",
             status_validacao: "negada",

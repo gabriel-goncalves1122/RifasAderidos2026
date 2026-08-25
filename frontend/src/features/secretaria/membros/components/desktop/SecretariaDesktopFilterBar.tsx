@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Box, InputAdornment, TextField } from "@mui/material";
+import { Box, IconButton, InputAdornment, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 
 import { useDebounce } from "../../../../../shared/hooks/useDebounce";
-import { secretariaComponents } from "../../../styles/components";
+import { components } from "@/shared/tokens/components";
 
 interface SecretariaDesktopFilterBarProps {
   busca: string;
@@ -34,13 +35,20 @@ export function SecretariaDesktopFilterBar({
         value={inputValue}
         onChange={(event) => setInputValue(event.target.value)}
         inputRef={searchInputRef}
-        sx={secretariaComponents.searchField}
+        sx={components.searchField}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
               <SearchIcon color="action" fontSize="small" />
             </InputAdornment>
           ),
+          endAdornment: inputValue ? (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={() => setInputValue("")}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          ) : null,
         }}
       />
     </Box>

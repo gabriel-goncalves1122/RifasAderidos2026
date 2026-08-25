@@ -4,17 +4,12 @@
 import { Bilhete } from "../types/models";
 
 import { DadosCorrecaoRifas, DadosVenda } from "./types/rifasTypes";
-import {
-  CriarCheckoutPixPayload,
-  DadosCorrecaoDadosRifas,
-} from "./types/rifasTypes";
+import { DadosCorrecaoDadosRifas } from "./types/rifasTypes";
 
 import { AderidoRifasService } from "./services/aderidoRifasService";
 import { VendaRifasService } from "./services/vendaRifasService";
 import { CorrecaoRifasService } from "./services/correcaoRifasService";
 import { RelatorioRifasService } from "./services/relatorioRifasService";
-import { CheckoutPixService } from "./services/checkoutPixService";
-import { CheckoutPixWebhookService } from "./services/checkoutPixWebhookService";
 import { CorrecaoDadosRifasService } from "./services/correcaoDadosRifasService";
 
 export class RifasService {
@@ -54,25 +49,6 @@ export class RifasService {
     );
   }
 
-  static async criarCheckoutPix(
-    uid: string,
-    emailLogado: string,
-    payload: CriarCheckoutPixPayload,
-  ) {
-    return CheckoutPixService.criarCobrancaPix(uid, emailLogado, payload);
-  }
-
-  static async consultarCheckoutPix(emailLogado: string, pagamentoId: string) {
-    return CheckoutPixService.consultarCobrancaPix(emailLogado, pagamentoId);
-  }
-
-  static async processarWebhookCheckoutPix(params: {
-    payload: any;
-    rawBody: string;
-    assinatura?: string;
-  }) {
-    return CheckoutPixWebhookService.processarWebhook(params);
-  }
 
   static async obterRelatorioTesouraria() {
     return RelatorioRifasService.obterRelatorioTesouraria();

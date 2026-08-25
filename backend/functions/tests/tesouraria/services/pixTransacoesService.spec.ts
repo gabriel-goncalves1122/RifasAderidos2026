@@ -73,7 +73,7 @@ describe("Service: PixTransacoesService", () => {
 
     const resultado = await PixTransacoesService.buscarTransacoes();
     const transacaoPaga = resultado.find(
-      (transacao) => transacao.referenceId === "rifas-001-002",
+      (transacao: any) => transacao.id === "comprovante-https-storage-mock-comprovante-1-png",
     );
 
     expect(mockWhere).toHaveBeenCalledWith("status", "in", [
@@ -87,7 +87,6 @@ describe("Service: PixTransacoesService", () => {
       expect.objectContaining({
         metodo: "PIX",
         statusPagamento: "PAID",
-        statusConciliacao: "conciliada",
         valorBruto: 20,
         valorPago: 20,
         compradorNome: "Ana",
@@ -112,5 +111,29 @@ describe("Service: PixTransacoesService", () => {
       atualizados: 0,
       mensagem: "Nenhuma cobrança Pix aberta para sincronizar.",
     });
+  });
+
+  it("Deve calcular o resumo das transações Pix", async () => {
+    mockGet.mockResolvedValueOnce({
+      docs: [
+        {
+          id: "001",
+          data: () => ({
+            status: "pago",
+            comprador_id: "COMPRA_001",
+            comprador_nome: "Ana",
+            data_reserva: "2026-01-01T10:00:00.000Z",
+          }),
+        },
+      ],
+    });
+
+    const resumo = await PixTransacoesService.obterResumo();
+    expect(resumo).toEqual(
+      expect.objectContaining({
+        quantidadePagas: 1,
+        totalRecebido: 10,
+      })
+    );
   });
 });

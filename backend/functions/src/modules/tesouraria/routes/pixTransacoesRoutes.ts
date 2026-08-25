@@ -8,6 +8,11 @@ import {
   validateToken,
 } from "../../../shared/middlewares/authMiddleware";
 import { tesourariaController } from "../tesourariaController";
+import { validate } from "../../../shared/middlewares/validate";
+import {
+  aceitarPixSchema,
+  negarPixSchema,
+} from "../schemas/pixTransacoesSchema";
 
 const pixTransacoesRoutes = Router();
 
@@ -36,6 +41,7 @@ pixTransacoesRoutes.post(
   "/transacoes-bancarias/:transacaoId/aceitar",
   validateToken,
   requireTesourariaOrAdmin,
+  validate(aceitarPixSchema),
   tesourariaController.aceitarPixTransacao,
 );
 
@@ -43,6 +49,7 @@ pixTransacoesRoutes.post(
   "/transacoes-bancarias/:transacaoId/negar",
   validateToken,
   requireTesourariaOrAdmin,
+  validate(negarPixSchema),
   tesourariaController.negarPixTransacao,
 );
 

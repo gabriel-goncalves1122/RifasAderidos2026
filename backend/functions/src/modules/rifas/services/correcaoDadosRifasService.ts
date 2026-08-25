@@ -42,18 +42,21 @@ export class CorrecaoDadosRifasService {
         const bilhete = bilheteSnap.data() as Bilhete;
         const podeCorrigir =
           bilhete.vendedor_id === contextoAderido.idAderido &&
-          bilhete.status === "recusado";
+          (bilhete.status === "recusado" || bilhete.correcao_pendente === true);
 
         if (!podeCorrigir) continue;
 
-        transaction.update(bilheteRef, {
-          status: "pendente",
+        const payload: Partial<Bilhete> = {
           comprador_nome: dadosAtualizados.nome,
           status_validacao: null,
           motivo_recusa: null,
           log_automacao: null,
           data_reserva: new Date().toISOString(),
-        });
+          status: "pendente", // Volta para fila de validação (Tesouraria precisa conferir)
+          correcao_pendente: null as any, // Limpa a flag
+        };
+
+        transaction.update(bilheteRef, payload);
         atualizadas += 1;
       }
     });

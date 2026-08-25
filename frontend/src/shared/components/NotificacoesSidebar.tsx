@@ -94,7 +94,9 @@ export function NotificacoesSidebar({ open, onClose, notificacoes }: Props) {
       <Box
         sx={{
           width: { xs: "100vw", sm: 420 },
-          p: { xs: 2.25, sm: 3 },
+          pt: { xs: "max(48px, env(safe-area-inset-top))", sm: 3 },
+          px: { xs: 2.25, sm: 3 },
+          pb: { xs: 2.25, sm: 3 },
           display: "flex",
           flexDirection: "column",
           height: "100%",

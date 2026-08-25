@@ -41,7 +41,7 @@ export function AuditoriaCard({
       return;
     }
 
-    onRejeitar(transacao.comprovante_url, transacao.bilhetes, motivo);
+    onRejeitar(transacao.comprovanteUrl, transacao.bilhetes, motivo);
     setRecusaAberta(false);
     setMotivo("");
   };
@@ -63,7 +63,7 @@ export function AuditoriaCard({
       <Box sx={auditoriaCardStyles.topo}>
         <Box>
           <Typography sx={auditoriaCardStyles.dataReserva}>
-            Reserva: {formatarDataAuditoria(transacao.data_reserva)}
+            Reserva: {formatarDataAuditoria(transacao.dataReserva)}
           </Typography>
 
           <Typography
@@ -74,7 +74,7 @@ export function AuditoriaCard({
               mt: 0.25,
             }}
           >
-            {transacao.comprador_nome || "Comprador não informado"}
+            {transacao.compradorNome || "Comprador não informado"}
           </Typography>
         </Box>
 
@@ -86,12 +86,12 @@ export function AuditoriaCard({
 
         <Box sx={auditoriaCardStyles.gridInformacoes}>
           <AuditoriaResumoPix
-            compradorNome={transacao.comprador_nome}
-            valorTotal={transacao.valor_total}
+            compradorNome={transacao.compradorNome}
+            valorTotal={transacao.valorTotal}
           />
 
           <AuditoriaInfoVenda
-            vendedorNome={transacao.vendedor_nome}
+            vendedorNome={transacao.vendedorNome}
             bilhetes={transacao.bilhetes}
           />
         </Box>
@@ -100,16 +100,16 @@ export function AuditoriaCard({
       <CardActions sx={auditoriaCardStyles.actions}>
         <Box sx={{ width: "100%" }}>
           <AuditoriaCardActions
-            possuiComprovante={Boolean(transacao.comprovante_url)}
+            possuiComprovante={Boolean(transacao.comprovanteUrl)}
             isProcessando={isProcessando}
             recusaAberta={recusaAberta}
             onVerPix={() => {
-              if (transacao.comprovante_url) {
-                onVerPix(transacao.comprovante_url);
+              if (transacao.comprovanteUrl) {
+                onVerPix(transacao.comprovanteUrl);
               }
             }}
             onAprovar={() =>
-              onAprovar(transacao.comprovante_url, transacao.bilhetes)
+              onAprovar(transacao.comprovanteUrl, transacao.bilhetes)
             }
             onRejeitar={handleRejeitar}
           />

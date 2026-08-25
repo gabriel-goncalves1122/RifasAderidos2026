@@ -1,10 +1,9 @@
 import { Box, Paper, Stack, Typography } from "@mui/material";
 
-import { colors } from "../../../../styles/colors";
-import { surfaces } from "../../../../styles/surfaces";
-import { typography } from "../../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 import {
-  AcaoValidacaoPix,
   PixTransacao,
 } from "../../../../types/pixTransacoes";
 import {
@@ -12,22 +11,13 @@ import {
   formatarMoedaPix,
   formatarRifasPix,
 } from "../../../../utils/pixTransacoesUtils";
-import { podeValidarPixTransacao } from "../../../../utils/pixValidacaoUtils";
-import { PixValidacaoActions } from "../shared/PixValidacaoActions";
-import { PixValidacaoChip } from "../shared/PixValidacaoChip";
 
 interface PixTransacaoCardProps {
   transacao: PixTransacao;
-  acaoEmAndamento?: AcaoValidacaoPix;
-  onAceitarTransacao?: (transacaoId: string) => void | Promise<unknown>;
-  onNegarTransacao?: (transacaoId: string) => void | Promise<unknown>;
 }
 
 export function PixTransacaoCard({
   transacao,
-  acaoEmAndamento,
-  onAceitarTransacao,
-  onNegarTransacao,
 }: PixTransacaoCardProps) {
   const valor =
     transacao.statusPagamento === "PAID"
@@ -37,9 +27,6 @@ export function PixTransacaoCard({
   const aderidoLabel = transacao.aderido?.nome || "Sem aderido vinculado";
   const dataLabel = formatarDataPix(
     transacao.dataPagamento || transacao.dataCriacao,
-  );
-  const mostrarAcoesValidacao = Boolean(
-    (onAceitarTransacao || onNegarTransacao) && podeValidarPixTransacao(transacao),
   );
 
   return (
@@ -100,10 +87,6 @@ export function PixTransacaoCard({
           </Stack>
         </Box>
 
-        <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-          <PixValidacaoChip transacao={transacao} />
-        </Stack>
-
         <Box
           sx={{
             ...surfaces.fundoVerdeClaro,
@@ -136,23 +119,6 @@ export function PixTransacaoCard({
             ? `Rifas ${formatarRifasPix(transacao)}`
             : "Sem rifas vinculadas"}
         </Typography>
-
-        {mostrarAcoesValidacao && (
-          <Box
-            sx={{
-              pt: 0.25,
-              borderTop: "1px solid rgba(2, 27, 22, 0.08)",
-            }}
-          >
-            <PixValidacaoActions
-              transacao={transacao}
-              acaoEmAndamento={acaoEmAndamento}
-              onAceitar={onAceitarTransacao}
-              onNegar={onNegarTransacao}
-              compacto
-            />
-          </Box>
-        )}
       </Stack>
     </Paper>
   );

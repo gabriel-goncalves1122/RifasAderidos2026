@@ -1,7 +1,7 @@
 import { Box, InputAdornment, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
-import { secretariaComponents } from "../../styles/components";
+import { components } from "@/shared/tokens/components";
 
 interface SecretariaFilterBarProps {
   busca: string;
@@ -23,7 +23,7 @@ export function SecretariaFilterBar({
         value={busca}
         onChange={(event) => onBuscaChange(event.target.value)}
         inputRef={searchInputRef}
-        sx={secretariaComponents.searchField}
+        sx={components.searchField}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">

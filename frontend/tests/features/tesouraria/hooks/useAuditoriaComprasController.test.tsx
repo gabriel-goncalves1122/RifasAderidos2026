@@ -4,57 +4,49 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuditoriaComprasController } from "@/features/tesouraria/hooks/useAuditoriaComprasController";
 import { auditoriaComprasService } from "@/features/tesouraria/services/auditoriaComprasService";
 
+vi.mock("@/shared/hooks/useDebounce", () => ({
+  useDebounce: vi.fn((val) => val),
+}));
+
 vi.mock("@/features/tesouraria/services/auditoriaComprasService", () => ({
   auditoriaComprasService: {
     buscarHistoricoDetalhado: vi.fn(),
+    reenviarEmailComprovante: vi.fn(),
   },
 }));
 
 const historicoMock = [
   {
-    numero_rifa: "001",
+    id: "comprador_maria",
+    vendedorId: "aderido_ana",
+    vendedorNome: "Ana Vendedora",
+    vendedorCpf: "11122233344",
+    compradorId: "comprador_maria",
+    compradorNome: "Maria Souza",
+    compradorEmail: "maria@teste.com",
+    compradorTelefone: "35999990000",
+    dataReserva: "2026-05-01T10:00:00.000-03:00",
+    dataPagamento: "2026-05-02T10:00:00.000-03:00",
     status: "pago",
-    vendedor_id: "aderido_ana",
-    vendedor_nome: "Ana Vendedora",
-    vendedor_cpf: "11122233344",
-    comprador_id: "comprador_maria",
-    comprador_nome: "Maria Souza",
-    comprador_email: "maria@teste.com",
-    comprador_telefone: "35999990000",
-    data_reserva: "2026-05-01T10:00:00.000-03:00",
-    data_pagamento: "2026-05-02T10:00:00.000-03:00",
-    comprovante_url: "https://storage.mock/comprovante-maria.png",
-    valor: 10,
+    comprovanteUrl: "https://storage.mock/comprovante-maria.png",
+    bilhetes: ["001", "002"],
+    valorTotal: 20,
   },
   {
-    numero_rifa: "002",
-    status: "pago",
-    vendedor_id: "aderido_ana",
-    vendedor_nome: "Ana Vendedora",
-    vendedor_cpf: "11122233344",
-    comprador_id: "comprador_maria",
-    comprador_nome: "Maria Souza",
-    comprador_email: "maria@teste.com",
-    comprador_telefone: "35999990000",
-    data_reserva: "2026-05-01T10:00:00.000-03:00",
-    data_pagamento: "2026-05-02T10:00:00.000-03:00",
-    comprovante_url: "https://storage.mock/comprovante-maria.png",
-    valor: 10,
-  },
-  {
-    numero_rifa: "003",
+    id: "comprador_joao",
+    vendedorId: "aderido_bruno",
+    vendedorNome: "Bruno Vendedor",
+    vendedorCpf: "55566677788",
+    compradorId: "comprador_joao",
+    compradorNome: "João Lima",
+    compradorEmail: "joao@teste.com",
+    compradorTelefone: "35988887777",
+    dataReserva: "2026-05-10T10:00:00.000-03:00",
+    dataPagamento: "-",
     status: "pendente",
-    vendedor_id: "aderido_bruno",
-    vendedor_nome: "Bruno Vendedor",
-    vendedor_cpf: "55566677788",
-    comprador_id: "comprador_joao",
-    comprador_nome: "João Lima",
-    comprador_email: "joao@teste.com",
-    comprador_telefone: "35988887777",
-    data_reserva: "2026-05-10T10:00:00.000-03:00",
-    data_pagamento: "-",
-    comprovante_url: null,
-    valor: 10,
+    comprovanteUrl: null,
+    bilhetes: ["003"],
+    valorTotal: 10,
   },
 ];
 
@@ -96,13 +88,13 @@ describe("Hook-controller: useAuditoriaComprasController", () => {
     act(() => {
       result.current.setFiltros({
         ...result.current.filtros,
-        termoBusca: "003",
+        busca: "003",
       });
     });
 
     expect(result.current.filtrosAtivos).toBe(true);
     expect(result.current.comprasFiltradas).toHaveLength(1);
-    expect(result.current.comprasFiltradas[0].comprador_nome).toBe("João Lima");
+    expect(result.current.comprasFiltradas[0].compradorNome).toBe("João Lima");
 
     act(() => {
       result.current.limparFiltros();
@@ -120,7 +112,7 @@ describe("Hook-controller: useAuditoriaComprasController", () => {
     });
 
     const compraComComprovante = result.current.comprasFiltradas.find(
-      (compra) => Boolean(compra.comprovante_url),
+      (compra) => Boolean(compra.comprovanteUrl),
     );
 
     expect(compraComComprovante).toBeDefined();
@@ -185,5 +177,34 @@ describe("Hook-controller: useAuditoriaComprasController", () => {
 
     expect(result.current.comprasFiltradas).toEqual([]);
     expect(result.current.resumo.totalCompras).toBe(0);
+  });
+
+  it("Deve tratar falhas (catch) ao reenviar e-mail do comprovante", async () => {
+    vi.mocked(auditoriaComprasService.reenviarEmailComprovante).mockRejectedValueOnce(
+      new Error("Erro SMTP")
+    );
+
+    const { result } = renderHook(() => useAuditoriaComprasController());
+    await waitFor(() => {
+      expect(result.current.carregando).toBe(false);
+    });
+
+    const compra = historicoMock[0]; // status: pago
+
+    await act(async () => {
+      const sucesso = await result.current.reenviarEmailComprovante(compra);
+      expect(sucesso).toBe(false);
+    });
+
+    expect(result.current.feedbackEmailComprovante).toEqual({
+      tipo: "error",
+      mensagem: "Erro SMTP",
+    });
+
+    act(() => {
+      result.current.fecharFeedbackEmailComprovante();
+    });
+
+    expect(result.current.feedbackEmailComprovante).toBeNull();
   });
 });

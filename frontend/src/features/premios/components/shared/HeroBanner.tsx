@@ -3,9 +3,9 @@ import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import EditIcon from "@mui/icons-material/Edit";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
-import { colors } from "../../styles/colors";
-import { surfaces } from "../../styles/surfaces";
-import { typography } from "../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 import { reduceMotionSx } from "@/shared/tokens/motion";
 import { formatarDataExtenso, calcularDiasRestantes } from "../../utils/dateUtils";
 import type { InfoSorteio } from "../../types/sorteio";

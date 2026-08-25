@@ -11,18 +11,18 @@ import {
   Typography,
 } from "@mui/material";
 
-import { CompraAuditavel } from "../../../types/auditoriaCompras";
+import { TransacaoTesouraria } from "../../../types/auditoriaCompras";
 import {
   formatarDataAuditoria,
   statusLabelAuditoria,
 } from "../../../utils/auditoriaComprasUtils";
-import { colors } from "../../../styles/colors";
-import { surfaces } from "../../../styles/surfaces";
-import { components } from "../../../styles/components";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { components } from "@/shared/tokens/components";
 import { layout } from "../../../styles/layout";
 
 interface AuditoriaCompraDetalhesDialogProps {
-  compra: CompraAuditavel | null;
+  compra: TransacaoTesouraria | null;
   onClose: () => void;
 }
 
@@ -66,7 +66,7 @@ export function AuditoriaCompraDetalhesDialog({
             >
               <TextField
                 label="Comprador ID"
-                value={compra.comprador_id || "Sem comprador_id"}
+                value={compra.compradorId || "Sem compradorId"}
                 size="small"
                 disabled
               />
@@ -78,25 +78,25 @@ export function AuditoriaCompraDetalhesDialog({
               />
               <TextField
                 label="Vendedor"
-                value={compra.vendedor_nome}
+                value={compra.vendedorNome}
                 size="small"
                 disabled
               />
               <TextField
                 label="CPF do vendedor"
-                value={compra.vendedor_cpf}
+                value={compra.vendedorCpf}
                 size="small"
                 disabled
               />
               <TextField
                 label="Data da reserva"
-                value={formatarDataAuditoria(compra.data_reserva)}
+                value={formatarDataAuditoria(compra.dataReserva)}
                 size="small"
                 disabled
               />
               <TextField
                 label="Data do pagamento"
-                value={formatarDataAuditoria(compra.data_pagamento)}
+                value={formatarDataAuditoria(compra.dataPagamento)}
                 size="small"
                 disabled
               />

@@ -9,20 +9,17 @@ import {
   Typography,
 } from "@mui/material";
 
-import { colors } from "../../../../styles/colors";
-import { surfaces } from "../../../../styles/surfaces";
-import { typography } from "../../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 import { layout } from "../../../../styles/layout";
 import { PixTransacao } from "../../../../types/pixTransacoes";
 import {
   formatarDataPix,
   formatarMoedaPix,
   formatarRifasPix,
-  obterLabelStatusConciliacao,
   obterLabelStatusPagamento,
 } from "../../../../utils/pixTransacoesUtils";
-import { obterAuditoriaValidacaoPix } from "../../../../utils/pixValidacaoUtils";
-import { PixValidacaoChip } from "./PixValidacaoChip";
 
 interface PixTransacaoDetalhesDialogProps {
   transacao: PixTransacao | null;
@@ -60,8 +57,6 @@ export function PixTransacaoDetalhesDialog({
   onClose,
 }: PixTransacaoDetalhesDialogProps) {
   if (!transacao) return null;
-
-  const auditoria = obterAuditoriaValidacaoPix(transacao);
   const valor =
     transacao.statusPagamento === "PAID"
       ? transacao.valorPago
@@ -99,19 +94,6 @@ export function PixTransacaoDetalhesDialog({
 
       <DialogContent sx={{ pt: 1, pb: 3 }}>
         <Stack spacing={2}>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <PixValidacaoChip transacao={transacao} />
-            <Typography
-              component="span"
-              sx={{
-                alignSelf: "center",
-                color: colors.cinzaTexto,
-                fontSize: "0.86rem",
-              }}
-            >
-              {auditoria.descricao}
-            </Typography>
-          </Stack>
 
           <Box sx={layout.gridDois}>
             <CampoDetalhe label="Pagador" valor={transacao.compradorNome} />
@@ -132,10 +114,7 @@ export function PixTransacaoDetalhesDialog({
               label="Status do pagamento"
               valor={obterLabelStatusPagamento(transacao.statusPagamento)}
             />
-            <CampoDetalhe
-              label="Status do vínculo"
-              valor={obterLabelStatusConciliacao(transacao.statusConciliacao)}
-            />
+
             <CampoDetalhe label="Aderido" valor={transacao.aderido?.nome} />
             <CampoDetalhe
               label="Tipo de aderido"
@@ -148,17 +127,13 @@ export function PixTransacaoDetalhesDialog({
               }
             />
             <CampoDetalhe label="Rifas" valor={formatarRifasPix(transacao)} />
-            <CampoDetalhe label="Venda" valor={transacao.vendaId} />
+            <CampoDetalhe label="ID do Comprador" valor={transacao.compradorId} />
             <CampoDetalhe
               label="Código de autenticação"
               valor={transacao.codigoAutenticacao}
             />
             <CampoDetalhe label="NSU" valor={transacao.nsu} />
-            <CampoDetalhe label="Observação" valor={transacao.observacao} />
-            <CampoDetalhe
-              label="Motivo da negativa"
-              valor={transacao.motivoNegacao}
-            />
+              <CampoDetalhe label="Observação" valor={transacao.observacao} />
           </Box>
         </Stack>
       </DialogContent>

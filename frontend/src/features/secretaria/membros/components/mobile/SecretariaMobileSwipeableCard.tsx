@@ -10,7 +10,7 @@ import {
 
 import { CargoChip } from "../shared/CargoChip";
 import type { AderidoSecretaria } from "@/shared/types/secretaria";
-import { surfaces } from "../../../styles/surfaces";
+import { surfaces } from "@/shared/tokens/surfaces";
 
 const STATUS_DOT: Record<string, string> = {
   ativo: "#2e7d32",

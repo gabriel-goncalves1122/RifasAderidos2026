@@ -28,15 +28,9 @@ export function usePixController({
   } = usePixTransacoes();
 
   useEffect(() => {
-    if (variante === "mobile" && abaAtual === "conciliacao") {
-      setAbaAtual("visao-geral");
-    }
   }, [abaAtual, variante]);
 
-  const abaVisivel =
-    variante === "mobile" && abaAtual === "conciliacao"
-      ? "visao-geral"
-      : abaAtual;
+  const abaVisivel = abaAtual;
 
   const pixProps = useMemo(
     () => ({

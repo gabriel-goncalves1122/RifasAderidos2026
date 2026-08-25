@@ -7,9 +7,9 @@ import { Box, Paper, Stack, Typography } from "@mui/material";
 
 import { ResumoAuditoriaCompras } from "../../../types/auditoriaCompras";
 import { formatarMoedaAuditoria } from "../../../utils/auditoriaComprasUtils";
-import { colors } from "../../../styles/colors";
-import { surfaces } from "../../../styles/surfaces";
-import { typography } from "../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 
 function ContadorAuditoria({
   label,

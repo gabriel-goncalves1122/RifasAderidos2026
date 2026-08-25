@@ -25,7 +25,6 @@ export interface AderidoSecretaria {
   curso?: string;
   genero?: string;
   data_nascimento?: string;
-  dataNascimento?: string; // Legado frontend fallback
 
   cargo?: string | null;
   modalidade_adesao?: ModalidadeAdesao;
@@ -52,7 +51,7 @@ export interface FormNovoAderido {
   nome: string;
   curso: string;
   telefone: string;
-  dataNascimento: string;
+  data_nascimento: string;
   cargo: string;
   modalidade_adesao: ModalidadeAdesao;
 }

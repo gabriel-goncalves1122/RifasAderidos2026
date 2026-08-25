@@ -1,75 +1,54 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  agruparComprasAuditaveis,
   calcularResumoAuditoria,
   criarCsvAuditoriaCompras,
   FILTROS_AUDITORIA_COMPRAS_VAZIOS,
   filtrarComprasAuditaveis,
 } from "@/features/tesouraria/utils/auditoriaComprasUtils";
-import { TransacaoAuditoriaComprasBase } from "@/features/tesouraria/types/auditoriaCompras";
+import { TransacaoTesouraria } from "@/features/tesouraria/types/auditoriaCompras";
 
-const transacoes: TransacaoAuditoriaComprasBase[] = [
+const compras: TransacaoTesouraria[] = [
   {
-    numero_rifa: "001",
+    id: "comprador_maria",
+    dataReserva: "2026-05-01T10:00:00.000-03:00",
+    dataPagamento: "2026-05-01T10:05:00.000-03:00",
+    vendedorId: "vend_1",
+    vendedorNome: "Ana Vendedora",
+    vendedorCpf: "11122233344",
+    compradorId: "comprador_maria",
+    compradorNome: "Maria Souza",
+    compradorEmail: "maria@teste.com",
+    compradorTelefone: "35999990000",
     status: "pago",
-    vendedor_nome: "Ana Vendedora",
-    vendedor_cpf: "11122233344",
-    comprador_id: "comprador_maria",
-    comprador_nome: "Maria Souza",
-    comprador_email: "maria@teste.com",
-    comprador_telefone: "35999990000",
-    data_reserva: "2026-05-01T10:00:00.000-03:00",
-    comprovante_url: "https://storage.mock/comprovante-maria.png",
-    valor: 10,
+    comprovanteUrl: "https://storage.mock/comprovante-maria.png",
+    bilhetes: ["001", "002"],
+    valorTotal: 20,
   },
   {
-    numero_rifa: "002",
-    status: "pago",
-    vendedor_nome: "Ana Vendedora",
-    vendedor_cpf: "11122233344",
-    comprador_id: "comprador_maria",
-    comprador_nome: "Maria Souza",
-    comprador_email: "maria@teste.com",
-    comprador_telefone: "35999990000",
-    data_reserva: "2026-05-01T10:00:00.000-03:00",
-    comprovante_url: "https://storage.mock/comprovante-maria.png",
-    valor: 10,
-  },
-  {
-    numero_rifa: "003",
+    id: "comprador_joao",
+    dataReserva: "2026-05-10T10:00:00.000-03:00",
+    dataPagamento: null,
+    vendedorId: "vend_2",
+    vendedorNome: "Bruno Vendedor",
+    vendedorCpf: "55566677788",
+    compradorId: "comprador_joao",
+    compradorNome: "João Lima",
+    compradorEmail: "joao@teste.com",
+    compradorTelefone: "35988887777",
     status: "pendente",
-    vendedor_nome: "Bruno Vendedor",
-    vendedor_cpf: "55566677788",
-    comprador_id: "comprador_joao",
-    comprador_nome: "João Lima",
-    comprador_email: "joao@teste.com",
-    comprador_telefone: "35988887777",
-    data_reserva: "2026-05-10T10:00:00.000-03:00",
-    comprovante_url: null,
-    valor: 10,
+    comprovanteUrl: null,
+    bilhetes: ["003"],
+    valorTotal: 10,
   },
 ];
 
 describe("Utils: histórico de auditoria", () => {
-  it("Deve agrupar compras por comprador_id preservando bilhetes", () => {
-    const compras = agruparComprasAuditaveis(transacoes);
-    const compraMaria = compras.find(
-      (compra) => compra.comprador_id === "comprador_maria",
-    );
-
-    expect(compras).toHaveLength(2);
-    expect(compraMaria?.bilhetes).toEqual(["001", "002"]);
-    expect(compraMaria?.valor_total).toBe(20);
-  });
-
   it("Deve filtrar por busca, status e comprovante", () => {
-    const compras = agruparComprasAuditaveis(transacoes);
-
     expect(
       filtrarComprasAuditaveis(compras, {
         ...FILTROS_AUDITORIA_COMPRAS_VAZIOS,
-        termoBusca: "003",
+        busca: "003",
       }),
     ).toHaveLength(1);
 
@@ -89,7 +68,6 @@ describe("Utils: histórico de auditoria", () => {
   });
 
   it("Deve calcular resumo e gerar CSV auditável", () => {
-    const compras = agruparComprasAuditaveis(transacoes);
     const resumo = calcularResumoAuditoria(compras);
     const csv = criarCsvAuditoriaCompras(compras);
 

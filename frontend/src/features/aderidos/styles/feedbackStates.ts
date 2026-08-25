@@ -1,6 +1,6 @@
 import { SxProps, Theme } from "@mui/material";
 
-import { aderidosColors } from "@/shared/tokens/colors";
+import { colors } from "@/shared/tokens/colors";
 
 export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
   emptyState: {
@@ -23,11 +23,11 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    bgcolor: aderidosColors.background,
+    bgcolor: colors.fundoSuave,
   },
 
   statusHelpDialogTitle: {
-    color: aderidosColors.greenBlack,
+    color: colors.pretoEsverdeado,
     fontWeight: 900,
     borderBottom: "1px solid rgba(2, 27, 22, 0.10)",
   },
@@ -58,14 +58,14 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
   },
 
   statusHelpLabel: {
-    color: aderidosColors.greenBlack,
+    color: colors.pretoEsverdeado,
     fontWeight: 800,
     lineHeight: 1.2,
   },
 
   statusHelpDescription: {
     mt: 0.25,
-    color: aderidosColors.textMuted,
+    color: colors.cinzaTexto,
     lineHeight: 1.35,
   },
 
@@ -90,12 +90,12 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
       xs: "100%",
       sm: "auto",
     },
-    bgcolor: aderidosColors.background,
+    bgcolor: colors.fundoSuave,
     overflow: "hidden",
   },
 
   detalheDialogTitle: {
-    color: aderidosColors.greenBlack,
+    color: colors.pretoEsverdeado,
     fontWeight: 900,
     borderBottom: "1px solid rgba(2, 27, 22, 0.10)",
   },
@@ -106,7 +106,7 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
     gap: 0.35,
     p: 1.25,
     borderRadius: 2,
-    bgcolor: aderidosColors.background,
+    bgcolor: colors.fundoSuave,
     border: "1px solid rgba(6, 61, 49, 0.08)",
   },
 
@@ -116,7 +116,7 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
     gap: 0.35,
     p: 1.25,
     borderRadius: 2,
-    bgcolor: aderidosColors.greenSoft,
+    bgcolor: colors.verdeClaro,
     border: "1px solid rgba(6, 61, 49, 0.12)",
   },
 };

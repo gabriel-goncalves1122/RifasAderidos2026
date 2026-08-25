@@ -1,0 +1,433 @@
+Title: Live Content
+
+Description: Fetched live
+
+Source: https://www.mercadopago.com.br/developers/pt/docs/qr-code/payment-processing
+
+---
+
+Documentación - Mercado Pago DevelopersIntegrar o processamento de pagamentos - Etapas de integração - Mercado Pago Developers*:focus{box-shadow: 0 0 0 2px #fff, 0 0 0 3px #007EB5, 0 0 0 5px rgba(71, 154, 209, 0.3); outline: none;} *:focus-visible{box-shadow: 0 0 0 2px #fff, 0 0 0 3px #007EB5, 0 0 0 5px rgba(71, 154, 209, 0.3); outline: none;} *:focus:not(:focus-visible){box-shadow: none; outline: none;}.n-img-blur{background-position:center;background-size:cover;background-repeat:no-repeat;}/*! * Web Fonts from Fontspring.com * * All OpenType features and all extended glyphs have been removed. * Fully installable fonts can be purchased at https://www.fontspring.com * * The fonts included in this stylesheet are subject to the End User License you purchased * from Fontspring. The fonts are protected under domestic and international trademark and * copyright law. You are prohibited from modifying, reverse engineering, duplicating, or * distributing this font software. * * (c) 2010-2023 Fontspring * * * * * The fonts included are copyrighted by the vendor listed below. * * Vendor: Mark Simonson Studio * License URL: https://www.fontspring.com/licenses/mark-simonson-studio/webfont * * */ @font-face{font-family:'Proxima Nova';font-weight:300;font-display:swap;font-style:normal;src:url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff2') format('woff2'),url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff') format('woff');}@font-face{font-family:'Proxima Nova';font-weight:400;font-display:swap;font-style:normal;src:url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff2') format('woff2'),url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff') format('woff');}@font-face{font-family:'Proxima Nova';font-weight:600;font-display:swap;font-style:normal;src:url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.woff2') format('woff2'),url('https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.woff') format('woff');}window._n={ctx:{},img:{h:function(){}},islands:{}};1&&void 0!==arguments[1]?arguments[1]:{};window.dispatchEvent(new CustomEvent(n(t,e.id),{detail:e.payload}))}}();window.__wminit = {"client_version":"1.5.7","harvester":{"enable":true,"buffer":{"flushTime":5000},"flushTime":2500,"bufferSize":50},"custom_attributes":{"traceparent":"00-000000000000000066ef8a0dae841a8e-66ef8a0dae841a8e-00","application":"dx-devsite","scope":"prod-serverless2","criticality":"medium","environment":"production","path":"/:language(es|pt|en)/docs","service-name":"prod-serverless2.dx-devsite","service-version":"5.4.6-rc-3","platform":"mercadopago","platformId":"MP","site":"MLB","browser_name":"unknown","browser_version":"0","device":"/web/desktop","webview":false,"requestId":"776845ed-b64f-4dd0-8c9b-f343b36637b4","d2id":"776845ed-b64f-4dd0-8c9b-f343b36637b4","userIp":"74.125.217.100, 15.158.216.236, 10.53.255.172"},"instruments":{"features":{"error_js":{"sampling":1,"auto_instrument":true,"enabled":true},"failed_load_resources":{"sampling":1,"auto_instrument":true,"enabled":true},"heaviest_resources":{"sampling":1,"auto_instrument":true,"enabled":true},"resource_timing":{"sampling":1,"auto_instrument":true,"enabled":true},"session_trace":{"sampling":1,"auto_instrument":true,"enabled":true},"web_vitals":{"sampling":1,"auto_instrument":true,"enabled":true},"browser_navigation":{"sampling":1,"auto_instrument":true,"enabled":true},"performance":{"sampling":1,"auto_instrument":true,"enabled":true}},"signals":{"logs":{"sampling":1,"headers":{"Content-Type":"application/json"},"required_key":"false"},"metrics":{"sampling":1,"headers":{"Content-Type":"application/json"},"required_key":"false"},"spans":{"sampling":0.1,"headers":{"Content-Type":"application/json"},"required_key":"false"},"traces":{"sampling":0.1,"headers":{"Content-Type":"application/json"},"required_key":"false"}}},"otel":{"resources":{}}};(function(n){if(n){n.addRelease("dx-devsite","5.4.6-rc-3");n.setApplicationVersion("5.4.6-rc-3");n.setCustomAttribute("nordicVersion","9.7.1");}})(window.newrelic);if(window.WMANS){WMANS.setCustomAttributes({"nordicVersion":"9.7.1","nordicModulesVersion":"9.14.0","nordicWebkitVersion":"9.11.1","platformType":"web"});}_n.ctx.c={"deviceType":"desktop","platformType":"web","platform":{"siteId":"MLB","countryId":"BR","id":"MP","domain":"mercadopago.com.br"},"deviceInfo":{},"networkState":{"isConnectionExpensive":false,"isConnectionSlow":false}};_n.ctx.r={"flags":{"isBot":true,"loadable":false,"islands":false,"pipeableStream":false,"stream":false,"staticMarkup":true},"assets":{"cdn":"https:\u002F\u002Fhttp2.mlstatic.com","prefix":"https:\u002F\u002Fhttp2.mlstatic.com\u002Ffrontend-assets\u002Fdx-devsite\u002F"},"support":{"customElements":{"define":true,"builtIn":true},"imgLoading":true,"prefetch":true,"sameSite":true,"outdated":false,"share":false},"title":"Documentación - Mercado Pago Developers","framework":"nordic","nonce":"aLvaGshDg\u002FvPn8HVVyJtLA==","csrfToken":"3C6XZWdn-bOby5tmaw2AXMf4iUwTvBcCdp9Q"};_n.ctx.r.assets.manifest=new Map();_n.ctx.r.assets.mainAssetsNames={scripts:new Set(),styles:new Set()};window._gt={ctx:{}};(function(w,r){w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,"melidata");0,1)},emit:function(e,t){(n[e]||[]).map(function(n){n(t)}),(n["*"]||[]).map(function(n){n(e,t)})}}}return n});window.freya = mitt();{if(t===r)return;t=r,e.dispatchEvent("page",{id:r});const o=performance.now();var i,a;n&&(i=r,a=o-n,"undefined"!=typeof WMANS&&WMANS.recordHistogram&&WMANS.recordHistogram("nordic.hydration.time",a,"ms",{state:i,metric_version:"1.0.0"})),n=o}})}(),e.pageState="started"}();window.navigationHydrateWrapperStructure = [{"type":"wrapper"},{"type":"wrapper","childNodes":[{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper","childNodes":[{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper","childNodes":[{"type":"wrapper","childNodes":[{"type":"wrapper","childNodes":[{"type":"app"}]}]},{"type":"wrapper"},{"type":"wrapper"},{"type":"wrapper"}]}]}]}];
+  :root {
+    --andes-color-yellow-500: #ffe600;
+    --andes-color-blue-100: rgba(65, 137, 230, 0.1);
+    --andes-color-blue-150: rgba(65, 137, 230, 0.15);
+    --andes-color-blue-200: rgba(65, 137, 230, 0.2);
+    --andes-color-blue-300: rgba(65, 137, 230, 0.3);
+    --andes-color-blue-400: rgba(65, 137, 230, 0.4);
+    --andes-color-blue-500: #3483fa;
+    --andes-color-blue-600: #2968c8;
+    --andes-color-blue-700: #1f4e96;
+    --andes-color-blue-800: #183c73;
+    --andes-color-fill-brand: var(--andes-color-yellow-500);
+    --andes-color-text-brand: rgba(0, 0, 0, 0.9);
+    --andes-landings-color-fill-brand: var(--andes-color-yellow-500);
+    --andes-landings-color-fill-brand-secondary: #ffd400;
+    --andes-landings-color-fill-brand-tertiary: #ffe600;
+    --andes-landings-color-middle: #333333;
+    --andes-landings-button-theme-white-background: #3483fa;
+    --andes-landings-button-theme-white-text-color: #ffffff;
+    --andes-landings-button-theme-white-hover-background: #2968c8;
+    --andes-landings-button-theme-white-pressed-background: #1f4e96;
+  }
+@font-face{font-family:'Proxima Nova';font-weight:300;font-style:normal;src:url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff2) format("woff2"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff) format("woff"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.ttf) format("truetype")}@font-face{font-family:'Proxima Nova';font-weight:400;font-style:normal;src:url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff2) format("woff2"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff) format("woff"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.ttf) format("truetype")}@font-face{font-family:'Proxima Nova';font-weight:600;font-style:normal;src:url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.woff2) format("woff2"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.woff) format("woff"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.ttf) format("truetype")}@font-face{ font-family:'Proxima Nova'; font-weight: 800; font-style: bolder; src: url("https://http2.mlstatic.com/frontend-assets/dx-devsite/fonts/proximanova-extrabold-webfont.woff2") format("woff2"), url("https://http2.mlstatic.com/frontend-assets/dx-devsite/fonts/proximanova-extrabold-webfont.woff") format("woff"); } @font-face{font-family:'Proxima Nova';font-weight:700;font-style:normal;src:url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-bold.woff2) format("woff2"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-bold.woff) format("woff"),url(https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-bold.ttf) format("truetype")}InicioDocumentaçãoRecursosParceriasComunidadeEntrarCriar a sua contaDocumentaçãoConsulte as informações necessárias para integrar nossas soluções.Pagamentos onlinePagamentos presenciaisPlataformas de e-commerceTeste o funcionamento das soluçõesMCP ServerNovoReferência APIBibliotecas SDKMercado Pago CLINovoComeçando agora?Visite a página de Primeiros passos para aprender a integrar.RecursosConfira as atualizações das nossas soluções e do funcionamento do sistema ou peça suporte técnico.ChangelogStatus Mercado PagoSuporteCom minha contaCom minha integraçãoParceriasConheça nosso programa para agências ou desenvolvedores que oferecem serviços de integração e vendedores que desejam contratá-los.Sobre o programaPara agênciasPara desenvolvedoresPara plataformasComunidadeFique por dentro das últimas novidades, peça ajuda a outros integradores e compartilhe seu conhecimento.NotíciasNewsletterComunidade no DiscordCanal no Youtube{if(!t.target||1!==t.target.nodeType)return;const o=t.target.closest('[data-dx-action-type="dropdown"]');if(o){if("Enter"!==t.key)return;n(o);const A=e.querySelector(".dx-navigation-header-card__content--active a");A&&A.focus()}})})(document)Pagamentos online Sem programaçãoLink de pagamentoPagamento com link ou botão.Planos de assinaturaPagamentos recorrentes sem programação.Com programaçãoCheckout ProPronto para configurar.Checkout BricksMódulos para montar.Checkout TransparenteControle total.AssinaturasPagamentos recorrentes com programação.PlataformasShopifyWooCommerceVTEXLoja IntegradaPrestashopCommerce CloudWixMostrar maisPagamentos presenciais Mercado Pago PointMaquininhas de cartões.QR CodeCódigo para escanear.Ferramentas e recursos Gerenciamento de integraçõesIntegraçõesSoluções de pagamento integradas.Detalhes da aplicaçãoGuia para gerenciar integrações.CredenciaisChaves de acesso seguro.TestesTestes de funcionamento.QualidadeMedição de desempenho.ColaboradoresGestão de acessosFerramentasIntegrações com IAGuia para desenvolver com LLMs.Biblioteca de promptsNovoComandos para IAMCP ServerRecurso para agentes de IA.Mercado Pago CLINovoInterface de linha de comando.RelatóriosDetalhamento de operações.SegurançaProtocolos e normativas.AtualizaçõesChangelogHistórico de alterações.Status Mercado PagoOperacionalidade do serviço.APIs e SDKs Referência APIEndpoints e parâmetros.Bibliotecas SDKKit técnico de desenvolvimento. {
+            group.addEventListener('mouseenter', handleMouseEnter);
+            group.addEventListener('keypress', handleMouseEnter);
+            group.addEventListener('mouseleave', handleMouseLeave);
+          });
+        })();
+  
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5TD2V4H');
+  
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-XJRJL56B0Z', {
+      send_page_view: true,
+      scroll: true,
+      click: true,
+      view_search_results: true,
+      file_download: true,
+      form_start: true,
+      form_submit: true,
+      video_start: true,
+      video_progress: true,
+      video_complete: true
+    });
+
+    window.gtag = gtag;
+  QR CodeCódigo para escanear.Visão geralEtapas de integraçãoCriar aplicaçãoCriar loja e caixaIntegrar o processamento de pagamentosConfigurar notificaçõesConfigurar notificações de ordersConfigurar notificações opcionaisTestar a integraçãoRealizar compra testeMedir a qualidade da integraçãoSubir em produçãoRecursosStatus de uma order e de uma transaçãoMigrar para a API de OrdersComo migrar da API Pedidos Presenciais para a API de OrdersComo migrar da API Pedidos Presenciais V2 para a API de OrdersComo migrar da API QR Modelo Dinâmico para a API de OrdersCredenciaisDados da integraçãoSegurançaContas de testeCartões de testeRelatóriosLiberaçõesUsos do relatórioGerar relatórioCampos do relatórioDinheiro em contaUsos do relatórioGerar relatórioCampos do relatórioDocumentaçãoQR CodeEtapas de integraçãoIntegrar o processamento de pagamentosRecursos para IACopiar página para LLMsExibir como MarkdownIntegrar o processamento de pagamentos
+O processamento de pagamentos com QR code  é realizado por meio da criação de orders que incluem uma transação de pagamento associada. Ao criar uma order, o comprador poderá realizar o pagamento de forma presencial escaneando o código.
+Existem três modelos de QR Code  disponíveis para integração, definidos no momento da criação da order:
+
+Modelo estático: Neste modelo, um único QR code  associado ao caixa criado previamente recebe as informações de cada order gerada.
+Modelo dinâmico: Um QR code  exclusivo e de pagamento único é gerado para cada transação, contendo os dados específicos da order criada.
+Modelo híbrido: Permite que o pagamento seja realizado tanto pelo QR estático quanto pelo dinâmico. A order é vinculada ao QR code  estático do caixa, enquanto também é gerado um QR dinâmico simultaneamente. Uma vez que o pagamento seja realizado com qualquer um dos dois códigos, o outro ficará automaticamente desabilitado para uso.
+
+Esta integração permite criar, processar e cancelar orders, além de realizar reembolsos e consultar informações e atualizações de status das transações.
+Para definir se o parcelamento será com ou sem juros, é necessário configurar essa opção previamente na sua conta do Mercado Pago, antes da criação da order. Consulte as instruções para configurar o parcelamento com ou sem juros.
+Criar uma orderPara configurar o processamento de pagamentos com QR code,  é necessário identificar a loja e o caixa aos quais a order será associada. Lembre-se de que tanto a loja quanto o caixa devem ter sido criados previamente.Em seguida, você poderá criar a order. Para isso, envie uma solicitação POST ao endpoint /v1/ordersAPI, incluindo seu Access Token de testeChave privada da aplicação criada no Mercado Pago, que é utilizada no backend. Você pode acessá-la através de Suas integrações &gt; Dados da integração &gt; Testes &gt; Credenciais de teste. Durante a integração, utilize o Access Token de teste e, ao finalizar, substitua-o pelo Access Token de produção se se tratar de uma integração própria, ou pelo Access Token obtido mediante OAuth no caso de integrações de terceiros. Para mais informações, acesse a documentação. O Access Token de teste começa com o prefixo `APP_USR`.Acessar as credenciais de teste. Além disso, certifique-se de incluir o external_pos_id do caixa ao qual deseja atribuir a order, obtido na etapa anterior.curlCopiarcurl -X POST \
+    &#x27;https://api.mercadopago.com/v1/orders&#x27;\
+    -H &#x27;Content-Type: application/json&#x27; \
+       -H &#x27;X-Idempotency-Key: 0d5020ed-1af6-469c-ae06-c3bec19954bb&#x27; \
+       -H &#x27;Authorization: Bearer ACCESS_TOKEN&#x27; \
+    -d &#x27;{
+  &quot;type&quot;: &quot;qr&quot;,
+  &quot;total_amount&quot;: 50.00,
+  &quot;description&quot;: &quot;Smartphone&quot;,
+  &quot;external_reference&quot;: &quot;ext_ref_1234&quot;,
+  &quot;config&quot;: {
+    &quot;qr&quot;: {
+      &quot;external_pos_id&quot;: &quot;STORE001POS001&quot;,
+      &quot;mode&quot;: &quot;static&quot;
+    }
+  },
+  &quot;transactions&quot;: {
+    &quot;payments&quot;: [
+      {
+        &quot;amount&quot;: 50.00
+      }
+    ]
+  },
+  &quot;items&quot;: [
+    {
+      &quot;title&quot;: &quot;Smartphone&quot;,
+      &quot;unit_price&quot;: 50.00,
+      &quot;unit_measure&quot;: &quot;kg&quot;,
+      &quot;external_code&quot;: &quot;777489134&quot;,
+      &quot;quantity&quot;: 1,
+      &quot;external_categories&quot;: [
+        {
+          &quot;id&quot;: &quot;device&quot;
+        }
+      ]
+    }
+  ],
+  &quot;discounts&quot;: {
+    &quot;payment_methods&quot;: [
+      {
+        &quot;type&quot;: &quot;account_money&quot;,
+        &quot;new_total_amount&quot;: 47.28
+      }
+    ]
+  }
+}&#x27;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ParâmetroTipoDescriçãoObrigatoriedadeX-Idempotency-KeyheaderChave de idempotência. Esta chave garante que cada solicitação seja processada apenas uma vez, evitando duplicidades. Utilize um valor exclusivo no header da solicitação, como um UUID (Universally Unique Identifier - Identificador Universalmente Único) V4 ou uma string aleatória.ObrigatóriotypestringTipo de order associada à solução do Mercado Pago para a qual foi criada. Para pagamentos com QR Code  do Mercado Pago, o único valor possível é qr.Obrigatóriototal_amountstringValor total da order. Representa a soma das transações.  Pode conter dois decimais ou nenhum. Exemplo: 50.00.OpcionaldescriptionstringDescrição do produto ou serviço. O limite máximo é de 150 caracteres e não pode ser utilizada para enviar dados PII.Opcionalexternal_referencestringÉ a referência externa da order, atribuída no momento da criação. O limite máximo permitido é de 64 caracteres e os permitidos são: letras maiúsculas e minúsculas, números e os símbolos hífen (-) e sublinhado (_). O campo não pode ser utilizado para enviar dados PII. Além disso, esse valor deve ser único para cada order, pois atua como identificador dessa order.Obrigatórioexpiration_timestringEspecifica o período de validade da order no formato de duração ISO 8601 (ex.: P3Y6M4DT12H30M5S). Mínimo de 30 segundos e máximo de 3600 horas. Em todos os modos (QR Dinâmico, QR Estático e QR Híbrido), o valor padrão é de 15 minutos e o valor enviado é sempre respeitado.Opcionalconfig.qr.external_pos_idstringIdentificador externo do caixa, definido pelo integrador durante sua criação. Ao incluí-lo, a informação da order fica associada ao caixa e à loja previamente criados dentro do sistema Mercado Pago. Importante: O campo external_pos_id deve ter o mesmo valor definido como external_id na criação do seu caixa.ObrigatóriomodestringModo de QR code  associado à order. Os valores possíveis estão listados abaixo e, se nenhum for enviado, o valor padrão será static.  static: Modo estático, em que o QR code  estático associado ao caixa definido no campo external_pos_id recebe a informação da order. dynamic: Modo dinâmico, em que um QR code  único é gerado para cada transação, incluindo os dados específicos da order criada. Este código deve ser construído a partir da informação retornada no campo qr_data da resposta, cujo valor é exclusivo para cada order. hybrid: Permite que o pagamento seja realizado usando qualquer um dos dois modos, estático ou dinâmico, já que a order será vinculada ao QR code  estático associado ao caixa (external_pos_id), e um QR será gerado dinamicamente em paralelo. No entanto, apenas um dos QR gerados poderá ser pago pelo cliente.Opcionaltransactions.paymentsarrayO nó transactions contém informações sobre a transação associada à order. Quando o type for qr, podem ser incluídas transações de pagamento payments, que por sua vez contêm informações sobre a order de pagamento. Apenas uma transação de pagamento pode ser enviada por order.Obrigatóriotransactions.payments.amountstringValor do pagamento.  Pode conter dois decimais ou nenhum. Exemplo: 50.00.ObrigatórioPara mais detalhes sobre os parâmetros que devem ser enviados nesta solicitação, consulte nossa Referência de API.A resposta varia conforme o modelo de QR escolhido para a integração. Selecione abaixo a opção que corresponde ao seu caso.Modelo estáticoModelo dinâmicoModelo híbridoAo criar uma order especificando o campo config.qr.mode como static, o QR que deverá ser escaneado pelo cliente é o obtido na resposta à solicitação de criação da caixa, pois é esse que receberá as informações da order criada. Se a solicitação for bem-sucedida, a resposta retornará uma order com status created.Confira abaixo um exemplo de resposta para uma solicitação de criação de uma order para pagamentos com QR code  estático.Durante o desenvolvimento da integração, é possível escanear os códigos QR gerados utilizando o aplicativo do Mercado Pago, acessando-o com uma conta de teste de comprador. Para mais informações, consulte a documentação Testar a integração.jsonCopiar{
+   &quot;id&quot;: &quot;ORD01K371WBFDS4MD9JG0K8ZMECBE&quot;,
+   &quot;type&quot;: &quot;qr&quot;,
+   &quot;processing_mode&quot;: &quot;automatic&quot;,
+   &quot;external_reference&quot;: &quot;ext_ref_1234&quot;,
+   &quot;description&quot;: &quot;Smartphone&quot;,
+   &quot;total_amount&quot;: &quot;50.00&quot;,
+   &quot;expiration_time&quot;: &quot;PT16M&quot;,
+   &quot;country_code&quot;: &quot;BRA&quot;,
+   &quot;user_id&quot;: &quot;{{USER_ID}}&quot;,
+   &quot;status&quot;: &quot;created&quot;,
+   &quot;status_detail&quot;: &quot;created&quot;,
+   &quot;currency&quot;: &quot;BRL&quot;,
+   &quot;created_date&quot;: &quot;2025-08-21T19:32:21.621Z&quot;,
+   &quot;last_updated_date&quot;: &quot;2025-08-21T19:32:21.621Z&quot;,
+   &quot;integration_data&quot;: {
+       &quot;application_id&quot;: &quot;{{APPLICATION_ID}}&quot;
+   },
+   &quot;transactions&quot;: {
+       &quot;payments&quot;: [
+           {
+               &quot;id&quot;: &quot;PAY01K371WBFDS4MD9JG0KCV6PRKQ&quot;,
+               &quot;amount&quot;: &quot;50.00&quot;,
+               &quot;status&quot;: &quot;created&quot;,
+               &quot;status_detail&quot;: &quot;ready_to_process&quot;
+           }
+       ]
+   },
+   &quot;config&quot;: {
+       &quot;qr&quot;: {
+           &quot;external_pos_id&quot;: &quot;STORE001POS001&quot;,
+           &quot;mode&quot;: &quot;static&quot;
+       }
+   },
+   &quot;items&quot;: [
+       {
+           &quot;title&quot;: &quot;Smartphone&quot;,
+           &quot;unit_price&quot;: &quot;50.00&quot;,
+           &quot;unit_measure&quot;: &quot;kg&quot;,
+           &quot;external_code&quot;: &quot;777489134&quot;,
+           &quot;quantity&quot;: 1,
+           &quot;external_categories&quot;: [
+               {
+                   &quot;id&quot;: &quot;device&quot;
+               }
+           ]
+       }
+   ],
+   &quot;discounts&quot;: {
+       &quot;payment_methods&quot;: [
+           {
+               &quot;type&quot;: &quot;account_money&quot;,
+               &quot;new_total_amount&quot;: &quot;47.28&quot;
+           }
+       ]
+   }
+}Armazene o id da order e o id do pagamento (transactions.payments.id) retornados na criação. Eles são necessários para operações futuras e para validar notificações. Consulte Recursos para mais detalhes sobre status da order e transação.A order criada será automaticamente vinculada ao caixa especificado na solicitação, permitindo que o comprador realize o pagamento no ponto de venda físico. Além disso, a vinculação também facilita a conciliação. Após o pagamento, a transação será processada de forma integrada.
+Cancelar orderO cancelamento de uma order só pode ser realizado quando seu status for created. Se a solicitação de cancelamento for feita com outro status, a API retornará um erro informando o conflito.Para cancelar uma order, envie um POST para o endpoint /v1/orders/{order_id}/cancelAPI, incluindo seu Access Token de testeChave privada da aplicação criada no Mercado Pago, que é utilizada no backend. Você pode acessá-la através de Suas integrações &gt; Dados da integração &gt; Testes &gt; Credenciais de teste. Durante a integração, utilize o Access Token de teste e, ao finalizar, substitua-o pelo Access Token de produção se se tratar de uma integração própria, ou pelo Access Token obtido mediante OAuth no caso de integrações de terceiros. Para mais informações, acesse a documentação. O Access Token de teste começa com o prefixo `APP_USR`.Acessar as credenciais de teste. Também é necessário enviar o id da order que deseja cancelar, obtido na resposta à sua criação.curlCopiarcurl --location --request PUT &#x27;https://api.mercadopago.com/v1/orders/ORD01K371WBFDS4MD9JG0K8ZMECBE&#x27; \
+--header &#x27;Content-Type: application/json&#x27; \
+--header &#x27;Authorization: Bearer {{ACCESS_TOKEN}}&#x27; \
+--data-raw &#x27;{
+    &quot;status&quot;: &quot;canceled&quot;
+}&#x27;Se a solicitação for bem-sucedida, a resposta incluirá o campo status com o valor canceled.jsonCopiar{
+   &quot;id&quot;: &quot;ORD01K371WBFDS4MD9JG0K8ZMECBE&quot;,
+   &quot;type&quot;: &quot;qr&quot;,
+   &quot;processing_mode&quot;: &quot;automatic&quot;,
+   &quot;external_reference&quot;: &quot;ext_ref_1234&quot;,
+   &quot;description&quot;: &quot;Smartphone&quot;,
+   &quot;total_amount&quot;: &quot;50.00&quot;,
+   &quot;expiration_time&quot;: &quot;PT16M&quot;,
+   &quot;country_code&quot;: &quot;BRA&quot;,
+   &quot;user_id&quot;: &quot;{{USER_ID}}&quot;,
+   &quot;status&quot;: &quot;canceled&quot;,
+   &quot;status_detail&quot;: &quot;canceled&quot;,
+   &quot;currency&quot;: &quot;BRL&quot;,
+   &quot;created_date&quot;: &quot;2025-08-21T19:32:21.621Z&quot;,
+   &quot;last_updated_date&quot;: &quot;2025-08-21T19:33:52.012Z&quot;,
+   &quot;integration_data&quot;: {
+       &quot;application_id&quot;: &quot;{{APPLICATION_ID}}&quot;
+   },
+   &quot;transactions&quot;: {
+       &quot;payments&quot;: [
+           {
+               &quot;id&quot;: &quot;PAY01K371WBFDS4MD9JG0KCV6PRKQ&quot;,
+               &quot;amount&quot;: &quot;50.00&quot;,
+               &quot;status&quot;: &quot;canceled&quot;,
+               &quot;status_detail&quot;: &quot;canceled_by_api&quot;
+           }
+       ]
+   },
+   &quot;config&quot;: {
+       &quot;qr&quot;: {
+           &quot;external_pos_id&quot;: &quot;STORE001POS001&quot;,
+           &quot;mode&quot;: &quot;static&quot;
+       }
+   },
+   &quot;items&quot;: [
+       {
+           &quot;title&quot;: &quot;Smartphone&quot;,
+           &quot;unit_price&quot;: &quot;50.00&quot;,
+           &quot;unit_measure&quot;: &quot;kg&quot;,
+           &quot;external_code&quot;: &quot;777489134&quot;,
+           &quot;quantity&quot;: 1,
+           &quot;external_categories&quot;: [
+               {
+                   &quot;id&quot;: &quot;device&quot;
+               }
+           ]
+       }
+   ],
+   &quot;discounts&quot;: {
+       &quot;payment_methods&quot;: [
+           {
+               &quot;type&quot;: &quot;account_money&quot;,
+               &quot;new_total_amount&quot;: &quot;47.28&quot;
+           }
+       ]
+   }
+}
+Reembolsar uma orderÉ possível reembolsar uma order criada por meio da nossa API. Neste caso, o reembolso será sempre uma devolução total do valor da order. Para efetuar o reembolso de uma order via API, ela deve estar com o status processed. Se o status for diferente, a API retornará uma mensagem de erro indicando o conflito.Uma order poderá ser reembolsada via API até 180 dias após a realização do pagamento. Após esse período, não será possível efetuar a devolução.Para realizar o reembolso de uma order, envie um POST para o endpoint /v1/orders/{order_id}/refundAPI, incluindo seu Access Token de testeChave privada da aplicação criada no Mercado Pago, que é utilizada no backend. Você pode acessá-la através de Suas integrações &gt; Dados da integração &gt; Testes &gt; Credenciais de teste. Durante a integração, utilize o Access Token de teste e, ao finalizar, substitua-o pelo Access Token de produção se se tratar de uma integração própria, ou pelo Access Token obtido mediante OAuth no caso de integrações de terceiros. Para mais informações, acesse a documentação. O Access Token de teste começa com o prefixo `APP_USR`.Acessar as credenciais de teste. Também é necessário informar o id da order que deseja reembolsar, obtido na resposta à sua criação.curlCopiarcurl --location --request POST &#x27;https://api.mercadopago.com/v1/orders/ORDER_ID/refunds&#x27; \
+--header &#x27;Content-Type: application/json&#x27; \
+--header &#x27;X-Idempotency-Key: 91b59be9-27b8-449f-a6bd-32dca8b424cd&#x27; \
+--header &#x27;Authorization: Bearer {{ACCESS_TOKEN}}&#x27;Se a solicitação for bem-sucedida, a resposta trará o status accredited e um novo nó transactions.refunds, que conterá os detalhes do reembolso, além do id do pagamento original e o id da transação de reembolso.jsonCopiar{
+    &quot;id&quot;: &quot;ORD01JV391F8YM8EDEAG8CWZ0GM0N&quot;,
+    &quot;status&quot;: &quot;processed&quot;,
+    &quot;status_detail&quot;: &quot;accredited&quot;,
+    &quot;transactions&quot;: {
+        &quot;refunds&quot;: [
+            {
+                &quot;id&quot;: &quot;REF01JW7YS4YHV543DJ6JGYZBX6A0&quot;,
+                &quot;transaction_id&quot;: &quot;PAY01JVMKQQE6YW97CEQN3MJ666HD&quot;,
+                &quot;reference_id&quot;: &quot;{{REFERENCE_ID}}&quot;,
+                &quot;amount&quot;: &quot;50.00&quot;,
+                &quot;status&quot;: &quot;processing&quot;
+            }
+        ]
+    }
+}Na resposta da solicitação de reembolso, é criada uma nova transação do tipo refund com status processing. Para acompanhar o status final do reembolso, aguarde a notificação de atualização ou consulte os dados da order para verificar seu status. Quando o reembolso for confirmado, o status será alterado para refunded.
+Consultar dados de uma orderÉ possível consultar os dados de uma order e suas transações associadas, sejam pagamentos ou reembolsos, incluindo seus status ou valores.Para realizar a consulta, envie um GET ao endpoint /v1/orders/{order_id}API incluindo seu Access Token de testeChave privada da aplicação criada no Mercado Pago, que é utilizada no backend. Você pode acessá-la através de Suas integrações &gt; Dados da integração &gt; Testes &gt; Credenciais de teste. Durante a integração, utilize o Access Token de teste e, ao finalizar, substitua-o pelo Access Token de produção se se tratar de uma integração própria, ou pelo Access Token obtido mediante OAuth no caso de integrações de terceiros. Para mais informações, acesse a documentação. O Access Token de teste começa com o prefixo `APP_USR`.Acessar as credenciais de teste. Além disso, certifique-se de incluir o id da order obtido na resposta à sua criação.curlCopiarcurl --location --request GET &#x27;https://api.mercadopago.com/v1/orders/ORDER_ID&#x27; \
+--header &#x27;Authorization: Bearer {{ACCESS_TOKEN}}&#x27;Esta solicitação está disponível apenas para orders criadas há menos de 3 meses. Para acessar informações de orders mais antigas, é necessário contatar nosso atendimento ao cliente.Se a solicitação for bem-sucedida, a resposta retornará toda a informação da order, incluindo seu status, o status do pagamento e/ou o status do reembolso em tempo real.jsonCopiar{
+   &quot;id&quot;: &quot;ORD01K371WBFDS4MD9JG0K8ZMECBE&quot;,
+   &quot;type&quot;: &quot;qr&quot;,
+   &quot;processing_mode&quot;: &quot;automatic&quot;,
+   &quot;external_reference&quot;: &quot;ext_ref_1234&quot;,
+   &quot;description&quot;: &quot;Smartphone&quot;,
+   &quot;total_amount&quot;: &quot;50.00&quot;,
+   &quot;expiration_time&quot;: &quot;PT16M&quot;,
+   &quot;country_code&quot;: &quot;BRA&quot;,
+   &quot;user_id&quot;: &quot;{{USER_ID}}&quot;,
+   &quot;status&quot;: &quot;canceled&quot;,
+   &quot;status_detail&quot;: &quot;canceled&quot;,
+   &quot;currency&quot;: &quot;BRL&quot;,
+   &quot;created_date&quot;: &quot;2025-08-21T19:32:21.621Z&quot;,
+   &quot;last_updated_date&quot;: &quot;2025-08-21T19:33:52.012Z&quot;,
+   &quot;integration_data&quot;: {
+       &quot;application_id&quot;: &quot;{{APPLICATION_ID}}&quot;
+   },
+   &quot;transactions&quot;: {
+       &quot;payments&quot;: [
+           {
+               &quot;id&quot;: &quot;PAY01K371WBFDS4MD9JG0K8ZMECBE&quot;,
+               &quot;amount&quot;: &quot;50.00&quot;,
+               &quot;status&quot;: &quot;canceled&quot;,
+               &quot;status_detail&quot;: &quot;canceled_by_api&quot;
+           }
+       ]
+   },
+   &quot;config&quot;: {
+       &quot;qr&quot;: {
+           &quot;external_pos_id&quot;: &quot;STORE001POS001&quot;,
+           &quot;mode&quot;: &quot;static&quot;
+       }
+   },
+   &quot;items&quot;: [
+       {
+           &quot;title&quot;: &quot;Smartphone&quot;,
+           &quot;unit_price&quot;: &quot;50.00&quot;,
+           &quot;unit_measure&quot;: &quot;kg&quot;,
+           &quot;external_code&quot;: &quot;777489134&quot;,
+           &quot;quantity&quot;: 1,
+           &quot;external_categories&quot;: [
+               {
+                   &quot;id&quot;: &quot;device&quot;
+               }
+           ]
+       }
+   ],
+   &quot;discounts&quot;: {
+       &quot;payment_methods&quot;: [
+           {
+               &quot;type&quot;: &quot;account_money&quot;,
+               &quot;new_total_amount&quot;: &quot;47.28&quot;
+           }
+       ]
+   }
+}
+Após a integração do processamento de pagamentos, você poderá configurar as notificações. Anterior  Crear sucursal y caja  Aprende cómo crear tu sucursal y caja para asociar tus códigos QR.  Próximo  Configurar notificaciones  Las notificaciones son mensajes enviados por el servidor de Mercado Pago desde eventos que se realizan en tu aplicación. window.TETRIS_VERSION = "5.13.6";xVamos te redirecionar para o Mercado PagoA gestão de Colaboradores é feita através da sua conta Mercado Pago.Ir para o Mercado PagoCancelar {
+              const goButton = document.querySelector('.dx-collaborators-go-button');
+              const cancelButton = document.querySelector('.dx-collaborators-cancel-button');
+              const closeButton = document.querySelector('.dx-custom-modal__close-button');
+              
+              if (goButton) {
+                goButton.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open('/collaborators', '_blank');
+                  window.closeCollaboratorsModal();
+                });
+              }
+
+              if (cancelButton) {
+                cancelButton.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.closeCollaboratorsModal();
+                });
+              }
+
+              if (closeButton) {
+                closeButton.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.closeCollaboratorsModal();
+                });
+              }
+
+              const modalContainer = document.getElementById('dx-collaborators-modal-container');
+              if (modalContainer) {
+                modalContainer.addEventListener('click', function(e) {
+                  if (e.target === modalContainer || e.target.classList.contains('dx-custom-modal__backdrop')) {
+                    window.closeCollaboratorsModal();
+                  }
+                });
+              }
+
+              document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && window.dxCollaboratorsModalOpen) {
+                  window.closeCollaboratorsModal();
+                }
+              });
+            }, 100);
+          }
+          })();
+        NavegaçãoIntegraçõesDocumentaçãoReferência APIBiblioteca SDKRecursos e ComunidadeChangelogStatus Mercado PagoRelatório de errosSuporteContato comercialNotíciasNewsletterPrograma de parceriasMercado PagoSua contaTermos de usoPolíticas de privacidadePaís e idiomaBrasilArgentinaBrasilMéxicoUruguayColombiaChilePerúPortuguêsEspañolEnglishPortuguêsCopyright © 2026 Mercado Pago Instituição de Pagamento Ltda. CNPJ n.º 10.573.521/0001-91 / Av. das Nações Unidas, nº 3.003, Bonfim, Osasco/SP - CEP 06233-903DiscordYoutubeUsamos cookies para melhorar sua experiência no Mercado Pago. Consulte mais informações na nossa Central de privacidade.Aceitar cookiesConfigurar cookiesPronto! Suas preferências foram salvas.FecharOcorreu um erro. Por favor, tente novamente.Fechar(function(w,ccb){w[ccb]=w[ccb]||function(){(w[ccb].q=w[ccb].q||[]).push(arguments)};}(window,'_cookiesConsentBanner'));_cookiesConsentBanner('set','platformId','"MP"');_cookiesConsentBanner('set','siteId','"MLB"');_cookiesConsentBanner('set','domain','"mercadopago.com.br"');_cookiesConsentBanner('set','subdomain','"www"');_cookiesConsentBanner('set','preferences','{"advertising":true,"traceability":true,"performance":true,"functionality":true}');_cookiesConsentBanner('set','apiData','null');_cookiesConsentBanner('set','cookieDataList','[{"userId":null,"cookieName":"cookiesPreferencesNotLogged","path":"/","domain":"mercadopago.com.br","secure":true,"sameSite":"none","maxAge":31556900}]');_cookiesConsentBanner('send','start');{a.pageState="complete"},n)}();").replace(/&lt;/g,"<").replace(/&amp;/g,"&")}r.fullUrl=a,i&&(r.previousReferrer=i);var n,o,v,s,p=document.currentScript,d=p?p.dataset:{},l=d.userId;try{var u=c(d.isBot);s=u&&""!==u?JSON.parse(u):u}catch(e){s=d.isBot}try{var g=c(d.nativeWebview);n=g&&""!==g?JSON.parse(g):g}catch(e){n=d.nativeWebview}try{var b=c(d.webkit);o=b&&""!==b?JSON.parse(b):b}catch(e){o=d.webkit}try{var f=c(d.inApp);v=f&&""!==f?JSON.parse(f):f}catch(e){v=d.inApp}void 0!==l&&(r.userId=l),void 0===n&&void 0===o||(r.device={},void 0!==n&&(r.device.nativeWebview=n),void 0!==o&&(r.device.webkit=o)),void 0!==v&&(r.browser={inApp:v}),"true"===s&&(r.isAllowedBot=s),status=navigator.sendBeacon(t,JSON.stringify(r))}();melidata("configure","bfcache_tracking_enabled",false);melidata("add","id","5c2f754e-ede2-4c22-88cf-4a108fb1c60a");melidata("add","path","/developers/docs");melidata("add","server_id","5c2f754e-ede2-4c22-88cf-4a108fb1c60a");melidata("add","application",{"technologies":["nordic"],"version":"5.4.6-rc-3","server_hostname":"prod-serverless2.dx-devsite.t1784253631-fttnd","server_poolname":"dx-devsite-prod-serverless2","app_name":"dx-devsite","sdk_version":{"node_version":"7.4.0"},"business":"mercadopago","site_id":"MLB","secured":{}});melidata("add","user",{"uid":"776845ed-b64f-4dd0-8c9b-f343b36637b4","user_tags":[],"privacy_consents":{"advertising":true,"traceability":true,"performance":true,"functionality":true}});melidata("add","device",{"platform":"/web/desktop","user_agent":"Google-Jetski-Antigravity"});melidata("add","platform",{"http":{"cookies":{},"headers":{"host":"www.mercadopago.com.br","x-request-id":"776845ed-b64f-4dd0-8c9b-f343b36637b4","x-d2id":"776845ed-b64f-4dd0-8c9b-f343b36637b4","x-device-js":"true","x-platform":"newMP-mp"},"http_url":"https://www.mercadopago.com.br/developers/pt/docs/qr-code/payment-processing"}});melidata("add","event_data",{"partial_path":"/docs/qr-code/payment-processing/","language_selected":"pt","section":"docs","product":"qr-code"});melidata("send","view",{path:"/developers/docs",data:{}},"melidata");
+

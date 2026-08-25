@@ -107,7 +107,7 @@ describe("Service: secretariaService", () => {
         email: "primeiro@teste.com",
         nome: "PRIMEIRO ALUNO",
         curso: "ENGENHARIA CIVIL",
-        cargo: "aderido",
+        role: "aderido",
         modalidade_adesao: "completo",
         meta_vendas: 1200,
         status: "pendente",

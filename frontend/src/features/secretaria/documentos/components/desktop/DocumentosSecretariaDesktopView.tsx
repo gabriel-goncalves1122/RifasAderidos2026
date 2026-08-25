@@ -1,6 +1,6 @@
 import { Alert, Box, CircularProgress, Typography } from "@mui/material";
 
-import { secretariaColors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 import { DocumentoCard } from "../shared/DocumentoCard";
 import { DocumentosSecretariaHeader } from "../shared/DocumentosSecretariaHeader";
 import { DocumentosSecretariaToolbar } from "../shared/DocumentosSecretariaToolbar";
@@ -53,7 +53,7 @@ export function DocumentosSecretariaDesktopView({
         </Box>
       ) : documentos.length === 0 ? (
         <Typography
-          sx={{ py: 6, color: secretariaColors.cinzaTexto, textAlign: "center" }}
+          sx={{ py: 6, color: colors.cinzaTexto, textAlign: "center" }}
         >
           Nenhum documento encontrado.
         </Typography>

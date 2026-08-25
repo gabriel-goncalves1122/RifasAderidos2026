@@ -1,6 +1,6 @@
 import { fetchAPI } from "@/shared/services/api";
 
-import { TransacaoAuditoriaComprasBase } from "../types/auditoriaCompras";
+import { TransacaoTesouraria } from "../types/auditoriaCompras";
 
 export interface DadosAtualizacaoCompradorAuditoria {
   nome: string;
@@ -9,24 +9,24 @@ export interface DadosAtualizacaoCompradorAuditoria {
 }
 
 export interface ResultadoReenvioEmailComprovanteAuditoria {
-  comprador_id: string;
+  compradorId: string;
   email: string;
   rifas: string[];
   status: "aprovado";
 }
 
-function normalizarListaHistorico(valor: unknown): TransacaoAuditoriaComprasBase[] {
-  if (Array.isArray(valor)) return valor as TransacaoAuditoriaComprasBase[];
+function normalizarListaHistorico(valor: unknown): TransacaoTesouraria[] {
+  if (Array.isArray(valor)) return valor as TransacaoTesouraria[];
 
   if (!valor || typeof valor !== "object") return [];
 
   return Object.values(valor).filter(
-    (item): item is TransacaoAuditoriaComprasBase =>
+    (item): item is TransacaoTesouraria =>
       Boolean(item) && typeof item === "object",
   );
 }
 
-function normalizarHistorico(resposta: unknown): TransacaoAuditoriaComprasBase[] {
+function normalizarHistorico(resposta: unknown): TransacaoTesouraria[] {
   if (!resposta || typeof resposta !== "object") return [];
 
   if (Array.isArray(resposta)) {

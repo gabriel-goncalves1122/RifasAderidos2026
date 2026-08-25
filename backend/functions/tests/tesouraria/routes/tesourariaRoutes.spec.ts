@@ -13,6 +13,8 @@ jest.mock("../../../src/modules/tesouraria/tesourariaController", () => ({
       res.status(200).json({ acao: "atualizar_comprador_compra" }),
     reenviarEmailComprovante: (_req: any, res: any) =>
       res.status(200).json({ acao: "reenviar_email_comprovante" }),
+    notificarCorrecaoDados: (_req: any, res: any) =>
+      res.status(200).json({ acao: "notificar_correcao_dados" }),
     obterRelatorioTesouraria: (_req: any, res: any) =>
       res.status(200).json({ acao: "relatorio_tesouraria" }),
     obterHistoricoTesouraria: (_req: any, res: any) =>
@@ -41,6 +43,7 @@ describe("Rotas: /tesouraria", () => {
 
     const response = await request(app).get("/tesouraria/relatorio");
 
+    
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("relatorio_tesouraria");
   });
@@ -50,6 +53,7 @@ describe("Rotas: /tesouraria", () => {
 
     const response = await request(app).get("/tesouraria/historico");
 
+    
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("historico_tesouraria");
   });
@@ -65,6 +69,7 @@ describe("Rotas: /tesouraria", () => {
         telefone: "35999990000",
       });
 
+    
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("atualizar_comprador_compra");
   });
@@ -76,6 +81,7 @@ describe("Rotas: /tesouraria", () => {
       "/tesouraria/historico/compras/comprador_123/reenviar-email-comprovante",
     );
 
+    
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("reenviar_email_comprovante");
   });
@@ -85,6 +91,7 @@ describe("Rotas: /tesouraria", () => {
 
     const response = await request(app).get("/tesouraria/transacoes-bancarias");
 
+    
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("listar_pix_transacoes");
   });
@@ -96,6 +103,7 @@ describe("Rotas: /tesouraria", () => {
       "/tesouraria/transacoes-bancarias/resumo",
     );
 
+    
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("resumo_pix_transacoes");
   });
@@ -107,6 +115,7 @@ describe("Rotas: /tesouraria", () => {
       "/tesouraria/transacoes-bancarias/sincronizar",
     );
 
+    
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("sincronizar_pix_transacoes");
   });
@@ -118,6 +127,7 @@ describe("Rotas: /tesouraria", () => {
       "/tesouraria/transacoes-bancarias/tx_001/aceitar",
     );
 
+    
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("aceitar_pix_transacao");
   });
@@ -129,6 +139,7 @@ describe("Rotas: /tesouraria", () => {
       .post("/tesouraria/transacoes-bancarias/tx_001/negar")
       .send({ motivo: "Dados incorretos" });
 
+    
     expect(response.status).toBe(200);
     expect(response.body.acao).toBe("negar_pix_transacao");
   });

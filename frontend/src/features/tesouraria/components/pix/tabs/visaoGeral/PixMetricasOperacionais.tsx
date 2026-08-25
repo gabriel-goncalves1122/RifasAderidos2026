@@ -2,7 +2,7 @@ import { Box, Typography } from "@mui/material";
 
 import { PixTransacoesResumo } from "../../../../types/pixTransacoes";
 import { formatarMoedaPix } from "../../../../utils/pixTransacoesUtils";
-import { colors } from "../../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 
 interface PixMetricasOperacionaisProps {
   resumo: PixTransacoesResumo;

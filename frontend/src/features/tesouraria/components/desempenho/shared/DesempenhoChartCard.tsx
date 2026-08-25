@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
 import { Paper, Stack, Typography } from "@mui/material";
 
-import { colors } from "../../../styles/colors";
-import { surfaces } from "../../../styles/surfaces";
-import { typography } from "../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 
 interface DesempenhoChartCardProps {
   titulo: string;

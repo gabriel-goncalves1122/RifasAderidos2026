@@ -83,14 +83,15 @@ Regras:
 ### Auditoria De Compras
 
 Use `AuditoriaCompras*` para colecoes/telas e `AuditoriaCompra*` para item individual.
+**Nota de Descontinuação:** A aba e o fluxo manual de Reconciliação (`PixReconciliacaoTab`) foram abolidos permanentemente. A auditoria e reconciliação baseiam-se puramente na conciliação automatizada dos Webhooks e no uso da aba de Auditoria de Compras. Não recriar a aba de reconciliação.
 
 Regras:
 
 - componentes desktop ficam em `components/auditoriaCompras/desktop`;
 - componentes mobile ficam em `components/auditoriaCompras/mobile`;
 - dialogs, resumo, filtros agregadores, status e acoes ficam em `shared`;
-- contratos ficam em `types/auditoriaCompras.ts`;
-- regras puras ficam em `utils/auditoriaComprasUtils.ts`;
+- contratos ficam em `types/auditoriaCompras.ts` e DEVEM seguir o padrão `camelCase` por serem DTOs recebidos da API (ex: `TransacaoTesouraria`);
+- regras puras ficam em `utils/auditoriaComprasUtils.ts`. **ATENÇÃO:** É estritamente proibido agrupar grandes arrays de dados brutos do banco no Frontend (ex: unir milhares de bilhetes soltos em compras). O frontend deve receber os dados pré-agrupados do backend e apenas focar em filtros (busca, status) ou cálculos de resumo visual.
 - acesso ao backend fica em `services/auditoriaComprasService.ts`;
 - `useAuditoriaComprasController` controla loading, filtros, resumo, detalhes, edicao e exportacao.
 
@@ -132,8 +133,9 @@ Regras:
 
 - Componentes recebem dados e callbacks por props.
 - Hooks podem usar state, effects, services e utils.
-- Services usam o cliente de API do sistema e retornam dados normalizados.
-- Utils nao acessam React, DOM, rede, Firebase ou estado global.
+- **Estado Local para Filtros:** Filtros de UI (buscas, paginação local, abas internas de tabelas) devem privilegiar o uso de estado local do React (`useState` / `useReducer` dentro do controller) em vez de estado global ou URL (SearchParams), a menos que haja necessidade explícita de *deep linking*.
+- Services usam o cliente de API do sistema e retornam dados normalizados (sempre em `camelCase`).
+- Utils nao acessam React, DOM, rede, Firebase ou estado global. O processamento de dados (ex: map/reduce) em Utils deve ser evitado se a carga for extensa ou de responsabilidade do servidor.
 - Types nao importam componentes.
 - Nao crie barrels em subpastas — o unico barrel permitido e o `index.ts` raiz da feature, se necessario.
 - Filtros e estados compartilhados devem ter nomes claros, por exemplo `PixTransacoesFiltros`.

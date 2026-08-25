@@ -7,8 +7,8 @@ import { PremioCard } from "../shared/PremioCard";
 import { PremioSkeleton } from "../shared/PremioSkeleton";
 
 import { layout } from "../../styles/layout";
-import { typography } from "../../styles/typography";
-import { components } from "../../styles/components";
+import { typographyScale as typography } from "@/shared/tokens/typography";
+import { components } from "@/shared/tokens/components";
 import type { PremioData } from "../../types/premio";
 import type { InfoSorteio } from "../../types/sorteio";
 

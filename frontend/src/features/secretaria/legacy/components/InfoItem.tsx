@@ -3,7 +3,7 @@
 // ============================================================================
 import { Box, Typography } from "@mui/material";
 
-import { secretariaColors } from "../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 
 interface InfoItemProps {
   label: string;
@@ -16,9 +16,9 @@ export function InfoItem({ label, valor }: InfoItemProps) {
       sx={{
         p: 1.5,
         borderRadius: 2,
-        bgcolor: secretariaColors.fundoSuave,
+        bgcolor: colors.fundoSuave,
         border: "1px solid",
-        borderColor: secretariaColors.borda,
+        borderColor: colors.borda,
       }}
     >
       <Typography variant="caption" color="text.secondary">

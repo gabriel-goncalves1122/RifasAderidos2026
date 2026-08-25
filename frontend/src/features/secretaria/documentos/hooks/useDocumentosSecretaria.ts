@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useDebounce } from "@/shared/hooks/useDebounce";
+
 import { documentosSecretariaService } from "../services/documentosSecretariaService";
 import {
   filtrarDocumentosSecretaria,
@@ -55,9 +57,11 @@ export function useDocumentosSecretaria() {
     carregarDocumentos();
   }, [carregarDocumentos]);
 
+  const debouncedBusca = useDebounce(busca, 250);
+
   const documentosFiltrados = useMemo(
-    () => filtrarDocumentosSecretaria(documentos, { busca, area }),
-    [area, busca, documentos],
+    () => filtrarDocumentosSecretaria(documentos, { busca: debouncedBusca, area }),
+    [area, debouncedBusca, documentos],
   );
 
   const revogarPreviewUrl = useCallback(() => {

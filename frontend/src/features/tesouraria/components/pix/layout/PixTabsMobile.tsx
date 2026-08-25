@@ -1,8 +1,8 @@
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 
 import { safeAreaStickyTop } from "@/shared/tokens/safeArea";
-import { colors } from "../../../styles/colors";
-import { surfaces } from "../../../styles/surfaces";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
 import { ABAS_PIX } from "./pixTabsConfig";
 import { PixTabTooltip } from "./PixTabTooltip";
 import { PixTabsProps } from "./pixTabsTypes";

@@ -9,8 +9,8 @@ import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 import { aderidosMotion } from "@/shared/tokens/motion";
-import { secretariaColors } from "../../../styles/colors";
-import { surfaces } from "../../../styles/surfaces";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
 
 export interface ResumoSecretaria {
   total: number;
@@ -94,8 +94,8 @@ function ResumoCard({ item, featured }: { item: ResumoCardItem; featured: boolea
               display: "grid",
               placeItems: "center",
               flexShrink: 0,
-              color: featured ? secretariaColors.verdeEscuro : item.color,
-              bgcolor: featured ? secretariaColors.branco : `${item.color}18`,
+              color: featured ? colors.verdeEscuro : item.color,
+              bgcolor: featured ? colors.branco : `${item.color}18`,
               boxShadow: featured
                 ? "0 10px 22px rgba(2, 27, 22, 0.20)"
                 : "none",
@@ -106,7 +106,7 @@ function ResumoCard({ item, featured }: { item: ResumoCardItem; featured: boolea
 
           <Typography
             sx={{
-              color: featured ? "rgba(255,255,255,0.82)" : secretariaColors.cinzaTexto,
+              color: featured ? "rgba(255,255,255,0.82)" : colors.cinzaTexto,
               fontSize: { xs: "0.73rem", sm: "0.76rem" },
               fontWeight: 900,
               textTransform: "uppercase",
@@ -121,7 +121,7 @@ function ResumoCard({ item, featured }: { item: ResumoCardItem; featured: boolea
         <Box sx={{ minWidth: 0 }}>
           <Typography
             sx={{
-              color: featured ? secretariaColors.branco : secretariaColors.pretoEsverdeado,
+              color: featured ? colors.branco : colors.pretoEsverdeado,
               fontSize: featured
                 ? { xs: "1.55rem", sm: "1.8rem" }
                 : { xs: "1.34rem", sm: "1.56rem" },
@@ -136,7 +136,7 @@ function ResumoCard({ item, featured }: { item: ResumoCardItem; featured: boolea
 
           <Typography
             sx={{
-              color: featured ? "rgba(255,255,255,0.76)" : secretariaColors.cinzaTexto,
+              color: featured ? "rgba(255,255,255,0.76)" : colors.cinzaTexto,
               fontSize: { xs: "0.8rem", sm: "0.84rem" },
               fontStyle: "italic",
               mt: 0.65,

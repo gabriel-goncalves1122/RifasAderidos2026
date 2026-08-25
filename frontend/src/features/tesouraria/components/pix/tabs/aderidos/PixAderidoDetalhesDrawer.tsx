@@ -5,9 +5,9 @@ import {
   formatarDataPix,
   formatarMoedaPix,
 } from "../../../../utils/pixTransacoesUtils";
-import { colors } from "../../../../styles/colors";
-import { surfaces } from "../../../../styles/surfaces";
-import { typography } from "../../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 import { layout } from "../../../../styles/layout";
 
 interface PixAderidoDetalhesDrawerProps {

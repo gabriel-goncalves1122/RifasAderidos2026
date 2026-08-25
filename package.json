@@ -15,6 +15,7 @@
     "test:frontend": "npm --prefix frontend run test:run",
     "test:backend": "npm --prefix backend/functions test",
     "test": "npm run test:backend && npm run test:frontend",
-    "setup:linux": "bash scripts/dev/configurar-inotify-linux.sh"
+    "setup:linux": "bash scripts/dev/configurar-inotify-linux.sh",
+    "ngrok": "npx ngrok http 5001"
   }
 }

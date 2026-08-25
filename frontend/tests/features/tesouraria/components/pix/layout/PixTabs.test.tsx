@@ -48,9 +48,7 @@ describe("Componente: PixTabs", () => {
     expect(
       screen.getByRole("tab", { name: /validar transações/i }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("tab", { name: /vincular pagamentos/i }),
-    ).toBeInTheDocument();
+
     expect(screen.getByRole("tab", { name: /aderidos/i })).toBeInTheDocument();
   });
 

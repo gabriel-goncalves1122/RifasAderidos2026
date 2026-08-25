@@ -22,7 +22,7 @@ function montarReceitaPorDia(transacoes: TransacaoDesempenho[]) {
     (acc, transacao) => {
       if (statusNormalizado(transacao.status) !== "pago") return acc;
 
-      const dataConvertida = new Date(transacao.data_reserva);
+      const dataConvertida = new Date(transacao.dataReserva);
 
       if (Number.isNaN(dataConvertida.getTime())) return acc;
 

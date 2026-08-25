@@ -7,7 +7,7 @@ import PictureAsPdfOutlinedIcon from "@mui/icons-material/PictureAsPdfOutlined";
 import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-import { secretariaColors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 import { TIPOS_CADASTRO_DOCUMENTO } from "../../constants/documentosTipos";
 import type { TipoDocumentoCadastro } from "../../types/documentosSecretariaTypes";
 
@@ -68,8 +68,8 @@ export function AdicionarDocumentoMenu({
               gap: 1,
               p: 0.75,
               borderRadius: 999,
-              bgcolor: secretariaColors.branco,
-              border: `1px solid ${secretariaColors.borda}`,
+              bgcolor: colors.branco,
+              border: `1px solid ${colors.borda}`,
               boxShadow: "0 16px 36px rgba(2, 27, 22, 0.16)",
               zIndex: 5,
             }}
@@ -83,7 +83,7 @@ export function AdicionarDocumentoMenu({
                   sx={{
                     width: 38,
                     height: 38,
-                    color: secretariaColors.verdeEscuro,
+                    color: colors.verdeEscuro,
                     bgcolor: "rgba(6, 61, 49, 0.08)",
                     "&:hover": {
                       bgcolor: "rgba(6, 61, 49, 0.14)",

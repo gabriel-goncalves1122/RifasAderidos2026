@@ -68,9 +68,9 @@ export function ModalInspecaoIA({ transacao, dadosOcr, onClose }: Props) {
             p: 2,
           }}
         >
-          {transacao.comprovante_url && (
+          {transacao.comprovanteUrl && (
             <img
-              src={transacao.comprovante_url}
+              src={transacao.comprovanteUrl}
               alt="Comprovante Pix"
               style={{
                 maxWidth: "100%",
@@ -220,7 +220,7 @@ export function ModalInspecaoIA({ transacao, dadosOcr, onClose }: Props) {
               fontWeight="bold"
               color="text.primary"
             >
-              {transacao.comprador_nome}
+              {transacao.compradorNome}
             </Typography>
           </Box>
         </Box>

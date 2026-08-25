@@ -24,7 +24,7 @@ import { safeAreaStickyTop } from "@/shared/tokens/safeArea";
 import { AuditoriaComprasFiltrosProps } from "../shared/auditoriaComprasFiltrosTypes";
 import { FiltroComprovante } from "../../../types/auditoriaCompras";
 import { STATUS_FILTROS_AUDITORIA_COMPRAS } from "../../../utils/auditoriaComprasUtils";
-import { colors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 
 export function AuditoriaComprasFiltrosMobile({
   filtros,
@@ -57,9 +57,9 @@ export function AuditoriaComprasFiltrosMobile({
             fullWidth
             size="small"
             placeholder="Buscar compra, rifa ou contato"
-            value={filtros.termoBusca}
+            value={filtros.busca}
             onChange={(event) =>
-              onChangeFiltros({ ...filtros, termoBusca: event.target.value })
+              onChangeFiltros({ ...filtros, busca: event.target.value })
             }
             InputProps={{
               startAdornment: (

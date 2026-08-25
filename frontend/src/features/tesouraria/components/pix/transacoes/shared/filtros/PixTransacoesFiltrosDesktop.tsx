@@ -1,5 +1,7 @@
 import { Paper } from "@mui/material";
 
+import { colors } from "@/shared/tokens/colors";
+
 import { PixTransacoesCampoBusca } from "./PixTransacoesCampoBusca";
 import { PixTransacoesFiltrosChips } from "./PixTransacoesFiltrosChips";
 import { PixTransacoesFiltrosProps } from "./pixTransacoesFiltrosTypes";
@@ -15,8 +17,8 @@ export function PixTransacoesFiltrosDesktop({
         p: 2,
         mb: 3,
         borderRadius: 2.25,
-        bgcolor: "#FFFFFF",
-        border: "1px solid rgba(2, 27, 22, 0.10)",
+        bgcolor: colors.branco,
+        border: `1px solid ${colors.borda}`,
       }}
     >
       <PixTransacoesCampoBusca filtros={filtros} onChangeFiltros={onChangeFiltros} />

@@ -71,7 +71,11 @@ export function CheckoutDadosCompradorForm({
       <TextField
         label="E-mail opcional"
         fullWidth
-        inputProps={{ "data-testid": "checkout-email" }}
+        type="email"
+        inputProps={{ 
+          "data-testid": "checkout-email",
+          autoCapitalize: "none" 
+        }}
         error={Boolean(errors.email)}
         helperText={
           errors.email?.message || "Para enviar comprovante (opcional)."

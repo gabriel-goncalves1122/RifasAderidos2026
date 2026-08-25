@@ -15,6 +15,9 @@ import {
   Typography,
 } from "@mui/material";
 
+import { colors } from "@/shared/tokens/colors";
+import { components } from "@/shared/tokens/components";
+
 import { AuditoriaComprasFiltrosProps } from "../shared/auditoriaComprasFiltrosTypes";
 import { FiltroComprovante } from "../../../types/auditoriaCompras";
 import { STATUS_FILTROS_AUDITORIA_COMPRAS } from "../../../utils/auditoriaComprasUtils";
@@ -34,8 +37,8 @@ export function AuditoriaComprasFiltrosDesktop({
         p: { sm: 1.75, md: 2 },
         mb: 2.5,
         borderRadius: 2.25,
-        bgcolor: "#FFFFFF",
-        border: "1px solid rgba(2, 27, 22, 0.10)",
+        bgcolor: colors.branco,
+        border: `1px solid ${colors.borda}`,
         boxShadow: "0 12px 28px rgba(2, 27, 22, 0.05)",
       }}
     >
@@ -49,7 +52,7 @@ export function AuditoriaComprasFiltrosDesktop({
           <Box>
             <Typography
               sx={{
-                color: "#021B16",
+                color: colors.textoForte,
                 fontWeight: 950,
                 fontSize: "1rem",
                 lineHeight: 1.15,
@@ -57,7 +60,7 @@ export function AuditoriaComprasFiltrosDesktop({
             >
               Filtros da auditoria
             </Typography>
-            <Typography sx={{ color: "#526760", fontSize: "0.84rem", mt: 0.3 }}>
+            <Typography sx={{ color: colors.textoSuave, fontSize: "0.84rem", mt: 0.3 }}>
               Localize uma compra por comprador, contato, vendedor ou rifa.
             </Typography>
           </Box>
@@ -69,15 +72,15 @@ export function AuditoriaComprasFiltrosDesktop({
               disabled={!possuiResultados}
               sx={{
                 borderRadius: 2,
-                bgcolor: "#063D31",
-                color: "#FFFFFF",
+                bgcolor: colors.verdeEscuro,
+                color: colors.branco,
                 fontWeight: 850,
                 textTransform: "none",
                 px: 1.5,
-                "&:hover": { bgcolor: "#052F26" },
+                "&:hover": { bgcolor: colors.verdeMaisEscuro },
                 "&.Mui-disabled": {
-                  bgcolor: "#EAF3EF",
-                  color: "#526760",
+                  bgcolor: colors.fundoVerdeSuave,
+                  color: colors.textoSuave,
                 },
               }}
             >
@@ -91,8 +94,8 @@ export function AuditoriaComprasFiltrosDesktop({
                   disabled
                   sx={{
                     borderRadius: 2,
-                    color: "#063D31",
-                    bgcolor: "#EAF3EF",
+                    color: colors.verdeEscuro,
+                    bgcolor: colors.fundoVerdeSuave,
                     fontWeight: 850,
                     textTransform: "none",
                     px: 1.5,
@@ -118,21 +121,21 @@ export function AuditoriaComprasFiltrosDesktop({
           <TextField
             size="small"
             placeholder="Buscar comprador, CPF, e-mail, telefone ou rifa"
-            value={filtros.termoBusca}
+            value={filtros.busca}
             onChange={(event) =>
-              onChangeFiltros({ ...filtros, termoBusca: event.target.value })
+              onChangeFiltros({ ...filtros, busca: event.target.value })
             }
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ color: "#526760" }} />
+                  <SearchIcon sx={{ color: colors.textoSuave }} />
                 </InputAdornment>
               ),
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
-                bgcolor: "#F6F8F7",
+                bgcolor: components.searchField.backgroundColor,
               },
             }}
           />
@@ -149,7 +152,7 @@ export function AuditoriaComprasFiltrosDesktop({
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
-                bgcolor: "#F6F8F7",
+                bgcolor: components.searchField.backgroundColor,
               },
             }}
           />
@@ -166,7 +169,7 @@ export function AuditoriaComprasFiltrosDesktop({
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
-                bgcolor: "#F6F8F7",
+                bgcolor: components.searchField.backgroundColor,
               },
             }}
           />
@@ -186,7 +189,7 @@ export function AuditoriaComprasFiltrosDesktop({
               gridColumn: { sm: "1 / -1", lg: "auto" },
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
-                bgcolor: "#F6F8F7",
+                bgcolor: components.searchField.backgroundColor,
               },
             }}
           >
@@ -220,13 +223,13 @@ export function AuditoriaComprasFiltrosDesktop({
                     height: 34,
                     borderRadius: 999,
                     fontWeight: 850,
-                    bgcolor: ativo ? "#063D31" : "#FFFFFF",
-                    color: ativo ? "#FFFFFF" : "#063D31",
+                    bgcolor: ativo ? colors.verdeEscuro : colors.branco,
+                    color: ativo ? colors.branco : colors.verdeEscuro,
                     border: ativo
-                      ? "1px solid #063D31"
-                      : "1px solid rgba(6, 61, 49, 0.18)",
+                      ? `1px solid ${colors.verdeEscuro}`
+                      : `1px solid ${colors.verdeHover}`,
                     "&:hover": {
-                      bgcolor: ativo ? "#052F26" : "#EAF3EF",
+                      bgcolor: ativo ? colors.verdeMaisEscuro : colors.fundoVerdeSuave,
                     },
                   }}
                 />
@@ -240,7 +243,7 @@ export function AuditoriaComprasFiltrosDesktop({
               onClick={onLimparFiltros}
               sx={{
                 borderRadius: 2,
-                color: "#063D31",
+                color: colors.verdeEscuro,
                 fontWeight: 850,
                 textTransform: "none",
               }}

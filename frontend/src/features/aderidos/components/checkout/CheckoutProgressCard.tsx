@@ -1,7 +1,7 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Box, LinearProgress, Stack, Typography } from "@mui/material";
 
-import { aderidosColors } from "@/shared/tokens/colors";
+import { colors } from "@/shared/tokens/colors";
 import { aderidosMotion, reduceMotionSx } from "@/shared/tokens/motion";
 
 interface CheckoutProgressCardProps {
@@ -37,7 +37,7 @@ export function CheckoutProgressCard({
       >
         <Typography
           sx={{
-            color: aderidosColors.greenDark,
+            color: colors.verdeEscuro,
             fontWeight: 900,
             fontSize: "0.82rem",
           }}
@@ -47,7 +47,7 @@ export function CheckoutProgressCard({
 
         <Typography
           sx={{
-            color: aderidosColors.textMuted,
+            color: colors.cinzaTexto,
             fontWeight: 850,
             fontSize: "0.78rem",
           }}
@@ -63,7 +63,7 @@ export function CheckoutProgressCard({
         sx={{
           height: 8,
           borderRadius: 2,
-          bgcolor: aderidosColors.greenSoft,
+          bgcolor: colors.verdeClaro,
           "& .MuiLinearProgress-bar": {
             borderRadius: 2,
             background: "linear-gradient(90deg, #064532 0%, #0B5136 100%)",
@@ -77,14 +77,14 @@ export function CheckoutProgressCard({
         {pagamentoGerado && (
           <CheckCircleIcon
             fontSize="small"
-            sx={{ color: aderidosColors.greenDark }}
+            sx={{ color: colors.verdeEscuro }}
           />
         )}
 
         <Box>
           <Typography
             sx={{
-              color: aderidosColors.greenBlack,
+              color: colors.pretoEsverdeado,
               fontWeight: 900,
               lineHeight: 1.2,
             }}
@@ -93,7 +93,7 @@ export function CheckoutProgressCard({
           </Typography>
           <Typography
             sx={{
-              color: aderidosColors.textMuted,
+              color: colors.cinzaTexto,
               fontSize: "0.84rem",
               mt: 0.25,
             }}

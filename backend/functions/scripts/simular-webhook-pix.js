@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-const { createHmac } = require("crypto");
-
 function lerArg(nome, padrao) {
   const indice = process.argv.indexOf(`--${nome}`);
 
@@ -10,43 +8,35 @@ function lerArg(nome, padrao) {
   return process.argv[indice + 1] || padrao;
 }
 
-function assinatura(rawBody, token) {
-  return createHmac("sha256", token).update(rawBody, "utf8").digest("base64");
-}
-
 async function main() {
   const url = lerArg(
     "url",
     "http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/checkout/pix/webhook",
   );
-  const orderId = lerArg("order", "ORDE_TESTE_001");
-  const status = lerArg("status", "PAID");
-  const referenceId = lerArg("reference", "");
-  const token = process.env.PAGBANK_WEBHOOK_TOKEN || "dev-token";
+  
+  // No Mercado Pago, o webhook envia apenas um ID de pagamento.
+  // O backend deve usar esse ID para consultar o endpoint oficial.
+  // IMPORTANTE: Para testar localmente esse script sem mock, o ID
+  // deve ser de um pagamento válido na sua conta do Mercado Pago Sandbox.
+  const paymentId = lerArg("id", "1234567890");
+
   const payload = {
-    id: orderId,
-    reference_id: referenceId || undefined,
-    charges: [
-      {
-        id: lerArg("charge", "CHAR_TESTE_001"),
-        status,
-        amount: {
-          value: Number(lerArg("valor", "1000")),
-        },
-        paid_at: status === "PAID" ? new Date().toISOString() : undefined,
-        payment_response:
-          status === "DECLINED" || status === "CANCELED"
-            ? { message: lerArg("motivo", "Pagamento não confirmado pelo banco.") }
-            : undefined,
-      },
-    ],
+    action: "payment.updated",
+    api_version: "v1",
+    data: {
+      id: paymentId
+    },
+    date_created: new Date().toISOString(),
+    live_mode: false,
+    type: "payment",
+    user_id: 123456
   };
+  
   const rawBody = JSON.stringify(payload);
   const resposta = await fetch(url, {
     method: "POST",
     headers: {
-      "content-type": "application/json",
-      "x-pagbank-signature": assinatura(rawBody, token),
+      "content-type": "application/json"
     },
     body: rawBody,
   });

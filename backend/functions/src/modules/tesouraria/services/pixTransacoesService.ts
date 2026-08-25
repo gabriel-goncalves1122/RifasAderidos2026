@@ -1,14 +1,14 @@
 import * as admin from "firebase-admin";
 
-import { PagBankPixClient } from "../../../shared/services/pagBankPixClient";
-import { CheckoutPixWebhookService } from "../../rifas/services/checkoutPixWebhookService";
+import { MercadoPagoPixClient } from "../../../shared/services/mercadoPagoPixClient";
+import { CheckoutPixWebhookService } from "./checkoutPixWebhookService";
 import { Bilhete } from "../../types/models";
 import {
   BilheteComNumero,
   PixTransacao,
   PixTransacoesResumo,
   ResultadoSincronizacaoPix,
-} from "../types/tesourariaTypes";
+} from "../../tesouraria/types/tesourariaTypes";
 import {
   calcularResumoPixTransacoes,
   chaveCompra,
@@ -75,7 +75,7 @@ export class PixTransacoesService {
 
       if (!orderId) continue;
 
-      const pedido = await PagBankPixClient.consultarPedido(orderId);
+      const pedido = await MercadoPagoPixClient.consultarPedido(orderId);
 
       await CheckoutPixWebhookService.processarPayloadConfiavel(pedido);
       atualizados += 1;

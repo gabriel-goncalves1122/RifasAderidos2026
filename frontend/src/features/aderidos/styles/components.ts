@@ -1,6 +1,6 @@
 import { SxProps, Theme } from "@mui/material";
 
-import { aderidosColors } from "@/shared/tokens/colors";
+import { colors } from "@/shared/tokens/colors";
 import { aderidosMotion, reduceMotionSx } from "@/shared/tokens/motion";
 import { typographyScale } from "@/shared/tokens/typography";
 
@@ -30,15 +30,15 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
 
   blocoVendasTitulo: {
     ...typographyScale.pageTitle,
-    color: aderidosColors.greenBlack,
+    color: colors.pretoEsverdeado,
     letterSpacing: 0,
   },
 
   blocoVendasContador: {
     height: 30,
     borderRadius: 2,
-    bgcolor: aderidosColors.greenSoft,
-    color: aderidosColors.greenDark,
+    bgcolor: colors.verdeClaro,
+    color: colors.verdeEscuro,
     border: "1px solid rgba(6, 61, 49, 0.12)",
     fontWeight: 850,
     boxShadow: "0 6px 14px rgba(2, 27, 22, 0.045)",
@@ -76,9 +76,9 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     height: 44,
     px: 0.8,
     borderRadius: 2,
-    bgcolor: aderidosColors.white,
+    bgcolor: colors.branco,
     border: "1.5px solid rgba(6, 61, 49, 0.14)",
-    color: aderidosColors.greenDark,
+    color: colors.verdeEscuro,
     fontWeight: 800,
     fontSize: "0.95rem",
     whiteSpace: "nowrap",
@@ -93,7 +93,7 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     },
 
     "&:hover": {
-      bgcolor: aderidosColors.greenSoft,
+      bgcolor: colors.verdeClaro,
       borderColor: "rgba(6, 61, 49, 0.24)",
     },
   },
@@ -174,8 +174,8 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     borderRadius: 2,
     px: 1.6,
     py: 1.35,
-    bgcolor: aderidosColors.warningSoft,
-    color: aderidosColors.warningStrong,
+    bgcolor: colors.alertaFundo,
+    color: colors.alertaTextoForte,
     border: "1.5px solid rgba(184, 123, 0, 0.22)",
     textTransform: "none",
     boxShadow: "0 10px 22px rgba(107, 78, 0, 0.06)",
@@ -203,19 +203,19 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     alignItems: "center",
     justifyContent: "center",
     bgcolor: "rgba(107, 78, 0, 0.10)",
-    color: aderidosColors.warningStrong,
+    color: colors.alertaTextoForte,
     flexShrink: 0,
   },
 
   pendenciaAcaoTitulo: {
-    color: aderidosColors.greenBlack,
+    color: colors.pretoEsverdeado,
     fontWeight: 900,
     fontSize: "0.95rem",
     lineHeight: 1.15,
   },
 
   pendenciaAcaoSubtitulo: {
-    color: aderidosColors.warningStrong,
+    color: colors.alertaTextoForte,
     fontWeight: 750,
     fontSize: "0.78rem",
     lineHeight: 1.2,
@@ -226,8 +226,8 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     height: 28,
     minWidth: 28,
     borderRadius: 1.5,
-    bgcolor: aderidosColors.white,
-    color: aderidosColors.warningStrong,
+    bgcolor: colors.branco,
+    color: colors.alertaTextoForte,
     border: "1px solid rgba(107, 78, 0, 0.14)",
     fontWeight: 950,
     flexShrink: 0,
@@ -254,13 +254,13 @@ export const painelAderidoComponentStyles: Record<string, SxProps<Theme>> = {
     px: 1.35,
     py: 1.1,
     borderRadius: 2,
-    bgcolor: aderidosColors.greenSoft,
-    color: aderidosColors.greenDark,
+    bgcolor: colors.verdeClaro,
+    color: colors.verdeEscuro,
     border: "1px solid rgba(6, 61, 49, 0.10)",
   },
 
   pendenciaOkTexto: {
-    color: aderidosColors.greenDark,
+    color: colors.verdeEscuro,
     fontWeight: 850,
     fontSize: "0.9rem",
     lineHeight: 1.2,

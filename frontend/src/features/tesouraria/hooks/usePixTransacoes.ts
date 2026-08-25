@@ -1,23 +1,18 @@
-
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { useDebounce } from "@/shared/hooks/useDebounce";
 
 import { pixTransacoesService } from "../services/pixTransacoesService";
 import {
-  AcaoValidacaoPix,
   PixTransacoesFiltros,
   PixTransacoesResumo,
   PixTransacao,
-  StatusValidacaoPix,
 } from "../types/pixTransacoes";
 import {
   calcularResumoPixTransacoes,
   filtrarPixTransacoes,
   RESUMO_PIX_TRANSACOES_VAZIO,
 } from "../utils/pixTransacoesUtils";
-import {
-  aplicarResumoValidacaoPix,
-  podeValidarPixTransacao,
-} from "../utils/pixValidacaoUtils";
 
 function resumoPossuiDados(resumo: PixTransacoesResumo | null) {
   if (!resumo) return false;
@@ -31,12 +26,6 @@ export function usePixTransacoes() {
     useState<PixTransacoesResumo>(RESUMO_PIX_TRANSACOES_VAZIO);
   const [carregando, setCarregando] = useState(true);
   const [sincronizando, setSincronizando] = useState(false);
-  const [validandoPixPorId, setValidandoPixPorId] = useState<
-    Record<string, AcaoValidacaoPix | undefined>
-  >({});
-  const [erroValidacaoPixPorId, setErroValidacaoPixPorId] = useState<
-    Record<string, string | undefined>
-  >({});
 
   const [filtros, setFiltros] = useState<PixTransacoesFiltros>({
     status: "todas",
@@ -58,13 +47,11 @@ export function usePixTransacoes() {
     const dadosResumo =
       resultadoResumo.status === "fulfilled" ? resultadoResumo.value : null;
 
-    const transacoesBase = dadosTransacoes;
-
-    setTransacoes(transacoesBase);
+    setTransacoes(dadosTransacoes);
     setResumo(
       resumoPossuiDados(dadosResumo)
         ? dadosResumo
-        : calcularResumoPixTransacoes(transacoesBase),
+        : calcularResumoPixTransacoes(dadosTransacoes),
     );
     setCarregando(false);
   }, []);
@@ -80,109 +67,26 @@ export function usePixTransacoes() {
     }
   };
 
-  const transacoesComValidacao = transacoes;
-
-  const resumoComValidacao = useMemo(
-    () => aplicarResumoValidacaoPix(resumo, transacoesComValidacao),
-    [resumo, transacoesComValidacao],
-  );
-
-  const aplicarValidacaoLocal = useCallback(
-    async (transacaoId: string, statusValidacao: StatusValidacaoPix) => {
-      const transacao = transacoesComValidacao.find(
-        (item) => item.id === transacaoId,
-      );
-
-      if (!transacao || !podeValidarPixTransacao(transacao)) {
-        setErroValidacaoPixPorId((estadoAtual) => ({
-          ...estadoAtual,
-          [transacaoId]:
-            "A validação Pix só fica disponível após confirmação bancária.",
-        }));
-        return false;
-      }
-
-      const acao: AcaoValidacaoPix =
-        statusValidacao === "aceita" ? "aceitar" : "negar";
-
-      setErroValidacaoPixPorId((estadoAtual) => ({
-        ...estadoAtual,
-        [transacaoId]: undefined,
-      }));
-      setValidandoPixPorId((estadoAtual) => ({
-        ...estadoAtual,
-        [transacaoId]: acao,
-      }));
-
-      try {
-        if (statusValidacao === "aceita") {
-          await pixTransacoesService.aceitarTransacao(transacaoId);
-        } else {
-          await pixTransacoesService.negarTransacao(
-            transacaoId,
-            "Dados incorretos informados pelo comprador.",
-          );
-        }
-
-        await carregarDados();
-        return true;
-      } catch (error: any) {
-        setErroValidacaoPixPorId((estadoAtual) => ({
-          ...estadoAtual,
-          [transacaoId]:
-            error?.message || "Erro ao validar transação Pix.",
-        }));
-        return false;
-      } finally {
-        setValidandoPixPorId((estadoAtual) => ({
-          ...estadoAtual,
-          [transacaoId]: undefined,
-        }));
-      }
-    },
-    [carregarDados, transacoesComValidacao],
-  );
-
-  const aceitarPixTransacao = useCallback(
-    (transacaoId: string) => aplicarValidacaoLocal(transacaoId, "aceita"),
-    [aplicarValidacaoLocal],
-  );
-
-  const negarPixTransacao = useCallback(
-    (transacaoId: string) => aplicarValidacaoLocal(transacaoId, "negada"),
-    [aplicarValidacaoLocal],
-  );
-
-  const limparErroValidacaoPix = useCallback((transacaoId: string) => {
-    setErroValidacaoPixPorId((estadoAtual) => ({
-      ...estadoAtual,
-      [transacaoId]: undefined,
-    }));
-  }, []);
-
   useEffect(() => {
     carregarDados();
   }, [carregarDados]);
 
+  const debouncedBusca = useDebounce(filtros.busca, 250);
+
   const transacoesFiltradas = useMemo(() => {
-    return filtrarPixTransacoes(transacoesComValidacao, filtros);
-  }, [transacoesComValidacao, filtros]);
+    return filtrarPixTransacoes(transacoes, { ...filtros, busca: debouncedBusca });
+  }, [transacoes, filtros, debouncedBusca]);
 
   return {
-    transacoes: transacoesComValidacao,
+    transacoes,
     transacoesFiltradas,
-    resumo: resumoComValidacao,
+    resumo,
     filtros,
     carregando,
     sincronizando,
-    validandoPixPorId,
-    erroValidacaoPixPorId,
 
     setFiltros,
     carregarDados,
     sincronizarBanco,
-    aceitarPixTransacao,
-    negarPixTransacao,
-    limparErroValidacaoPix,
   };
 }

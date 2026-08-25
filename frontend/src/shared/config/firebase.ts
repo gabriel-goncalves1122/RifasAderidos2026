@@ -46,13 +46,24 @@ declare global {
   }
 }
 
-function obterHostEmulador() {
+function normalizarHostConfigurado(valor?: string) {
+  return String(valor || "")
+    .trim()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
+}
+
+function obterHostEmulador(hostConfigurado?: string) {
+  const hostEnv = normalizarHostConfigurado(hostConfigurado);
+
+  if (hostEnv) return hostEnv;
+
   const hostname = window.location.hostname;
 
-  // Quando estiver acessando no próprio PC por localhost, use localhost.
-  // Isso evita problemas de CORS/WebChannel do Firestore no navegador do PC.
+  // Quando estiver acessando no próprio PC, usamos o próprio hostname do request (localhost ou 127.0.0.1).
+  // Isso evita problemas de CORS com a porta da Auth e do Firestore.
   if (hostname === "localhost" || hostname === "127.0.0.1") {
-    return "127.0.0.1";
+    return hostname;
   }
 
   // Quando estiver acessando pelo celular, o hostname será o IP do PC.
@@ -60,11 +71,27 @@ function obterHostEmulador() {
   return hostname;
 }
 
+function formatarHostParaUrl(hostname: string) {
+  if (hostname.includes(":") && !hostname.startsWith("[")) {
+    return `[${hostname}]`;
+  }
+
+  return hostname;
+}
+
 const deveUsarEmuladores =
   import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true";
 
 if (deveUsarEmuladores && !window.__FIREBASE_EMULATORS_CONNECTED__) {
-  const emulatorHost = obterHostEmulador();
+  const authHost = obterHostEmulador(
+    import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST,
+  );
+  const firestoreHost = obterHostEmulador(
+    import.meta.env.VITE_FIRESTORE_EMULATOR_HOST,
+  );
+  const storageHost = obterHostEmulador(
+    import.meta.env.VITE_FIREBASE_STORAGE_EMULATOR_HOST,
+  );
 
   const authPort = Number(
     import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_PORT || 9099,
@@ -78,20 +105,24 @@ if (deveUsarEmuladores && !window.__FIREBASE_EMULATORS_CONNECTED__) {
     import.meta.env.VITE_FIREBASE_STORAGE_EMULATOR_PORT || 9199,
   );
 
-  connectAuthEmulator(auth, `http://${emulatorHost}:${authPort}`, {
-    disableWarnings: true,
-  });
+  connectAuthEmulator(
+    auth,
+    `http://${formatarHostParaUrl(authHost)}:${authPort}`,
+    {
+      disableWarnings: true,
+    },
+  );
 
-  connectFirestoreEmulator(db, emulatorHost, firestorePort);
+  connectFirestoreEmulator(db, firestoreHost, firestorePort);
 
-  connectStorageEmulator(storage, emulatorHost, storagePort);
+  connectStorageEmulator(storage, storageHost, storagePort);
 
   window.__FIREBASE_EMULATORS_CONNECTED__ = true;
 
   if (import.meta.env.DEV) {
     console.log("Firebase Client conectado aos Emuladores Locais");
-    console.log(`Auth Emulator: http://${emulatorHost}:${authPort}`);
-    console.log(`Firestore Emulator: ${emulatorHost}:${firestorePort}`);
-    console.log(`Storage Emulator: ${emulatorHost}:${storagePort}`);
+    console.log(`Auth Emulator: http://${authHost}:${authPort}`);
+    console.log(`Firestore Emulator: ${firestoreHost}:${firestorePort}`);
+    console.log(`Storage Emulator: ${storageHost}:${storagePort}`);
   }
 }

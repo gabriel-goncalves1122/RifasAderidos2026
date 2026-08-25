@@ -8,8 +8,8 @@ const globalCss = readFileSync(
 );
 
 describe("global.css dashboard background", () => {
-  it("Deve manter fundo global branco para loading e overscroll inferior", () => {
-    expect(globalCss).toContain("background-color: #FFFFFF");
+  it("Deve manter fundo global como #F6F8F7 para loading e overscroll inferior", () => {
+    expect(globalCss).toContain("background-color: #F6F8F7");
     expect(globalCss).toContain("body, html");
     expect(globalCss).toContain("#root");
     expect(globalCss).not.toContain("background-color: #063D31");

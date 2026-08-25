@@ -14,7 +14,7 @@ webhook assinado, polling e validacao final pela tesouraria.
 | Checkout | `backend/functions/src/modules/rifas/services/checkoutPixService.ts` |
 | Webhook | `backend/functions/src/modules/rifas/services/checkoutPixWebhookService.ts` |
 | Correcao | `backend/functions/src/modules/rifas/services/correcaoDadosRifasService.ts` |
-| Provider | `backend/functions/src/shared/services/pagBankPixClient.ts` |
+| Provider | `backend/functions/src/shared/services/mercadoPagoPixClient.ts` |
 | Tesouraria | `backend/functions/src/modules/tesouraria/services/pixValidacaoService.ts` |
 
 ## Variaveis Esperadas
@@ -22,16 +22,16 @@ webhook assinado, polling e validacao final pela tesouraria.
 Nao versionar valores reais.
 
 ```txt
-PAGBANK_API_TOKEN
-PAGBANK_API_BASE_URL
-PAGBANK_WEBHOOK_TOKEN
+MERCADOPAGO_API_TOKEN
+MERCADOPAGO_API_BASE_URL
+MERCADOPAGO_WEBHOOK_TOKEN
 API_PUBLIC_BASE_URL
 SUPER_ADMIN_EMAILS
 SMTP_USER
 SMTP_PASS
 ```
 
-`PAGBANK_API_BASE_URL` usa sandbox como fallback. `API_PUBLIC_BASE_URL`
+`MERCADOPAGO_API_BASE_URL` usa sandbox como fallback. `API_PUBLIC_BASE_URL`
 deve apontar para a base publica das Functions para montar `notification_urls`.
 
 `SUPER_ADMIN_EMAILS` e uma lista separada por virgula de emails com acesso irrestrito.
@@ -40,7 +40,7 @@ Fallback: consulta ao documento `configuracoes/sistema` no Firestore.
 ## Fluxo
 
 1. Aderido chama `POST /rifas/checkout/pix`.
-2. Backend valida rifas disponiveis e cria pedido Pix no PagBank via `POST /orders`.
+2. Backend valida rifas disponiveis e cria pedido Pix no Mercado Pago via `POST /orders`.
 3. Backend salva `pagamentos_pix` e marca rifas como `reservado`.
 4. Webhook `POST /rifas/checkout/pix/webhook` recebe evento assinado.
 5. Banco `PAID` ou `AUTHORIZED` muda rifas para `pendente`.
@@ -102,9 +102,9 @@ valida autenticidade via assinatura HMAC-SHA256.
 
 ### Header de Assinatura
 
-- Header: `x-pagbank-signature` (padrao PagBank).
+- Header: `x-mercadopago-signature` (padrao Mercado Pago).
 - Fallback legado: `x-authenticity-token`.
-- Algoritmo: HMAC-SHA256, chave = `PAGBANK_WEBHOOK_TOKEN`, mensagem = raw body.
+- Algoritmo: HMAC-SHA256, chave = `MERCADOPAGO_WEBHOOK_TOKEN`, mensagem = raw body.
 - Output: base64.
 - Comparacao: `crypto.timingSafeEqual` para evitar timing attack.
 
@@ -150,15 +150,15 @@ Use o script:
 
 ```bash
 cd backend/functions
-PAGBANK_WEBHOOK_TOKEN=dev-token \
+MERCADOPAGO_WEBHOOK_TOKEN=dev-token \
 node scripts/simular-webhook-pix.js \
   --url http://127.0.0.1:5001/rifasaderidos2026/us-central1/api/rifas/checkout/pix/webhook \
   --order ORDE_001 \
   --status PAID
 ```
 
-O script monta o raw body e envia `x-pagbank-signature` com HMAC-SHA256 de
-`{PAGBANK_WEBHOOK_TOKEN}` + raw body em base64. Para compatibilidade legada,
+O script monta o raw body e envia `x-mercadopago-signature` com HMAC-SHA256 de
+`{MERCADOPAGO_WEBHOOK_TOKEN}` + raw body em base64. Para compatibilidade legada,
 o backend aceita `x-authenticity-token` como fallback.
 
 ## Testes Relacionados

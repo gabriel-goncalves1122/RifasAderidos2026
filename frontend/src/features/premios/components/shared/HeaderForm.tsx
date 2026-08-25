@@ -1,7 +1,7 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, CircularProgress } from "@mui/material";
 
-import { surfaces } from "../../styles/surfaces";
-import { components } from "../../styles/components";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { components } from "@/shared/tokens/components";
 import type { InfoSorteio } from "../../types/sorteio";
 
 interface HeaderFormProps {

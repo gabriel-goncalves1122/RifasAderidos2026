@@ -44,12 +44,11 @@ describe("Componente: PixTransacoesFiltros", () => {
 
     expect(screen.getByPlaceholderText("Buscar Pix")).toBeInTheDocument();
 
-    expect(screen.getByText("Todas")).toBeInTheDocument();
-    expect(screen.getByText("Para validar")).toBeInTheDocument();
+    expect(screen.getByText("Histórico / Todas")).toBeInTheDocument();
     expect(screen.getByText("Com rifas")).toBeInTheDocument();
-    expect(screen.getByText("Sem vínculo")).toBeInTheDocument();
     expect(screen.getByText("Pendentes do banco")).toBeInTheDocument();
 
+    expect(screen.queryByText("Para validar")).not.toBeInTheDocument();
     expect(screen.queryByText("Aceitas")).not.toBeInTheDocument();
     expect(screen.queryByText("Negadas")).not.toBeInTheDocument();
     expect(screen.queryByText("Sem confirmação bancária")).not.toBeInTheDocument();
@@ -72,18 +71,18 @@ describe("Componente: PixTransacoesFiltros", () => {
     });
   });
 
-  it("Deve alterar filtro rápido para para validar", () => {
+  it("Deve alterar filtro rápido para Pendentes do banco", () => {
     const onChangeFiltros = vi.fn();
 
     render(
       <PixTransacoesFiltros filtros={filtrosBase} onChangeFiltros={onChangeFiltros} />,
     );
 
-    fireEvent.click(screen.getByText("Para validar"));
+    fireEvent.click(screen.getByText("Pendentes do banco"));
 
     expect(onChangeFiltros).toHaveBeenCalledWith({
       ...filtrosBase,
-      status: "para_validar",
+      status: "pendentes_banco",
     });
   });
 
@@ -113,7 +112,7 @@ describe("Componente: PixTransacoesFiltros", () => {
 
     render(
       <PixTransacoesFiltros
-        filtros={{ status: "sem_vinculo", busca: "Gabriel" }}
+        filtros={{ status: "pendentes_banco", busca: "Gabriel" }}
         onChangeFiltros={onChangeFiltros}
       />,
     );

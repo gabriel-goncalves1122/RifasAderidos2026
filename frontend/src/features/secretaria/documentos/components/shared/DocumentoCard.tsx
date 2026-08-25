@@ -14,7 +14,7 @@ import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import PictureAsPdfOutlinedIcon from "@mui/icons-material/PictureAsPdfOutlined";
 import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
 
-import { secretariaColors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 import { documentosSecretariaStyles } from "../../styles/documentosSecretariaStyles";
 import {
   formatarDataDocumento,
@@ -63,10 +63,10 @@ export function DocumentoCard({
             top: 10,
             right: 10,
             zIndex: 2,
-            color: secretariaColors.verdeEscuro,
+            color: colors.verdeEscuro,
             bgcolor: "rgba(255, 255, 255, 0.86)",
             "&:hover": {
-              bgcolor: secretariaColors.verdeClaro,
+              bgcolor: colors.verdeClaro,
             },
           }}
         >
@@ -89,7 +89,7 @@ export function DocumentoCard({
                 height: 38,
                 flexShrink: 0,
                 borderRadius: 2,
-                color: secretariaColors.verdeEscuro,
+                color: colors.verdeEscuro,
                 bgcolor: "rgba(6, 61, 49, 0.09)",
               }}
             >
@@ -99,7 +99,7 @@ export function DocumentoCard({
             <Box sx={{ minWidth: 0, pr: 4 }}>
               <Typography
                 sx={{
-                  color: secretariaColors.pretoEsverdeado,
+                  color: colors.pretoEsverdeado,
                   fontWeight: 900,
                   lineHeight: 1.2,
                 }}
@@ -109,7 +109,7 @@ export function DocumentoCard({
               <Typography
                 sx={{
                   mt: 0.25,
-                  color: secretariaColors.cinzaTexto,
+                  color: colors.cinzaTexto,
                   fontSize: "0.82rem",
                   overflowWrap: "anywhere",
                 }}
@@ -124,7 +124,7 @@ export function DocumentoCard({
               size="small"
               label={documento.area}
               sx={{
-                color: secretariaColors.verdeEscuro,
+                color: colors.verdeEscuro,
                 bgcolor: "rgba(6, 61, 49, 0.08)",
                 fontWeight: 800,
               }}
@@ -134,8 +134,8 @@ export function DocumentoCard({
               icon={<DescriptionOutlinedIcon />}
               label={documento.tipo}
               sx={{
-                color: secretariaColors.cinzaTexto,
-                bgcolor: secretariaColors.verdeClaro,
+                color: colors.cinzaTexto,
+                bgcolor: colors.verdeClaro,
                 fontWeight: 750,
                 textTransform: "capitalize",
               }}
@@ -149,10 +149,10 @@ export function DocumentoCard({
             spacing={0.75}
             justifyContent="space-between"
           >
-            <Typography sx={{ color: secretariaColors.cinzaTexto, fontSize: "0.8rem" }}>
+            <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.8rem" }}>
               {documento.autorNome}
             </Typography>
-            <Typography sx={{ color: secretariaColors.cinzaTexto, fontSize: "0.8rem" }}>
+            <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.8rem" }}>
               {formatarDataDocumento(documento.atualizadoEm)} ·{" "}
               {formatarTamanhoArquivo(documento.tamanhoBytes)}
             </Typography>

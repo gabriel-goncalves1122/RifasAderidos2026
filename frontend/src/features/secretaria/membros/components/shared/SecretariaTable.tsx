@@ -19,7 +19,7 @@ import { CargoChip } from "./CargoChip";
 import { StatusChip } from "./StatusChip";
 import type { AderidoSecretaria } from "@/shared/types/secretaria";
 import type { SortDir } from "../../types/secretariaLocalTypes";
-import { surfaces } from "../../../styles/surfaces";
+import { surfaces } from "@/shared/tokens/surfaces";
 
 interface SecretariaTableProps {
   aderidos: AderidoSecretaria[];

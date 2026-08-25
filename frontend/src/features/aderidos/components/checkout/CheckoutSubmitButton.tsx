@@ -1,7 +1,7 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Button, CircularProgress } from "@mui/material";
 
-import { aderidosColors } from "@/shared/tokens/colors";
+import { colors } from "@/shared/tokens/colors";
 import { aderidosMotion, reduceMotionSx } from "@/shared/tokens/motion";
 
 interface CheckoutSubmitButtonProps {
@@ -27,7 +27,7 @@ export function CheckoutSubmitButton({
         textTransform: "none",
         fontWeight: 950,
         fontSize: "1rem",
-        bgcolor: aderidosColors.greenDark,
+        bgcolor: colors.verdeEscuro,
         boxShadow: "0 12px 22px rgba(6, 61, 49, 0.22)",
         transition: `background-color ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}, box-shadow ${aderidosMotion.duration.standard} ${aderidosMotion.easing.easeOut}`,
         ...reduceMotionSx,

@@ -219,103 +219,10 @@ describe("Hook: usePixTransacoes", () => {
     expect(result.current.transacoesFiltradas).toEqual([transacoes[1]]);
   });
 
-  it("Deve chamar backend para aceitar Pix confirmado pelo banco e recarregar dados", async () => {
-    const transacoes = [
-      criarTransacao({ id: "tx_paga", statusPagamento: "PAID" }),
-      criarTransacao({
-        id: "tx_aguardando",
-        statusPagamento: "WAITING",
-        valorPago: 0,
-      }),
-    ];
-    const transacoesRecarregadas = [
-      criarTransacao({
-        id: "tx_paga",
-        statusPagamento: "PAID",
-        statusValidacao: "aceita",
-      }),
-      transacoes[1],
-    ];
-
-    vi.mocked(pixTransacoesService.buscarTransacoes)
-      .mockResolvedValueOnce(transacoes)
-      .mockResolvedValueOnce(transacoesRecarregadas);
-    vi.mocked(pixTransacoesService.buscarResumo)
-      .mockResolvedValueOnce(RESUMO_PIX_TRANSACOES_VAZIO)
-      .mockResolvedValueOnce(RESUMO_PIX_TRANSACOES_VAZIO);
-
-    const { result } = renderHook(() => usePixTransacoes());
-
-    await waitFor(() => {
-      expect(result.current.carregando).toBe(false);
-    });
-
-    await act(async () => {
-      await result.current.aceitarPixTransacao("tx_paga");
-    });
-
-    await waitFor(() => {
-      expect(result.current.transacoes[0].statusValidacao).toBe("aceita");
-    });
-
-    expect(pixTransacoesService.aceitarTransacao).toHaveBeenCalledWith(
-      "tx_paga",
-    );
-    expect(result.current.resumo.quantidadeAceitas).toBe(1);
-    expect(result.current.resumo.quantidadeAguardandoValidacao).toBe(0);
-    expect(result.current.resumo.quantidadeSemConfirmacaoBancaria).toBe(1);
-  });
-
-  it("Deve chamar backend para negar Pix confirmado pelo banco com motivo padrão", async () => {
-    const transacoes = [
-      criarTransacao({ id: "tx_paga", statusPagamento: "AUTHORIZED" }),
-    ];
-    const transacoesRecarregadas = [
-      criarTransacao({
-        id: "tx_paga",
-        statusPagamento: "AUTHORIZED",
-        statusValidacao: "negada",
-      }),
-    ];
-
-    vi.mocked(pixTransacoesService.buscarTransacoes)
-      .mockResolvedValueOnce(transacoes)
-      .mockResolvedValueOnce(transacoesRecarregadas);
-    vi.mocked(pixTransacoesService.buscarResumo)
-      .mockResolvedValueOnce(RESUMO_PIX_TRANSACOES_VAZIO)
-      .mockResolvedValueOnce(RESUMO_PIX_TRANSACOES_VAZIO);
-
-    const { result } = renderHook(() => usePixTransacoes());
-
-    await waitFor(() => {
-      expect(result.current.carregando).toBe(false);
-    });
-
-    await act(async () => {
-      await result.current.negarPixTransacao("tx_paga");
-    });
-
-    expect(pixTransacoesService.negarTransacao).toHaveBeenCalledWith(
-      "tx_paga",
-      "Dados incorretos informados pelo comprador.",
-    );
-    expect(result.current.transacoes[0].statusValidacao).toBe("negada");
-  });
-
-  it("Deve bloquear validação local quando Pix ainda não foi confirmado pelo banco", async () => {
-    const transacoes = [
-      criarTransacao({
-        id: "tx_aguardando",
-        statusPagamento: "WAITING",
-        valorPago: 0,
-      }),
-    ];
-
-    vi.mocked(pixTransacoesService.buscarTransacoes).mockResolvedValueOnce(
-      transacoes,
-    );
-    vi.mocked(pixTransacoesService.buscarResumo).mockResolvedValueOnce(
-      RESUMO_PIX_TRANSACOES_VAZIO,
+  it("Deve tratar falhas (catch) na busca de transações", async () => {
+    // Simula falha ao buscar transações
+    vi.mocked(pixTransacoesService.buscarTransacoes).mockRejectedValueOnce(
+      new Error("Erro de rede")
     );
 
     const { result } = renderHook(() => usePixTransacoes());
@@ -324,14 +231,10 @@ describe("Hook: usePixTransacoes", () => {
       expect(result.current.carregando).toBe(false);
     });
 
-    await act(async () => {
-      await result.current.negarPixTransacao("tx_aguardando");
-    });
-
-    expect(result.current.transacoes[0].statusValidacao).toBeUndefined();
-    expect(pixTransacoesService.negarTransacao).not.toHaveBeenCalled();
-    expect(result.current.erroValidacaoPixPorId.tx_aguardando).toMatch(
-      /confirmação bancária/i,
-    );
+    // O hook deve lidar com o catch silenciosamente e manter o array vazio
+    expect(result.current.transacoes).toEqual([]);
+    expect(result.current.transacoesFiltradas).toEqual([]);
+    // O resumo vazio ou local
+    expect(result.current.resumo.totalRecebido).toBe(0);
   });
 });

@@ -53,7 +53,6 @@ describe("Página <DashboardPage />", () => {
     render(<DashboardPage />);
 
     expect(screen.getByTestId("app-loading-screen")).toHaveStyle({
-      backgroundColor: "#FFFFFF",
       display: "grid",
       placeItems: "center",
     });

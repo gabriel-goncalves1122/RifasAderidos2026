@@ -160,17 +160,17 @@ export function ModalRelatorioIA({
                   </Box>
                   {aprovadas.map((t) => (
                     <CardAuditoriaIA
-                      key={t.comprovante_url || t.bilhetes[0]}
+                      key={t.comprovanteUrl || t.bilhetes[0]}
                       transacao={t}
                       sucesso={true}
                       dadosExtraidos={extrairDadosIA(
                         t.ia_mensagem || t.log_automacao,
                       )}
-                      motivo={motivos[t.comprovante_url || t.bilhetes[0]] || ""}
+                      motivo={motivos[t.comprovanteUrl || t.bilhetes[0]] || ""}
                       onMotivoChange={(m) =>
                         setMotivos((prev) => ({
                           ...prev,
-                          [t.comprovante_url || t.bilhetes[0]]: m,
+                          [t.comprovanteUrl || t.bilhetes[0]]: m,
                         }))
                       }
                       onInspecionar={() => setTransacaoComparacao(t)}
@@ -207,24 +207,24 @@ export function ModalRelatorioIA({
               ) : (
                 divergentes.map((t) => (
                   <CardAuditoriaIA
-                    key={t.comprovante_url || t.bilhetes[0]}
+                    key={t.comprovanteUrl || t.bilhetes[0]}
                     transacao={t}
                     sucesso={false}
                     dadosExtraidos={extrairDadosIA(
                       t.ia_mensagem || t.log_automacao,
                     )}
-                    motivo={motivos[t.comprovante_url || t.bilhetes[0]] || ""}
+                    motivo={motivos[t.comprovanteUrl || t.bilhetes[0]] || ""}
                     onMotivoChange={(m) =>
                       setMotivos((prev) => ({
                         ...prev,
-                        [t.comprovante_url || t.bilhetes[0]]: m,
+                        [t.comprovanteUrl || t.bilhetes[0]]: m,
                       }))
                     }
                     onInspecionar={() => setTransacaoComparacao(t)}
                     onRecusar={() =>
                       handleRecusar(
-                        t.comprovante_url || t.bilhetes[0],
-                        t.comprovante_url,
+                        t.comprovanteUrl || t.bilhetes[0],
+                        t.comprovanteUrl,
                         t.bilhetes,
                       )
                     }

@@ -16,7 +16,7 @@ export const criarAderidoSchema = yup.object().shape({
   nome: yup.string().required("Nome é obrigatório"),
   curso: yup.string().optional().default(""),
   telefone: yup.string().optional().default(""),
-  dataNascimento: yup.string().optional().default(""),
+  data_nascimento: yup.string().optional().default(""),
   cargo: yup.string().optional().nullable(),
   modalidade_adesao: modalidadeAdesaoSchema.required("Modalidade é obrigatória"),
 });

@@ -180,10 +180,10 @@ export const secretariaService = {
         email: dados.email,
         nome: dados.nome,
         curso: dados.curso,
-        data_nascimento: dados.dataNascimento,
+        data_nascimento: dados.data_nascimento,
         telefone: dados.telefone,
 
-        cargo: dados.cargo,
+        role: dados.cargo,
         modalidade_adesao: dados.modalidade_adesao,
 
         faixa_rifas: {

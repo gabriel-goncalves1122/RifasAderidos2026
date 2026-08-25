@@ -6,21 +6,16 @@ import { pixTransacoesMock } from "@/features/tesouraria/mocks/pixTransacoesMock
 import { calcularResumoPixTransacoes } from "@/features/tesouraria/utils/pixTransacoesUtils";
 
 describe("Componente: PixTransacoesDesktopView", () => {
-  it("Deve renderizar a visão desktop com filtros, legenda e tabela", () => {
+  it("Deve renderizar a visão desktop com filtros e tabela", () => {
     render(
       <PixTransacoesDesktopView
         resumo={calcularResumoPixTransacoes(pixTransacoesMock)}
         filtros={{ status: "todas", busca: "" }}
         transacoes={pixTransacoesMock}
         onChangeFiltros={vi.fn()}
-        onAceitarTransacao={vi.fn()}
-        onNegarTransacao={vi.fn()}
       />,
     );
 
-    expect(screen.getByText(/Aguardando validação:/i)).toBeInTheDocument();
-    expect(screen.queryByText("Validadas")).not.toBeInTheDocument();
-    expect(screen.getByText("Legenda de status")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Buscar Pix")).toBeInTheDocument();
 
     expect(
@@ -37,8 +32,6 @@ describe("Componente: PixTransacoesDesktopView", () => {
         filtros={{ status: "todas", busca: "" }}
         transacoes={[]}
         onChangeFiltros={vi.fn()}
-        onAceitarTransacao={vi.fn()}
-        onNegarTransacao={vi.fn()}
       />,
     );
 

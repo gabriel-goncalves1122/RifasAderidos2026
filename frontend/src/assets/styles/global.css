@@ -6,7 +6,7 @@
   --cor-verde-fundo: #0B1B15; /* Um verde escuro, quase preto, extraído da sua logo */
   --cor-dourado-brilho: #D4AF37; /* Dourado clássico */
   --cor-dourado-escuro: #AA8222;
-  background-color: #FFFFFF;
+  background-color: #F6F8F7;
 }
 
 body, html {
@@ -15,7 +15,7 @@ body, html {
   box-sizing: border-box;
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: #FFFFFF;
+  background-color: #F6F8F7;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -23,7 +23,7 @@ body, html {
 #root {
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: #FFFFFF;
+  background-color: #F6F8F7;
 }
 
 /* Scrollbar personalizada e discreta */

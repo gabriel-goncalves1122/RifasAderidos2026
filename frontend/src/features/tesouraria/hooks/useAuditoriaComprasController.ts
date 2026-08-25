@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
-  CompraAuditavel,
   AuditoriaComprasFiltros,
-  TransacaoAuditoriaComprasBase,
+  TransacaoTesouraria,
 } from "../types/auditoriaCompras";
 import {
-  agruparComprasAuditaveis,
   calcularResumoAuditoria,
   criarCsvAuditoriaCompras,
   FILTROS_AUDITORIA_COMPRAS_VAZIOS,
@@ -15,6 +13,7 @@ import {
   normalizarTexto,
 } from "../utils/auditoriaComprasUtils";
 import { sanitizarDadosCliente } from "@/shared/utils/sanitizadores";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import { auditoriaComprasService } from "../services/auditoriaComprasService";
 
 interface DadosEdicaoComprador {
@@ -26,14 +25,14 @@ interface DadosEdicaoComprador {
 export function useAuditoriaComprasController() {
   const [carregando, setCarregando] = useState(true);
   const [historicoTransacoes, setHistoricoTransacoes] = useState<
-    TransacaoAuditoriaComprasBase[]
+    TransacaoTesouraria[]
   >([]);
   const [filtros, setFiltros] = useState<AuditoriaComprasFiltros>(
     FILTROS_AUDITORIA_COMPRAS_VAZIOS,
   );
   const [compraSelecionada, setCompraSelecionada] =
-    useState<CompraAuditavel | null>(null);
-  const [compraEdicao, setCompraEdicao] = useState<CompraAuditavel | null>(
+    useState<TransacaoTesouraria | null>(null);
+  const [compraEdicao, setCompraEdicao] = useState<TransacaoTesouraria | null>(
     null,
   );
   const [comprovanteUrl, setComprovanteUrl] = useState<string | null>(null);
@@ -63,14 +62,11 @@ export function useAuditoriaComprasController() {
     carregarHistorico();
   }, [carregarHistorico]);
 
-  const comprasAgrupadas = useMemo(
-    () => agruparComprasAuditaveis(historicoTransacoes),
-    [historicoTransacoes],
-  );
+  const debouncedBusca = useDebounce(filtros.busca, 250);
 
   const comprasFiltradas = useMemo(
-    () => filtrarComprasAuditaveis(comprasAgrupadas, filtros),
-    [comprasAgrupadas, filtros],
+    () => filtrarComprasAuditaveis(historicoTransacoes, { ...filtros, busca: debouncedBusca }),
+    [historicoTransacoes, filtros, debouncedBusca],
   );
 
   const resumo = useMemo(
@@ -97,9 +93,9 @@ export function useAuditoriaComprasController() {
     document.body.removeChild(link);
   }, [comprasFiltradas]);
 
-  const abrirComprovante = useCallback((compra: CompraAuditavel) => {
-    if (compra.comprovante_url) {
-      setComprovanteUrl(compra.comprovante_url);
+  const abrirComprovante = useCallback((compra: TransacaoTesouraria) => {
+    if (compra.comprovanteUrl) {
+      setComprovanteUrl(compra.comprovanteUrl);
     }
   }, []);
 
@@ -107,7 +103,7 @@ export function useAuditoriaComprasController() {
     setFiltros(FILTROS_AUDITORIA_COMPRAS_VAZIOS);
   }, []);
 
-  const abrirEdicao = useCallback((compra: CompraAuditavel) => {
+  const abrirEdicao = useCallback((compra: TransacaoTesouraria) => {
     setErroEdicao(null);
     setCompraEdicao(compra);
   }, []);
@@ -121,8 +117,8 @@ export function useAuditoriaComprasController() {
 
   const salvarEdicaoComprador = useCallback(
     async (dados: DadosEdicaoComprador) => {
-      if (!compraEdicao?.comprador_id) {
-        setErroEdicao("Compra sem comprador_id não pode ser editada.");
+      if (!compraEdicao?.compradorId) {
+        setErroEdicao("Compra sem compradorId não pode ser editada.");
         return false;
       }
 
@@ -137,7 +133,7 @@ export function useAuditoriaComprasController() {
         });
 
         await auditoriaComprasService.atualizarComprador(
-          compraEdicao.comprador_id,
+          compraEdicao.compradorId,
           dadosSanitizados,
         );
         setCompraEdicao(null);
@@ -157,11 +153,11 @@ export function useAuditoriaComprasController() {
     [carregarHistorico, compraEdicao],
   );
 
-  const reenviarEmailComprovante = useCallback(async (compra: CompraAuditavel) => {
-    if (!compra.comprador_id) {
+  const reenviarEmailComprovante = useCallback(async (compra: TransacaoTesouraria) => {
+    if (!compra.compradorId) {
       setFeedbackEmailComprovante({
         tipo: "error",
-        mensagem: "Compra sem comprador_id não permite reenvio.",
+        mensagem: "Compra sem compradorId não permite reenvio.",
       });
       return false;
     }
@@ -174,7 +170,7 @@ export function useAuditoriaComprasController() {
       return false;
     }
 
-    if (!compra.comprador_email.trim()) {
+    if (!compra.compradorEmail.trim()) {
       setFeedbackEmailComprovante({
         tipo: "error",
         mensagem: "A compra não possui e-mail do comprador.",
@@ -182,12 +178,12 @@ export function useAuditoriaComprasController() {
       return false;
     }
 
-    setReenviandoEmailComprovanteId(compra.comprador_id);
+    setReenviandoEmailComprovanteId(compra.compradorId);
     setFeedbackEmailComprovante(null);
 
     try {
       const resposta = await auditoriaComprasService.reenviarEmailComprovante(
-        compra.comprador_id,
+        compra.compradorId,
       );
 
       setFeedbackEmailComprovante({

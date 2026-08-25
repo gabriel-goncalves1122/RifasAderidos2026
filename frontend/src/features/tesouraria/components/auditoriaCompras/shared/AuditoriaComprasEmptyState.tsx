@@ -1,8 +1,8 @@
 import SearchIcon from "@mui/icons-material/Search";
 import { Paper, Typography } from "@mui/material";
 
-import { colors } from "../../../styles/colors";
-import { typography } from "../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 
 export function AuditoriaComprasEmptyState() {
   return (

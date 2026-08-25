@@ -108,13 +108,13 @@ describe("Service: CorrecaoDadosRifasService", () => {
     expect(mockRunTransaction).toHaveBeenCalledTimes(1);
   });
 
-  it("Deve rejeitar rifa que não está recusada", async () => {
+  it("Deve rejeitar rifa que não está recusada e não tem correção pendente", async () => {
     mockTransactionGet.mockResolvedValueOnce({
       exists: true,
       data: () => ({
         numero: "001",
         vendedor_id: "ADERIDO_001",
-        status: "pendente",
+        status: "pendente", // sem correcao_pendente
       }),
     });
 
@@ -125,5 +125,37 @@ describe("Service: CorrecaoDadosRifasService", () => {
         { nome: "Comprador", telefone: "35999990000" },
       ),
     ).rejects.toThrow("RIFAS_NOT_FOUND");
+  });
+
+  it("Deve corrigir rifa que tem correcao_pendente e voltar para pendente", async () => {
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({
+        numero: "001",
+        vendedor_id: "ADERIDO_001",
+        status: "pago",
+        correcao_pendente: true,
+      }),
+    });
+
+    const sucesso = await CorrecaoDadosRifasService.corrigirDadosRifasRecusadas(
+      "aderido@teste.com",
+      ["001"],
+      {
+        nome: "Comprador Corrigido",
+        email: "comprador@teste.com",
+        telefone: "35999990000",
+      },
+    );
+
+    expect(sucesso).toBe(true);
+    expect(mockTransactionUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "001" }),
+      expect.objectContaining({
+        status: "pendente",
+        correcao_pendente: null,
+      }),
+    );
+    expect(mockRunTransaction).toHaveBeenCalledTimes(1);
   });
 });

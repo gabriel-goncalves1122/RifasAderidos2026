@@ -1,6 +1,7 @@
 export const dashboardSidebarStyles = {
   drawerPaper: {
     width: 280,
+    height: "100dvh",
     bgcolor: "#F6F8F7",
     backgroundImage: "linear-gradient(#063D31, #063D31)",
     backgroundRepeat: "no-repeat",
@@ -12,10 +13,11 @@ export const dashboardSidebarStyles = {
 
   root: {
     width: 280,
-    minHeight: "100%",
+    minHeight: "100dvh",
     display: "flex",
     flexDirection: "column",
     bgcolor: "#F6F8F7",
+    pb: "env(safe-area-inset-bottom, 20px)",
   },
 
   header: {

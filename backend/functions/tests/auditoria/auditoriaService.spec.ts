@@ -188,6 +188,34 @@ describe("Service: auditoriaService", () => {
       expect(mockBatchCommit).toHaveBeenCalled();
       expect(resultado.preAprovados).toBe(1);
     });
+
+    it("Deve lidar com erro do motor OCR local e registrar log na rifa", async () => {
+      const mockDocRifa = {
+        data: () => ({ comprovante_url: "url_imagem_erro" }),
+        ref: "ref_bilhete_erro",
+      };
+
+      mockCollectionGet.mockResolvedValueOnce({
+        empty: false,
+        docs: [mockDocRifa],
+        size: 1,
+      });
+      mockDocGet.mockResolvedValueOnce({
+        data: () => ({ extrato_csv: "linha1" }),
+      });
+
+      (OcrService.processarComprovante as any).mockRejectedValueOnce(
+        new Error("Erro interno do OCR")
+      );
+
+      const resultado = await AuditoriaService.auditarLoteIA();
+
+      expect(mockBatchUpdate).toHaveBeenCalledWith("ref_bilhete_erro", {
+        log_automacao: "❌ Erro de comunicação com o motor OCR local.",
+      });
+      expect(mockBatchCommit).toHaveBeenCalled();
+      expect(resultado.divergentes).toBe(1);
+    });
   });
 
   describe("processarDecisaoManual()", () => {
@@ -268,6 +296,31 @@ describe("Service: auditoriaService", () => {
 
       expect(mockFileDelete).toHaveBeenCalled();
       expect(enviarEmailRecibo).not.toHaveBeenCalled();
+    });
+
+    it("Deve ignorar erro silenciosamente caso a exclusão do comprovante falhe no Storage", async () => {
+      const mockSnap = {
+        exists: true,
+        data: () => ({
+          status: "pendente",
+          vendedor_id: "ADERIDO_010",
+          comprovante_url:
+            "https://firebasestorage.../o/pasta%2Fimg.jpg?alt=media",
+        }),
+      };
+
+      mockTransactionGet.mockResolvedValueOnce(mockSnap);
+      mockFileDelete.mockRejectedValueOnce(new Error("Storage error"));
+
+      await expect(
+        AuditoriaService.processarDecisaoManual(
+          ["00003"],
+          "rejeitar",
+          "Comprovativo Falso",
+        )
+      ).resolves.not.toThrow();
+
+      expect(mockFileDelete).toHaveBeenCalled();
     });
   });
 

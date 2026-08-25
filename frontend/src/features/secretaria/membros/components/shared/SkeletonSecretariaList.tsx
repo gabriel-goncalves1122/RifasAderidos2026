@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import { surfaces } from "../../../styles/surfaces";
+import { surfaces } from "@/shared/tokens/surfaces";
 
 interface SkeletonSecretariaListProps {
   isMobile: boolean;

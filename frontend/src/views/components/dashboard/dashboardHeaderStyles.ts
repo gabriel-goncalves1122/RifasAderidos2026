@@ -10,6 +10,16 @@ export const dashboardHeaderStyles = {
     color: "#FFFFFF",
     borderBottom: "1px solid rgba(255, 255, 255, 0.14)",
     boxShadow: "0 10px 30px rgba(2, 27, 22, 0.18)",
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: "-100vh",
+      left: 0,
+      right: 0,
+      height: "100vh",
+      backgroundColor: "#063D31",
+      zIndex: -1,
+    },
   },
 
   statusBarUnderlay: {

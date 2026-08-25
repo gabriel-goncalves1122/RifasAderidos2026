@@ -1,9 +1,9 @@
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, Box, Typography } from "@mui/material";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 
-import { surfaces } from "../../styles/surfaces";
-import { components } from "../../styles/components";
-import { colors } from "../../styles/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { components } from "@/shared/tokens/components";
+import { colors } from "@/shared/tokens/colors";
 import type { PremioData } from "../../types/premio";
 
 interface PrizeFormProps {

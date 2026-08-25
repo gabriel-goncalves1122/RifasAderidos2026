@@ -80,6 +80,10 @@ vi.mock("@/features/secretaria/documentos/services/documentosSecretariaService",
 import { SecretariaView } from "@/features/secretaria";
 import { MembrosSecretariaView } from "@/features/secretaria/membros/MembrosSecretariaView";
 
+vi.mock("@/shared/hooks/useDebounce", () => ({
+  useDebounce: vi.fn((val) => val),
+}));
+
 describe("Página <SecretariaView />", () => {
   beforeEach(() => {
     vi.clearAllMocks();

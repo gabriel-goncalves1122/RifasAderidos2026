@@ -4,16 +4,16 @@ import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import { CircularProgress, IconButton, Stack, Tooltip } from "@mui/material";
 
-import { CompraAuditavel } from "../../../types/auditoriaCompras";
+import { TransacaoTesouraria } from "../../../types/auditoriaCompras";
 import { normalizarTexto } from "../../../utils/auditoriaComprasUtils";
-import { colors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 
 interface AuditoriaCompraActionsProps {
-  compra: CompraAuditavel;
-  onVerComprovante: (compra: CompraAuditavel) => void;
-  onEditar: (compra: CompraAuditavel) => void;
-  onVerDetalhes: (compra: CompraAuditavel) => void;
-  onReenviarEmailComprovante: (compra: CompraAuditavel) => void;
+  compra: TransacaoTesouraria;
+  onVerComprovante: (compra: TransacaoTesouraria) => void;
+  onEditar: (compra: TransacaoTesouraria) => void;
+  onVerDetalhes: (compra: TransacaoTesouraria) => void;
+  onReenviarEmailComprovante: (compra: TransacaoTesouraria) => void;
   reenviandoEmailComprovante?: boolean;
 }
 
@@ -26,8 +26,8 @@ export function AuditoriaCompraActions({
   reenviandoEmailComprovante = false,
 }: AuditoriaCompraActionsProps) {
   const compraPaga = normalizarTexto(compra.status) === "pago";
-  const possuiCompradorId = Boolean(compra.comprador_id);
-  const possuiEmail = Boolean(compra.comprador_email.trim());
+  const possuiCompradorId = Boolean(compra.compradorId);
+  const possuiEmail = Boolean(compra.compradorEmail.trim());
   const podeReenviarEmail =
     compraPaga &&
     possuiCompradorId &&
@@ -38,7 +38,7 @@ export function AuditoriaCompraActions({
     : !compraPaga
       ? "Disponível somente para compras pagas"
       : !possuiCompradorId
-        ? "Compra sem comprador_id"
+        ? "Compra sem compradorId"
         : !possuiEmail
           ? "Compra sem e-mail do comprador"
           : "Reenviar e-mail de comprovante";
@@ -47,7 +47,7 @@ export function AuditoriaCompraActions({
     <Stack direction="row" spacing={0.5} justifyContent="flex-end">
       <Tooltip
         title={
-          compra.comprovante_url
+          compra.comprovanteUrl
             ? "Ver comprovante"
             : "Comprovante indisponível nos dados atuais"
         }
@@ -56,7 +56,7 @@ export function AuditoriaCompraActions({
           <IconButton
             size="small"
             aria-label="Ver comprovante"
-            disabled={!compra.comprovante_url}
+            disabled={!compra.comprovanteUrl}
             onClick={() => onVerComprovante(compra)}
             sx={{
               color: colors.verdeEscuro,

@@ -16,6 +16,7 @@ import { secretariaService } from "../../../src/modules/admin/secretaria/secreta
 
 jest.mock("../../../src/modules/admin/secretaria/secretariaService", () => ({
   secretariaService: {
+    listarAderidos: jest.fn(),
     adicionarAderido: jest.fn(),
     atualizarAderido: jest.fn(),
   },
@@ -59,6 +60,35 @@ describe("Controller: secretariaController", () => {
       .mockRejectedValue(erroSimulado);
 
     await secretariaController.adicionarAderido(
+      mockReq as Request,
+      mockRes as Response,
+      mockNext
+    );
+
+    expect(mockNext).toHaveBeenCalledWith(erroSimulado);
+  });
+
+  it("Deve retornar 200 e a lista de aderidos em listarAderidos", async () => {
+    mockReq = {};
+    const mockLista = [{ id: "1", nome: "Teste" }];
+    jest.mocked(secretariaService.listarAderidos).mockResolvedValue(mockLista as any);
+
+    await secretariaController.listarAderidos(
+      mockReq as Request,
+      mockRes as Response,
+      mockNext
+    );
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.json).toHaveBeenCalledWith(mockLista);
+  });
+
+  it("Deve repassar erro via next se listarAderidos falhar", async () => {
+    mockReq = {};
+    const erroSimulado = new Error("Erro DB");
+    jest.mocked(secretariaService.listarAderidos).mockRejectedValue(erroSimulado);
+
+    await secretariaController.listarAderidos(
       mockReq as Request,
       mockRes as Response,
       mockNext

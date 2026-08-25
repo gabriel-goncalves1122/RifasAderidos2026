@@ -4,6 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuditoriaComprasPage } from "@/features/tesouraria/pages/AuditoriaComprasPage";
 import { auditoriaComprasService } from "@/features/tesouraria/services/auditoriaComprasService";
 
+vi.mock("@/shared/hooks/useDebounce", () => ({
+  useDebounce: vi.fn((val) => val),
+}));
+
 vi.mock("@/features/tesouraria/services/auditoriaComprasService", () => ({
   auditoriaComprasService: {
     buscarHistoricoDetalhado: vi.fn(),
@@ -33,49 +37,36 @@ function simularViewport(matches: boolean) {
 
 const historicoMock = [
   {
-    numero_rifa: "001",
+    id: "comprador_maria",
+    vendedorId: "aderido_ana",
+    vendedorNome: "Ana Vendedora",
+    vendedorCpf: "11122233344",
+    compradorId: "comprador_maria",
+    compradorNome: "Maria Souza",
+    compradorEmail: "maria@teste.com",
+    compradorTelefone: "35999990000",
+    dataReserva: "2026-05-01T10:00:00.000-03:00",
+    dataPagamento: "2026-05-02T10:00:00.000-03:00",
     status: "pago",
-    vendedor_id: "aderido_ana",
-    vendedor_nome: "Ana Vendedora",
-    vendedor_cpf: "11122233344",
-    comprador_id: "comprador_maria",
-    comprador_nome: "Maria Souza",
-    comprador_email: "maria@teste.com",
-    comprador_telefone: "35999990000",
-    data_reserva: "2026-05-01T10:00:00.000-03:00",
-    data_pagamento: "2026-05-02T10:00:00.000-03:00",
-    comprovante_url: "https://storage.mock/comprovante-maria.png",
-    valor: 10,
+    comprovanteUrl: "https://storage.mock/comprovante-maria.png",
+    bilhetes: ["001", "002"],
+    valorTotal: 20,
   },
   {
-    numero_rifa: "002",
-    status: "pago",
-    vendedor_id: "aderido_ana",
-    vendedor_nome: "Ana Vendedora",
-    vendedor_cpf: "11122233344",
-    comprador_id: "comprador_maria",
-    comprador_nome: "Maria Souza",
-    comprador_email: "maria@teste.com",
-    comprador_telefone: "35999990000",
-    data_reserva: "2026-05-01T10:00:00.000-03:00",
-    data_pagamento: "2026-05-02T10:00:00.000-03:00",
-    comprovante_url: "https://storage.mock/comprovante-maria.png",
-    valor: 10,
-  },
-  {
-    numero_rifa: "003",
+    id: "comprador_joao",
+    vendedorId: "aderido_bruno",
+    vendedorNome: "Bruno Vendedor",
+    vendedorCpf: "55566677788",
+    compradorId: "comprador_joao",
+    compradorNome: "João Lima",
+    compradorEmail: "joao@teste.com",
+    compradorTelefone: "35988887777",
+    dataReserva: "2026-05-10T10:00:00.000-03:00",
+    dataPagamento: "-",
     status: "pendente",
-    vendedor_id: "aderido_bruno",
-    vendedor_nome: "Bruno Vendedor",
-    vendedor_cpf: "55566677788",
-    comprador_id: "comprador_joao",
-    comprador_nome: "João Lima",
-    comprador_email: "joao@teste.com",
-    comprador_telefone: "35988887777",
-    data_reserva: "2026-05-10T10:00:00.000-03:00",
-    data_pagamento: "-",
-    comprovante_url: null,
-    valor: 10,
+    comprovanteUrl: null,
+    bilhetes: ["003"],
+    valorTotal: 10,
   },
 ];
 
@@ -199,15 +190,15 @@ describe("Página <AuditoriaComprasPage />", () => {
     expect(screen.getByText("Editar dados do comprador")).toBeInTheDocument();
     expect(
       screen.getByRole("textbox", { name: /nome do comprador/i }),
-    ).toHaveValue("João Lima");
+    ).toHaveValue("Maria Souza");
     expect(screen.queryByText("Dados editáveis")).not.toBeInTheDocument();
     expect(screen.queryByText("Campos bloqueados")).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByRole("textbox", { name: /nome do comprador/i }), {
-      target: { value: "João Atualizado" },
+      target: { value: "Maria Atualizada" },
     });
     fireEvent.change(screen.getByRole("textbox", { name: /e-mail do comprador/i }), {
-      target: { value: "joao.atualizado@teste.com" },
+      target: { value: "maria.atualizada@teste.com" },
     });
     fireEvent.change(screen.getByRole("textbox", { name: /telefone do comprador/i }), {
       target: { value: "35977776666" },
@@ -217,10 +208,10 @@ describe("Página <AuditoriaComprasPage />", () => {
 
     await waitFor(() => {
       expect(auditoriaComprasService.atualizarComprador).toHaveBeenCalledWith(
-        "comprador_joao",
+        "comprador_maria",
         {
-          nome: "João Atualizado",
-          email: "joao.atualizado@teste.com",
+          nome: "Maria Atualizada",
+          email: "maria.atualizada@teste.com",
           telefone: "35977776666",
         },
       );

@@ -1,7 +1,7 @@
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, IconButton, Typography } from "@mui/material";
 
-import { aderidosColors } from "@/shared/tokens/colors";
+import { colors } from "@/shared/tokens/colors";
 
 interface CheckoutModalHeaderProps {
   gerandoPix: boolean;
@@ -29,7 +29,7 @@ export function CheckoutModalHeader({
           component="h2"
           sx={{
             fontWeight: 950,
-            color: aderidosColors.greenBlack,
+            color: colors.pretoEsverdeado,
             fontSize: "1.22rem",
             lineHeight: 1.15,
           }}
@@ -39,7 +39,7 @@ export function CheckoutModalHeader({
 
         <Typography
           sx={{
-            color: aderidosColors.textMuted,
+            color: colors.cinzaTexto,
             fontSize: "0.86rem",
             mt: 0.35,
           }}

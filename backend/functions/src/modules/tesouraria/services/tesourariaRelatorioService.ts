@@ -1,11 +1,18 @@
 import * as admin from "firebase-admin";
 
+import {
+  obterSuperAdmins,
+  CARGOS_TESOURARIA_OU_ADMIN,
+  CARGOS_SECRETARIA_OU_ADMIN,
+} from "../../../shared/middlewares/authMiddleware";
 import { Bilhete, Usuario } from "../../types/models";
-import { DadosAtualizacaoCompradorCompra } from "../types/tesourariaTypes";
+import { DadosAtualizacaoCompradorCompra, TransacaoTesouraria } from "../types/tesourariaTypes";
 
 export class TesourariaRelatorioService {
   static async obterRelatorioTesouraria() {
     const db = admin.firestore();
+    const superAdmins = obterSuperAdmins();
+    const cargosAdmin = new Set([...CARGOS_TESOURARIA_OU_ADMIN, ...CARGOS_SECRETARIA_OU_ADMIN]);
 
     const usuariosSnap = await db.collection("usuarios").get();
 
@@ -31,12 +38,13 @@ export class TesourariaRelatorioService {
     const aderidos = usuariosSnap.docs
       .filter((doc) => {
         const data = doc.data();
+        const role = data.role || data.cargo;
+        const email = data.email?.trim().toLowerCase() || "";
+        
+        if (superAdmins.includes(email)) return false;
+        if (role && cargosAdmin.has(role)) return false;
 
-        return (
-          data.role === "aderido" ||
-          data.cargo === "aderido" ||
-          (!data.role && !data.cargo)
-        );
+        return (role || "aderido") === "aderido";
       })
       .map((doc) => {
         const user = doc.data() as Usuario;
@@ -52,7 +60,7 @@ export class TesourariaRelatorioService {
           nome: user.nome || "Aderido Sem Nome",
           cpf: cpfUsuario,
           arrecadado,
-          meta: user.meta_vendas || 1200,
+          meta: user.meta_vendas || (user.modalidade_adesao === "meio" ? 600 : 1200),
           rifasVendidas,
         };
       });
@@ -67,7 +75,7 @@ export class TesourariaRelatorioService {
     };
   }
 
-  static async obterHistoricoDetalhado() {
+  static async obterHistoricoDetalhado(): Promise<TransacaoTesouraria[]> {
     const db = admin.firestore();
 
     const bilhetesSnap = await db
@@ -75,28 +83,54 @@ export class TesourariaRelatorioService {
       .where("status", "in", ["pago", "pendente"])
       .get();
 
-    const historico = bilhetesSnap.docs.map((doc) => {
-      const data = doc.data() as Bilhete & Record<string, any>;
+    // Map para agrupar as compras por comprador
+    const agrupado: Record<string, TransacaoTesouraria> = {};
 
-      return {
-        numero_rifa: doc.id,
-        vendedor_nome: data.vendedor_nome || "Desconhecido",
-        vendedor_cpf: data.vendedor_cpf || "-",
-        comprador_id: data.comprador_id || null,
-        comprador_nome: data.comprador_nome || "Desconhecido",
-        comprador_telefone: data.comprador_telefone || "-",
-        comprador_email: data.comprador_email || "-",
-        data_reserva: data.data_reserva || "-",
-        data_pagamento: data.data_pagamento || "-",
-        comprovante_url: data.comprovante_url || null,
-        status: data.status,
-        valor: 10,
-      };
+    bilhetesSnap.docs.forEach((doc) => {
+      const data = doc.data() as Bilhete;
+      const numero = doc.id;
+
+      // Cria a chave de agrupamento (mesma lógica antiga do frontend)
+      let chave = `fallback:${data.data_reserva || "-"}:${
+        (data.comprador_nome || "").toLowerCase().trim()
+      }:${data.vendedor_cpf || "-"}`;
+      
+      if (data.comprador_id) {
+        chave = `comprador:${data.comprador_id}`;
+      }
+
+      if (!agrupado[chave]) {
+        agrupado[chave] = {
+          id: chave,
+          dataReserva: data.data_reserva || null,
+          dataPagamento: data.data_pagamento || null,
+          vendedorId: data.vendedor_id,
+          vendedorNome: data.vendedor_nome || "Desconhecido",
+          vendedorCpf: data.vendedor_cpf || "-",
+          compradorId: data.comprador_id || null,
+          compradorNome: data.comprador_nome || "Desconhecido",
+          compradorEmail: data.comprador_email || "",
+          compradorTelefone: data.comprador_telefone || "",
+          status: data.status,
+          comprovanteUrl: data.comprovante_url || null,
+          bilhetes: [numero],
+          valorTotal: 10,
+        };
+      } else {
+        if (!agrupado[chave].bilhetes.includes(numero)) {
+          agrupado[chave].bilhetes.push(numero);
+          agrupado[chave].valorTotal += 10;
+        }
+        agrupado[chave].comprovanteUrl =
+          agrupado[chave].comprovanteUrl || data.comprovante_url || null;
+      }
     });
 
+    const historico = Object.values(agrupado);
+
     historico.sort((a, b) => {
-      const dataA = new Date(a.data_reserva || 0).getTime() || 0;
-      const dataB = new Date(b.data_reserva || 0).getTime() || 0;
+      const dataA = new Date(a.dataReserva || 0).getTime() || 0;
+      const dataB = new Date(b.dataReserva || 0).getTime() || 0;
 
       return dataB - dataA;
     });

@@ -48,16 +48,14 @@ export interface Usuario {
   curso?: string;
   genero?: string;
   data_nascimento?: string;
-  dataNascimento?: string;
 
   // Permissões e classificação
-  cargo?: CargoComissao | string | null;
   role?: CargoComissao | string | null;
+  cargo?: CargoComissao | string | null;
   modalidade_adesao?: ModalidadeAdesao;
 
   // Status operacional
   status?: StatusCadastro | string;
-  status_cadastro?: StatusCadastro;
 
   // Dados comerciais
   posicao_adesao?: number;
@@ -68,7 +66,6 @@ export interface Usuario {
 
   // Datas
   criado_em?: string;
-  cadastrado_em?: string;
 }
 
 // ----------------------------------------------------------------------------
@@ -97,23 +94,36 @@ export type StatusBilhete =
   | "recusado";
 
 export type StatusPagamentoBanco =
+  | "CRIANDO"
+  | "ERRO_CRIACAO"
+  | "pending"
+  | "approved"
+  | "authorized"
+  | "in_process"
+  | "in_mediation"
+  | "rejected"
+  | "cancelled"
+  | "refunded"
+  | "charged_back"
   | "WAITING"
   | "PAID"
   | "AUTHORIZED"
   | "IN_ANALYSIS"
   | "DECLINED"
-  | "CANCELED";
+  | "CANCELED"; // Mapped from uppercase legacy states, kept for backward compatibility
 
 export type StatusValidacaoTesouraria = "aceita" | "negada";
 
 export interface Bilhete {
   numero: string;
   status: StatusBilhete;
+  correcao_pendente?: boolean | null;
 
   // Dados do vendedor/aderido
   vendedor_id?: string;
   vendedor_nome?: string;
   vendedor_cpf?: string;
+  vendedor_email?: string | null;
 
   // Dados do comprador
   comprador_id?: string | null;
@@ -133,7 +143,6 @@ export interface Bilhete {
 
   // Pix dinâmico e validação da tesouraria
   pix_order_id?: string | null;
-  pix_charge_id?: string | null;
   pix_qr_code_id?: string | null;
   pix_reference_id?: string | null;
   status_pagamento_banco?: StatusPagamentoBanco | string | null;
@@ -165,7 +174,6 @@ export interface PagamentoPix {
   status_pagamento_banco: StatusPagamentoBanco | string;
   status_validacao?: StatusValidacaoTesouraria | string | null;
   pix_order_id?: string | null;
-  pix_charge_id?: string | null;
   pix_qr_code_id?: string | null;
   copia_e_cola?: string | null;
   qr_code_imagem_url?: string | null;
@@ -176,7 +184,9 @@ export interface PagamentoPix {
   validado_em?: string | null;
   validado_por?: string | null;
   motivo_negacao?: string | null;
-  raw_pagbank?: Record<string, unknown> | null;
+  raw_mercadopago?: Record<string, unknown> | null;
+  idempotency_key?: string | null;
+  erro_criacao?: string | null;
 }
 
 // ----------------------------------------------------------------------------

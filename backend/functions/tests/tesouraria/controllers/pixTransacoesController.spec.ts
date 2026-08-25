@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { Response } from "express";
 
 import { AuthRequest } from "../../../src/shared/middlewares/authMiddleware";
-import { criarReqResTesourariaController } from "../helpers/criarReqResTesourariaController";
+import { criarReqResTesourariaController } from "../../tesouraria/helpers/criarReqResTesourariaController";
 
 const mocks = {
   buscarPixTransacoes: jest.fn<any>(),

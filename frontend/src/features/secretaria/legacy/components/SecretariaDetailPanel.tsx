@@ -14,7 +14,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 
-import { surfaces } from "../../styles/surfaces";
+import { surfaces } from "@/shared/tokens/surfaces";
 import { InformacoesAderidoCard } from "../../membros/components/detalhesAderido/InformacoesAderidoCard";
 import { FormEditarAderido } from "../../membros/components/detalhesAderido/FormEditarAderido";
 import { formatarNomeMembro } from "../../membros/utils/formatadoresSecretaria";

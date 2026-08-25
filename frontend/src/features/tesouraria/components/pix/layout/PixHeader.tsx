@@ -1,7 +1,7 @@
 import SyncIcon from "@mui/icons-material/Sync";
 import { CircularProgress, IconButton, Tooltip } from "@mui/material";
 
-import { colors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 import { AbaPix } from "../../../types/pixTabs";
 import { TesourariaSectionHeader } from "../../shared/TesourariaSectionHeader";
 

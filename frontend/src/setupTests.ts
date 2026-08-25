@@ -12,3 +12,8 @@ vi.mock("firebase/storage", () => ({
   uploadBytesResumable: vi.fn(),
   getDownloadURL: vi.fn(),
 }));
+
+// Mock para o useDebounce, retornando o valor imediatamente em testes
+vi.mock("@/shared/hooks/useDebounce", () => ({
+  useDebounce: vi.fn((value) => value),
+}));

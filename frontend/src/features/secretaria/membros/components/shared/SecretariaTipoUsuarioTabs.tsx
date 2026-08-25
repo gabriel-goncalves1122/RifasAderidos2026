@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs } from "@mui/material";
 
 import type { SecretariaTipoUsuarioTab } from "../../types/secretariaLocalTypes";
-import { secretariaColors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 
 interface SecretariaTipoUsuarioTabsProps {
   value: SecretariaTipoUsuarioTab;
@@ -16,7 +16,7 @@ export function SecretariaTipoUsuarioTabs({
     <Box
       sx={{
         mb: 2,
-        borderBottom: `1px solid ${secretariaColors.borda}`,
+        borderBottom: `1px solid ${colors.borda}`,
       }}
     >
       <Tabs
@@ -28,16 +28,16 @@ export function SecretariaTipoUsuarioTabs({
           "& .MuiTab-root": {
             minHeight: 44,
             px: { xs: 1.5, sm: 2.5 },
-            color: secretariaColors.cinzaTexto,
+            color: colors.cinzaTexto,
             fontWeight: 850,
           },
           "& .Mui-selected": {
-            color: secretariaColors.verdeEscuro,
+            color: colors.verdeEscuro,
           },
           "& .MuiTabs-indicator": {
             height: 3,
             borderRadius: 999,
-            bgcolor: secretariaColors.verdeEscuro,
+            bgcolor: colors.verdeEscuro,
           },
         }}
       >

@@ -9,45 +9,28 @@ export type StatusAuditoriaCompras =
 export type FiltroComprovante = "todos" | "com" | "sem";
 
 export interface AuditoriaComprasFiltros {
-  termoBusca: string;
+  busca: string;
   status: StatusAuditoriaCompras;
   dataInicio: string;
   dataFim: string;
   comprovante: FiltroComprovante;
 }
 
-export interface TransacaoAuditoriaComprasBase {
-  numero?: string;
-  numero_rifa?: string;
-  status?: string;
-  vendedor_id?: string;
-  vendedor_nome?: string;
-  vendedor_cpf?: string;
-  comprador_id?: string | null;
-  comprador_nome?: string;
-  comprador_email?: string | null;
-  comprador_telefone?: string | null;
-  data_reserva?: string | null;
-  data_pagamento?: string | null;
-  comprovante_url?: string | null;
-  valor?: number;
-}
-
-export interface CompraAuditavel {
+export interface TransacaoTesouraria {
   id: string;
-  data_reserva: string | null;
-  data_pagamento: string | null;
-  vendedor_id?: string;
-  vendedor_nome: string;
-  vendedor_cpf: string;
-  comprador_id: string | null;
-  comprador_nome: string;
-  comprador_email: string;
-  comprador_telefone: string;
+  dataReserva: string | null;
+  dataPagamento: string | null;
+  vendedorId?: string;
+  vendedorNome: string;
+  vendedorCpf: string;
+  compradorId: string | null;
+  compradorNome: string;
+  compradorEmail: string;
+  compradorTelefone: string;
   status: string;
-  comprovante_url: string | null;
+  comprovanteUrl: string | null;
   bilhetes: string[];
-  valor_total: number;
+  valorTotal: number;
 }
 
 export interface ResumoAuditoriaCompras {

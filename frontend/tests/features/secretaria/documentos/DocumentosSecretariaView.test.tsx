@@ -4,6 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DocumentosSecretariaView } from "@/features/secretaria/documentos/DocumentosSecretariaView";
 
+vi.mock("@/shared/hooks/useDebounce", () => ({
+  useDebounce: vi.fn((val) => val),
+}));
+
 const documentosMocks = vi.hoisted(() => {
   const documentosBase = [
     {

@@ -12,7 +12,9 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5173,
     strictPort: true,
-    allowedHosts: [".trycloudflare.com"],
+    // DEV: permite abrir o Vite pelo IP da maquina no celular e tambem via
+    // tunel temporario. O build/producao nao usa este servidor.
+    allowedHosts: true,
 
     watch: {
       // Os scripts padrao usam polling para funcionar mesmo antes do setup

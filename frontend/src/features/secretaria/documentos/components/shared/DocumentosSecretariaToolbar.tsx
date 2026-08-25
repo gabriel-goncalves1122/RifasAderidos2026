@@ -1,6 +1,7 @@
 import {
   Box,
   FormControl,
+  IconButton,
   InputAdornment,
   InputLabel,
   MenuItem,
@@ -8,8 +9,9 @@ import {
   TextField,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 
-import { secretariaComponents } from "../../../styles/components";
+import { components } from "@/shared/tokens/components";
 import { documentosSecretariaStyles } from "../../styles/documentosSecretariaStyles";
 import { AREAS_DOCUMENTOS_COMISSAO } from "../../constants/documentosAreas";
 import type { AreaDocumentoComissao } from "../../types/documentosSecretariaTypes";
@@ -34,13 +36,20 @@ export function DocumentosSecretariaToolbar({
         value={busca}
         placeholder="Pesquisar por título, arquivo ou responsável..."
         onChange={(event) => onBuscaChange(event.target.value)}
-        sx={secretariaComponents.searchField}
+        sx={components.searchField}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
               <SearchIcon color="action" />
             </InputAdornment>
           ),
+          endAdornment: busca ? (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={() => onBuscaChange("")}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          ) : null,
         }}
       />
 

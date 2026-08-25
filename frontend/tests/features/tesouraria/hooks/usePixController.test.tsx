@@ -65,16 +65,4 @@ describe("Hook-controller: usePixController", () => {
 
     expect(result.current.abaVisivel).toBe("conciliacao");
   });
-
-  it("Deve aplicar fallback da aba conciliação no mobile", () => {
-    const { result } = renderHook(() =>
-      usePixController({ variante: "mobile" }),
-    );
-
-    act(() => {
-      result.current.setAbaAtual("conciliacao");
-    });
-
-    expect(result.current.abaVisivel).toBe("visao-geral");
-  });
 });

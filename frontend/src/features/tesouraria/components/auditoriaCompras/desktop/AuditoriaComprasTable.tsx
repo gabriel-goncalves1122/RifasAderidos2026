@@ -11,24 +11,24 @@ import {
   Typography,
 } from "@mui/material";
 
-import { CompraAuditavel } from "../../../types/auditoriaCompras";
+import { TransacaoTesouraria } from "../../../types/auditoriaCompras";
 import {
   formatarDataAuditoria,
   formatarMoedaAuditoria,
 } from "../../../utils/auditoriaComprasUtils";
 import { AuditoriaCompraActions } from "../shared/AuditoriaCompraActions";
 import { AuditoriaStatusChip } from "../shared/AuditoriaStatusChip";
-import { colors } from "../../../styles/colors";
-import { surfaces } from "../../../styles/surfaces";
-import { components } from "../../../styles/components";
-import { typography } from "../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { components } from "@/shared/tokens/components";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 
 interface AuditoriaComprasTableProps {
-  compras: CompraAuditavel[];
-  onVerComprovante: (compra: CompraAuditavel) => void;
-  onEditar: (compra: CompraAuditavel) => void;
-  onVerDetalhes: (compra: CompraAuditavel) => void;
-  onReenviarEmailComprovante: (compra: CompraAuditavel) => void;
+  compras: TransacaoTesouraria[];
+  onVerComprovante: (compra: TransacaoTesouraria) => void;
+  onEditar: (compra: TransacaoTesouraria) => void;
+  onVerDetalhes: (compra: TransacaoTesouraria) => void;
+  onReenviarEmailComprovante: (compra: TransacaoTesouraria) => void;
   reenviandoEmailComprovanteId?: string | null;
 }
 
@@ -74,7 +74,7 @@ export function AuditoriaComprasTable({
             >
               <TableCell sx={{ minWidth: 128 }}>
                 <Typography sx={typography.bodyDestaque}>
-                  {formatarDataAuditoria(compra.data_reserva)}
+                  {formatarDataAuditoria(compra.dataReserva)}
                 </Typography>
                 <Typography sx={typography.bodyPequeno}>
                   Reserva
@@ -87,10 +87,10 @@ export function AuditoriaComprasTable({
                     fontWeight: 950,
                   }}
                 >
-                  {compra.comprador_nome}
+                  {compra.compradorNome}
                 </Typography>
                 <Typography sx={{ ...typography.bodyPequeno, mt: 0.3 }}>
-                  ID: {compra.comprador_id || "sem comprador_id"}
+                  ID: {compra.compradorId || "sem compradorId"}
                 </Typography>
               </TableCell>
               <TableCell sx={{ minWidth: 190 }}>
@@ -102,18 +102,18 @@ export function AuditoriaComprasTable({
                     overflowWrap: "anywhere",
                   }}
                 >
-                  {compra.comprador_email || "Sem e-mail"}
+                  {compra.compradorEmail || "Sem e-mail"}
                 </Typography>
                 <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.8rem" }}>
-                  {compra.comprador_telefone || "Sem telefone"}
+                  {compra.compradorTelefone || "Sem telefone"}
                 </Typography>
               </TableCell>
               <TableCell sx={{ minWidth: 170 }}>
                 <Typography sx={typography.bodyDestaque}>
-                  {compra.vendedor_nome}
+                  {compra.vendedorNome}
                 </Typography>
                 <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.8rem" }}>
-                  {compra.vendedor_cpf}
+                  {compra.vendedorCpf}
                 </Typography>
               </TableCell>
               <TableCell>
@@ -146,7 +146,7 @@ export function AuditoriaComprasTable({
                 <Box
                   sx={components.labelVerde}
                 >
-                  {formatarMoedaAuditoria(compra.valor_total)}
+                  {formatarMoedaAuditoria(compra.valorTotal)}
                 </Box>
               </TableCell>
               <TableCell align="right">
@@ -157,8 +157,8 @@ export function AuditoriaComprasTable({
                   onVerDetalhes={onVerDetalhes}
                   onReenviarEmailComprovante={onReenviarEmailComprovante}
                   reenviandoEmailComprovante={
-                    Boolean(compra.comprador_id) &&
-                    compra.comprador_id === reenviandoEmailComprovanteId
+                    Boolean(compra.compradorId) &&
+                    compra.compradorId === reenviandoEmailComprovanteId
                   }
                 />
               </TableCell>

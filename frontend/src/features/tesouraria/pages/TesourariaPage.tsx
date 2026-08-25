@@ -6,7 +6,6 @@ import { PixTransacoesMobileView } from "../components/pix/transacoes/mobile/Pix
 import { PixHeader } from "../components/pix/layout/PixHeader";
 import { PixTabs } from "../components/pix/layout/PixTabs";
 import { PixAderidosTab } from "../components/pix/tabs/PixAderidosTab";
-import { PixConciliacaoTab } from "../components/pix/tabs/PixConciliacaoTab";
 import { PixVisaoGeralTab } from "../components/pix/tabs/PixVisaoGeralTab";
 import { usePixController } from "../hooks/usePixController";
 
@@ -71,18 +70,6 @@ export function TesourariaPage({ variante = "desktop" }: TesourariaPageProps) {
               ) : (
                 <PixTransacoesDesktopView {...pixProps} />
               )}
-            </motion.div>
-          )}
-
-          {abaVisivel === "conciliacao" && (
-            <motion.div
-              key="conciliacao"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <PixConciliacaoTab transacoes={transacoes} />
             </motion.div>
           )}
 

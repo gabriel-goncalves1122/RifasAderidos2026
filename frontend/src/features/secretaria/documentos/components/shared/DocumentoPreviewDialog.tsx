@@ -13,7 +13,7 @@ import {
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
-import { secretariaColors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 import { documentosSecretariaStyles } from "../../styles/documentosSecretariaStyles";
 import {
   formatarDataDocumento,
@@ -72,7 +72,7 @@ export function DocumentoPreviewDialog({
               component="span"
               sx={{
                 display: "block",
-                color: secretariaColors.pretoEsverdeado,
+                color: colors.pretoEsverdeado,
                 fontSize: "1.25rem",
                 fontWeight: 950,
                 lineHeight: 1.15,
@@ -85,7 +85,7 @@ export function DocumentoPreviewDialog({
               sx={{
                 display: "block",
                 mt: 0.5,
-                color: secretariaColors.cinzaTexto,
+                color: colors.cinzaTexto,
                 fontSize: "0.86rem",
               }}
             >
@@ -98,7 +98,7 @@ export function DocumentoPreviewDialog({
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
-                sx={{ color: secretariaColors.cinzaTexto, fontSize: "0.85rem" }}
+                sx={{ color: colors.cinzaTexto, fontSize: "0.85rem" }}
               >
                 <Typography variant="body2">
                   Atualizado em {formatarDataDocumento(documento.atualizadoEm)}
@@ -145,7 +145,7 @@ export function DocumentoPreviewDialog({
                   sx={{
                     borderRadius: 2,
                     bgcolor: "rgba(6, 61, 49, 0.08)",
-                    color: secretariaColors.pretoEsverdeado,
+                    color: colors.pretoEsverdeado,
                   }}
                 >
                   Pré-visualização indisponível para este tipo de arquivo.

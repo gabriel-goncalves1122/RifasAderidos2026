@@ -26,8 +26,8 @@ import {
   formatarTelefone,
   somenteNumeros,
 } from "../../utils/formatadoresSecretaria";
-import { secretariaColors } from "../../../styles/colors";
-import { secretariaComponents } from "../../../styles/components";
+import { colors } from "@/shared/tokens/colors";
+import { components } from "@/shared/tokens/components";
 
 interface FormEditarAderidoProps {
   aderido: AderidoSecretaria;
@@ -70,9 +70,9 @@ function SectionTitle({ children }: { children: string }) {
 
 const chipSx = {
   borderRadius: 2,
-  bgcolor: secretariaColors.verdeClaro,
-  color: secretariaColors.verdeEscuro,
-  border: `1px solid ${secretariaColors.borda}`,
+  bgcolor: colors.verdeClaro,
+  color: colors.verdeEscuro,
+  border: `1px solid ${colors.borda}`,
   fontWeight: 800,
 } as const;
 
@@ -108,7 +108,7 @@ export function FormEditarAderido({
             onChange={(event) => onChange("nome", event.target.value)}
             fullWidth
             size="small"
-            sx={secretariaComponents.formField}
+            sx={components.formField}
           />
 
           <TextField
@@ -117,7 +117,7 @@ export function FormEditarAderido({
             onChange={(event) => onChange("email", event.target.value)}
             fullWidth
             size="small"
-            sx={secretariaComponents.formField}
+            sx={components.formField}
           />
         </Stack>
       </Stack>
@@ -136,7 +136,7 @@ export function FormEditarAderido({
             }}
             fullWidth
             size="small"
-            sx={secretariaComponents.formField}
+            sx={components.formField}
             inputProps={{
               inputMode: "numeric",
               maxLength: 14,
@@ -155,7 +155,7 @@ export function FormEditarAderido({
             }}
             fullWidth
             size="small"
-            sx={secretariaComponents.formField}
+            sx={components.formField}
             inputProps={{
               inputMode: "numeric",
               maxLength: 15,
@@ -164,7 +164,7 @@ export function FormEditarAderido({
         </Stack>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-          <FormControl fullWidth size="small" sx={secretariaComponents.selectField}>
+          <FormControl fullWidth size="small" sx={components.selectField}>
             <InputLabel>Curso</InputLabel>
             <Select
               value={cursoSelecionado}
@@ -187,7 +187,7 @@ export function FormEditarAderido({
             onChange={(event) => onChange("data_nascimento", event.target.value)}
             fullWidth
             size="small"
-            sx={secretariaComponents.formField}
+            sx={components.formField}
           />
         </Stack>
       </Stack>
@@ -210,10 +210,10 @@ export function FormEditarAderido({
             onChange={(event) => onChange("genero", event.target.value)}
             fullWidth
             size="small"
-            sx={secretariaComponents.formField}
+            sx={components.formField}
           />
 
-          <FormControl fullWidth size="small" sx={secretariaComponents.selectField}>
+          <FormControl fullWidth size="small" sx={components.selectField}>
             <InputLabel>Cargo</InputLabel>
             <Select
               value={form.cargo}

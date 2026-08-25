@@ -7,11 +7,10 @@ import * as admin from "firebase-admin";
 export interface AuthRequest extends Request {
   user?: admin.auth.DecodedIdToken & {
     role?: string;
-    cargo?: string;
   };
 }
 
-function obterSuperAdmins(): string[] {
+export function obterSuperAdmins(): string[] {
   const envValue = process.env.SUPER_ADMIN_EMAILS || "";
 
   return envValue
@@ -20,7 +19,7 @@ function obterSuperAdmins(): string[] {
     .filter((email) => email.length > 0);
 }
 
-const CARGOS_TESOURARIA_OU_ADMIN = [
+export const CARGOS_TESOURARIA_OU_ADMIN = [
   "admin",
   "presidencia",
   "diretor_tesouraria",
@@ -29,7 +28,7 @@ const CARGOS_TESOURARIA_OU_ADMIN = [
   "secretaria",
 ];
 
-const CARGOS_SECRETARIA_OU_ADMIN = [
+export const CARGOS_SECRETARIA_OU_ADMIN = [
   "admin",
   "presidencia",
   "secretaria",
@@ -98,7 +97,6 @@ export const validateToken = async (
         req.user = {
           ...decodedToken,
           role: cargoEfetivo,
-          cargo: cargoEfetivo,
         };
       }
     } catch (firestoreError) {
@@ -136,7 +134,7 @@ export const requireTesourariaOrAdmin = async (
     return;
   }
 
-  // Libera acesso para super-admins configurados via env var SUPERVISOR_ADMIN_EMAILS
+  // Libera acesso para super-admins configurados via env var SUPER_ADMIN_EMAILS
   if (user.email) {
     const superAdmins = obterSuperAdmins();
 
@@ -146,7 +144,7 @@ export const requireTesourariaOrAdmin = async (
     }
   }
 
-  const cargoEfetivo = user.role || user.cargo || "aderido";
+  const cargoEfetivo = user.role || "aderido";
 
   if (!CARGOS_TESOURARIA_OU_ADMIN.includes(cargoEfetivo)) {
     res.status(403).json({
@@ -181,7 +179,7 @@ export const requireSecretariaOrAdmin = async (
     }
   }
 
-  const cargoEfetivo = user.role || user.cargo || "aderido";
+  const cargoEfetivo = user.role || "aderido";
 
   if (!CARGOS_SECRETARIA_OU_ADMIN.includes(cargoEfetivo)) {
     res.status(403).json({

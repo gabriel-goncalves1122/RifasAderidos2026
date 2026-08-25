@@ -4,7 +4,7 @@ import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import { Box } from "@mui/material";
 
-import { colors } from "../../../styles/colors";
+import { colors } from "@/shared/tokens/colors";
 
 import { TesourariaSectionHeader } from "../../shared/TesourariaSectionHeader";
 import {

@@ -5,8 +5,8 @@ import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 
-import { colors } from "../../../../styles/colors";
-import { typography } from "../../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 import { PixTransacoesResumo } from "../../../../types/pixTransacoes";
 import { formatarMoedaPix } from "../../../../utils/pixTransacoesUtils";
 
@@ -118,9 +118,9 @@ export function PixTransacoesResumoMobile({ resumo }: PixTransacoesResumoMobileP
       />
 
       <ResumoItem
-        titulo="Não vinculadas"
-        valor={`${resumo.quantidadeNaoIdentificadas}`}
-        detalhe={formatarMoedaPix(resumo.totalDivergente)}
+        titulo="Canceladas"
+        valor={`${resumo.quantidadeCanceladas}`}
+        detalhe={formatarMoedaPix(resumo.totalCancelado)}
         tipo="alerta"
       />
 

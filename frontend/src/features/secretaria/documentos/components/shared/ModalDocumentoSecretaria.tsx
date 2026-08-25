@@ -19,8 +19,8 @@ import {
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 
-import { secretariaColors } from "../../../styles/colors";
-import { secretariaComponents } from "../../../styles/components";
+import { colors } from "@/shared/tokens/colors";
+import { components } from "@/shared/tokens/components";
 import { AREAS_DOCUMENTOS_COMISSAO } from "../../constants/documentosAreas";
 import {
   TIPOS_CADASTRO_DOCUMENTO,
@@ -55,7 +55,7 @@ function SectionTitle({ children }: { children: string }) {
   return (
     <Typography
       variant="subtitle2"
-      sx={{ color: secretariaColors.verdeEscuro, fontWeight: 900 }}
+      sx={{ color: colors.verdeEscuro, fontWeight: 900 }}
     >
       {children}
     </Typography>
@@ -178,7 +178,7 @@ export function ModalDocumentoSecretaria({
       fullWidth
       PaperProps={{
         sx: {
-          ...secretariaComponents.surface,
+          ...components.surface,
           overflow: "hidden",
         },
       }}
@@ -187,15 +187,15 @@ export function ModalDocumentoSecretaria({
         sx={{
           px: 3,
           py: 2.5,
-          color: secretariaColors.pretoEsverdeado,
+          color: colors.pretoEsverdeado,
           fontWeight: 950,
-          borderBottom: `1px solid ${secretariaColors.borda}`,
+          borderBottom: `1px solid ${colors.borda}`,
         }}
       >
         {tituloModal}
       </DialogTitle>
 
-      <DialogContent sx={{ p: 3, bgcolor: secretariaColors.branco }}>
+      <DialogContent sx={{ p: 3, bgcolor: colors.branco }}>
         <Stack spacing={2.25}>
           {erroEnvio && <Alert severity="error">{erroEnvio}</Alert>}
           <Stack spacing={1.5}>
@@ -207,11 +207,11 @@ export function ModalDocumentoSecretaria({
               required
               fullWidth
               size="small"
-              sx={secretariaComponents.formField}
+              sx={components.formField}
             />
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-              <FormControl fullWidth size="small" sx={secretariaComponents.selectField}>
+              <FormControl fullWidth size="small" sx={components.selectField}>
                 <InputLabel id="documento-area-form-label">Área</InputLabel>
                 <Select
                   labelId="documento-area-form-label"
@@ -229,7 +229,7 @@ export function ModalDocumentoSecretaria({
                 </Select>
               </FormControl>
 
-              <FormControl fullWidth size="small" sx={secretariaComponents.selectField}>
+              <FormControl fullWidth size="small" sx={components.selectField}>
                 <InputLabel id="documento-tipo-form-label">Tipo</InputLabel>
                 <Select
                   labelId="documento-tipo-form-label"
@@ -257,7 +257,7 @@ export function ModalDocumentoSecretaria({
               sx={{
                 p: 2,
                 borderRadius: 2,
-                border: `1.5px dashed ${secretariaColors.borda}`,
+                border: `1.5px dashed ${colors.borda}`,
                 bgcolor: "#F6F8F7",
               }}
             >
@@ -280,11 +280,11 @@ export function ModalDocumentoSecretaria({
                 </Button>
 
                 {form.nomeArquivo ? (
-                  <Typography sx={{ color: secretariaColors.pretoEsverdeado, fontWeight: 800 }}>
+                  <Typography sx={{ color: colors.pretoEsverdeado, fontWeight: 800 }}>
                     {form.nomeArquivo} · {formatarTamanhoArquivo(form.tamanhoBytes)}
                   </Typography>
                 ) : (
-                  <Typography sx={{ color: secretariaColors.cinzaTexto, fontSize: "0.86rem" }}>
+                  <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.86rem" }}>
                     Escolha um arquivo {TIPOS_CADASTRO_DOCUMENTO[tipoCadastro].label}.
                   </Typography>
                 )}
@@ -313,7 +313,7 @@ export function ModalDocumentoSecretaria({
                   }
                   InputLabelProps={{ shrink: true }}
                   size="small"
-                  sx={secretariaComponents.formField}
+                  sx={components.formField}
                 />
                 <TextField
                   label="Descrição"
@@ -324,7 +324,7 @@ export function ModalDocumentoSecretaria({
                   multiline
                   minRows={2}
                   size="small"
-                  sx={secretariaComponents.formField}
+                  sx={components.formField}
                 />
               </>
             )}
@@ -338,7 +338,7 @@ export function ModalDocumentoSecretaria({
                     handleChange("periodoReferencia", event.target.value)
                   }
                   size="small"
-                  sx={secretariaComponents.formField}
+                  sx={components.formField}
                 />
                 <TextField
                   label="Descrição"
@@ -349,7 +349,7 @@ export function ModalDocumentoSecretaria({
                   multiline
                   minRows={2}
                   size="small"
-                  sx={secretariaComponents.formField}
+                  sx={components.formField}
                 />
               </>
             )}
@@ -363,7 +363,7 @@ export function ModalDocumentoSecretaria({
                     handleChange("textoAlternativo", event.target.value)
                   }
                   size="small"
-                  sx={secretariaComponents.formField}
+                  sx={components.formField}
                 />
                 <TextField
                   label="Crédito da imagem"
@@ -372,7 +372,7 @@ export function ModalDocumentoSecretaria({
                     handleChange("creditoImagem", event.target.value)
                   }
                   size="small"
-                  sx={secretariaComponents.formField}
+                  sx={components.formField}
                 />
               </>
             )}
@@ -380,7 +380,7 @@ export function ModalDocumentoSecretaria({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, px: 3, borderTop: `1px solid ${secretariaColors.borda}` }}>
+      <DialogActions sx={{ p: 2, px: 3, borderTop: `1px solid ${colors.borda}` }}>
         <Button onClick={onClose} disabled={saving} color="inherit">
           Cancelar
         </Button>

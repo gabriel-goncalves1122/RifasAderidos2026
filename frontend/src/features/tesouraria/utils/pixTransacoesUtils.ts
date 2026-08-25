@@ -8,17 +8,15 @@ import {
   PixTransacoesFiltros,
   PixTransacoesResumo,
   PixTransacoesSerieTemporal,
-  StatusConciliacaoPix,
-  StatusPagamentoPix,
-  PixTransacao,
 } from "../types/pixTransacoes";
-import {
-  obterStatusValidacaoPix,
-  pixPagamentoConfirmadoBanco,
-  pixTransacaoTemPendenciaVinculo,
-  pixTransacaoTemRifas,
-  podeValidarPixTransacao,
-} from "./pixValidacaoUtils";
+
+export function pixTransacaoTemRifas(transacao: PixTransacao) {
+  return Boolean(transacao.rifas && transacao.rifas.length > 0);
+}
+
+export function pixPagamentoConfirmadoBanco(transacao: PixTransacao) {
+  return ["PAID", "AUTHORIZED"].includes(transacao.statusPagamento);
+}
 
 export { formatarDataPix, formatarMoedaPix };
 
@@ -26,17 +24,10 @@ export const RESUMO_PIX_TRANSACOES_VAZIO: PixTransacoesResumo = {
   totalRecebido: 0,
   totalPendente: 0,
   totalCancelado: 0,
-  totalDivergente: 0,
   quantidadePagas: 0,
   quantidadeAguardando: 0,
   quantidadeCanceladas: 0,
-  quantidadeNaoIdentificadas: 0,
-  quantidadeAguardandoValidacao: 0,
-  quantidadeAceitas: 0,
-  quantidadeNegadas: 0,
-  quantidadeSemConfirmacaoBancaria: 0,
   quantidadeComRifas: 0,
-  quantidadeSemVinculo: 0,
   ticketMedio: 0,
 };
 
@@ -58,9 +49,7 @@ function atendeFiltroRapido(
   status: PixTransacoesFiltros["status"],
 ) {
   if (status === "todas") return true;
-  if (status === "para_validar") return podeValidarPixTransacao(transacao);
   if (status === "com_rifas") return pixTransacaoTemRifas(transacao);
-  if (status === "sem_vinculo") return pixTransacaoTemPendenciaVinculo(transacao);
   if (status === "pendentes_banco") return !pixPagamentoConfirmadoBanco(transacao);
 
   return true;
@@ -87,20 +76,6 @@ export function obterLabelStatusPagamento(status: StatusPagamentoPix) {
   return labels[status] || status;
 }
 
-export function obterLabelStatusConciliacao(
-  status: StatusConciliacaoPix,
-) {
-  const labels: Record<StatusConciliacaoPix, string> = {
-    pendente: "Pendente",
-    conciliada: "Conciliada",
-    nao_identificada: "Não identificada",
-    divergente: "Divergente",
-    cancelada: "Cancelada",
-  };
-
-  return labels[status] || status;
-}
-
 export function calcularResumoPixTransacoes(
   transacoes: PixTransacao[],
 ): PixTransacoesResumo {
@@ -116,32 +91,7 @@ export function calcularResumoPixTransacoes(
     (transacao) => transacao.statusPagamento === "CANCELED",
   );
 
-  const naoIdentificadas = transacoes.filter(
-    (transacao) => transacao.statusConciliacao === "nao_identificada",
-  );
-
-  const divergentes = transacoes.filter(
-    (transacao) => transacao.statusConciliacao === "divergente",
-  );
-
-  const aguardandoValidacao = transacoes.filter(
-    (transacao) => obterStatusValidacaoPix(transacao) === "pendente_validacao",
-  );
-
-  const aceitas = transacoes.filter(
-    (transacao) => obterStatusValidacaoPix(transacao) === "aceita",
-  );
-
-  const negadas = transacoes.filter(
-    (transacao) => obterStatusValidacaoPix(transacao) === "negada",
-  );
-
-  const semConfirmacaoBancaria = transacoes.filter(
-    (transacao) =>
-      obterStatusValidacaoPix(transacao) === "sem_confirmacao_bancaria",
-  );
   const comRifas = transacoes.filter(pixTransacaoTemRifas);
-  const semVinculo = transacoes.filter(pixTransacaoTemPendenciaVinculo);
 
   const totalRecebido = pagas.reduce(
     (acc, transacao) => acc + transacao.valorPago,
@@ -158,26 +108,14 @@ export function calcularResumoPixTransacoes(
     0,
   );
 
-  const totalDivergente = [...naoIdentificadas, ...divergentes].reduce(
-    (acc, transacao) => acc + (transacao.valorPago || transacao.valorBruto),
-    0,
-  );
-
   return {
     totalRecebido,
     totalPendente,
     totalCancelado,
-    totalDivergente,
     quantidadePagas: pagas.length,
     quantidadeAguardando: aguardando.length,
     quantidadeCanceladas: canceladas.length,
-    quantidadeNaoIdentificadas: naoIdentificadas.length,
-    quantidadeAguardandoValidacao: aguardandoValidacao.length,
-    quantidadeAceitas: aceitas.length,
-    quantidadeNegadas: negadas.length,
-    quantidadeSemConfirmacaoBancaria: semConfirmacaoBancaria.length,
     quantidadeComRifas: comRifas.length,
-    quantidadeSemVinculo: semVinculo.length,
     ticketMedio: pagas.length > 0 ? totalRecebido / pagas.length : 0,
   };
 }

@@ -33,7 +33,7 @@ export const pixTransacoesMock: PixTransacao[] = [
       { numero: "012", status: "pago" },
     ],
     quantidadeRifas: 3,
-    vendaId: "venda_001",
+    compradorId: "venda_001",
   },
   {
     id: "tx_002",
@@ -57,7 +57,7 @@ export const pixTransacoesMock: PixTransacao[] = [
     },
     rifas: [{ numero: "020", status: "disponivel" }],
     quantidadeRifas: 1,
-    vendaId: null,
+    compradorId: null,
   },
   {
     id: "tx_003",
@@ -76,6 +76,6 @@ export const pixTransacoesMock: PixTransacao[] = [
     dataPagamento: "2026-10-16T13:11:44.000-03:00",
     compradorNome: "Pagador Não Identificado",
     quantidadeRifas: 0,
-    vendaId: null,
+    compradorId: null,
   },
 ];

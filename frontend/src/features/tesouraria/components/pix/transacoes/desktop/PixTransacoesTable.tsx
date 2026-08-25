@@ -13,12 +13,11 @@ import {
   Typography,
 } from "@mui/material";
 
-import { colors } from "../../../../styles/colors";
-import { components } from "../../../../styles/components";
-import { surfaces } from "../../../../styles/surfaces";
-import { typography } from "../../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { components } from "@/shared/tokens/components";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 import {
-  AcaoValidacaoPix,
   PixTransacao,
 } from "../../../../types/pixTransacoes";
 import {
@@ -26,23 +25,14 @@ import {
   formatarMoedaPix,
 } from "../../../../utils/pixTransacoesUtils";
 import { PixTransacaoDetalhesDialog } from "../shared/PixTransacaoDetalhesDialog";
-import { PixValidacaoActions } from "../shared/PixValidacaoActions";
-import { PixValidacaoChip } from "../shared/PixValidacaoChip";
 
 interface PixTransacoesTableProps {
   transacoes: PixTransacao[];
-  validandoPixPorId?: Record<string, AcaoValidacaoPix | undefined>;
-  onAceitarTransacao?: (transacaoId: string) => void | Promise<unknown>;
-  onNegarTransacao?: (transacaoId: string) => void | Promise<unknown>;
 }
 
 export function PixTransacoesTable({
   transacoes,
-  validandoPixPorId = {},
-  onAceitarTransacao,
-  onNegarTransacao,
 }: PixTransacoesTableProps) {
-  const mostrarAcoes = Boolean(onAceitarTransacao || onNegarTransacao);
   const [transacaoDetalhada, setTransacaoDetalhada] =
     useState<PixTransacao | null>(null);
 
@@ -61,7 +51,6 @@ export function PixTransacoesTable({
               <TableCell>Data</TableCell>
               <TableCell>Pagador</TableCell>
               <TableCell align="right">Valor / Status</TableCell>
-              {mostrarAcoes && <TableCell align="right">Ações</TableCell>}
             </TableRow>
           </TableHead>
 
@@ -154,25 +143,8 @@ export function PixTransacoesTable({
                       >
                         {formatarMoedaPix(valor)}
                       </Typography>
-                      <PixValidacaoChip transacao={transacao} />
                     </Stack>
                   </TableCell>
-
-                  {mostrarAcoes && (
-                    <TableCell align="right">
-                      <Box
-                        onClick={(event) => event.stopPropagation()}
-                        onKeyDown={(event) => event.stopPropagation()}
-                      >
-                        <PixValidacaoActions
-                          transacao={transacao}
-                          acaoEmAndamento={validandoPixPorId[transacao.id]}
-                          onAceitar={onAceitarTransacao}
-                          onNegar={onNegarTransacao}
-                        />
-                      </Box>
-                    </TableCell>
-                  )}
                 </TableRow>
               );
             })}

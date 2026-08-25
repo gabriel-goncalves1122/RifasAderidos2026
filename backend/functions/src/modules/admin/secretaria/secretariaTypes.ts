@@ -11,7 +11,7 @@ export interface DadosNovoAderido {
   email: string;
   nome?: string;
   curso?: string;
-  dataNascimento?: string;
+  data_nascimento?: string;
   telefone?: string;
   cargo?: CargoComissao;
   modalidade_adesao?: ModalidadeAdesao;

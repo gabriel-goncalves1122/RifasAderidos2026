@@ -12,14 +12,14 @@ import {
 } from "@mui/material";
 import { FormEvent, useEffect, useState } from "react";
 
-import { CompraAuditavel } from "../../../types/auditoriaCompras";
+import { TransacaoTesouraria } from "../../../types/auditoriaCompras";
 import { formatarTelefone } from "../../../utils/formatadores";
-import { colors } from "../../../styles/colors";
-import { surfaces } from "../../../styles/surfaces";
-import { components } from "../../../styles/components";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { components } from "@/shared/tokens/components";
 
 interface AuditoriaCompraEdicaoDialogProps {
-  compra: CompraAuditavel | null;
+  compra: TransacaoTesouraria | null;
   salvando: boolean;
   erro?: string | null;
   onClose: () => void;
@@ -42,9 +42,9 @@ export function AuditoriaCompraEdicaoDialog({
   const [telefone, setTelefone] = useState("");
 
   useEffect(() => {
-    setNome(compra?.comprador_nome || "");
-    setEmail(compra?.comprador_email || "");
-    setTelefone(compra?.comprador_telefone || "");
+    setNome(compra?.compradorNome || "");
+    setEmail(compra?.compradorEmail || "");
+    setTelefone(compra?.compradorTelefone || "");
   }, [compra]);
 
   const nomeValido = nome.trim().length > 0;

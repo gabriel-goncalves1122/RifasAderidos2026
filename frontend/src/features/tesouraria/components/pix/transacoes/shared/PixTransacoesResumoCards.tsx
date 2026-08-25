@@ -5,9 +5,9 @@ import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import { Box, Paper, Typography } from "@mui/material";
 
-import { colors } from "../../../../styles/colors";
-import { surfaces } from "../../../../styles/surfaces";
-import { typography } from "../../../../styles/typography";
+import { colors } from "@/shared/tokens/colors";
+import { surfaces } from "@/shared/tokens/surfaces";
+import { typographyScale as typography } from "@/shared/tokens/typography";
 import { PixTransacoesResumo } from "../../../../types/pixTransacoes";
 import { formatarMoedaPix } from "../../../../utils/pixTransacoesUtils";
 
@@ -89,30 +89,30 @@ export function PixTransacoesResumoCards({ resumo }: PixTransacoesResumoCardsPro
       }}
     >
       <CardResumo
-        titulo="Aguardando validação"
-        valor={`${resumo.quantidadeAguardandoValidacao}`}
-        descricao="Transações pendentes de análise"
+        titulo="Total Recebido"
+        valor={formatarMoedaPix(resumo.totalRecebido)}
+        descricao={`${resumo.quantidadePagas} pagamentos confirmados`}
         icone={<AccountBalanceWalletIcon />}
       />
 
       <CardResumo
-        titulo="Validadas"
-        valor={`${resumo.quantidadeAceitas}`}
-        descricao="Confirmadas e vinculadas a aderido/rifa"
+        titulo="Ticket Médio"
+        valor={formatarMoedaPix(resumo.ticketMedio)}
+        descricao="Gasto médio por pix pago"
         icone={<TaskAltOutlinedIcon />}
       />
 
       <CardResumo
-        titulo="Pendências de vínculo"
-        valor={`${resumo.quantidadeSemVinculo}`}
-        descricao="Recebidas mas não associadas a aderido"
+        titulo="Aguardando Pagamento"
+        valor={`${resumo.quantidadeAguardando}`}
+        descricao={`Total pendente: ${formatarMoedaPix(resumo.totalPendente)}`}
         icone={<LinkOffOutlinedIcon />}
       />
 
       <CardResumo
         titulo="Canceladas/Erros"
-        valor={`${resumo.quantidadeCanceladas + resumo.quantidadeNegadas}`}
-        descricao={formatarMoedaPix(resumo.totalCancelado)}
+        valor={`${resumo.quantidadeCanceladas}`}
+        descricao={`Total cancelado: ${formatarMoedaPix(resumo.totalCancelado)}`}
         icone={<ReportProblemOutlinedIcon />}
       />
     </Box>

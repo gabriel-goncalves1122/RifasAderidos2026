@@ -19,8 +19,10 @@ const COLECOES_PARA_COPIAR = [
   "notificacoes",
   "rifas",
   "pagamentos_pix",
+  "pagamentos_pix_idempotencia",
   "contadores",
   "documentos_secretaria",
+  "indices_usuarios_email",
 ];
 
 // ============================================================================

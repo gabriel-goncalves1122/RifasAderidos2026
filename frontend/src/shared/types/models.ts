@@ -1,12 +1,13 @@
 // ============================================================================
-// ARQUIVO: models.ts (A Definição de Dados do Sistema)
+// ARQUIVO: backend/functions/src/modules/types/models.ts
 // ============================================================================
 
 // ----------------------------------------------------------------------------
-// DEFINIÇÕES DE CARGOS (RBAC - Role Based Access Control)
+// CARGOS E PERFIS DO SISTEMA
 // ----------------------------------------------------------------------------
+
 export type CargoComissao =
-  | "admin" // <-- Adicionado para permissão de Super Admin (Chave Mestra)
+  | "admin"
   | "presidencia"
   | "rh"
   | "tesouraria"
@@ -17,41 +18,61 @@ export type CargoComissao =
   | "vice_secretaria"
   | "membro_secretaria"
   | "membro"
-  | "aderido"; // <-- Adicionado para alinhar com a lógica do Frontend
+  | "aderido";
+
+export type StatusCadastro = "ativo" | "pendente" | "inativo";
+
+export type ModalidadeAdesao = "completo" | "meio";
 
 // ----------------------------------------------------------------------------
-// 1. USUÁRIO (O Aderido / Formando / Membro da Comissão)
-// Coleção: 'usuarios'
+// USUÁRIO / ADERIDO / MEMBRO DA COMISSÃO
+// Coleção: usuarios
 // ----------------------------------------------------------------------------
+
+export interface FaixaRifas {
+  inicio?: string;
+  fim?: string;
+}
+
 export interface Usuario {
-  id?: string; // ID do documento no Firebase (ex: ADERIDO_001)
-  id_aderido?: string; // Identificador interno usado para relações
-  cpf: string; // Chave primária de validação
-  uid: string | null; // ID gerado pelo Firebase Auth
-  nome: string;
+  // Identificação principal
+  id?: string;
+  id_aderido?: string;
+  uid?: string | null;
+
+  // Dados pessoais
+  nome?: string;
   email: string | null;
-  telefone: string;
+  telefone?: string;
+  cpf?: string;
+  curso?: string;
+  genero?: string;
+  data_nascimento?: string;
 
-  cargo: CargoComissao;
-  modalidade_adesao: "completo" | "meio";
+  // Permissões e classificação
+  role?: CargoComissao | string | null;
+  cargo?: CargoComissao | string | null;
+  modalidade_adesao?: ModalidadeAdesao;
 
-  faixa_rifas: {
-    inicio: string; // Ex: "0001"
-    fim: string; // Ex: "0120"
-  };
+  // Status operacional
+  status?: StatusCadastro | string;
 
-  meta_vendas: number; // Geralmente R$ 1.200,00
-  total_arrecadado: number; // Valor já aprovado pela Tesouraria
-  rifas_vendidas: number; // Quantidade de bilhetes com status 'pago'
+  // Dados comerciais
+  posicao_adesao?: number;
+  faixa_rifas?: FaixaRifas;
+  meta_vendas?: number;
+  total_arrecadado?: number;
+  rifas_vendidas?: number;
 
-  status: "pendente" | "ativo";
-  criado_em: string;
+  // Datas
+  criado_em?: string;
 }
 
 // ----------------------------------------------------------------------------
-// 2. COMPRADOR (O Cliente que fez o PIX)
-// Coleção: 'compradores'
+// COMPRADOR
+// Coleção: compradores
 // ----------------------------------------------------------------------------
+
 export interface Comprador {
   id: string;
   nome: string;
@@ -61,11 +82,10 @@ export interface Comprador {
 }
 
 // ----------------------------------------------------------------------------
-// 3. NÚMERO (O Bilhete da Rifa)
-// Coleção: 'bilhetes'
+// BILHETE / RIFA
+// Coleção: bilhetes
 // ----------------------------------------------------------------------------
 
-// AQUI ESTÁ A CORREÇÃO: Adicionado o "recusado" à lista de tipos permitidos!
 export type StatusBilhete =
   | "disponivel"
   | "reservado"
@@ -73,45 +93,123 @@ export type StatusBilhete =
   | "pago"
   | "recusado";
 
+export type StatusPagamentoBanco =
+  | "CRIANDO"
+  | "ERRO_CRIACAO"
+  | "pending"
+  | "approved"
+  | "authorized"
+  | "in_process"
+  | "in_mediation"
+  | "rejected"
+  | "cancelled"
+  | "refunded"
+  | "charged_back"
+  | "WAITING"
+  | "PAID"
+  | "AUTHORIZED"
+  | "IN_ANALYSIS"
+  | "DECLINED"
+  | "CANCELED"; // Mapped from uppercase legacy states, kept for backward compatibility
+
+export type StatusValidacaoTesouraria = "aceita" | "negada";
+
 export interface Bilhete {
   numero: string;
   status: StatusBilhete;
+  correcao_pendente?: boolean | null;
 
-  vendedor_cpf: string;
-  vendedor_id?: string; // Usado para disparar as notificações para a pessoa certa
+  // Dados do vendedor/aderido
+  vendedor_id?: string;
   vendedor_nome?: string;
+  vendedor_cpf?: string;
+  vendedor_email?: string | null;
 
-  comprador_id: string | null;
+  // Dados do comprador
+  comprador_id?: string | null;
   comprador_nome?: string;
-  comprador_email?: string | null; // Usado para enviar o recibo por e-mail
+  comprador_email?: string | null;
+  comprador_telefone?: string | null;
 
-  data_reserva: string | null;
-  data_pagamento: string | null;
-  comprovante_url: string | null;
+  // Datas do fluxo da venda
+  data_reserva?: string | null;
+  data_pagamento?: string | null;
+  data_expiracao?: string | null;
 
-  log_automacao?: string; // Parecer da Inteligência Artificial
-  motivo_recusa?: string | null; // Motivo preenchido pela tesouraria ao rejeitar
+  // Comprovante e auditoria
+  comprovante_url?: string | null;
+  log_automacao?: string | null;
+  motivo_recusa?: string | null;
+
+  // Pix dinâmico e validação da tesouraria
+  pix_order_id?: string | null;
+  pix_qr_code_id?: string | null;
+  pix_reference_id?: string | null;
+  status_pagamento_banco?: StatusPagamentoBanco | string | null;
+  status_validacao?: StatusValidacaoTesouraria | string | null;
+  valor_bruto?: number | null;
+  valor_pago?: number | null;
+  validado_em?: string | null;
+  validado_por?: string | null;
 }
 
 // ----------------------------------------------------------------------------
-// 4. PRÊMIO
-// Coleção: 'premios'
+// PAGAMENTO PIX
+// Coleção: pagamentos_pix
 // ----------------------------------------------------------------------------
+
+export interface PagamentoPix {
+  id: string;
+  reference_id: string;
+  comprador_id: string;
+  vendedor_id: string;
+  vendedor_nome?: string;
+  comprador_nome: string;
+  comprador_email?: string | null;
+  comprador_telefone?: string | null;
+  comprador_documento?: string | null;
+  numeros_rifas: string[];
+  valor_bruto: number;
+  valor_pago: number;
+  status_pagamento_banco: StatusPagamentoBanco | string;
+  status_validacao?: StatusValidacaoTesouraria | string | null;
+  pix_order_id?: string | null;
+  pix_qr_code_id?: string | null;
+  copia_e_cola?: string | null;
+  qr_code_imagem_url?: string | null;
+  qr_code_base64?: string | null;
+  data_criacao: string;
+  data_pagamento?: string | null;
+  data_expiracao?: string | null;
+  validado_em?: string | null;
+  validado_por?: string | null;
+  motivo_negacao?: string | null;
+  raw_mercadopago?: Record<string, unknown> | null;
+  idempotency_key?: string | null;
+  erro_criacao?: string | null;
+}
+
+// ----------------------------------------------------------------------------
+// PRÊMIO
+// Coleção: premios
+// ----------------------------------------------------------------------------
+
 export interface Premio {
   id: string;
-  colocacao: number; // Posição (1º Lugar, 2º Lugar, etc.)
-  nome: string; // O que é o prêmio
+  colocacao: number;
+  nome: string;
   descricao?: string;
   imagem_url?: string;
   ganhador_numero?: string;
   ganhador_nome?: string;
-  ativo: boolean; // Para a Tesouraria poder ocultar/exibir
+  ativo: boolean;
 }
 
 // ----------------------------------------------------------------------------
-// 5. CONFIGURAÇÕES DO SORTEIO
-// Coleção: 'configuracoes' -> Doc: 'sorteio'
+// CONFIGURAÇÕES DO SORTEIO
+// Coleção: configuracoes/sorteio
 // ----------------------------------------------------------------------------
+
 export interface InfoSorteio {
   titulo: string;
   data: string;
@@ -119,16 +217,17 @@ export interface InfoSorteio {
 }
 
 // ----------------------------------------------------------------------------
-// 6. NOTIFICAÇÕES (Alertas para os Aderidos)
-// Coleção: 'notificacoes'
+// NOTIFICAÇÕES
+// Coleção: notificacoes
 // ----------------------------------------------------------------------------
+
 export interface Notificacao {
   id: string;
-  vendedor_id: string; // Dono da notificação
+  vendedor_id: string;
   titulo: string;
   mensagem: string;
-  rifas: string[]; // Bilhetes associados à notificação
+  rifas: string[];
+  tipo?: "correcao_dados" | "rifa_liberada" | "informativo";
   lida: boolean;
   data_criacao: string;
-  tipo?: "correcao_dados" | "rifa_liberada" | "informativo";
 }
