@@ -114,3 +114,9 @@ backend/functions/src/scripts/*chave*.json
 backend/functions/src/scripts/*credential*.json
 backend/functions/src/scripts/*secret*.json
 backend/functions/src/scripts/*.csv
+
+# ----------------------------------------------------------------------------
+# 9. AGENTES DE IA E FERRAMENTAS LOCAIS
+# ----------------------------------------------------------------------------
+.agents/
+.codex/

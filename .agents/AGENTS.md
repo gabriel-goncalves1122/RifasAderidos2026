@@ -94,3 +94,16 @@ npm test
 npm --prefix frontend run test:run
 npm --prefix backend/functions test
 ```
+
+## 6. Regras de Commit
+
+- **Agregação por Contexto:** Modificações devem ser agrupadas pelo seu contexto/módulo. Arquivos de um mesmo escopo (ex: `backend/pix` ou `frontend/aderidos`) devem ter um commit dedicado se a mudança for significativa.
+- **Prefixos Padronizados:** Uso obrigatório de prefixos como `feat/` para novas funcionalidades, `fix/` para correções, `refactor/` para reestruturações, e `docs/` para documentação.
+- **Mensagens Claras e Descritivas:** A mensagem do commit deve ser concisa, descritiva e preferencialmente em português (ex: `feat/backend/pix: adiciona webhook de pagamento`).
+
+## 7. Boas Práticas Adicionais
+
+- **Clean Code e DRY:** Evitar repetição de código. Extraia lógicas comuns e úteis para a pasta `utils` ou `hooks` já existentes.
+- **Testes Sempre Atualizados:** Ao criar ou alterar lógicas complexas (especialmente de transações, regras de negócios e tesouraria), você deve obrigatoriamente garantir que os mocks e testes unitários acompanhem a mudança imediatamente.
+- **Pequenos Passos (Baby Steps):** Realize modificações pequenas e incrementais, facilitando a revisão, a testabilidade e um possível rollback caso algo dê errado.
+- **Respeitar Arquitetura Existente:** Siga rigorosamente os padrões estruturais descritos nas leis globais de arquitetura acima. Nenhuma mudança de padrão global deve ser feita sem autorização expressa.
