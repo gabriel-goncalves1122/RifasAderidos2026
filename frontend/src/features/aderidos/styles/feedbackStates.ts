@@ -90,8 +90,12 @@ export const painelAderidoFeedbackStyles: Record<string, SxProps<Theme>> = {
       xs: "100%",
       sm: "auto",
     },
+    maxHeight: {
+      xs: "100dvh",
+      sm: "calc(100% - 64px)",
+    },
     bgcolor: colors.fundoSuave,
-    overflow: "hidden",
+    overflow: "auto",
   },
 
   detalheDialogTitle: {

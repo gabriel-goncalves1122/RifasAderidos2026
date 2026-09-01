@@ -1,12 +1,19 @@
 import { Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface CheckoutPixCountdownProps {
   expiraEm?: string | null;
+  onExpire?: () => void;
 }
 
-export function CheckoutPixCountdown({ expiraEm }: CheckoutPixCountdownProps) {
+export function CheckoutPixCountdown({ expiraEm, onExpire }: CheckoutPixCountdownProps) {
   const [tempoRestante, setTempoRestante] = useState("");
+  const expiredFired = useRef(false);
+  const onExpireRef = useRef(onExpire);
+
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
 
   useEffect(() => {
     if (!expiraEm) {
@@ -22,6 +29,10 @@ export function CheckoutPixCountdown({ expiraEm }: CheckoutPixCountdownProps) {
 
       if (diff <= 0) {
         setTempoRestante("Expirado");
+        if (!expiredFired.current) {
+          expiredFired.current = true;
+          onExpireRef.current?.();
+        }
         return;
       }
 

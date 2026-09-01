@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 
 import { GrupoRifasRecusadas, RifaAderido } from "../types/painelAderido";
+import { checkoutStorage } from "../utils/checkoutStorage";
 
 export type ModalPainelAderido =
   | "checkout"
@@ -9,7 +10,9 @@ export type ModalPainelAderido =
   | "notifications";
 
 export function useModalStack() {
-  const [current, setCurrent] = useState<ModalPainelAderido | null>(null);
+  const [current, setCurrent] = useState<ModalPainelAderido | null>(() => {
+    return checkoutStorage.get().modalAberto ? "checkout" : null;
+  });
   const [grupoParaCorrigir, setGrupoParaCorrigir] =
     useState<GrupoRifasRecusadas | null>(null);
   const [rifaParaDetalhes, setRifaParaDetalhesState] =
@@ -31,6 +34,8 @@ export function useModalStack() {
 
   const setModalCheckoutAberto = useCallback(
     (aberto: boolean) => {
+      checkoutStorage.update({ modalAberto: aberto });
+
       if (aberto) {
         push("checkout");
         return;

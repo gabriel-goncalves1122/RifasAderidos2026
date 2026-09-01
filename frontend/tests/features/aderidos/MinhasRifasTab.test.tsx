@@ -72,6 +72,8 @@ function criarPainelMock(
     alternarSelecaoRifa: vi.fn(),
     finalizarVendaComSucesso: vi.fn(),
     corrigirDadosRecusados: vi.fn(),
+    invalidarDadosPainel: vi.fn(),
+    limparSelecao: vi.fn(),
 
     ...overrides,
   } as any;

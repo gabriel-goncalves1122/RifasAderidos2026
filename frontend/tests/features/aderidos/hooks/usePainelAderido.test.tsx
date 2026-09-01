@@ -101,6 +101,7 @@ function criarWrapper(queryClient = criarQueryClient()) {
 
 describe("Hook: usePainelAderidoController", () => {
   beforeEach(() => {
+    localStorage.clear();
     vi.clearAllMocks();
 
     mocks.buscarMinhasRifas.mockResolvedValue(rifasMock);

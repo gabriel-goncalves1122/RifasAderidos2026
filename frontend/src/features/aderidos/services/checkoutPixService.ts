@@ -8,7 +8,7 @@
 // e feita exclusivamente pelo backend das Firebase Functions.
 //
 // Contrato:
-//   POST /rifas/checkout/pix
+//   POST /tesouraria/checkout/pix
 //   Body: { nome, telefone, email, numerosRifas }
 //   Resposta: { id, status, qrCodeImagemUrl, qrCodeBase64, copiaECola, expiraEm }
 // ============================================================================
@@ -100,12 +100,13 @@ export const checkoutPixService = {
     requisicaoEmAndamento = true;
 
     try {
-      const resposta = await fetchAPI("/rifas/checkout/pix", "POST", {
+      const resposta = await fetchAPI("/tesouraria/checkout/pix", "POST", {
         nome: sanitizados.nome,
         telefone: sanitizados.telefone,
         email: sanitizados.email,
         documento,
         numerosRifas,
+        sessaoCheckoutId: params.sessaoCheckoutId,
       });
 
       return normalizarCobrancaPix(resposta);
@@ -114,15 +115,12 @@ export const checkoutPixService = {
     }
   },
 
-  // ------------------------------------------------------------------
-  // Consulta o status de uma cobranca Pix pelo ID.
-  //
-  // Usado para polling apos a geracao da cobranca para detectar
-  // quando o pagamento foi confirmado pelo banco.
-  // ------------------------------------------------------------------
-  async consultarCobrancaPix(id: string) {
-    const resposta = await fetchAPI(`/rifas/checkout/pix/${id}`, "GET");
 
-    return normalizarCobrancaPix(resposta);
+
+  // ------------------------------------------------------------------
+  // Cancela uma cobranca Pix e libera as rifas.
+  // ------------------------------------------------------------------
+  async cancelarCobrancaPix(id: string, reterReserva: boolean = false) {
+    await fetchAPI(`/tesouraria/checkout/pix/${id}/cancelar`, "POST", { reterReserva });
   },
 };

@@ -1,17 +1,3 @@
-// ============================================================================
-// COMPONENTE: CheckoutModal
-//
-// Modal de checkout para venda de rifas via Pix.
-//
-// Fluxo:
-//   1. Usuario preenche dados do comprador (nome, WhatsApp, email)
-//   2. Gera cobranca Pix chamando o backend do sistema
-//   3. Exibe QR Code e codigo copia-e-cola para pagamento
-//   4. Polling automatico do status (a cada 10s) ate pagamento confirmado
-//
-// O Dialog usa keepMounted, entao o estado do formulario persiste
-// entre aberturas sem precisar de armazenamento externo.
-// ============================================================================
 import {
   Alert,
   Box,
@@ -21,7 +7,7 @@ import {
   Stack,
 } from "@mui/material";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import {
@@ -31,39 +17,48 @@ import {
 import { CheckoutDadosCompradorForm } from "./components/checkout/CheckoutDadosCompradorForm";
 import { CheckoutModalHeader } from "./components/checkout/CheckoutModalHeader";
 import { CheckoutPixBox } from "./components/checkout/CheckoutPixBox";
-import { CheckoutProgressCard } from "./components/checkout/CheckoutProgressCard";
 import { CheckoutResumoVenda } from "./components/checkout/CheckoutResumoVenda";
 import { CheckoutSubmitButton } from "./components/checkout/CheckoutSubmitButton";
-import { useCheckoutPixFlow } from "./hooks/useCheckoutPixFlow";
-import { painelAderidoStyles } from "./styles/painelAderidoStyles";
+import { usePixStateMachine } from "./hooks/usePixStateMachine";
+import { checkoutStorage } from "./utils/checkoutStorage";
 
 interface CheckoutModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
   numerosRifas: string[];
+  invalidarDadosPainel: () => Promise<void>;
 }
 
-export function CheckoutModal({
+function CheckoutModalContent({
   open,
   onClose,
   onSuccess,
   numerosRifas,
+  invalidarDadosPainel,
 }: CheckoutModalProps) {
-  const numerosRifasKey = numerosRifas.join("|");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const sessaoCheckoutId = useRef(`sessao_${Date.now()}`).current;
+
   const {
+    status: pollingStatus,
     cobrancaPix,
-    gerandoPix,
-    erroPix,
-    pollingStatus,
-    snackbarOpen,
-    gerarCobrancaPix,
+    erro: erroPix,
+    cancelando: cancelandoPix,
+    gerarCobranca,
     copiarPix,
-    abrirAppBanco,
-    fecharSnackbar,
-    limparPolling,
-    resetarFluxoPix,
-  } = useCheckoutPixFlow({ numerosRifas, onSuccess });
+    cancelarCobranca: cancelarPix,
+    resetarFluxo: resetarFluxoPix,
+    liberarReservaTotal,
+    abortarGeracaoPendente,
+  } = usePixStateMachine({ numerosRifas, sessaoCheckoutId, invalidarDadosPainel });
+
+  const formRestaurado = checkoutStorage.get().formData || {
+    nome: "",
+    telefone: "",
+    email: "",
+    documento: "",
+  };
 
   const {
     register,
@@ -75,131 +70,100 @@ export function CheckoutModal({
     resolver: yupResolver(checkoutSchema) as any,
     mode: "onChange",
     shouldUnregister: false,
-    defaultValues: {
-      nome: "",
-      telefone: "",
-      email: "",
-      documento: "",
-    },
+    defaultValues: formRestaurado,
   });
 
-  const nome = watch("nome");
-  const telefone = watch("telefone");
-  const email = watch("email");
-  const documento = watch("documento");
-  const dadosCompradorKey = `${nome}|${telefone}|${email}|${documento}`;
-  const dadosCompradorKeyRef = useRef(dadosCompradorKey);
+  useEffect(() => {
+    const subscription = watch((value) => {
+      checkoutStorage.update({ formData: value as CheckoutFormData });
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  const prevOpen = useRef(open);
 
   useEffect(() => {
-    if (!open) return;
+    if (open && !prevOpen.current) {
+      resetarFluxoPix();
+    }
+    prevOpen.current = open;
+  }, [open, resetarFluxoPix]);
 
-    resetarFluxoPix();
-  }, [open, numerosRifasKey, resetarFluxoPix]);
-
-  useEffect(() => {
-    if (!cobrancaPix) {
-      dadosCompradorKeyRef.current = dadosCompradorKey;
+  const fecharModal = () => {
+    if (pollingStatus === "gerando") {
+      abortarGeracaoPendente();
+      onClose();
       return;
     }
 
-    if (dadosCompradorKeyRef.current === dadosCompradorKey) return;
+    if (pollingStatus === "sucesso") {
+      onSuccess();
+      return;
+    }
 
-    dadosCompradorKeyRef.current = dadosCompradorKey;
-
-    resetarFluxoPix();
-  }, [cobrancaPix, dadosCompradorKey, resetarFluxoPix]);
-
-  const fecharModal = () => {
-    if (gerandoPix) return;
-
-    limparPolling();
+    liberarReservaTotal().catch(console.error);
     onClose();
   };
 
-  const etapaAtual = cobrancaPix ? 2 : 1;
-  const progressoCheckout = cobrancaPix ? 100 : 50;
-  const etapaTitulo =
-    pollingStatus === "confirmado"
-      ? "Pagamento confirmado!"
-      : pollingStatus === "cancelado"
-        ? "Pagamento cancelado"
-      : cobrancaPix
-        ? "Pagamento gerado"
-        : "Preencher dados";
-  const etapaDescricao =
-    pollingStatus === "confirmado"
-      ? "O pagamento foi confirmado com sucesso."
-      : pollingStatus === "cancelado"
-        ? "O banco recusou ou cancelou o pagamento."
-      : pollingStatus === "expirado"
-        ? "O tempo de espera expirou. Verifique o status no painel."
-        : pollingStatus === "polling"
-          ? "Aguardando confirmação do pagamento..."
-          : cobrancaPix
-            ? "Use o QR Code ou copie o Pix para concluir no banco."
-            : "Informe nome e telefone para gerar o pagamento.";
+  const numerosRifasEfetivos = cobrancaPix?.numerosRifas?.length
+    ? cobrancaPix.numerosRifas
+    : numerosRifas;
+
+  const onSubmit = (dados: CheckoutFormData) => {
+    gerarCobranca(dados);
+  };
+
+  const handleCopiarPix = () => {
+    const sucesso = copiarPix();
+    if (sucesso) {
+      setSnackbarOpen(true);
+    }
+  };
 
   return (
     <>
-      <Dialog
-        open={open}
-        keepMounted
-        disableEscapeKeyDown={gerandoPix}
-        onClose={(_, reason) => {
-          if (reason === "backdropClick") return;
+      <CheckoutModalHeader 
+        gerandoPix={pollingStatus === "gerando"} 
+        onClose={fecharModal} 
+      />
 
-          limparPolling();
-          onClose();
-        }}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          sx: painelAderidoStyles.detalheDialogPaper,
-        }}
-      >
-        <CheckoutModalHeader gerandoPix={gerandoPix} onClose={fecharModal} />
+      <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Stack spacing={2.25}>
+            
+            <CheckoutResumoVenda numerosRifas={numerosRifasEfetivos} />
 
-        <DialogContent sx={{ p: 3 }}>
-          <Box component="form" onSubmit={handleSubmit(gerarCobrancaPix)}>
-            <Stack spacing={2.25}>
-              <CheckoutProgressCard
-                etapaAtual={etapaAtual}
-                progressoCheckout={progressoCheckout}
-                etapaTitulo={etapaTitulo}
-                etapaDescricao={etapaDescricao}
-                pagamentoGerado={Boolean(cobrancaPix)}
-              />
+            <CheckoutDadosCompradorForm
+              register={register}
+              setValue={setValue}
+              errors={errors}
+              isDisabled={Boolean(cobrancaPix) || pollingStatus === "gerando"}
+            />
 
-              <CheckoutResumoVenda numerosRifas={numerosRifas} />
+            <CheckoutPixBox
+              cobranca={cobrancaPix}
+              gerando={pollingStatus === "gerando"}
+              cancelando={cancelandoPix}
+              erro={erroPix}
+              pollingStatus={pollingStatus === "gerando" ? "idle" : pollingStatus}
+              onCopiarPix={handleCopiarPix}
+              onCancelarPix={() => cancelarPix(false)}
+              onResetPix={resetarFluxoPix}
+              onSuccess={onSuccess}
+            />
 
-              <CheckoutDadosCompradorForm
-                register={register}
-                setValue={setValue}
-                errors={errors}
-              />
-
-              <CheckoutPixBox
-                cobranca={cobrancaPix}
-                gerando={gerandoPix}
-                erro={erroPix}
-                pollingStatus={pollingStatus}
-                onCopiarPix={copiarPix}
-                onAbrirAppBanco={cobrancaPix ? abrirAppBanco : undefined}
-              />
-
-              <CheckoutSubmitButton
-                gerandoPix={gerandoPix}
-                pagamentoGerado={Boolean(cobrancaPix)}
-              />
-            </Stack>
-          </Box>
-        </DialogContent>
-      </Dialog>
+            <CheckoutSubmitButton
+              gerandoPix={pollingStatus === "gerando"}
+              pagamentoGerado={Boolean(cobrancaPix)}
+            />
+          </Stack>
+        </Box>
+      </DialogContent>
 
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={2200}
-        onClose={fecharSnackbar}
+        onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "center",
@@ -217,5 +181,42 @@ export function CheckoutModal({
         </Alert>
       </Snackbar>
     </>
+  );
+}
+
+export function CheckoutModal(props: CheckoutModalProps) {
+  return (
+    <Dialog
+      open={props.open}
+      disableEscapeKeyDown={false}
+      onClose={(_, reason) => {
+        if (reason === "backdropClick") return;
+        if (reason === "escapeKeyDown") {
+           return;
+        }
+      }}
+      fullWidth
+      maxWidth="sm"
+      BackdropProps={{
+        sx: {
+          backgroundColor: "rgba(15, 23, 42, 0.4)",
+          backdropFilter: "blur(4px)",
+        },
+      }}
+      PaperProps={{
+        elevation: 0,
+        sx: {
+          borderRadius: { xs: "20px 20px 0 0", sm: 3 },
+          m: { xs: 0, sm: 2 },
+          position: { xs: "absolute", sm: "relative" },
+          bottom: { xs: 0, sm: "auto" },
+          width: "100%",
+          maxHeight: { xs: "calc(100% - 64px)", sm: "calc(100% - 64px)" },
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+        },
+      }}
+    >
+      <CheckoutModalContent {...props} />
+    </Dialog>
   );
 }

@@ -33,13 +33,13 @@ describe("Service: checkoutPixService", () => {
     });
 
     // Telefone e sanitizado (so digitos) antes de enviar ao backend
-    expect(fetchAPI).toHaveBeenCalledWith("/rifas/checkout/pix", "POST", {
+    expect(fetchAPI).toHaveBeenCalledWith("/tesouraria/checkout/pix", "POST", expect.objectContaining({
       nome: "Ana Beatriz",
       telefone: "35999998888",
       email: "ana@email.com",
       documento: "12345678909",
       numerosRifas: ["001", "002"],
-    });
+    }));
     expect(resultado).toEqual({
       id: "pix_001",
       status: "aguardando_pagamento",
@@ -62,13 +62,13 @@ describe("Service: checkoutPixService", () => {
       numerosRifas: ["001"],
     });
 
-    expect(fetchAPI).toHaveBeenCalledWith("/rifas/checkout/pix", "POST", {
+    expect(fetchAPI).toHaveBeenCalledWith("/tesouraria/checkout/pix", "POST", expect.objectContaining({
       nome: "Ana Beatriz",
       telefone: "35999998888",
       email: "",
       documento: "",
       numerosRifas: ["001"],
-    });
+    }));
   });
 
   it("Deve rejeitar resposta Pix incompleta", async () => {
@@ -183,13 +183,13 @@ describe("Service: checkoutPixService", () => {
       numerosRifas: ["001"],
     });
 
-    expect(fetchAPI).toHaveBeenCalledWith("/rifas/checkout/pix", "POST", {
+    expect(fetchAPI).toHaveBeenCalledWith("/tesouraria/checkout/pix", "POST", expect.objectContaining({
       nome: "Carlos",
       telefone: "5535999998888",
       email: "",
       documento: "",
       numerosRifas: ["001"],
-    });
+    }));
   });
 
   it("Deve limitar tamanho do nome e telefone", async () => {
@@ -226,12 +226,12 @@ describe("Service: checkoutPixService", () => {
       numerosRifas: ["001"],
     });
 
-    expect(fetchAPI).toHaveBeenCalledWith("/rifas/checkout/pix", "POST", {
+    expect(fetchAPI).toHaveBeenCalledWith("/tesouraria/checkout/pix", "POST", expect.objectContaining({
       nome: "Ana",
       telefone: "35999998888",
       email: "ANA@EMAIL.COM",
       documento: "12345678909",
       numerosRifas: ["001"],
-    });
+    }));
   });
 });

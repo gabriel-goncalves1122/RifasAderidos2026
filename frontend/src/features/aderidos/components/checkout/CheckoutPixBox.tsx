@@ -1,8 +1,9 @@
+import CloseIcon from "@mui/icons-material/Close";
 import PixIcon from "@mui/icons-material/Pix";
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, IconButton, Stack, Typography, CircularProgress, Button } from "@mui/material";
 
 import type { CheckoutPixCobranca } from "../../types/checkoutPix";
-import type { CheckoutPollingStatus } from "../../hooks/useCheckoutPixFlow";
+import type { PixStatus } from "../../hooks/usePixStateMachine";
 import {
   CheckoutPixActions,
   CheckoutPixCopiaECola,
@@ -15,14 +16,18 @@ import {
   CheckoutPixPollingNotice,
   CheckoutQrCodeDisplay,
 } from "./CheckoutPixBoxStates";
+import { colors } from "@/shared/tokens/colors";
 
 interface CheckoutPixBoxProps {
   cobranca?: CheckoutPixCobranca | null;
   gerando?: boolean;
   erro?: string | null;
-  pollingStatus?: CheckoutPollingStatus;
+  pollingStatus?: PixStatus;
+  cancelando?: boolean;
   onCopiarPix: () => void;
-  onAbrirAppBanco?: () => void;
+  onCancelarPix?: () => void;
+  onResetPix?: () => void;
+  onSuccess?: () => void;
 }
 
 function obterQrCodeSrc(cobranca: CheckoutPixCobranca) {
@@ -39,8 +44,11 @@ export function CheckoutPixBox({
   gerando = false,
   erro,
   pollingStatus = "idle",
+  cancelando = false,
   onCopiarPix,
-  onAbrirAppBanco,
+  onCancelarPix,
+  onResetPix,
+  onSuccess,
 }: CheckoutPixBoxProps) {
   const qrCodeSrc = cobranca ? obterQrCodeSrc(cobranca) : "";
 
@@ -49,18 +57,18 @@ export function CheckoutPixBox({
       sx={{
         p: 2,
         borderRadius: 2,
-        bgcolor: "#FFFFFF",
-        border: "1px solid rgba(2, 27, 22, 0.10)",
+        bgcolor: colors.branco,
+        border: `1px solid ${colors.borda}`,
       }}
     >
       <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1.25 }}>
-        <PixIcon sx={{ color: "#063D31" }} />
+        <PixIcon sx={{ color: colors.verdeEscuro }} />
 
         <Box sx={{ minWidth: 0 }}>
           <Typography
             sx={{
               fontWeight: 900,
-              color: "#021B16",
+              color: colors.pretoEsverdeado,
               fontSize: "0.98rem",
               lineHeight: 1.2,
             }}
@@ -68,35 +76,102 @@ export function CheckoutPixBox({
             Pagamento via Pix
           </Typography>
 
-          <Typography sx={{ color: "#526760", fontSize: "0.82rem", mt: 0.2 }}>
+          <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.82rem", mt: 0.2 }}>
             Gere o pagamento para exibir o QR Code e o Pix copia-e-cola.
           </Typography>
         </Box>
+
+        {!gerando && cobranca && pollingStatus !== "sucesso" && onCancelarPix && (
+          <IconButton 
+            onClick={onCancelarPix} 
+            disabled={cancelando}
+            size="small"
+            sx={{ color: colors.erroForte }}
+            aria-label="Cancelar pagamento"
+          >
+            {cancelando ? <CircularProgress size={18} color="inherit" /> : <CloseIcon />}
+          </IconButton>
+        )}
       </Stack>
 
       {gerando && <CheckoutPixLoading />}
 
-      {!gerando && erro && <CheckoutPixError erro={erro} />}
+      {!gerando && erro && (
+        <Box sx={{ mb: 1.5 }}>
+          <CheckoutPixError erro={erro} />
+        </Box>
+      )}
 
       {!gerando && !erro && !cobranca && <CheckoutPixEmpty />}
 
-      {!gerando && cobranca && pollingStatus === "confirmado" && (
-        <CheckoutPixConfirmed />
+      {!gerando && cobranca && pollingStatus === "sucesso" && (
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <CheckoutPixConfirmed />
+          {onSuccess && (
+            <Button
+              onClick={onSuccess}
+              variant="contained"
+              fullWidth
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 900,
+                bgcolor: colors.verdeForteEscuro,
+                color: colors.branco,
+                py: 1.25,
+                "&:hover": { bgcolor: colors.verdeEscuro },
+              }}
+            >
+              Concluir Venda
+            </Button>
+          )}
+        </Stack>
       )}
 
-      {!gerando && cobranca && pollingStatus !== "confirmado" && (
+      {!gerando && cobranca && pollingStatus !== "sucesso" && (
         <Stack spacing={1.5}>
-          {pollingStatus === "polling" && <CheckoutPixPollingNotice />}
-          {pollingStatus === "expirado" && <CheckoutPixExpiredNotice />}
-          {pollingStatus === "cancelado" && <CheckoutPixCanceledNotice />}
+          {pollingStatus === "aguardando_pagamento" && (
+            <>
+              <CheckoutPixPollingNotice />
+              <CheckoutQrCodeDisplay qrCodeSrc={qrCodeSrc} />
+              <CheckoutPixCopiaECola codigo={cobranca.copiaECola} />
+              <CheckoutPixActions
+                cobranca={cobranca}
+                cancelando={cancelando}
+                onCopiarPix={onCopiarPix}
+                onCancelarPix={onCancelarPix || (() => {})}
+              />
+            </>
+          )}
 
-          <CheckoutQrCodeDisplay qrCodeSrc={qrCodeSrc} />
-          <CheckoutPixCopiaECola codigo={cobranca.copiaECola} />
-          <CheckoutPixActions
-            cobranca={cobranca}
-            onCopiarPix={onCopiarPix}
-            onAbrirAppBanco={onAbrirAppBanco}
-          />
+          {(pollingStatus === "cancelado" || pollingStatus === "expirado") && (
+            <Stack spacing={1.5} alignItems="center" sx={{ mt: 1 }}>
+              {pollingStatus === "expirado" ? (
+                <CheckoutPixExpiredNotice />
+              ) : (
+                <CheckoutPixCanceledNotice />
+              )}
+              
+              {onResetPix && (
+                <Button
+                  onClick={onResetPix}
+                  variant="contained"
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 900,
+                    bgcolor: colors.verdeEscuro,
+                    color: colors.branco,
+                    px: 3,
+                    py: 1.25,
+                    "&:hover": { bgcolor: colors.verdeEscuroHover },
+                  }}
+                >
+                  Tentar novamente
+                </Button>
+              )}
+            </Stack>
+          )}
         </Stack>
       )}
     </Box>

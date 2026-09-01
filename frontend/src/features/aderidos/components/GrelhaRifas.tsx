@@ -10,6 +10,7 @@ import { painelAderidoStyles } from "../styles/painelAderidoStyles";
 import { RifaAderido } from "../types/painelAderido";
 import { obterConfigStatusRifa } from "../utils/rifasStatus";
 import { EmptyRifasState } from "./EmptyRifasState";
+import { colors } from "@/shared/tokens/colors";
 
 interface GrelhaRifasProps {
   rifas: RifaAderido[];
@@ -27,22 +28,22 @@ function montarEstiloRifa(
 
   if (isSelecionada) {
     return {
-      bgcolor: "#063D31",
-      color: "#FFFFFF",
-      borderColor: "#063D31",
+      bgcolor: colors.verdeEscuro,
+      color: colors.branco,
+      borderColor: colors.verdeEscuro,
       boxShadow:
         "0 14px 28px rgba(6, 61, 49, 0.20), 0 2px 6px rgba(2, 27, 22, 0.10)",
 
       "&:hover": {
-        bgcolor: "#021B16",
-        borderColor: "#021B16",
+        bgcolor: colors.pretoEsverdeado,
+        borderColor: colors.pretoEsverdeado,
         transform: "translateY(-1px)",
         boxShadow:
           "0 18px 34px rgba(6, 61, 49, 0.25), 0 4px 10px rgba(2, 27, 22, 0.12)",
       },
 
       "&.Mui-disabled": {
-        color: "#FFFFFF",
+        color: colors.branco,
         opacity: 1,
       },
     };
@@ -150,7 +151,7 @@ const RifaItem = React.memo(function RifaItem({
             top: 4,
             right: 4,
             fontSize: 15,
-            color: "#063D31",
+            color: colors.verdeEscuro,
           }}
         />
       )}
@@ -204,7 +205,7 @@ export function GrelhaRifas({
     <RifaItem
       key={rifa.numero}
       rifa={rifa}
-      isSelecionada={selecionadasSet.has(rifa.numero)}
+      isSelecionada={selecionadasSet.has(rifa.numero) && (rifa.status === "disponivel" || rifa.status === "reservado")}
       onToggleSelecao={onToggleSelecao}
       onAbrirDetalhes={onAbrirDetalhes}
       animar={animarLista}

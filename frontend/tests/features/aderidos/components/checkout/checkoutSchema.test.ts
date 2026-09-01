@@ -19,19 +19,20 @@ describe("Schema: checkoutSchema", () => {
     );
   });
 
-  it("Deve aceitar e-mail vazio ou ausente", async () => {
+  it("Deve exigir e-mail obrigatorio", async () => {
     const dadosSemEmail = {
       nome: "Ana Beatriz",
       telefone: "(35) 99999-8888",
       email: "",
+      documento: "12345678909",
     };
 
-    await expect(checkoutSchema.validate(dadosSemEmail)).resolves.toEqual(
-      dadosSemEmail,
+    await expect(checkoutSchema.validate(dadosSemEmail)).rejects.toThrow(
+      "O e-mail é obrigatório"
     );
   });
 
-  it("Deve aceitar CPF vazio ou ausente", async () => {
+  it("Deve exigir CPF obrigatório", async () => {
     const dadosSemDocumento = {
       nome: "Ana Beatriz",
       telefone: "(35) 99999-8888",
@@ -39,8 +40,8 @@ describe("Schema: checkoutSchema", () => {
       documento: "",
     };
 
-    await expect(checkoutSchema.validate(dadosSemDocumento)).resolves.toEqual(
-      dadosSemDocumento,
+    await expect(checkoutSchema.validate(dadosSemDocumento)).rejects.toThrow(
+      "Informe o CPF ou CNPJ do pagador."
     );
   });
 
@@ -52,7 +53,7 @@ describe("Schema: checkoutSchema", () => {
     };
 
     await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
-      "CPF incompleto. Use 11 dígitos.",
+      "Documento incompleto. Use 11 dígitos (CPF) ou 14 dígitos (CNPJ).",
     );
   });
 
@@ -61,6 +62,7 @@ describe("Schema: checkoutSchema", () => {
       nome: "Ana Beatriz",
       telefone: "(35) 99999-8888",
       email: "ana@email.com",
+      documento: "12345678909",
     };
 
     await expect(checkoutSchema.validate(dadosSemComprovante)).resolves.toEqual(
@@ -73,6 +75,7 @@ describe("Schema: checkoutSchema", () => {
       nome: "",
       telefone: "(35) 99999-8888",
       email: "ana@email.com",
+      documento: "12345678909",
     };
 
     await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
@@ -85,6 +88,7 @@ describe("Schema: checkoutSchema", () => {
       nome: "Ana Beatriz",
       telefone: "",
       email: "ana@email.com",
+      documento: "12345678909",
     };
 
     await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
@@ -97,6 +101,7 @@ describe("Schema: checkoutSchema", () => {
       nome: "Ana Beatriz",
       telefone: "(35) 9999",
       email: "ana@email.com",
+      documento: "12345678909",
     };
 
     await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(
@@ -109,6 +114,7 @@ describe("Schema: checkoutSchema", () => {
       nome: "Ana Beatriz",
       telefone: "(35) 99999-8888",
       email: "email-invalido",
+      documento: "12345678909",
     };
 
     await expect(checkoutSchema.validate(dadosInvalidos)).rejects.toThrow(

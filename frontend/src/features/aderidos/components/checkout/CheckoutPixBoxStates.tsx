@@ -12,7 +12,8 @@ import {
 } from "@mui/material";
 
 import type { CheckoutPixCobranca } from "../../types/checkoutPix";
-import { formatarExpiracaoPix } from "./utils/checkoutUtils";
+import { CheckoutPixCountdown } from "./CheckoutPixCountdown";
+import { colors } from "@/shared/tokens/colors";
 
 export function CheckoutPixLoading() {
   return (
@@ -23,11 +24,11 @@ export function CheckoutPixLoading() {
       sx={{
         p: 1.5,
         borderRadius: 2,
-        bgcolor: "#F6F8F7",
-        color: "#526760",
+        bgcolor: colors.fundoSuave,
+        color: colors.cinzaTexto,
       }}
     >
-      <CircularProgress size={18} sx={{ color: "#063D31" }} />
+      <CircularProgress size={18} sx={{ color: colors.verdeEscuro }} />
       <Typography sx={{ fontWeight: 800, fontSize: "0.88rem" }}>
         Gerando pagamento via Pix...
       </Typography>
@@ -41,10 +42,10 @@ export function CheckoutPixError({ erro }: { erro: string }) {
       severity="warning"
       sx={{
         borderRadius: 2,
-        bgcolor: "#FFF7E0",
-        color: "#6B4E00",
+        bgcolor: colors.alertaSuave,
+        color: colors.alertaTexto,
         "& .MuiAlert-icon": {
-          color: "#6B4E00",
+          color: colors.alertaTexto,
         },
       }}
     >
@@ -59,9 +60,9 @@ export function CheckoutPixEmpty() {
       sx={{
         p: 1.5,
         borderRadius: 2,
-        bgcolor: "#F6F8F7",
-        border: "1px dashed rgba(6, 61, 49, 0.18)",
-        color: "#526760",
+        bgcolor: colors.fundoSuave,
+        border: `1px dashed ${colors.bordaDestaque}`,
+        color: colors.cinzaTexto,
       }}
     >
       <Typography sx={{ fontSize: "0.88rem", lineHeight: 1.45 }}>
@@ -79,15 +80,15 @@ export function CheckoutPixConfirmed() {
       sx={{
         p: 3,
         borderRadius: 2,
-        bgcolor: "#EAF7EF",
-        border: "2px solid #0B5136",
+        bgcolor: colors.verdeClaro,
+        border: `2px solid ${colors.verdeForteEscuro}`,
       }}
     >
-      <CheckCircleIcon sx={{ fontSize: 48, color: "#0B5136" }} />
+      <CheckCircleIcon sx={{ fontSize: 48, color: colors.verdeForteEscuro }} />
       <Typography
         sx={{
           fontWeight: 950,
-          color: "#0B5136",
+          color: colors.verdeForteEscuro,
           fontSize: "1.1rem",
           textAlign: "center",
         }}
@@ -96,7 +97,7 @@ export function CheckoutPixConfirmed() {
       </Typography>
       <Typography
         sx={{
-          color: "#425951",
+          color: colors.cinzaTexto,
           fontSize: "0.88rem",
           textAlign: "center",
         }}
@@ -117,15 +118,15 @@ export function CheckoutPixPollingNotice() {
       sx={{
         p: 1.25,
         borderRadius: 2,
-        bgcolor: "#FFF7E0",
+        bgcolor: colors.alertaSuave,
         border: "1px solid rgba(203, 166, 77, 0.4)",
       }}
     >
-      <CircularProgress size={16} sx={{ color: "#A88123" }} />
+      <CircularProgress size={16} sx={{ color: colors.dourado }} />
       <Typography
         sx={{
           fontWeight: 800,
-          color: "#6B4E00",
+          color: colors.alertaTexto,
           fontSize: "0.84rem",
         }}
       >
@@ -141,9 +142,9 @@ export function CheckoutPixExpiredNotice() {
       severity="warning"
       sx={{
         borderRadius: 2,
-        bgcolor: "#FFF7E0",
-        color: "#6B4E00",
-        "& .MuiAlert-icon": { color: "#6B4E00" },
+        bgcolor: colors.alertaSuave,
+        color: colors.alertaTexto,
+        "& .MuiAlert-icon": { color: colors.alertaTexto },
       }}
     >
       O tempo de espera expirou. Verifique o status da cobrança no painel de
@@ -158,9 +159,9 @@ export function CheckoutPixCanceledNotice() {
       severity="error"
       sx={{
         borderRadius: 2,
-        bgcolor: "#FDF0F0",
-        color: "#7A1F1F",
-        "& .MuiAlert-icon": { color: "#7A1F1F" },
+        bgcolor: colors.erroSuave,
+        color: colors.erroTexto,
+        "& .MuiAlert-icon": { color: colors.erroTexto },
       }}
     >
       O pagamento foi cancelado ou recusado pelo banco. As rifas voltam a ficar
@@ -177,8 +178,8 @@ export function CheckoutQrCodeDisplay({ qrCodeSrc }: { qrCodeSrc: string }) {
         placeItems: "center",
         minHeight: 164,
         borderRadius: 2,
-        bgcolor: "#F6F8F7",
-        border: "1px solid rgba(6, 61, 49, 0.12)",
+        bgcolor: colors.fundoSuave,
+        border: `1px solid ${colors.borda}`,
         overflow: "hidden",
       }}
     >
@@ -194,7 +195,7 @@ export function CheckoutQrCodeDisplay({ qrCodeSrc }: { qrCodeSrc: string }) {
           }}
         />
       ) : (
-        <Stack spacing={0.75} alignItems="center" sx={{ color: "#063D31" }}>
+        <Stack spacing={0.75} alignItems="center" sx={{ color: colors.verdeEscuro }}>
           <QrCode2Icon fontSize="large" />
           <Typography sx={{ fontWeight: 850, fontSize: "0.86rem" }}>
             QR Code indisponível
@@ -212,15 +213,15 @@ export function CheckoutPixCopiaECola({ codigo }: { codigo?: string }) {
         px: 1.5,
         py: 1.25,
         borderRadius: 2,
-        bgcolor: "#F6F8F7",
-        border: "1px dashed rgba(6, 61, 49, 0.22)",
+        bgcolor: colors.fundoSuave,
+        border: `1px dashed ${colors.bordaDestaque}`,
         wordBreak: "break-all",
       }}
     >
       <Typography
         sx={{
           fontWeight: 800,
-          color: "#063D31",
+          color: colors.verdeEscuro,
           fontSize: "0.82rem",
           lineHeight: 1.35,
         }}
@@ -233,14 +234,16 @@ export function CheckoutPixCopiaECola({ codigo }: { codigo?: string }) {
 
 interface CheckoutPixActionsProps {
   cobranca: CheckoutPixCobranca;
+  cancelando?: boolean;
   onCopiarPix: () => void;
-  onAbrirAppBanco?: () => void;
+  onCancelarPix?: () => void;
 }
 
 export function CheckoutPixActions({
   cobranca,
+  cancelando,
   onCopiarPix,
-  onAbrirAppBanco,
+  onCancelarPix,
 }: CheckoutPixActionsProps) {
   return (
     <Stack
@@ -249,11 +252,10 @@ export function CheckoutPixActions({
       alignItems={{ xs: "stretch", sm: "center" }}
       justifyContent="space-between"
     >
-      <Typography sx={{ color: "#526760", fontSize: "0.78rem" }}>
-        Expira em {formatarExpiracaoPix(cobranca.expiraEm)}
-      </Typography>
+      <CheckoutPixCountdown expiraEm={cobranca.expiraEm} onExpire={onCancelarPix} />
 
       <Button
+        type="button"
         variant="outlined"
         startIcon={<ContentCopyIcon />}
         onClick={onCopiarPix}
@@ -261,45 +263,21 @@ export function CheckoutPixActions({
           borderRadius: 2,
           textTransform: "none",
           fontWeight: 900,
-          color: "#063D31",
-          borderColor: "rgba(6, 61, 49, 0.28)",
+          color: colors.verdeEscuro,
+          borderColor: colors.bordaDestaque,
           py: 1,
           "&:hover": {
-            borderColor: "#063D31",
-            bgcolor: "#EAF3EF",
+            borderColor: colors.verdeEscuro,
+            bgcolor: colors.verdeClaro,
           },
           "&:focus-visible": {
-            outline: "4px solid rgba(6, 61, 49, 0.24)",
+            outline: `4px solid ${colors.bordaDestaque}`,
             outlineOffset: "2px",
           },
         }}
       >
         Copiar Pix copia-e-cola
       </Button>
-
-      {onAbrirAppBanco && (
-        <Button
-          variant="contained"
-          startIcon={<OpenInNewIcon />}
-          onClick={onAbrirAppBanco}
-          sx={{
-            borderRadius: 2,
-            textTransform: "none",
-            fontWeight: 900,
-            bgcolor: "#063D31",
-            py: 1,
-            "&:hover": {
-              bgcolor: "#021B16",
-            },
-            "&:focus-visible": {
-              outline: "4px solid rgba(6, 61, 49, 0.24)",
-              outlineOffset: "2px",
-            },
-          }}
-        >
-          Abrir app de banco
-        </Button>
-      )}
     </Stack>
   );
 }

@@ -36,12 +36,12 @@ export function CheckoutSubmitButton({
           outlineOffset: "2px",
         },
         "&:hover": {
-          bgcolor: "#052F26",
+          bgcolor: colors.verdeEscuroHover,
           boxShadow: "0 14px 26px rgba(6, 61, 49, 0.28)",
         },
         "&.Mui-disabled": {
-          bgcolor: "#526760",
-          color: "#FFFFFF",
+          bgcolor: colors.cinzaTexto,
+          color: colors.branco,
         },
       }}
       startIcon={

@@ -50,7 +50,6 @@ export function CheckoutModalHeader({
 
       <IconButton
         onClick={onClose}
-        disabled={gerandoPix}
         aria-label="Fechar modal de venda"
         sx={{
           bgcolor: "#F1F4F3",

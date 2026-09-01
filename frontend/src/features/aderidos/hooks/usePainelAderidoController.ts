@@ -54,7 +54,7 @@ export function usePainelAderidoController() {
   const [visaoAtual, setVisaoAtual] = useState<VisaoPainelAderido>("geral");
   const [filtro, setFiltro] = useState<FiltroRifasAderido>("todas");
   const dadosPainel = useRifasData();
-  const selecao = useRifasSelection();
+  const selecao = useRifasSelection(dadosPainel.minhasRifas);
   const modais = useModalStack();
   const fecharCheckout = useCallback(() => {
     modais.setModalCheckoutAberto(false);
@@ -66,14 +66,7 @@ export function usePainelAderidoController() {
     invalidarDadosPainel: dadosPainel.invalidarDadosPainel,
   });
 
-  // Se o usuario deslogar, limpa estado local para evitar dados residuais
-  useEffect(() => {
-    if (!dadosPainel.usuarioId) {
-      selecao.limparSelecao();
-      setVisaoAtual("geral");
-      modais.reset();
-    }
-  }, [dadosPainel.usuarioId, modais.reset, selecao.limparSelecao]);
+
 
   // ------------------------------------------------------------------
   // Computacoes derivadas dos dados brutos
@@ -215,5 +208,7 @@ export function usePainelAderidoController() {
     alternarSelecaoRifa: selecao.alternarSelecaoRifa,
     finalizarVendaComSucesso,
     corrigirDadosRecusados,
+    invalidarDadosPainel: dadosPainel.invalidarDadosPainel,
+    limparSelecao: selecao.limparSelecao,
   };
 }

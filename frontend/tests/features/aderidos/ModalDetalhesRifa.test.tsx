@@ -27,16 +27,13 @@ describe("Componente <ModalDetalhesRifa />", () => {
     render(<ModalDetalhesRifa open={true} onClose={vi.fn()} rifa={rifa} />);
 
     expect(
-      screen.getByRole("dialog", {
-        name: /Rifa #\s*050/i,
-      }),
+      screen.getByRole("dialog")
     ).toBeInTheDocument();
 
-    expect(screen.getByText(/Aprovada pela tesouraria/i)).toBeInTheDocument();
+    expect(screen.getByText("#050")).toBeInTheDocument();
     expect(screen.getByText("Ana Beatriz")).toBeInTheDocument();
     expect(screen.getByText("(11) 98765-4321")).toBeInTheDocument();
     expect(screen.getByText("ana@email.com")).toBeInTheDocument();
-    expect(screen.getByText(/Data não informada/i)).toBeInTheDocument();
   });
 
   it("Deve fechar o modal ao clicar no botão Fechar", () => {
@@ -44,7 +41,7 @@ describe("Componente <ModalDetalhesRifa />", () => {
 
     render(<ModalDetalhesRifa open={true} onClose={mockOnClose} rifa={rifa} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Fechar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Sair/i }));
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });

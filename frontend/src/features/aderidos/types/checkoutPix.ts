@@ -7,9 +7,10 @@ export type CheckoutPixStatus =
 export interface CriarCobrancaPixParams {
   nome: string;
   telefone: string;
-  email?: string;
-  documento?: string;
+  email: string;
+  documento: string;
   numerosRifas: string[];
+  sessaoCheckoutId?: string;
 }
 
 export interface CheckoutPixCobranca {
@@ -19,4 +20,5 @@ export interface CheckoutPixCobranca {
   qrCodeBase64?: string | null;
   copiaECola: string;
   expiraEm?: string | null;
+  numerosRifas?: string[];
 }

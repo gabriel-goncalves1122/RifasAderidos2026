@@ -14,7 +14,11 @@ export function calcularValorArrecadado(rifas: RifaAderido[]) {
 }
 
 export function contarNotificacoesNaoLidas(notificacoes: NotificacaoAderido[]) {
-  return notificacoes.filter((notificacao) => !notificacao.lida).length;
+  return notificacoes.filter(
+    (notificacao) => 
+      !notificacao.lida && 
+      (notificacao.tipo === "correcao_dados" || !notificacao.tipo)
+  ).length;
 }
 
 export function filtrarRifasPorStatus(rifas: RifaAderido[], filtro: string) {

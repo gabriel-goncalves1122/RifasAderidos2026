@@ -59,6 +59,7 @@ function criarWrapper(queryClient = criarQueryClient()) {
 
 describe("Hook: useRifasData", () => {
   beforeEach(() => {
+    localStorage.clear();
     vi.clearAllMocks();
     mocks.buscarMinhasRifas.mockResolvedValue([
       { numero: "001", status: "disponivel" },

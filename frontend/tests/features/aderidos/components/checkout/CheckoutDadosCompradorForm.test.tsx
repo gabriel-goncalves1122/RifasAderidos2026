@@ -14,7 +14,7 @@ function criarRegister() {
 }
 
 describe("Componente: CheckoutDadosCompradorForm", () => {
-  it("Deve exibir helper simples para e-mail opcional", () => {
+  it("Deve exibir helper simples para e-mail", () => {
     render(
       <CheckoutDadosCompradorForm
         register={criarRegister()}
@@ -24,7 +24,7 @@ describe("Componente: CheckoutDadosCompradorForm", () => {
     );
 
     expect(
-      screen.getByText(/Para enviar comprovante \(opcional\)/i),
+      screen.getByText(/Obrigatório para gerar o pagamento via Pix\./i),
     ).toBeInTheDocument();
   });
 
@@ -70,7 +70,7 @@ describe("Componente: CheckoutDadosCompradorForm", () => {
     });
   });
 
-  it("Deve exibir helper simples para CPF opcional", () => {
+  it("Deve exibir helper simples para CPF", () => {
     render(
       <CheckoutDadosCompradorForm
         register={criarRegister()}
@@ -80,7 +80,7 @@ describe("Componente: CheckoutDadosCompradorForm", () => {
     );
 
     expect(
-      screen.getByText(/Ajuda na validação do pagamento/i),
+      screen.getByText(/O documento deve ser o mesmo de quem irá realizar o pagamento Pix\./i),
     ).toBeInTheDocument();
   });
 
@@ -100,7 +100,7 @@ describe("Componente: CheckoutDadosCompradorForm", () => {
 
     expect(screen.getByText("E-mail inválido.")).toBeInTheDocument();
     expect(
-      screen.queryByText(/Para enviar comprovante \(opcional\)/i),
+      screen.queryByText(/Obrigatório para gerar o pagamento via Pix\./i),
     ).not.toBeInTheDocument();
   });
 });

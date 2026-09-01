@@ -12,24 +12,40 @@ export function calcularValorTotalRifas(numerosRifas: string[]) {
   return numerosRifas.length * VALOR_RIFA;
 }
 
-export function aplicarMascaraCpf(valor: string) {
-  const apenasNumeros = valor.replace(/\D/g, "").slice(0, 11);
+export function aplicarMascaraCpfCnpj(valor: string) {
+  const apenasNumeros = valor.replace(/\D/g, "").slice(0, 14);
 
-  if (apenasNumeros.length <= 3) return apenasNumeros;
-  if (apenasNumeros.length <= 6) {
-    return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(3)}`;
-  }
-  if (apenasNumeros.length <= 9) {
+  if (apenasNumeros.length <= 11) {
+    if (apenasNumeros.length <= 3) return apenasNumeros;
+    if (apenasNumeros.length <= 6) {
+      return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(3)}`;
+    }
+    if (apenasNumeros.length <= 9) {
+      return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(
+        3,
+        6,
+      )}.${apenasNumeros.slice(6)}`;
+    }
     return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(
       3,
       6,
-    )}.${apenasNumeros.slice(6)}`;
+    )}.${apenasNumeros.slice(6, 9)}-${apenasNumeros.slice(9, 11)}`;
+  } else {
+    // CNPJ: 99.999.999/9999-99
+    if (apenasNumeros.length <= 12) {
+      return `${apenasNumeros.slice(0, 2)}.${apenasNumeros.slice(
+        2,
+        5,
+      )}.${apenasNumeros.slice(5, 8)}/${apenasNumeros.slice(8)}`;
+    }
+    return `${apenasNumeros.slice(0, 2)}.${apenasNumeros.slice(
+      2,
+      5,
+    )}.${apenasNumeros.slice(5, 8)}/${apenasNumeros.slice(
+      8,
+      12,
+    )}-${apenasNumeros.slice(12, 14)}`;
   }
-
-  return `${apenasNumeros.slice(0, 3)}.${apenasNumeros.slice(
-    3,
-    6,
-  )}.${apenasNumeros.slice(6, 9)}-${apenasNumeros.slice(9)}`;
 }
 
 export function formatarExpiracaoPix(data?: string | null) {

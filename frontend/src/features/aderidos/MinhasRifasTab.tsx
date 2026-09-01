@@ -18,9 +18,7 @@ export function MinhasRifasTab() {
   const painel = usePainelAderidoController();
   const { isMobile } = usePremiosLayout();
 
-  if (painel.carregando) {
-    return <LoadingRifasState />;
-  }
+
 
   const ViewComponent = isMobile ? MinhasRifasMobileView : MinhasRifasDesktopView;
 
@@ -32,37 +30,44 @@ export function MinhasRifasTab() {
           pb: painel.possuiSelecao ? { xs: 17, sm: 15 } : 3,
         }}
       >
-        <ViewComponent
-          visaoAtual={painel.visaoAtual}
-          primeiroNome={painel.primeiroNome}
-          valorArrecadado={painel.valorArrecadado}
-          contadoresRifas={painel.contadoresRifas}
-          notificacoesNaoLidas={painel.notificacoesNaoLidas}
-          totalPendencias={painel.gruposRecusados.length}
-          onAbrirNotificacoes={painel.abrirSidebarNotificacoes}
-          onAbrirRecusadas={painel.abrirRecusadas}
-          filtro={painel.filtro}
-          onChangeFiltro={painel.setFiltro}
-          rifasFiltradas={painel.rifasFiltradas}
-          selecionadas={painel.selecionadas}
-          onToggleSelecao={painel.alternarSelecaoRifa}
-          onAbrirDetalhes={painel.setRifaParaDetalhes}
-          gruposRecusados={painel.gruposRecusados}
-          onVoltar={painel.voltarParaRifas}
-          onAbrirCorrecao={(grupo) => {
-            painel.setGrupoParaCorrigir(grupo);
-            painel.setModalCorrecaoAberto(true);
-          }}
-          possuiSelecao={painel.possuiSelecao}
-          valorTotalSelecionado={painel.valorTotalSelecionado}
-          onVenderClick={() => painel.setModalCheckoutAberto(true)}
-        />
+        {painel.carregando ? (
+          <LoadingRifasState />
+        ) : (
+          <ViewComponent
+            visaoAtual={painel.visaoAtual}
+            primeiroNome={painel.primeiroNome}
+            valorArrecadado={painel.valorArrecadado}
+            contadoresRifas={painel.contadoresRifas}
+            notificacoesNaoLidas={painel.notificacoesNaoLidas}
+            totalPendencias={painel.gruposRecusados.length}
+            onAbrirNotificacoes={painel.abrirSidebarNotificacoes}
+            onAbrirRecusadas={painel.abrirRecusadas}
+            filtro={painel.filtro}
+            onChangeFiltro={painel.setFiltro}
+            rifasFiltradas={painel.rifasFiltradas}
+            selecionadas={painel.selecionadas}
+            onToggleSelecao={painel.alternarSelecaoRifa}
+            onAbrirDetalhes={painel.setRifaParaDetalhes}
+            gruposRecusados={painel.gruposRecusados}
+            onVoltar={painel.voltarParaRifas}
+            onAbrirCorrecao={(grupo) => {
+              painel.setGrupoParaCorrigir(grupo);
+              painel.setModalCorrecaoAberto(true);
+            }}
+            possuiSelecao={painel.possuiSelecao}
+            valorTotalSelecionado={painel.valorTotalSelecionado}
+            onVenderClick={() => painel.setModalCheckoutAberto(true)}
+          />
+        )}
 
         <CheckoutModal
           open={painel.modalCheckoutAberto}
-          onClose={() => painel.setModalCheckoutAberto(false)}
+          onClose={() => {
+            painel.setModalCheckoutAberto(false);
+          }}
           onSuccess={painel.finalizarVendaComSucesso}
           numerosRifas={painel.selecionadas}
+          invalidarDadosPainel={painel.invalidarDadosPainel}
         />
 
         <NotificacoesSidebar

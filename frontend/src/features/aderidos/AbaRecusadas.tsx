@@ -16,6 +16,7 @@ import BuildCircleIcon from "@mui/icons-material/BuildCircle";
 
 import { GrupoRifasRecusadas } from "./types/painelAderido";
 import { formatarDataCurta } from "@/shared/utils/formatadores";
+import { colors } from "@/shared/tokens/colors";
 
 interface AbaRecusadasProps {
   gruposRecusados: GrupoRifasRecusadas[];
@@ -48,14 +49,14 @@ export function AbaRecusadas({
         <Stack
           sx={{
             pl: { xs: 1.35, md: 1.75 },
-            borderLeft: { xs: "4px solid #0A7A5B", md: "5px solid #0A7A5B" },
+            borderLeft: { xs: `4px solid ${colors.verdeMedio}`, md: `5px solid ${colors.verdeMedio}` },
             gap: 0.65,
             minWidth: 0,
           }}
         >
           <Typography
             sx={{
-              color: "#0A7A5B",
+              color: colors.verdeMedio,
               fontWeight: 900,
               textTransform: "uppercase",
               letterSpacing: "0.08em",
@@ -69,7 +70,7 @@ export function AbaRecusadas({
           <Typography
             component="h1"
             sx={{
-              color: "#021B16",
+              color: colors.pretoEsverdeado,
               fontWeight: 950,
               letterSpacing: 0,
               lineHeight: 1.08,
@@ -81,7 +82,7 @@ export function AbaRecusadas({
 
           <Typography
             sx={{
-              color: "#526760",
+              color: colors.cinzaTexto,
               fontWeight: 650,
               lineHeight: 1.45,
               maxWidth: 560,
@@ -98,13 +99,13 @@ export function AbaRecusadas({
           onClick={onVoltar}
           sx={{
             alignSelf: { xs: "flex-start", sm: "center" },
-            color: "#063D31",
+            color: colors.verdeEscuro,
             fontWeight: 850,
             textTransform: "none",
             borderRadius: 2,
             px: 1.25,
             "&:hover": {
-              bgcolor: "#EAF3EF",
+              bgcolor: colors.verdeClaro,
             },
           }}
         >
@@ -124,8 +125,8 @@ export function AbaRecusadas({
             sx={{
               p: { xs: 2, sm: 2.35 },
               borderRadius: 2.25,
-              bgcolor: "#FFFFFF",
-              border: "1px solid rgba(6, 61, 49, 0.10)",
+              bgcolor: colors.branco,
+              border: `1px solid ${colors.borda}`,
               boxShadow:
                 "0 18px 42px rgba(2, 27, 22, 0.075), 0 2px 8px rgba(6, 61, 49, 0.045)",
             }}
@@ -140,7 +141,7 @@ export function AbaRecusadas({
                 <Box sx={{ minWidth: 0 }}>
                   <Typography
                     sx={{
-                      color: "#021B16",
+                      color: colors.pretoEsverdeado,
                       fontWeight: 900,
                       fontSize: "1rem",
                       lineHeight: 1.18,
@@ -153,7 +154,7 @@ export function AbaRecusadas({
                   <Typography
                     sx={{
                       mt: 0.35,
-                      color: "#526760",
+                      color: colors.cinzaTexto,
                       fontWeight: 700,
                       fontSize: "0.78rem",
                     }}
@@ -172,8 +173,8 @@ export function AbaRecusadas({
                   sx={{
                     height: 28,
                     borderRadius: 1.5,
-                    bgcolor: "#EAF3EF",
-                    color: "#063D31",
+                    bgcolor: colors.verdeClaro,
+                    color: colors.verdeEscuro,
                     border: "1px solid rgba(6, 61, 49, 0.12)",
                     fontWeight: 850,
                   }}
@@ -184,19 +185,19 @@ export function AbaRecusadas({
                 sx={{
                   p: 1.35,
                   borderRadius: 2,
-                  bgcolor: "#FFF7E0",
+                  bgcolor: colors.alertaSuave,
                   border: "1px solid rgba(107, 78, 0, 0.12)",
                 }}
               >
                 <Stack direction="row" gap={1} alignItems="flex-start">
                   <ReportGmailerrorredIcon
                     fontSize="small"
-                    sx={{ color: "#6B4E00", mt: 0.1 }}
+                    sx={{ color: colors.alertaTexto, mt: 0.1 }}
                   />
                   <Box>
                     <Typography
                       sx={{
-                        color: "#6B4E00",
+                        color: colors.alertaTexto,
                         fontWeight: 900,
                         fontSize: "0.75rem",
                         textTransform: "uppercase",
@@ -208,7 +209,7 @@ export function AbaRecusadas({
                     <Typography
                       sx={{
                         mt: 0.35,
-                        color: "#463500",
+                        color: colors.alertaTextoForte,
                         fontWeight: 750,
                         fontSize: "0.9rem",
                         lineHeight: 1.35,
@@ -223,7 +224,7 @@ export function AbaRecusadas({
               <Box>
                 <Typography
                   sx={{
-                    color: "#526760",
+                    color: colors.cinzaTexto,
                     fontWeight: 850,
                     fontSize: "0.78rem",
                     mb: 0.85,
@@ -240,9 +241,9 @@ export function AbaRecusadas({
                       label={b}
                       sx={{
                         borderRadius: 1.5,
-                        bgcolor: "#FDF0F0",
-                        color: "#7A1F1F",
-                        border: "1px solid rgba(122, 31, 31, 0.12)",
+                        bgcolor: colors.erroSuave,
+                        color: colors.erroTexto,
+                        border: `1px solid ${colors.erroBorda}`,
                         fontWeight: 850,
                       }}
                     />
@@ -258,10 +259,10 @@ export function AbaRecusadas({
                 sx={{
                   minHeight: 44,
                   borderRadius: 2,
-                  bgcolor: "#063D31",
+                  bgcolor: colors.verdeEscuro,
                   fontWeight: 900,
                   "&:hover": {
-                    bgcolor: "#021B16",
+                    bgcolor: colors.pretoEsverdeado,
                   },
                 }}
               >

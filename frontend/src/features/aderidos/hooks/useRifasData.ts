@@ -51,7 +51,11 @@ export function useRifasData() {
     queryFn: async () => {
       try {
         const dados = await aderidoRifaService.buscarMinhasRifas();
-        return filtrarApenasRifasValidas(dados);
+        const validadas = filtrarApenasRifasValidas(dados);
+        if (usuarioId) {
+          localStorage.setItem(`rifas_cache_${usuarioId}`, JSON.stringify(validadas));
+        }
+        return validadas;
       } catch {
         return [];
       }
@@ -60,31 +64,44 @@ export function useRifasData() {
     staleTime: QUERY_STALE_TIME,
     gcTime: QUERY_GC_TIME,
     refetchOnWindowFocus: false,
-    placeholderData: (dadosAnteriores) => dadosAnteriores ?? [],
   });
 
   const notificacoesQuery = useQuery({
     queryKey: notificacoesQueryKey,
     queryFn: async () => {
-      const dados = await buscarNotificacoes();
-      return filtrarApenasNotificacoesValidas(dados);
+      try {
+        const dados = await buscarNotificacoes();
+        const validadas = filtrarApenasNotificacoesValidas(dados);
+        if (usuarioId) {
+          localStorage.setItem(`notificacoes_cache_${usuarioId}`, JSON.stringify(validadas));
+        }
+        return validadas;
+      } catch {
+        return [];
+      }
     },
     enabled: consultasAtivas,
+    refetchOnWindowFocus: false,
     staleTime: QUERY_STALE_TIME,
     gcTime: QUERY_GC_TIME,
-    refetchOnWindowFocus: false,
-    placeholderData: (dadosAnteriores) => dadosAnteriores ?? [],
   });
 
-  const minhasRifas = useMemo(
-    () => (usuarioId ? rifasQuery.data || [] : []),
-    [rifasQuery.data, usuarioId],
-  );
+  const minhasRifas = useMemo(() => {
+    if (!usuarioId) return [];
+    if (rifasQuery.data) return rifasQuery.data;
+    
+    // Retorna cache inicial rápido (apenas visual) até a query finalizar
+    const cache = localStorage.getItem(`rifas_cache_${usuarioId}`);
+    return cache ? JSON.parse(cache) : [];
+  }, [rifasQuery.data, usuarioId]);
 
-  const notificacoes = useMemo(
-    () => (usuarioId ? notificacoesQuery.data || [] : []),
-    [notificacoesQuery.data, usuarioId],
-  );
+  const notificacoes = useMemo(() => {
+    if (!usuarioId) return [];
+    if (notificacoesQuery.data) return notificacoesQuery.data;
+
+    const cache = localStorage.getItem(`notificacoes_cache_${usuarioId}`);
+    return cache ? JSON.parse(cache) : [];
+  }, [notificacoesQuery.data, usuarioId]);
 
   const invalidarDadosPainel = useCallback(async () => {
     if (!usuarioId) return;
@@ -179,6 +196,7 @@ export function useRifasData() {
     usuarioAtual,
     usuarioId,
     carregando,
+    authCarregando,
     minhasRifas,
     notificacoes,
     invalidarDadosPainel,

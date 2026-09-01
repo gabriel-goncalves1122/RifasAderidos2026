@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { ReactNode } from "react";
+import { colors } from "@/shared/tokens/colors";
 
 import { painelAderidoStyles } from "../../styles/painelAderidoStyles";
 
@@ -48,7 +49,7 @@ export function ResumoCard({
         <Typography
           sx={{
             ...painelAderidoStyles.resumoCardValor,
-            ...(variant === "alert" ? { color: "#6B4A00" } : {}),
+            ...(variant === "alert" ? { color: colors.alertaTextoForte } : {}),
           }}
         >
           {valor}

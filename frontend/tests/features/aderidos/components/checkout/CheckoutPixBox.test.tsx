@@ -9,7 +9,8 @@ import { CheckoutPixBox } from "@/features/aderidos/components/checkout/Checkout
 
 describe("Componente: CheckoutPixBox", () => {
   it("Deve orientar que o pagamento via Pix será gerado pelo sistema", () => {
-    render(<CheckoutPixBox onCopiarPix={vi.fn()} />);
+    render(<CheckoutPixBox pollingStatus="aguardando_pagamento"
+        onCopiarPix={vi.fn()} />);
 
     expect(screen.getByText("Pagamento via Pix")).toBeInTheDocument();
     expect(
@@ -30,6 +31,7 @@ describe("Componente: CheckoutPixBox", () => {
           copiaECola: "000201PIXTESTE",
           expiraEm: "2026-06-07T18:00:00.000-03:00",
         }}
+        pollingStatus="aguardando_pagamento"
         onCopiarPix={vi.fn()}
       />,
     );
@@ -44,7 +46,8 @@ describe("Componente: CheckoutPixBox", () => {
     ).toBeInTheDocument();
   });
 
-  it("Deve exibir CTA para abrir app de banco quando informado", () => {
+  it("Deve exibir CTA para cancelar pagamento", () => {
+    const onCancelarPix = vi.fn();
     render(
       <CheckoutPixBox
         cobranca={{
@@ -52,13 +55,14 @@ describe("Componente: CheckoutPixBox", () => {
           status: "aguardando_pagamento",
           copiaECola: "000201PIXTESTE",
         }}
+        pollingStatus="aguardando_pagamento"
         onCopiarPix={vi.fn()}
-        onAbrirAppBanco={vi.fn()}
+        onCancelarPix={onCancelarPix}
       />,
     );
 
     expect(
-      screen.getByRole("button", { name: /abrir app de banco/i }),
+      screen.getByRole("button", { name: /cancelar pagamento/i }),
     ).toBeInTheDocument();
   });
 
@@ -73,6 +77,7 @@ describe("Componente: CheckoutPixBox", () => {
           status: "aguardando_pagamento",
           copiaECola: "000201PIXTESTE",
         }}
+        pollingStatus="aguardando_pagamento"
         onCopiarPix={onCopiarPix}
       />,
     );
@@ -86,13 +91,15 @@ describe("Componente: CheckoutPixBox", () => {
 
   it("Deve mostrar loading e erro quando informados", () => {
     const { rerender } = render(
-      <CheckoutPixBox gerando onCopiarPix={vi.fn()} />,
+      <CheckoutPixBox gerando pollingStatus="aguardando_pagamento"
+        onCopiarPix={vi.fn()} />,
     );
 
     expect(screen.getByText(/Gerando pagamento via Pix/i)).toBeInTheDocument();
 
     rerender(
-      <CheckoutPixBox erro="Pix indisponível" onCopiarPix={vi.fn()} />,
+      <CheckoutPixBox erro="Pix indisponível" pollingStatus="aguardando_pagamento"
+        onCopiarPix={vi.fn()} />,
     );
 
     expect(screen.getByText("Pix indisponível")).toBeInTheDocument();
