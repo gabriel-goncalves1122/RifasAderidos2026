@@ -30,42 +30,6 @@ app.set("trust proxy", 1);
 app.use(helmet());
 
 // ============================================================================
-// RATE LIMITING
-// ============================================================================
-
-const getIpRateLimitKey = (req: express.Request) =>
-  ipKeyGenerator(req.ip || req.socket.remoteAddress || "unknown");
-
-const apiLimiter = rateLimit({
-  windowMs: 60_000,
-  max: 60,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: getIpRateLimitKey,
-  message: { error: "Muitas requisições. Tente novamente em instantes.", code: "RATE_LIMIT" },
-});
-
-app.use("/auth", rateLimit({
-  windowMs: 60_000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: getIpRateLimitKey,
-  message: { error: "Muitas tentativas de autenticação. Aguarde.", code: "RATE_LIMIT" },
-}));
-
-app.use("/tesouraria/checkout/pix/webhook", rateLimit({
-  windowMs: 60_000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: getIpRateLimitKey,
-  message: { error: "Muitas requisições de webhook.", code: "RATE_LIMIT" },
-}));
-
-app.use(apiLimiter);
-
-// ============================================================================
 // CORS DA API EXPRESS
 // ============================================================================
 // Esse CORS vale apenas para a Cloud Function /api.
@@ -122,8 +86,7 @@ const criarCorsOptions = (req: express.Request): cors.CorsOptions => ({
   optionsSuccessStatus: 204,
 });
 
-// Aplica CORS antes das rotas.
-// Não use app.options("*") aqui, porque essa versão do Express quebra com "*".
+// Aplica CORS antes das rotas e do rate limiter para evitar bloqueio 429 sem cabecalhos CORS
 app.use((req, res, next) => cors(criarCorsOptions(req))(req, res, next));
 
 // Libera leitura de JSON e preserva o corpo bruto para validação de webhooks.
@@ -137,6 +100,44 @@ app.use(
     },
   }),
 );
+
+// ============================================================================
+// RATE LIMITING
+// ============================================================================
+
+const getIpRateLimitKey = (req: express.Request) =>
+  ipKeyGenerator(req.ip || req.socket.remoteAddress || "unknown");
+
+const apiLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getIpRateLimitKey,
+  message: { error: "Muitas requisições. Tente novamente em instantes.", code: "RATE_LIMIT" },
+});
+
+app.use("/auth", rateLimit({
+  windowMs: 60_000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getIpRateLimitKey,
+  message: { error: "Muitas tentativas de autenticação. Aguarde.", code: "RATE_LIMIT" },
+}));
+
+app.use("/tesouraria/checkout/pix/webhook", rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getIpRateLimitKey,
+  message: { error: "Muitas requisições de webhook.", code: "RATE_LIMIT" },
+}));
+
+app.use(apiLimiter);
+
+// MOVED TO TOP
 
 // ============================================================================
 // ROTAS
@@ -177,3 +178,9 @@ export const api = onRequest(
 // ============================================================================
 
 export { onCreateUserSetClaims } from "./modules/auth/authTriggers";
+
+// ============================================================================
+// CRONS (TAREFAS AGENDADAS)
+// ============================================================================
+
+export { limparPixExpirados } from "./modules/tesouraria/tesourariaCrons";

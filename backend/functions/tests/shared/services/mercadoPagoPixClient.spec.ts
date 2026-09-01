@@ -25,6 +25,7 @@ describe("MercadoPagoPixClient", () => {
         referenceId: "ref-1",
         nome: "Joao Teste",
         telefone: "(35) 99999-9999",
+        email: "maria@teste.com",
         documento: "111.222.333-44",
         numerosRifas: ["001", "002"],
         valorCentavos: 2000,
@@ -38,7 +39,7 @@ describe("MercadoPagoPixClient", () => {
           transaction_amount: 20, // 2000 centavos = 20 reais
           notification_url: "https://api.test.com/tesouraria/checkout/pix/webhook", // Testar obterNotificationUrl
           payer: expect.objectContaining({
-            email: "comprador_35999999999@sistema.com.br", // testar fallback usando somenteNumeros no email
+            email: "maria@teste.com",
             identification: {
               type: "CPF",
               number: "11122233344", // Testar somenteNumeros
@@ -60,6 +61,7 @@ describe("MercadoPagoPixClient", () => {
         referenceId: "ref-2",
         nome: "Empresa",
         telefone: "35999999999",
+        email: "empresa@teste.com",
         documento: "11.222.333/0001-44",
         numerosRifas: ["003"],
         valorCentavos: 1000,
@@ -90,6 +92,7 @@ describe("MercadoPagoPixClient", () => {
           referenceId: "ref-1",
           nome: "Joao",
           telefone: "35999999999",
+        email: "empresa@teste.com",
           numerosRifas: ["001"],
           valorCentavos: 1000,
           expirationDate: "2026-12-31",

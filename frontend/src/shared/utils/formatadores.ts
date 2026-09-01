@@ -39,7 +39,8 @@ export function formatarDataCurta(data?: string | null) {
   return dataConvertida.toLocaleDateString("pt-BR");
 }
 
-export function formatarTelefone(valor: string): string {
+export function formatarTelefone(valor?: string | null): string {
+  if (!valor) return "";
   const apenasNumeros = valor.replace(/\D/g, "").slice(0, 11);
 
   if (apenasNumeros.length <= 2) {

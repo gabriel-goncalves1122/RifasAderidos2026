@@ -96,7 +96,7 @@ export class NotificacoesService {
   }
 
   static criarNotificacaoRecusa(
-    batch: admin.firestore.WriteBatch,
+    batchOrTransaction: admin.firestore.WriteBatch | admin.firestore.Transaction,
     vendedorId: string,
     motivo: string,
     numerosRifas: string[],
@@ -107,7 +107,7 @@ export class NotificacoesService {
     // Proteção: Garante que vendedorId existe para não criar lixo no banco
     if (!vendedorId) return;
 
-    batch.set(notificacaoRef, {
+    (batchOrTransaction as admin.firestore.WriteBatch).set(notificacaoRef, {
       vendedor_id: vendedorId,
       titulo: "Comprovante Recusado ⚠️",
       mensagem:
@@ -119,7 +119,7 @@ export class NotificacoesService {
   }
 
   static criarNotificacaoCorrecaoDados(
-    batch: admin.firestore.WriteBatch,
+    batchOrTransaction: admin.firestore.WriteBatch | admin.firestore.Transaction,
     vendedorId: string,
     motivo: string,
     numerosRifas: string[],
@@ -129,7 +129,7 @@ export class NotificacoesService {
 
     if (!vendedorId) return;
 
-    batch.set(notificacaoRef, {
+    (batchOrTransaction as admin.firestore.WriteBatch).set(notificacaoRef, {
       vendedor_id: vendedorId,
       tipo: "correcao_dados",
       titulo: "Venda recusada",
@@ -141,7 +141,7 @@ export class NotificacoesService {
   }
 
   static criarNotificacaoRifaLiberada(
-    batch: admin.firestore.WriteBatch,
+    batchOrTransaction: admin.firestore.WriteBatch | admin.firestore.Transaction,
     vendedorId: string,
     motivo: string,
     numerosRifas: string[],
@@ -151,7 +151,7 @@ export class NotificacoesService {
 
     if (!vendedorId) return;
 
-    batch.set(notificacaoRef, {
+    (batchOrTransaction as admin.firestore.WriteBatch).set(notificacaoRef, {
       vendedor_id: vendedorId,
       tipo: "rifa_liberada",
       titulo: "Rifas disponíveis novamente",

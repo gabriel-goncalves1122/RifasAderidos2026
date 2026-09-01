@@ -11,6 +11,12 @@ vi.mock("@/features/auth/hooks/useAuthController", () => ({
   useAuthController: vi.fn(),
 }));
 
+vi.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({
+    prefetchQuery: vi.fn(),
+  }),
+}));
+
 vi.mock("@/shared/components/DashboardSidebar", () => ({
   DashboardSidebar: () => <div data-testid="sidebar">Sidebar</div>,
 }));

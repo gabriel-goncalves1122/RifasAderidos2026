@@ -3,13 +3,14 @@
 // ============================================================================
 import axios from "axios";
 import { randomUUID } from "crypto";
+import { somenteNumeros } from "../utils/formatadores";
 
 interface CriarPedidoPixParams {
   referenceId: string;
   nome: string;
   telefone: string;
-  email?: string;
-  documento?: string;
+  email: string;
+  documento: string;
   numerosRifas: string[];
   valorCentavos: number;
   expirationDate: string;
@@ -34,9 +35,7 @@ export interface MercadoPagoPaymentResponse {
   };
 }
 
-function somenteNumeros(valor?: string | null) {
-  return String(valor || "").replace(/\D/g, "");
-}
+
 
 function obterTokenApi() {
   const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
@@ -58,15 +57,18 @@ export class MercadoPagoPixClient {
     // Mercado Pago aceita valores em ponto flutuante (reais) em vez de centavos
     const transactionAmount = params.valorCentavos / 100;
 
+    const partesNome = (params.nome || "").trim().split(" ");
+    const firstName = partesNome[0] || "";
+    const lastName = partesNome.length > 1 ? partesNome.slice(1).join(" ") : undefined;
+
     const payload: Record<string, any> = {
       transaction_amount: transactionAmount,
       description: `Rifas ${params.numerosRifas.join(", ")}`,
       payment_method_id: "pix",
       payer: {
-        email: params.email || `comprador_${somenteNumeros(params.telefone)}@sistema.com.br`,
-        first_name: params.nome,
-        // Mercado Pago document format requires type (CPF/CNPJ) and number
-        // As a fallback, we pass whatever is in documento as CPF if it has 11 digits
+        email: params.email,
+        first_name: firstName,
+        ...(lastName ? { last_name: lastName } : {}),
       },
       date_of_expiration: params.expirationDate,
       notification_url: obterNotificationUrl(),

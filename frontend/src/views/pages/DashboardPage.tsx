@@ -19,6 +19,11 @@ import { TesourariaPixPage } from "@/features/tesouraria/pages/TesourariaPixPage
 import { AppLoadingScreen } from "@/shared/components/AppLoadingScreen";
 import { DashboardSidebar } from "@/shared/components/DashboardSidebar";
 import { DashboardHeader } from "@/views/components/dashboard/DashboardHeader";
+import { checkoutStorage } from "@/features/aderidos/utils/checkoutStorage";
+import { useQueryClient } from "@tanstack/react-query";
+import { pixTransacoesService } from "@/features/tesouraria/services/pixTransacoesService";
+import { desempenhoService } from "@/features/tesouraria/services/desempenhoService";
+import { auditoriaComprasService } from "@/features/tesouraria/services/auditoriaComprasService";
 
 export type Contexto = "aderido" | "tesouraria" | "secretaria";
 
@@ -72,6 +77,52 @@ export function DashboardPage() {
     sessionStorage.setItem("dashboard_aba", abaAtual.toString());
   }, [contextoAtual, abaAtual]);
 
+  const queryClient = useQueryClient();
+
+  // Prefetching inteligente das telas de tesouraria ao entrar no painel
+  useEffect(() => {
+    if (contextoAtual === "tesouraria" && hasTesourariaAccess) {
+      queryClient.prefetchQuery({
+        queryKey: ["tesouraria", "pix"],
+        staleTime: 180_000,
+        queryFn: async () => {
+          const [resultadoTransacoes, resultadoResumo] = await Promise.allSettled([
+            pixTransacoesService.buscarTransacoes(),
+            pixTransacoesService.buscarResumo(),
+          ]);
+          return {
+            transacoes: resultadoTransacoes.status === "fulfilled" ? resultadoTransacoes.value : [],
+            resumo: resultadoResumo.status === "fulfilled" ? resultadoResumo.value : null,
+          };
+        },
+      });
+
+      queryClient.prefetchQuery({
+        queryKey: ["tesouraria", "desempenho"],
+        staleTime: 180_000,
+        queryFn: async () => {
+          const [resultadoRelatorio, resultadoHistorico] = await Promise.allSettled([
+            desempenhoService.buscarRelatorio(),
+            desempenhoService.buscarHistoricoDetalhado(),
+          ]);
+          return {
+            resumoGeral: resultadoRelatorio.status === "fulfilled" ? resultadoRelatorio.value.resumoGeral : null,
+            aderidos: resultadoRelatorio.status === "fulfilled" ? resultadoRelatorio.value.aderidos : [],
+            historicoTransacoes: resultadoHistorico.status === "fulfilled" ? resultadoHistorico.value : [],
+          };
+        },
+      });
+
+      queryClient.prefetchQuery({
+        queryKey: ["tesouraria", "auditoria-historico"],
+        staleTime: 180_000,
+        queryFn: async () => {
+          return await auditoriaComprasService.buscarHistoricoDetalhado();
+        },
+      });
+    }
+  }, [contextoAtual, hasTesourariaAccess, queryClient]);
+
   const limiteAbasPorContexto: Record<Contexto, number> = {
     aderido: 1,
     tesouraria: 2,
@@ -88,6 +139,7 @@ export function DashboardPage() {
 
   const fazerLogout = () => {
     sessionStorage.clear();
+    checkoutStorage.clear();
     handleLogout();
   };
 
@@ -127,7 +179,11 @@ export function DashboardPage() {
       />
 
       <Container maxWidth="lg" sx={{ mt: 3, mb: 4 }}>
-        {contextoAtual === "aderido" && abaSegura === 0 && <MinhasRifasTab />}
+        {contextoAtual === "aderido" && (
+          <Box sx={{ display: abaSegura === 0 ? "block" : "none" }}>
+            <MinhasRifasTab />
+          </Box>
+        )}
 
         {contextoAtual === "aderido" && abaSegura === 1 && (
           <PremiosTab isAdmin={isSuperAdmin} />

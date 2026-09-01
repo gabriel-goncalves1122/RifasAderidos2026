@@ -51,18 +51,51 @@ service cloud.firestore {
     // ========================================================================
     match /notificacoes/{notificacaoId} {
       // Lê apenas as suas próprias notificações
-      allow read: if request.auth != null && resource.data.vendedor_id == request.auth.uid;
+      // 1. Permitir se o documento ainda não existe (snapshot inicial)
+      allow read: if request.auth != null && resource == null;
+
+      // 2. Permitir se o aderido gerou a notificação
+      allow read: if request.auth != null && resource != null && resource.data.get('vendedor_id', null) == request.auth.uid;
+      
+      // 3. Permitir se for um admin do aderido
+      allow read: if request.auth != null && resource != null 
+                  && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) 
+                  && resource.data.get('vendedor_id', null) == get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.get('id_aderido', null);
       
       // Permite atualizar APENAS para marcar como lida
       allow update: if request.auth != null 
-                    && resource.data.vendedor_id == request.auth.uid
+                    && (resource.data.get('vendedor_id', null) == request.auth.uid || 
+                       (exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) && 
+                        resource.data.get('vendedor_id', null) == get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.get('id_aderido', null)))
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lida']);
                     
       allow create, delete: if false;
     }
 
     // ========================================================================
-    // 5. BLOQUEIO GERAL (Segurança Máxima)
+    // 5. PAGAMENTOS PIX (Para checkout em tempo real)
+    // ========================================================================
+    match /pagamentos_pix/{pagamentoId} {
+      // 1. Snapshot inicial (documento não existe ainda)
+      allow read: if request.auth != null && resource == null;
+      
+      // 2. Aderido criador
+      allow read: if request.auth != null && resource != null 
+                  && 'vendedor_id' in resource.data 
+                  && resource.data.vendedor_id == request.auth.uid;
+      
+      // 3. Admin mapeado
+      allow read: if request.auth != null && resource != null 
+                  && 'vendedor_id' in resource.data
+                  && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) 
+                  && 'id_aderido' in get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data
+                  && resource.data.vendedor_id == get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.id_aderido;
+      
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // 6. BLOQUEIO GERAL (Segurança Máxima)
     // ========================================================================
     // Qualquer outra coleção não especificada acima (ex: compradores, logs, etc) fica 100% trancada.
     match /{document=**} {
