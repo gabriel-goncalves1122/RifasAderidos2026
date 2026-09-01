@@ -7,6 +7,12 @@ export type StatusPagamentoPix =
   | "DECLINED"
   | "CANCELED";
 
+export type StatusValidacaoPix =
+  | "sem_confirmacao_bancaria"
+  | "pendente_validacao"
+  | "aceita"
+  | "negada";
+
 export interface AderidoResumoTransacao {
   id?: string;
   nome: string;
@@ -56,6 +62,7 @@ export interface PixTransacao {
   qrCodeImagemUrl?: string;
 
   observacao?: string;
+  statusValidacao?: StatusValidacaoPix;
 }
 
 export interface PixTransacoesResumo {
@@ -79,9 +86,9 @@ export interface PixTransacoesSerieTemporal {
 }
 
 export type FiltroRapidoTransacoesPix =
-  | "todas"
-  | "com_rifas"
-  | "pendentes_banco";
+  | "novas"
+  | "recusadas"
+  | "aguardando_pagamento";
 
 export interface PixTransacoesFiltros {
   status: FiltroRapidoTransacoesPix;

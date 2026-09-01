@@ -44,7 +44,7 @@ function normalizarHistorico(resposta: unknown): TransacaoTesouraria[] {
 
 export const auditoriaComprasService = {
   async buscarHistoricoDetalhado() {
-    const resposta = await fetchAPI("/rifas/historico");
+    const resposta = await fetchAPI("/tesouraria/historico");
 
     return normalizarHistorico(resposta);
   },

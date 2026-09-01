@@ -1,60 +1,57 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   montarDadosDesempenho,
   RESUMO_GERAL_DESEMPENHO_VAZIO,
 } from "../utils/desempenhoDataUtils";
-import {
-  AderidoMetricaDesempenho,
-  ResumoGeralDesempenho,
-  TransacaoDesempenho,
-} from "../types/desempenho";
 import { desempenhoService } from "../services/desempenhoService";
 
 export function useDesempenhoController() {
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
-  const [resumoGeral, setResumoGeral] = useState<ResumoGeralDesempenho>(
-    RESUMO_GERAL_DESEMPENHO_VAZIO,
-  );
-  const [aderidos, setAderidos] = useState<AderidoMetricaDesempenho[]>([]);
-  const [historicoTransacoes, setHistoricoTransacoes] = useState<
-    TransacaoDesempenho[]
-  >([]);
+  const queryClient = useQueryClient();
+
+  const { data, isLoading: carregando, error } = useQuery({
+    queryKey: ["tesouraria", "desempenho"],
+    queryFn: async () => {
+      const [resultadoRelatorio, resultadoHistorico] = await Promise.allSettled([
+        desempenhoService.buscarRelatorio(),
+        desempenhoService.buscarHistoricoDetalhado(),
+      ]);
+
+      const resumoGeral =
+        resultadoRelatorio.status === "fulfilled"
+          ? resultadoRelatorio.value.resumoGeral
+          : RESUMO_GERAL_DESEMPENHO_VAZIO;
+      const aderidos =
+        resultadoRelatorio.status === "fulfilled"
+          ? resultadoRelatorio.value.aderidos
+          : [];
+      const historicoTransacoes =
+        resultadoHistorico.status === "fulfilled"
+          ? resultadoHistorico.value
+          : [];
+
+      // Se ambos falharem, jogamos um erro. Se um passar, mostramos o que deu.
+      if (
+        resultadoRelatorio.status === "rejected" &&
+        resultadoHistorico.status === "rejected"
+      ) {
+        throw new Error("Erro ao carregar dados de desempenho.");
+      }
+
+      return { resumoGeral, aderidos, historicoTransacoes };
+    },
+    staleTime: 180_000,
+  });
+
+  const resumoGeral = data?.resumoGeral || RESUMO_GERAL_DESEMPENHO_VAZIO;
+  const aderidos = data?.aderidos || [];
+  const historicoTransacoes = data?.historicoTransacoes || [];
+  const erro = error instanceof Error ? error.message : null;
 
   const carregarDados = useCallback(async () => {
-    setCarregando(true);
-    setErro(null);
-
-    const [resultadoRelatorio, resultadoHistorico] = await Promise.allSettled([
-      desempenhoService.buscarRelatorio(),
-      desempenhoService.buscarHistoricoDetalhado(),
-    ]);
-
-    if (resultadoRelatorio.status === "fulfilled") {
-      setResumoGeral(resultadoRelatorio.value.resumoGeral);
-      setAderidos(resultadoRelatorio.value.aderidos);
-    } else {
-      setResumoGeral(RESUMO_GERAL_DESEMPENHO_VAZIO);
-      setAderidos([]);
-      setErro(resultadoRelatorio.reason?.message || "Erro ao carregar dados.");
-    }
-
-    if (resultadoHistorico.status === "fulfilled") {
-      setHistoricoTransacoes(resultadoHistorico.value);
-    } else {
-      setHistoricoTransacoes([]);
-      setErro(
-        resultadoHistorico.reason?.message || "Erro ao carregar histórico.",
-      );
-    }
-
-    setCarregando(false);
-  }, []);
-
-  useEffect(() => {
-    carregarDados();
-  }, [carregarDados]);
+    await queryClient.invalidateQueries({ queryKey: ["tesouraria", "desempenho"] });
+  }, [queryClient]);
 
   const dados = useMemo(
     () =>

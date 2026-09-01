@@ -21,7 +21,7 @@ describe("Service: desempenhoService", () => {
 
     const resultado = await desempenhoService.buscarRelatorio();
 
-    expect(fetchAPI).toHaveBeenCalledWith("/rifas/relatorio");
+    expect(fetchAPI).toHaveBeenCalledWith("/tesouraria/relatorio");
     expect(resultado).toEqual(relatorio);
   });
 
@@ -44,7 +44,7 @@ describe("Service: desempenhoService", () => {
 
     const resultado = await desempenhoService.buscarHistoricoDetalhado();
 
-    expect(fetchAPI).toHaveBeenCalledWith("/rifas/historico");
+    expect(fetchAPI).toHaveBeenCalledWith("/tesouraria/historico");
     expect(resultado).toEqual(historico);
   });
 

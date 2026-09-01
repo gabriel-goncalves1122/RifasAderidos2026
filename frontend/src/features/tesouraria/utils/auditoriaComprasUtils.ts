@@ -9,6 +9,7 @@ import {
   ResumoAuditoriaCompras,
   StatusAuditoriaCompras,
 } from "../types/auditoriaCompras";
+import { colors } from "@/shared/tokens/colors";
 
 export { formatarDataAuditoria, formatarMoedaAuditoria };
 
@@ -20,7 +21,6 @@ export const STATUS_FILTROS_AUDITORIA_COMPRAS: Array<{
   { label: "Pagas", value: "pago" },
   { label: "Pendentes", value: "pendente" },
   { label: "Recusadas", value: "recusado" },
-  { label: "Disponíveis", value: "disponivel" },
 ];
 
 export const FILTROS_AUDITORIA_COMPRAS_VAZIOS: AuditoriaComprasFiltros = {
@@ -28,7 +28,6 @@ export const FILTROS_AUDITORIA_COMPRAS_VAZIOS: AuditoriaComprasFiltros = {
   status: "todas",
   dataInicio: "",
   dataFim: "",
-  comprovante: "todos",
 };
 
 export function normalizarTexto(valor?: string | null) {
@@ -65,31 +64,31 @@ export function statusSxAuditoria(status: string) {
 
   if (statusNormalizado === "pago") {
     return {
-      color: "#FFFFFF",
-      bgcolor: "#063D31",
-      border: "1px solid #063D31",
+      color: colors.branco,
+      bgcolor: colors.verdeEscuro,
+      border: `1px solid ${colors.verdeEscuro}`,
     };
   }
 
   if (statusNormalizado === "pendente") {
     return {
-      color: "#6B4E00",
-      bgcolor: "#FFF7E0",
+      color: colors.amareloEscuro,
+      bgcolor: colors.amareloClaro,
       border: "1px solid rgba(107, 78, 0, 0.25)",
     };
   }
 
   if (statusNormalizado === "recusado") {
     return {
-      color: "#7A1F1F",
-      bgcolor: "#FDF0F0",
+      color: colors.vermelho,
+      bgcolor: colors.vermelhoClaro,
       border: "1px solid rgba(122, 31, 31, 0.22)",
     };
   }
 
   return {
-    color: "#526760",
-    bgcolor: "#F6F8F7",
+    color: colors.cinzaTexto,
+    bgcolor: colors.fundoSuave,
     border: "1px solid rgba(2, 27, 22, 0.10)",
   };
 }
@@ -147,14 +146,8 @@ export function filtrarComprasAuditaveis(
       filtros.status === "todas" ||
       normalizarTexto(compra.status) === filtros.status;
 
-    const comprovanteValido =
-      filtros.comprovante === "todos" ||
-      (filtros.comprovante === "com" && Boolean(compra.comprovanteUrl)) ||
-      (filtros.comprovante === "sem" && !compra.comprovanteUrl);
-
     return (
       statusValido &&
-      comprovanteValido &&
       compraPassaPeriodo(compra, filtros.dataInicio, filtros.dataFim) &&
       compraPassaBusca(compra, filtros.busca)
     );
@@ -197,8 +190,7 @@ export function filtrosAuditoriaAtivos(filtros: AuditoriaComprasFiltros) {
     filtros.busca.trim() ||
       filtros.status !== "todas" ||
       filtros.dataInicio ||
-      filtros.dataFim ||
-      filtros.comprovante !== "todos",
+      filtros.dataFim,
   );
 }
 

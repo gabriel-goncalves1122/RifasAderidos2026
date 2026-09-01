@@ -13,7 +13,7 @@ export interface AderidoMetricaDesempenho {
 export interface TransacaoDesempenho {
   status: string;
   dataReserva: string;
-  valor: number;
+  valorTotal: number;
 }
 
 export interface ReceitaPorDiaDesempenho {

@@ -62,7 +62,7 @@ describe("Utils: histórico de auditoria", () => {
     expect(
       filtrarComprasAuditaveis(compras, {
         ...FILTROS_AUDITORIA_COMPRAS_VAZIOS,
-        comprovante: "com",
+        dataInicio: "2026-05-09",
       }),
     ).toHaveLength(1);
   });

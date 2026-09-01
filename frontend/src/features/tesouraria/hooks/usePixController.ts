@@ -23,12 +23,10 @@ export function usePixController({
     erroValidacaoPixPorId,
     setFiltros,
     sincronizarBanco,
-    aceitarPixTransacao,
-    negarPixTransacao,
+    aceitarTransacao,
+    negarTransacao,
   } = usePixTransacoes();
 
-  useEffect(() => {
-  }, [abaAtual, variante]);
 
   const abaVisivel = abaAtual;
 
@@ -40,14 +38,14 @@ export function usePixController({
       onChangeFiltros: setFiltros,
       validandoPixPorId,
       erroValidacaoPixPorId,
-      onAceitarTransacao: aceitarPixTransacao,
-      onNegarTransacao: negarPixTransacao,
+      onAceitar: aceitarTransacao,
+      onNegar: negarTransacao,
     }),
     [
-      aceitarPixTransacao,
+      aceitarTransacao,
       erroValidacaoPixPorId,
       filtros,
-      negarPixTransacao,
+      negarTransacao,
       resumo,
       setFiltros,
       transacoesFiltradas,
@@ -71,7 +69,7 @@ export function usePixController({
     setFiltros,
     sincronizarBanco,
     onSincronizar: sincronizarBanco,
-    onAceitarTransacao: aceitarPixTransacao,
-    onNegarTransacao: negarPixTransacao,
+    onAceitarTransacao: aceitarTransacao,
+    onNegarTransacao: negarTransacao,
   };
 }

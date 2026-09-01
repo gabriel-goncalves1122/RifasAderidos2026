@@ -11,13 +11,18 @@ import {
   formatarMoedaPix,
   formatarRifasPix,
 } from "../../../../utils/pixTransacoesUtils";
+import { PixTransacaoAcoes } from "../shared/PixTransacaoAcoes";
 
 interface PixTransacaoCardProps {
   transacao: PixTransacao;
+  onAceitar: (id: string) => Promise<void>;
+  onNegar: (id: string, motivo: string) => Promise<void>;
 }
 
 export function PixTransacaoCard({
   transacao,
+  onAceitar,
+  onNegar,
 }: PixTransacaoCardProps) {
   const valor =
     transacao.statusPagamento === "PAID"
@@ -114,11 +119,14 @@ export function PixTransacaoCard({
           </Typography>
         </Box>
 
-        <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.84rem" }}>
-          {transacao.rifas?.length
-            ? `Rifas ${formatarRifasPix(transacao)}`
-            : "Sem rifas vinculadas"}
-        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.84rem" }}>
+            {transacao.rifas?.length
+              ? `Rifas ${formatarRifasPix(transacao)}`
+              : "Sem rifas vinculadas"}
+          </Typography>
+          <PixTransacaoAcoes transacao={transacao} compact onAceitar={onAceitar} onNegar={onNegar} />
+        </Box>
       </Stack>
     </Paper>
   );

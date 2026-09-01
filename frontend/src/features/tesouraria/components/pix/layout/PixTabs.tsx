@@ -1,12 +1,11 @@
-import { useMediaQuery, useTheme } from "@mui/material";
+import { useTesourariaLayout } from "../../../hooks/useTesourariaLayout";
 
 import { PixTabsDesktop } from "./PixTabsDesktop";
 import { PixTabsMobile } from "./PixTabsMobile";
 import { PixTabsProps } from "./pixTabsTypes";
 
 export function PixTabs(props: PixTabsProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { isMobile } = useTesourariaLayout();
 
   return isMobile ? (
     <PixTabsMobile {...props} />

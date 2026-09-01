@@ -11,8 +11,10 @@ import { AuditoriaComprasFiltros } from "../components/auditoriaCompras/shared/A
 import { AuditoriaComprasHeader } from "../components/auditoriaCompras/shared/AuditoriaComprasHeader";
 import { AuditoriaComprasResumo } from "../components/auditoriaCompras/shared/AuditoriaComprasResumo";
 import { useAuditoriaComprasController } from "../hooks/useAuditoriaComprasController";
+import { useTesourariaLayout } from "../hooks/useTesourariaLayout";
 
 export function AuditoriaComprasPage() {
+  const { isMobile } = useTesourariaLayout();
   const {
     carregando,
     filtros,
@@ -64,25 +66,24 @@ export function AuditoriaComprasPage() {
 
       {comprasFiltradas.length === 0 ? (
         <AuditoriaComprasEmptyState />
+      ) : isMobile ? (
+        <AuditoriaComprasCardList
+          compras={comprasFiltradas}
+          onVerComprovante={abrirComprovante}
+          onEditar={abrirEdicao}
+          onVerDetalhes={abrirDetalhes}
+          onReenviarEmailComprovante={reenviarEmailComprovante}
+          reenviandoEmailComprovanteId={reenviandoEmailComprovanteId}
+        />
       ) : (
-        <>
-          <AuditoriaComprasTable
-            compras={comprasFiltradas}
-            onVerComprovante={abrirComprovante}
-            onEditar={abrirEdicao}
-            onVerDetalhes={abrirDetalhes}
-            onReenviarEmailComprovante={reenviarEmailComprovante}
-            reenviandoEmailComprovanteId={reenviandoEmailComprovanteId}
-          />
-          <AuditoriaComprasCardList
-            compras={comprasFiltradas}
-            onVerComprovante={abrirComprovante}
-            onEditar={abrirEdicao}
-            onVerDetalhes={abrirDetalhes}
-            onReenviarEmailComprovante={reenviarEmailComprovante}
-            reenviandoEmailComprovanteId={reenviandoEmailComprovanteId}
-          />
-        </>
+        <AuditoriaComprasTable
+          compras={comprasFiltradas}
+          onVerComprovante={abrirComprovante}
+          onEditar={abrirEdicao}
+          onVerDetalhes={abrirDetalhes}
+          onReenviarEmailComprovante={reenviarEmailComprovante}
+          reenviandoEmailComprovanteId={reenviandoEmailComprovanteId}
+        />
       )}
 
       <AuditoriaCompraDetalhesDialog

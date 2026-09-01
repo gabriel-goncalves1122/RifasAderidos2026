@@ -10,12 +10,12 @@ export function PixTransacoesFiltrosMobile({
   onChangeFiltros,
 }: PixTransacoesFiltrosProps) {
   const buscaAtiva = filtros.busca.trim().length > 0;
-  const filtroStatusAtivo = filtros.status !== "todas";
+  const filtroStatusAtivo = filtros.status !== "novas";
   const totalFiltrosAtivos =
     Number(buscaAtiva) + Number(filtroStatusAtivo);
 
   const limparFiltros = () => {
-    onChangeFiltros({ status: "todas", busca: "" });
+    onChangeFiltros({ status: "novas", busca: "" });
   };
 
   return (

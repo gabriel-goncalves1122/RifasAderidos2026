@@ -9,7 +9,7 @@ import {
   Box,
   Button,
   Chip,
-  Collapse,
+  Drawer,
   IconButton,
   InputAdornment,
   MenuItem,
@@ -22,8 +22,7 @@ import {
 
 import { safeAreaStickyTop } from "@/shared/tokens/safeArea";
 import { AuditoriaComprasFiltrosProps } from "../shared/auditoriaComprasFiltrosTypes";
-import { FiltroComprovante } from "../../../types/auditoriaCompras";
-import { STATUS_FILTROS_AUDITORIA_COMPRAS } from "../../../utils/auditoriaComprasUtils";
+import { AuditoriaFiltroDatas, AuditoriaFiltroStatusChips } from "../shared/AuditoriaFiltrosUtils";
 import { colors } from "@/shared/tokens/colors";
 
 export function AuditoriaComprasFiltrosMobile({
@@ -105,35 +104,31 @@ export function AuditoriaComprasFiltrosMobile({
             "&::-webkit-scrollbar": { display: "none" },
           }}
         >
-          {STATUS_FILTROS_AUDITORIA_COMPRAS.map((filtro) => {
-            const ativo = filtros.status === filtro.value;
-
-            return (
-              <Chip
-                key={filtro.value}
-                label={filtro.label}
-                clickable
-                onClick={() =>
-                  onChangeFiltros({ ...filtros, status: filtro.value })
-                }
-                sx={{
-                  height: 32,
-                  borderRadius: 999,
-                  fontWeight: 850,
-                  flexShrink: 0,
-                  bgcolor: ativo ? colors.verdeEscuro : colors.branco,
-                  color: ativo ? colors.branco : colors.verdeEscuro,
-                  border: ativo
-                    ? `1px solid ${colors.verdeEscuro}`
-                    : "1px solid rgba(6, 61, 49, 0.18)",
-                }}
-              />
-            );
-          })}
+          <AuditoriaFiltroStatusChips filtros={filtros} onChangeFiltros={onChangeFiltros} />
         </Box>
 
-        <Collapse in={aberto}>
-          <Stack spacing={1.1} sx={{ pt: 0.25 }}>
+        <Drawer
+          anchor="bottom"
+          open={aberto}
+          onClose={() => setAberto(false)}
+          PaperProps={{
+            sx: {
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
+              p: 2,
+              pb: "max(16px, env(safe-area-inset-bottom))",
+            },
+          }}
+        >
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Typography variant="h6" sx={{ color: colors.verdeEscuro, fontWeight: 850 }}>
+              Filtros Avançados
+            </Typography>
+            <IconButton onClick={() => setAberto(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Stack spacing={2}>
             <Typography
               sx={{
                 color: colors.cinzaTexto,
@@ -144,79 +139,17 @@ export function AuditoriaComprasFiltrosMobile({
               Refine por período e disponibilidade de comprovante.
             </Typography>
 
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: 1,
-              }}
-            >
-              <TextField
-                size="small"
-                label="Início"
-                type="date"
-                value={filtros.dataInicio}
-                onChange={(event) =>
-                  onChangeFiltros({
-                    ...filtros,
-                    dataInicio: event.target.value,
-                  })
-                }
-                InputLabelProps={{ shrink: true }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    bgcolor: colors.fundoSuave,
-                  },
-                }}
-              />
+            <AuditoriaFiltroDatas filtros={filtros} onChangeFiltros={onChangeFiltros} />
 
-              <TextField
-                size="small"
-                label="Fim"
-                type="date"
-                value={filtros.dataFim}
-                onChange={(event) =>
-                  onChangeFiltros({ ...filtros, dataFim: event.target.value })
-                }
-                InputLabelProps={{ shrink: true }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    bgcolor: colors.fundoSuave,
-                  },
-                }}
-              />
-            </Box>
 
-            <TextField
-              select
-              size="small"
-              label="Comprovante"
-              value={filtros.comprovante}
-              onChange={(event) =>
-                onChangeFiltros({
-                  ...filtros,
-                  comprovante: event.target.value as FiltroComprovante,
-                })
-              }
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  bgcolor: colors.fundoSuave,
-                },
-              }}
-            >
-              <MenuItem value="todos">Todos</MenuItem>
-              <MenuItem value="com">Com comprovante</MenuItem>
-              <MenuItem value="sem">Sem comprovante</MenuItem>
-            </TextField>
-
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1.5}>
               <Button
                 fullWidth
                 startIcon={<FileDownloadOutlinedIcon />}
-                onClick={onExportarCsv}
+                onClick={() => {
+                  onExportarCsv();
+                  setAberto(false);
+                }}
                 disabled={!possuiResultados}
                 sx={{
                   borderRadius: 2,
@@ -224,6 +157,7 @@ export function AuditoriaComprasFiltrosMobile({
                   color: colors.branco,
                   fontWeight: 850,
                   textTransform: "none",
+                  py: 1,
                   "&:hover": { bgcolor: colors.verdeEscuroHover },
                   "&.Mui-disabled": {
                     bgcolor: colors.verdeClaro,
@@ -246,6 +180,7 @@ export function AuditoriaComprasFiltrosMobile({
                       bgcolor: colors.verdeClaro,
                       fontWeight: 850,
                       textTransform: "none",
+                      py: 1,
                     }}
                   >
                     Comprovantes
@@ -257,20 +192,40 @@ export function AuditoriaComprasFiltrosMobile({
             {filtrosAtivos && (
               <Button
                 startIcon={<CloseIcon />}
-                onClick={onLimparFiltros}
+                onClick={() => {
+                  onLimparFiltros();
+                  setAberto(false);
+                }}
                 sx={{
                   alignSelf: "stretch",
                   borderRadius: 2,
                   color: colors.verdeEscuro,
                   fontWeight: 850,
                   textTransform: "none",
+                  mt: 1,
                 }}
               >
                 Limpar filtros
               </Button>
             )}
+
+            <Button
+              variant="contained"
+              onClick={() => setAberto(false)}
+              sx={{
+                borderRadius: 2,
+                bgcolor: colors.verdeEscuro,
+                color: colors.branco,
+                fontWeight: 850,
+                textTransform: "none",
+                py: 1.2,
+                "&:hover": { bgcolor: colors.verdeEscuroHover },
+              }}
+            >
+              Ver {possuiResultados ? "Resultados" : "Nenhum Resultado"}
+            </Button>
           </Stack>
-        </Collapse>
+        </Drawer>
       </Stack>
     </Paper>
   );

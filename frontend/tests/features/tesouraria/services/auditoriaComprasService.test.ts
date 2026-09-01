@@ -18,7 +18,7 @@ describe("Service: auditoriaComprasService", () => {
 
     const resultado = await auditoriaComprasService.buscarHistoricoDetalhado();
 
-    expect(fetchAPI).toHaveBeenCalledWith("/rifas/historico");
+    expect(fetchAPI).toHaveBeenCalledWith("/tesouraria/historico");
     expect(resultado).toEqual(historico);
   });
 

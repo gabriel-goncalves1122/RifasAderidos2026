@@ -13,7 +13,6 @@ export interface AuditoriaComprasFiltros {
   status: StatusAuditoriaCompras;
   dataInicio: string;
   dataFim: string;
-  comprovante: FiltroComprovante;
 }
 
 export interface TransacaoTesouraria {

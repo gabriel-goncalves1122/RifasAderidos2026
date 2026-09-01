@@ -69,28 +69,28 @@ describe("Utils: pixTransacoesUtils", () => {
 
     expect(
       filtrarPixTransacoes(transacoes, {
-        status: "todas",
+        status: "novas",
         busca: "111.222.333-44",
       }),
     ).toEqual([transacoes[0]]);
 
     expect(
       filtrarPixTransacoes(transacoes, {
-        status: "todas",
+        status: "novas",
         busca: "98765432100",
       }),
     ).toEqual([transacoes[1]]);
 
     expect(
       filtrarPixTransacoes(transacoes, {
-        status: "todas",
+        status: "novas",
         busca: "bruno",
       }),
     ).toEqual([transacoes[1]]);
 
     expect(
       filtrarPixTransacoes(transacoes, {
-        status: "todas",
+        status: "novas",
         busca: "099",
       }),
     ).toEqual([transacoes[1]]);
@@ -107,7 +107,7 @@ describe("Utils: pixTransacoesUtils", () => {
 
     expect(
       filtrarPixTransacoes(transacoes, {
-        status: "todas",
+        status: "novas",
         busca: "pedido_ana",
       }),
     ).toEqual([]);
@@ -135,14 +135,14 @@ describe("Utils: pixTransacoesUtils", () => {
 
     expect(
       filtrarPixTransacoes(transacoes, {
-        status: "com_rifas",
+        status: "novas",
         busca: "",
       }),
-    ).toEqual([transacoes[0], transacoes[1]]);
+    ).toEqual([transacoes[1]]);
 
     expect(
       filtrarPixTransacoes(transacoes, {
-        status: "pendentes_banco",
+        status: "aguardando_pagamento",
         busca: "",
       }),
     ).toEqual([transacoes[0]]);

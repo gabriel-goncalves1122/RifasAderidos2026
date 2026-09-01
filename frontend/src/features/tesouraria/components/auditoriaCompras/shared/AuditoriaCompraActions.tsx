@@ -17,6 +17,44 @@ interface AuditoriaCompraActionsProps {
   reenviandoEmailComprovante?: boolean;
 }
 
+function ActionIcon({
+  tooltip,
+  label,
+  icon,
+  disabled = false,
+  onClick,
+}: {
+  tooltip: string;
+  label: string;
+  icon: React.ReactNode;
+  disabled?: boolean;
+  onClick: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <Tooltip title={tooltip}>
+      <span>
+        <IconButton
+          size="small"
+          aria-label={label}
+          disabled={disabled}
+          onClick={onClick}
+          sx={{
+            color: colors.verdeEscuro,
+            bgcolor: colors.verdeClaro,
+            "&:hover": { bgcolor: colors.verdeHover },
+            "&.Mui-disabled": {
+              bgcolor: colors.fundoSuave,
+              color: colors.cinzaDisabled,
+            },
+          }}
+        >
+          {icon}
+        </IconButton>
+      </span>
+    </Tooltip>
+  );
+}
+
 export function AuditoriaCompraActions({
   compra,
   onVerComprovante,
@@ -45,89 +83,54 @@ export function AuditoriaCompraActions({
 
   return (
     <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-      <Tooltip
-        title={
-          compra.comprovanteUrl
-            ? "Ver comprovante"
-            : "Comprovante indisponível nos dados atuais"
+      {compra.comprovanteUrl && (
+        <ActionIcon
+          tooltip="Ver comprovante"
+          label="Ver comprovante"
+          icon={<ImageOutlinedIcon fontSize="small" />}
+          onClick={(e) => {
+            e.stopPropagation();
+            onVerComprovante(compra);
+          }}
+        />
+      )}
+
+      <ActionIcon
+        tooltip={tooltipEmail}
+        label="Reenviar e-mail"
+        disabled={!podeReenviarEmail}
+        icon={
+          reenviandoEmailComprovante ? (
+            <CircularProgress size={16} sx={{ color: colors.verdeEscuro }} />
+          ) : (
+            <EmailOutlinedIcon fontSize="small" />
+          )
         }
-      >
-        <span>
-          <IconButton
-            size="small"
-            aria-label="Ver comprovante"
-            disabled={!compra.comprovanteUrl}
-            onClick={() => onVerComprovante(compra)}
-            sx={{
-              color: colors.verdeEscuro,
-              bgcolor: colors.verdeClaro,
-              "&:hover": { bgcolor: colors.verdeHover },
-              "&.Mui-disabled": {
-                bgcolor: colors.fundoSuave,
-                color: colors.cinzaDisabled,
-              },
-            }}
-          >
-            <ImageOutlinedIcon fontSize="small" />
-          </IconButton>
-        </span>
-      </Tooltip>
+        onClick={(e) => {
+          e.stopPropagation();
+          onReenviarEmailComprovante(compra);
+        }}
+      />
 
-      <Tooltip title={tooltipEmail}>
-        <span>
-          <IconButton
-            size="small"
-            aria-label="Reenviar e-mail"
-            disabled={!podeReenviarEmail}
-            onClick={() => onReenviarEmailComprovante(compra)}
-            sx={{
-              color: colors.verdeEscuro,
-              bgcolor: colors.verdeClaro,
-              "&:hover": { bgcolor: colors.verdeHover },
-              "&.Mui-disabled": {
-                bgcolor: colors.fundoSuave,
-                color: colors.cinzaDisabled,
-              },
-            }}
-          >
-            {reenviandoEmailComprovante ? (
-              <CircularProgress size={16} color="inherit" />
-            ) : (
-              <EmailOutlinedIcon fontSize="small" />
-            )}
-          </IconButton>
-        </span>
-      </Tooltip>
+      <ActionIcon
+        tooltip="Editar comprador"
+        label="Editar comprador"
+        icon={<EditOutlinedIcon fontSize="small" />}
+        onClick={(e) => {
+          e.stopPropagation();
+          onEditar(compra);
+        }}
+      />
 
-      <Tooltip title="Editar dados permitidos do comprador">
-        <IconButton
-          size="small"
-          aria-label="Editar comprador"
-          onClick={() => onEditar(compra)}
-          sx={{
-            color: colors.verdeEscuro,
-            bgcolor: colors.verdeClaro,
-            "&:hover": { bgcolor: colors.verdeHover },
-          }}
-        >
-          <EditOutlinedIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-
-      <Tooltip title="Detalhes da compra">
-        <IconButton
-          size="small"
-          aria-label="Ver detalhes da compra"
-          onClick={() => onVerDetalhes(compra)}
-          sx={{
-            color: colors.verdeEscuro,
-            bgcolor: colors.verdeClaro,
-            "&:hover": { bgcolor: colors.verdeHover },
-          }}
-        >
-          <VisibilityOutlinedIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+      <ActionIcon
+        tooltip="Ver detalhes da compra"
+        label="Ver detalhes da compra"
+        icon={<VisibilityOutlinedIcon fontSize="small" />}
+        onClick={(e) => {
+          e.stopPropagation();
+          onVerDetalhes(compra);
+        }}
+      />
     </Stack>
   );
 }

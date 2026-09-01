@@ -25,13 +25,18 @@ import {
   formatarMoedaPix,
 } from "../../../../utils/pixTransacoesUtils";
 import { PixTransacaoDetalhesDialog } from "../shared/PixTransacaoDetalhesDialog";
+import { PixTransacaoAcoes } from "../shared/PixTransacaoAcoes";
 
 interface PixTransacoesTableProps {
   transacoes: PixTransacao[];
+  onAceitar: (id: string) => Promise<void>;
+  onNegar: (id: string, motivo: string) => Promise<void>;
 }
 
 export function PixTransacoesTable({
   transacoes,
+  onAceitar,
+  onNegar,
 }: PixTransacoesTableProps) {
   const [transacaoDetalhada, setTransacaoDetalhada] =
     useState<PixTransacao | null>(null);
@@ -51,6 +56,7 @@ export function PixTransacoesTable({
               <TableCell>Data</TableCell>
               <TableCell>Pagador</TableCell>
               <TableCell align="right">Valor / Status</TableCell>
+              <TableCell align="center" sx={{ width: 100 }}>Ações</TableCell>
             </TableRow>
           </TableHead>
 
@@ -145,6 +151,14 @@ export function PixTransacoesTable({
                       </Typography>
                     </Stack>
                   </TableCell>
+                  <TableCell align="center" onClick={(e) => e.stopPropagation()}>
+                    <PixTransacaoAcoes 
+                      transacao={transacao} 
+                      compact 
+                      onAceitar={onAceitar} 
+                      onNegar={onNegar} 
+                    />
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -155,6 +169,8 @@ export function PixTransacoesTable({
       <PixTransacaoDetalhesDialog
         transacao={transacaoDetalhada}
         onClose={() => setTransacaoDetalhada(null)}
+        onAceitar={onAceitar}
+        onNegar={onNegar}
       />
     </>
   );

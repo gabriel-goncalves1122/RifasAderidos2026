@@ -1,9 +1,7 @@
 import { useMemo } from "react";
-import {
-  Box,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { Box } from "@mui/material";
+
+import { useTesourariaLayout } from "../../../hooks/useTesourariaLayout";
 
 import { PixTransacoesResumoCards } from "../transacoes/shared/PixTransacoesResumoCards";
 import {
@@ -23,8 +21,7 @@ export function PixVisaoGeralTab({
   resumo,
   transacoes,
 }: PixVisaoGeralTabProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { isMobile } = useTesourariaLayout();
   const dadosTemporais = useMemo(
     () => montarDadosTemporaisPix(transacoes),
     [transacoes],

@@ -78,6 +78,7 @@ Regras:
 - `usePixTransacoes` controla carregamento, filtros e sincronizacao de transacoes;
 - `pixTransacoesService` e o unico ponto da feature para consultar dados Pix no backend;
 - `usePixTransacoes` deve exibir lista vazia real quando a API retornar vazio, sem fallback automatico para mocks;
+- **Estado de Validação Manual**: O sistema exige conformidade transacional estrita (ACID) na tesouraria. Um bilhete SÓ pode exibir os botões de Aceitar/Recusar (`PixValidacaoActions`) se o webhook do banco tiver confirmado que ele foi efetivamente pago. Ou seja, `statusPagamento` DEVE ser `PAID` ou `AUTHORIZED`. Transações pendentes (`WAITING`) são bloqueadas na UI para aprovação manual. 
 - nao chamar APIs externas sensiveis diretamente do frontend.
 
 ### Auditoria De Compras

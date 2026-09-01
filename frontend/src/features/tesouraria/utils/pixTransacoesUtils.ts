@@ -8,6 +8,8 @@ import {
   PixTransacoesFiltros,
   PixTransacoesResumo,
   PixTransacoesSerieTemporal,
+  StatusPagamentoPix,
+  StatusValidacaoPix,
 } from "../types/pixTransacoes";
 
 export function pixTransacaoTemRifas(transacao: PixTransacao) {
@@ -16,6 +18,25 @@ export function pixTransacaoTemRifas(transacao: PixTransacao) {
 
 export function pixPagamentoConfirmadoBanco(transacao: PixTransacao) {
   return ["PAID", "AUTHORIZED"].includes(transacao.statusPagamento);
+}
+
+export function obterStatusValidacaoPix(transacao: PixTransacao): StatusValidacaoPix {
+  if (!pixPagamentoConfirmadoBanco(transacao)) {
+    return "sem_confirmacao_bancaria";
+  }
+
+  if (transacao.statusValidacao) {
+    return transacao.statusValidacao;
+  }
+
+  return "pendente_validacao";
+}
+
+export function podeValidarPixTransacao(transacao: PixTransacao) {
+  return (
+    pixPagamentoConfirmadoBanco(transacao) &&
+    obterStatusValidacaoPix(transacao) === "pendente_validacao"
+  );
 }
 
 export { formatarDataPix, formatarMoedaPix };
@@ -48,9 +69,9 @@ function atendeFiltroRapido(
   transacao: PixTransacao,
   status: PixTransacoesFiltros["status"],
 ) {
-  if (status === "todas") return true;
-  if (status === "com_rifas") return pixTransacaoTemRifas(transacao);
-  if (status === "pendentes_banco") return !pixPagamentoConfirmadoBanco(transacao);
+  if (status === "novas") return podeValidarPixTransacao(transacao);
+  if (status === "recusadas") return transacao.statusValidacao === "negada";
+  if (status === "aguardando_pagamento") return !pixPagamentoConfirmadoBanco(transacao);
 
   return true;
 }

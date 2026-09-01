@@ -2,11 +2,13 @@ import { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import ReplyOutlinedIcon from "@mui/icons-material/ReplyOutlined";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Drawer,
   IconButton,
   Stack,
   TextField,
@@ -17,6 +19,8 @@ import { TransacaoTesouraria } from "../../../types/auditoriaCompras";
 import { colors } from "@/shared/tokens/colors";
 import { typographyScale as typography } from "@/shared/tokens/typography";
 import { components } from "@/shared/tokens/components";
+import { layout } from "../../../styles/layout";
+import { useTesourariaLayout } from "../../../hooks/useTesourariaLayout";
 
 interface NotificarCorrecaoDialogProps {
   aberto: boolean;
@@ -33,6 +37,7 @@ export function NotificarCorrecaoDialog({
   onClose,
   onSubmit,
 }: NotificarCorrecaoDialogProps) {
+  const { isMobile } = useTesourariaLayout();
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
 
@@ -53,6 +58,97 @@ export function NotificarCorrecaoDialog({
   };
 
   if (!compra) return null;
+
+  const conteudoCorrecao = (
+    <Stack spacing={2.5} sx={{ p: isMobile ? 1 : 0 }}>
+      <TextField
+        label="O que precisa ser corrigido?"
+        multiline
+        rows={4}
+        fullWidth
+        value={mensagem}
+        onChange={(e) => {
+          setMensagem(e.target.value);
+          if (erro) setErro("");
+        }}
+        error={Boolean(erro)}
+        helperText={erro || "Esta mensagem aparecerá na tela do aderido."}
+        disabled={notificando}
+        InputProps={{
+          sx: { borderRadius: 2, bgcolor: colors.fundoSuave },
+        }}
+      />
+    </Stack>
+  );
+
+  const botoesAcoes = (
+    <>
+      <Button
+        onClick={handleClose}
+        disabled={notificando}
+        fullWidth={isMobile}
+        sx={{
+          color: colors.cinzaTexto,
+          fontWeight: 750,
+          textTransform: "none",
+        }}
+      >
+        Cancelar
+      </Button>
+      <Button
+        type="submit"
+        disabled={notificando}
+        startIcon={<ReplyOutlinedIcon />}
+        fullWidth={isMobile}
+        sx={{
+          ...components.botaoPrimario,
+          px: 3,
+        }}
+      >
+        {notificando ? "Enviando..." : "Devolver para Aderido"}
+      </Button>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        anchor="bottom"
+        open={aberto}
+        onClose={handleClose}
+        PaperProps={{
+          sx: layout.drawerPaper,
+        }}
+      >
+        <Stack
+          component="form"
+          onSubmit={handleSubmit}
+          spacing={2}
+          sx={{ pb: 2 }}
+        >
+          <Box sx={layout.drawerPullHandle} />
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Box>
+              <Typography sx={{ ...typography.titulo, fontSize: "1.2rem" }}>
+                Solicitar Correção de Dados
+              </Typography>
+              <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.85rem", mt: 0.2 }}>
+                Aderido: {compra.vendedorNome}
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ flex: 1, overflowY: "auto", pb: 1 }}>
+            {conteudoCorrecao}
+          </Box>
+          <Box sx={{ pt: 1, borderTop: `1px solid ${colors.borda}` }}>
+            <Stack direction="row" spacing={1.5}>
+              {botoesAcoes}
+            </Stack>
+          </Box>
+        </Stack>
+      </Drawer>
+    );
+  }
 
   return (
     <Dialog
@@ -95,50 +191,11 @@ export function NotificarCorrecaoDialog({
         </DialogTitle>
 
         <DialogContent dividers sx={{ p: 3, borderColor: colors.fundoEscuro }}>
-          <Stack spacing={2.5}>
-            <TextField
-              label="O que precisa ser corrigido?"
-              multiline
-              rows={4}
-              fullWidth
-              value={mensagem}
-              onChange={(e) => {
-                setMensagem(e.target.value);
-                if (erro) setErro("");
-              }}
-              error={Boolean(erro)}
-              helperText={erro || "Esta mensagem aparecerá na tela do aderido."}
-              disabled={notificando}
-              InputProps={{
-                sx: { borderRadius: 2, bgcolor: colors.fundoSuave },
-              }}
-            />
-          </Stack>
+          {conteudoCorrecao}
         </DialogContent>
 
         <DialogActions sx={{ p: 3, pt: 2 }}>
-          <Button
-            onClick={handleClose}
-            disabled={notificando}
-            sx={{
-              color: colors.cinzaTexto,
-              fontWeight: 750,
-              textTransform: "none",
-            }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            disabled={notificando}
-            startIcon={<ReplyOutlinedIcon />}
-            sx={{
-              ...components.botaoPrimario,
-              px: 3,
-            }}
-          >
-            {notificando ? "Enviando..." : "Devolver para Aderido"}
-          </Button>
+          {botoesAcoes}
         </DialogActions>
       </form>
     </Dialog>

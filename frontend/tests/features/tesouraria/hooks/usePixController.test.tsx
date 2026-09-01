@@ -30,8 +30,8 @@ describe("Hook-controller: usePixController", () => {
       setFiltros,
       carregarDados: vi.fn(),
       sincronizarBanco,
-      aceitarPixTransacao,
-      negarPixTransacao,
+      aceitarTransacao: aceitarPixTransacao,
+      negarTransacao: negarPixTransacao,
       limparErroValidacaoPix: vi.fn(),
     });
   });
@@ -46,8 +46,8 @@ describe("Hook-controller: usePixController", () => {
       { id: "tx_filtrada", referenceId: "ref_002" },
     ]);
     expect(result.current.pixProps.onChangeFiltros).toBe(setFiltros);
-    expect(result.current.pixProps.onAceitarTransacao).toBe(aceitarPixTransacao);
-    expect(result.current.pixProps.onNegarTransacao).toBe(negarPixTransacao);
+    expect(result.current.pixProps.onAceitar).toBe(aceitarPixTransacao);
+    expect(result.current.pixProps.onNegar).toBe(negarPixTransacao);
 
     result.current.onSincronizar();
 

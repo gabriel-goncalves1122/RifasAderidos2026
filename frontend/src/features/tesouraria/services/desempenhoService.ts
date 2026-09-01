@@ -39,13 +39,13 @@ function normalizarHistorico(resposta: unknown): TransacaoDesempenho[] {
 
 export const desempenhoService = {
   async buscarRelatorio() {
-    const resposta = await fetchAPI("/rifas/relatorio");
+    const resposta = await fetchAPI("/tesouraria/relatorio");
 
     return normalizarRelatorio(resposta);
   },
 
   async buscarHistoricoDetalhado() {
-    const resposta = await fetchAPI("/rifas/historico");
+    const resposta = await fetchAPI("/tesouraria/historico");
 
     return normalizarHistorico(resposta);
   },

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 
 import {
@@ -7,18 +8,25 @@ import {
 import { PixEmptyState } from "../shared/PixEmptyState";
 import { PixTransacoesFiltros } from "../shared/PixTransacoesFiltros";
 import { PixTransacaoCard } from "./PixTransacaoCard";
+import { PixTransacaoDetalhesDialog } from "../shared/PixTransacaoDetalhesDialog";
 
 interface PixTransacoesMobileViewProps {
   filtros: PixTransacoesFiltrosState;
   transacoes: PixTransacao[];
   onChangeFiltros: (filtros: PixTransacoesFiltrosState) => void;
+  onAceitar: (id: string) => Promise<void>;
+  onNegar: (id: string, motivo: string) => Promise<void>;
 }
 
 export function PixTransacoesMobileView({
   filtros,
   transacoes,
   onChangeFiltros,
+  onAceitar,
+  onNegar,
 }: PixTransacoesMobileViewProps) {
+  const [transacaoSelecionada, setTransacaoSelecionada] = useState<PixTransacao | null>(null);
+
   return (
     <Stack spacing={2}>
       <PixTransacoesFiltros filtros={filtros} onChangeFiltros={onChangeFiltros} />
@@ -45,13 +53,23 @@ export function PixTransacoesMobileView({
       ) : (
         <Stack spacing={1.5} sx={{ pl: 1, pr: 0.25 }}>
           {transacoes.map((transacao) => (
-            <PixTransacaoCard
-              key={transacao.id}
-              transacao={transacao}
-            />
+            <Box key={transacao.id} onClick={() => setTransacaoSelecionada(transacao)}>
+              <PixTransacaoCard
+                transacao={transacao}
+                onAceitar={onAceitar}
+                onNegar={onNegar}
+              />
+            </Box>
           ))}
         </Stack>
       )}
+
+      <PixTransacaoDetalhesDialog
+        transacao={transacaoSelecionada}
+        onClose={() => setTransacaoSelecionada(null)}
+        onAceitar={onAceitar}
+        onNegar={onNegar}
+      />
     </Stack>
   );
 }

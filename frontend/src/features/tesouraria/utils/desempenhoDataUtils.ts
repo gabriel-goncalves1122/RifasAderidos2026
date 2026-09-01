@@ -40,7 +40,7 @@ function montarReceitaPorDia(transacoes: TransacaoDesempenho[]) {
         };
       }
 
-      acc[chave].valor += transacao.valor;
+      acc[chave].valor += transacao.valorTotal;
 
       return acc;
     },
@@ -57,7 +57,9 @@ function montarStatus(transacoes: TransacaoDesempenho[]) {
     (transacao) => statusNormalizado(transacao.status) === "pago",
   ).length;
   const pendentes = transacoes.filter(
-    (transacao) => statusNormalizado(transacao.status) === "pendente",
+    (transacao) =>
+      statusNormalizado(transacao.status) === "pendente" ||
+      statusNormalizado(transacao.status) === "reservado",
   ).length;
 
   return {

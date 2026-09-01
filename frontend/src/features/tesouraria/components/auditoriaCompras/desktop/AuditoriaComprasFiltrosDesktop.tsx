@@ -19,8 +19,7 @@ import { colors } from "@/shared/tokens/colors";
 import { components } from "@/shared/tokens/components";
 
 import { AuditoriaComprasFiltrosProps } from "../shared/auditoriaComprasFiltrosTypes";
-import { FiltroComprovante } from "../../../types/auditoriaCompras";
-import { STATUS_FILTROS_AUDITORIA_COMPRAS } from "../../../utils/auditoriaComprasUtils";
+import { AuditoriaFiltroDatas, AuditoriaFiltroStatusChips } from "../shared/AuditoriaFiltrosUtils";
 
 export function AuditoriaComprasFiltrosDesktop({
   filtros,
@@ -113,7 +112,7 @@ export function AuditoriaComprasFiltrosDesktop({
             display: "grid",
             gridTemplateColumns: {
               sm: "1fr 0.55fr 0.55fr",
-              lg: "1.45fr 0.62fr 0.62fr 0.72fr",
+              lg: "1.45fr 0.62fr 0.62fr",
             },
             gap: 1,
           }}
@@ -140,63 +139,11 @@ export function AuditoriaComprasFiltrosDesktop({
             }}
           />
 
-          <TextField
-            size="small"
-            label="Início"
-            type="date"
-            value={filtros.dataInicio}
-            onChange={(event) =>
-              onChangeFiltros({ ...filtros, dataInicio: event.target.value })
-            }
-            InputLabelProps={{ shrink: true }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-                bgcolor: components.searchField.backgroundColor,
-              },
-            }}
+          <AuditoriaFiltroDatas
+            filtros={filtros}
+            onChangeFiltros={onChangeFiltros}
+            bgColor={components.searchField.backgroundColor}
           />
-
-          <TextField
-            size="small"
-            label="Fim"
-            type="date"
-            value={filtros.dataFim}
-            onChange={(event) =>
-              onChangeFiltros({ ...filtros, dataFim: event.target.value })
-            }
-            InputLabelProps={{ shrink: true }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-                bgcolor: components.searchField.backgroundColor,
-              },
-            }}
-          />
-
-          <TextField
-            select
-            size="small"
-            label="Comprovante"
-            value={filtros.comprovante}
-            onChange={(event) =>
-              onChangeFiltros({
-                ...filtros,
-                comprovante: event.target.value as FiltroComprovante,
-              })
-            }
-            sx={{
-              gridColumn: { sm: "1 / -1", lg: "auto" },
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-                bgcolor: components.searchField.backgroundColor,
-              },
-            }}
-          >
-            <MenuItem value="todos">Todos</MenuItem>
-            <MenuItem value="com">Com comprovante</MenuItem>
-            <MenuItem value="sem">Sem comprovante</MenuItem>
-          </TextField>
         </Box>
 
         <Stack
@@ -208,33 +155,7 @@ export function AuditoriaComprasFiltrosDesktop({
           useFlexGap
         >
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {STATUS_FILTROS_AUDITORIA_COMPRAS.map((filtro) => {
-              const ativo = filtros.status === filtro.value;
-
-              return (
-                <Chip
-                  key={filtro.value}
-                  label={filtro.label}
-                  clickable
-                  onClick={() =>
-                    onChangeFiltros({ ...filtros, status: filtro.value })
-                  }
-                  sx={{
-                    height: 34,
-                    borderRadius: 999,
-                    fontWeight: 850,
-                    bgcolor: ativo ? colors.verdeEscuro : colors.branco,
-                    color: ativo ? colors.branco : colors.verdeEscuro,
-                    border: ativo
-                      ? `1px solid ${colors.verdeEscuro}`
-                      : `1px solid ${colors.verdeHover}`,
-                    "&:hover": {
-                      bgcolor: ativo ? colors.verdeMaisEscuro : colors.fundoVerdeSuave,
-                    },
-                  }}
-                />
-              );
-            })}
+            <AuditoriaFiltroStatusChips filtros={filtros} onChangeFiltros={onChangeFiltros} />
           </Stack>
 
           {filtrosAtivos && (

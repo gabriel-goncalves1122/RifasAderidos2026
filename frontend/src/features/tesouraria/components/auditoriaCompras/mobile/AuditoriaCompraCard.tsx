@@ -33,54 +33,33 @@ export function AuditoriaCompraCard({
     <Paper
       elevation={0}
       data-testid={`auditoria-compra-${compra.id}`}
-      sx={{
-        ...surfaces.paper,
-        p: 0,
-        boxShadow: "0 12px 28px rgba(2, 27, 22, 0.07)",
-        overflow: "hidden",
-      }}
+      sx={styles.cardContainer}
     >
       <Stack spacing={0}>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          spacing={1}
-          sx={{
-            p: 1.5,
-            borderLeft: `5px solid ${colors.verdeEscuro}`,
-            borderBottom: "1px solid rgba(2, 27, 22, 0.08)",
-          }}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography
-              sx={{
-                ...typography.titulo,
-                fontSize: "1rem",
-                lineHeight: 1.18,
-              }}
-            >
+        <Box onClick={() => onVerDetalhes(compra)} sx={{ cursor: "pointer" }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            spacing={1}
+            sx={styles.headerStack}
+          >
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={styles.nomeComprador}>
               {compra.compradorNome}
             </Typography>
-            <Typography sx={{ ...typography.bodyPequeno, mt: 0.35 }}>
-              {formatarDataAuditoria(compra.dataReserva)}
-            </Typography>
-          </Box>
-          <Box sx={{ textAlign: "right", flexShrink: 0 }}>
-            <Typography
-              sx={{
-                color: colors.verdeEscuro,
-                fontWeight: 950,
-                fontSize: "1.12rem",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {formatarMoedaAuditoria(compra.valorTotal)}
-            </Typography>
-            <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.74rem", mt: 0.25 }}>
-              {compra.bilhetes.length} rifa(s)
-            </Typography>
-          </Box>
-        </Stack>
+              <Typography sx={styles.dataReserva}>
+                {formatarDataAuditoria(compra.dataReserva)}
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: "right", flexShrink: 0 }}>
+              <Typography sx={styles.valorTotal}>
+                {formatarMoedaAuditoria(compra.valorTotal)}
+              </Typography>
+              <Typography sx={styles.rifasBadge}>
+                {compra.bilhetes.length} rifa(s)
+              </Typography>
+            </Box>
+          </Stack>
 
         <Stack spacing={1.25} sx={{ p: 1.5 }}>
           <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
@@ -89,60 +68,24 @@ export function AuditoriaCompraCard({
               <Chip
                 label="Com comprovante"
                 size="small"
-                sx={{
-                  ...components.chipBilhete,
-                  height: 28,
-                  borderRadius: 2,
-                }}
+                sx={styles.chipComprovante}
               />
             ) : null}
           </Stack>
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr",
-              gap: 1,
-            }}
-          >
-            <Box
-              sx={{
-                ...surfaces.cartaoInfo,
-                p: 1.15,
-                borderRadius: 2.25,
-              }}
-            >
-              <Typography
-                sx={typography.label}
-              >
-                Contato do comprador
-              </Typography>
-              <Typography
-                sx={{
-                  ...typography.bodyDestaque,
-                  mt: 0.25,
-                  overflowWrap: "anywhere",
-                }}
-              >
+          <Box sx={styles.infoGrid}>
+            <Box sx={styles.contatoBox}>
+              <Typography sx={typography.label}>Contato do comprador</Typography>
+              <Typography sx={styles.contatoEmail}>
                 {compra.compradorEmail || "Sem e-mail"}
               </Typography>
-              <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.8rem", mt: 0.2 }}>
+              <Typography sx={styles.contatoTelefone}>
                 {compra.compradorTelefone || "Sem telefone"}
               </Typography>
             </Box>
 
-            <Box
-              sx={{
-                ...surfaces.fundoVerdeClaro,
-                p: 1.15,
-                borderRadius: 2.25,
-              }}
-            >
-              <Typography
-                sx={typography.label}
-              >
-                Vendedor responsável
-              </Typography>
+            <Box sx={styles.vendedorBox}>
+              <Typography sx={typography.label}>Vendedor responsável</Typography>
               <Typography sx={{ ...typography.bodyDestaque, mt: 0.25 }}>
                 {compra.vendedorNome}
               </Typography>
@@ -150,32 +93,30 @@ export function AuditoriaCompraCard({
           </Box>
 
           <Stack direction="row" spacing={0.65} flexWrap="wrap" useFlexGap>
-            {compra.bilhetes.map((bilhete) => (
+            {compra.bilhetes.slice(0, 5).map((bilhete) => (
               <Chip
                 key={bilhete}
                 label={`Rifa ${bilhete}`}
                 size="small"
-                sx={{
-                  ...components.chipBilhete,
-                  height: 28,
-                  borderRadius: 2,
-                  border: "1px solid rgba(6, 61, 49, 0.14)",
-                }}
+                sx={styles.chipRifa}
               />
             ))}
+            {compra.bilhetes.length > 5 && (
+              <Chip
+                label={`+ ${compra.bilhetes.length - 5}`}
+                size="small"
+                sx={styles.chipRifaExtra}
+              />
+            )}
           </Stack>
         </Stack>
+      </Box>
 
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="flex-end"
-          sx={{
-            px: 1.25,
-            py: 0.75,
-            bgcolor: colors.fundoDialogActions,
-            borderTop: "1px solid rgba(2, 27, 22, 0.08)",
-          }}
+          sx={styles.actionsStack}
         >
           <AuditoriaCompraActions
             compra={compra}
@@ -190,3 +131,87 @@ export function AuditoriaCompraCard({
     </Paper>
   );
 }
+
+const styles = {
+  cardContainer: {
+    ...surfaces.paper,
+    p: 0,
+    boxShadow: "0 12px 28px rgba(2, 27, 22, 0.07)",
+    overflow: "hidden",
+  },
+  headerStack: {
+    p: 1.5,
+    borderLeft: `5px solid ${colors.verdeEscuro}`,
+    borderBottom: "1px solid rgba(2, 27, 22, 0.08)",
+  },
+  nomeComprador: {
+    ...typography.titulo,
+    fontSize: "1rem",
+    lineHeight: 1.18,
+  },
+  dataReserva: {
+    ...typography.bodyPequeno,
+    mt: 0.35,
+  },
+  valorTotal: {
+    color: colors.verdeEscuro,
+    fontWeight: 950,
+    fontSize: "1.12rem",
+    whiteSpace: "nowrap",
+  },
+  rifasBadge: {
+    color: colors.cinzaTexto,
+    fontSize: "0.74rem",
+    mt: 0.25,
+  },
+  chipComprovante: {
+    ...components.chipBilhete,
+    height: 28,
+    borderRadius: 2,
+  },
+  infoGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: 1,
+  },
+  contatoBox: {
+    ...surfaces.cartaoInfo,
+    p: 1.15,
+    borderRadius: 2.25,
+  },
+  contatoEmail: {
+    ...typography.bodyDestaque,
+    mt: 0.25,
+    overflowWrap: "anywhere",
+  },
+  contatoTelefone: {
+    color: colors.cinzaTexto,
+    fontSize: "0.8rem",
+    mt: 0.2,
+  },
+  vendedorBox: {
+    ...surfaces.fundoVerdeClaro,
+    p: 1.15,
+    borderRadius: 2.25,
+  },
+  chipRifa: {
+    ...components.chipBilhete,
+    height: 28,
+    borderRadius: 2,
+    border: "1px solid rgba(6, 61, 49, 0.14)",
+  },
+  chipRifaExtra: {
+    ...components.chipBilhete,
+    height: 28,
+    borderRadius: 2,
+    bgcolor: colors.fundoSuave,
+    color: colors.cinzaTexto,
+    border: "1px solid rgba(6, 61, 49, 0.08)",
+  },
+  actionsStack: {
+    px: 1.25,
+    py: 0.75,
+    bgcolor: colors.fundoDialogActions,
+    borderTop: "1px solid rgba(2, 27, 22, 0.08)",
+  },
+};

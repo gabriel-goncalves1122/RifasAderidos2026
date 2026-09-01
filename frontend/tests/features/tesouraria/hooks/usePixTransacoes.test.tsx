@@ -1,5 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 
 import { usePixTransacoes } from "@/features/tesouraria/hooks/usePixTransacoes";
 import { pixTransacoesService } from "@/features/tesouraria/services/pixTransacoesService";
@@ -55,6 +57,19 @@ const resumoApi: PixTransacoesResumo = {
 };
 
 describe("Hook: usePixTransacoes", () => {
+  const criarWrapper = () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
+    return ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -86,7 +101,9 @@ describe("Hook: usePixTransacoes", () => {
       resumoApi,
     );
 
-    const { result } = renderHook(() => usePixTransacoes());
+    const { result } = renderHook(() => usePixTransacoes(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.carregando).toBe(false);
@@ -114,7 +131,9 @@ describe("Hook: usePixTransacoes", () => {
       new Error("Resumo indisponível"),
     );
 
-    const { result } = renderHook(() => usePixTransacoes());
+    const { result } = renderHook(() => usePixTransacoes(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.carregando).toBe(false);
@@ -139,7 +158,9 @@ describe("Hook: usePixTransacoes", () => {
       RESUMO_PIX_TRANSACOES_VAZIO,
     );
 
-    const { result } = renderHook(() => usePixTransacoes());
+    const { result } = renderHook(() => usePixTransacoes(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.carregando).toBe(false);
@@ -158,7 +179,9 @@ describe("Hook: usePixTransacoes", () => {
       resumoApi,
     );
 
-    const { result } = renderHook(() => usePixTransacoes());
+    const { result } = renderHook(() => usePixTransacoes(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.carregando).toBe(false);
@@ -194,7 +217,9 @@ describe("Hook: usePixTransacoes", () => {
       resumoApi,
     );
 
-    const { result } = renderHook(() => usePixTransacoes());
+    const { result } = renderHook(() => usePixTransacoes(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.carregando).toBe(false);
@@ -225,7 +250,9 @@ describe("Hook: usePixTransacoes", () => {
       new Error("Erro de rede")
     );
 
-    const { result } = renderHook(() => usePixTransacoes());
+    const { result } = renderHook(() => usePixTransacoes(), {
+      wrapper: criarWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.carregando).toBe(false);

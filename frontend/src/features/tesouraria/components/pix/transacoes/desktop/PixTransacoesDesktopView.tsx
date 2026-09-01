@@ -12,12 +12,16 @@ interface PixTransacoesDesktopViewProps {
   filtros: PixTransacoesFiltrosState;
   transacoes: PixTransacao[];
   onChangeFiltros: (filtros: PixTransacoesFiltrosState) => void;
+  onAceitar: (id: string) => Promise<void>;
+  onNegar: (id: string, motivo: string) => Promise<void>;
 }
 
 export function PixTransacoesDesktopView({
   filtros,
   transacoes,
   onChangeFiltros,
+  onAceitar,
+  onNegar,
 }: PixTransacoesDesktopViewProps) {
   return (
     <Box>
@@ -28,6 +32,8 @@ export function PixTransacoesDesktopView({
       ) : (
         <PixTransacoesTable
           transacoes={transacoes}
+          onAceitar={onAceitar}
+          onNegar={onNegar}
         />
       )}
     </Box>

@@ -5,7 +5,7 @@ import { PixTransacoesFiltros } from "@/features/tesouraria/components/pix/trans
 import { PixTransacoesFiltros as PixTransacoesFiltrosState } from "@/features/tesouraria/types/pixTransacoes";
 
 const filtrosBase: PixTransacoesFiltrosState = {
-  status: "todas",
+  status: "novas",
   busca: "",
 };
 
@@ -44,9 +44,9 @@ describe("Componente: PixTransacoesFiltros", () => {
 
     expect(screen.getByPlaceholderText("Buscar Pix")).toBeInTheDocument();
 
-    expect(screen.getByText("Histórico / Todas")).toBeInTheDocument();
-    expect(screen.getByText("Com rifas")).toBeInTheDocument();
-    expect(screen.getByText("Pendentes do banco")).toBeInTheDocument();
+    expect(screen.getByText("Novas")).toBeInTheDocument();
+    expect(screen.getByText("Recusadas")).toBeInTheDocument();
+    expect(screen.getByText("Aguardando Pagamento")).toBeInTheDocument();
 
     expect(screen.queryByText("Para validar")).not.toBeInTheDocument();
     expect(screen.queryByText("Aceitas")).not.toBeInTheDocument();
@@ -71,18 +71,18 @@ describe("Componente: PixTransacoesFiltros", () => {
     });
   });
 
-  it("Deve alterar filtro rápido para Pendentes do banco", () => {
+  it("Deve alterar filtro rápido para Recusadas", () => {
     const onChangeFiltros = vi.fn();
 
     render(
       <PixTransacoesFiltros filtros={filtrosBase} onChangeFiltros={onChangeFiltros} />,
     );
 
-    fireEvent.click(screen.getByText("Pendentes do banco"));
+    fireEvent.click(screen.getByText("Recusadas"));
 
     expect(onChangeFiltros).toHaveBeenCalledWith({
       ...filtrosBase,
-      status: "pendentes_banco",
+      status: "recusadas",
     });
   });
 
@@ -112,7 +112,7 @@ describe("Componente: PixTransacoesFiltros", () => {
 
     render(
       <PixTransacoesFiltros
-        filtros={{ status: "pendentes_banco", busca: "Gabriel" }}
+        filtros={{ status: "recusadas", busca: "Gabriel" }}
         onChangeFiltros={onChangeFiltros}
       />,
     );
@@ -122,7 +122,7 @@ describe("Componente: PixTransacoesFiltros", () => {
     fireEvent.click(screen.getByRole("button", { name: /limpar filtros pix/i }));
 
     expect(onChangeFiltros).toHaveBeenCalledWith({
-      status: "todas",
+      status: "novas",
       busca: "",
     });
   });
