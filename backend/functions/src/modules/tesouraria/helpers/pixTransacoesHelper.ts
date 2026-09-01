@@ -6,6 +6,7 @@ import {
   PixTransacao,
   PixTransacoesResumo,
   StatusPagamentoPix,
+  StatusValidacaoPix,
 } from "../../tesouraria/types/tesourariaTypes";
 
 const VALOR_RIFA = 10;
@@ -127,6 +128,7 @@ export function montarPixTransacao(
     })),
     quantidadeRifas,
     compradorId: base.comprador_id || null,
+    statusValidacao: (base.status_validacao as StatusValidacaoPix) || undefined,
     observacao:
       pagamento === "DECLINED"
         ? base.motivo_recusa || "Comprovante recusado pela tesouraria."

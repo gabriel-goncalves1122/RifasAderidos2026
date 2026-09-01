@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 
 import { PagamentoPix } from "../../types/models";
 import {
@@ -53,8 +54,6 @@ export async function aprovarOuRejeitarPixNoFirestore(
       raw_mercadopago: payload,
     };
 
-    transaction.set(pagamentoRef, dadosPagamento, { merge: true });
-
     if (["approved", "authorized"].includes(statusBanco)) {
       pagamento.numeros_rifas.forEach((numero) => {
         transaction.set(
@@ -92,8 +91,8 @@ export async function aprovarOuRejeitarPixNoFirestore(
       await liberarBilhetesNaTransacao(
         transaction,
         db,
-        admin.firestore.FieldValue.delete(),
-        pagamento.numeros_rifas,
+        FieldValue.delete(),
+        pagamento.numeros_rifas || [],
         statusBanco,
         motivo
       );
@@ -112,6 +111,8 @@ export async function aprovarOuRejeitarPixNoFirestore(
         });
       }
     }
+
+    transaction.set(pagamentoRef, dadosPagamento, { merge: true });
 
     return {
       sucesso: true,

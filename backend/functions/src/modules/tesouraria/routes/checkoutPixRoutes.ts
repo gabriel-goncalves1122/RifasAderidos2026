@@ -6,7 +6,6 @@ import { Router } from "express";
 import { validateToken } from "../../../shared/middlewares/authMiddleware";
 import { validate } from "../../../shared/middlewares/validate";
 import { criarCheckoutPix } from "../controllers/criarCheckoutPixController";
-import { consultarCheckoutPix } from "../controllers/consultarCheckoutPixController";
 import { receberWebhookCheckoutPix } from "../controllers/receberWebhookCheckoutPixController";
 import { simularPagamentoPix } from "../controllers/simularPagamentoPixController";
 import { cancelarCheckoutPix } from "../controllers/cancelarCheckoutPixController";
@@ -19,12 +18,6 @@ checkoutPixRoutes.post(
   validateToken,
   validate(checkoutPixSchema),
   criarCheckoutPix,
-);
-
-checkoutPixRoutes.get(
-  "/checkout/pix/:id",
-  validateToken,
-  consultarCheckoutPix,
 );
 
 checkoutPixRoutes.post(

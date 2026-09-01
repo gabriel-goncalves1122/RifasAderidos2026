@@ -14,8 +14,14 @@ export async function receberWebhookCheckoutPix(
   res: Response,
 ) {
   try {
+    const mergedPayload = { ...req.query, ...req.body };
+    // Suporte para quando 'data.id' vem parseado como string literal no query params (Express)
+    if (req.query?.["data.id"]) {
+      mergedPayload.data = { ...(mergedPayload.data || {}), id: req.query["data.id"] };
+    }
+
     const resultado = await CheckoutPixWebhookService.processarWebhook({
-      payload: req.body,
+      payload: mergedPayload,
       rawBody: req.rawBody || JSON.stringify(req.body || {}),
       assinatura: String(req.headers?.["x-authenticity-token"] || ""),
     });

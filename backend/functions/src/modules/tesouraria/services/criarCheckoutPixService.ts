@@ -5,7 +5,6 @@ import {
   calcularValorPixCentavos,
   calcularValorPixReais,
   dataExpiracaoPix,
-  montarBilheteReservadoPix,
   montarCompradorPix,
   montarIdempotencyKeyPix,
   montarPagamentoPix,
@@ -13,6 +12,8 @@ import {
   montarRespostaCheckoutPix,
   normalizarDadosCheckoutPix,
   normalizarQrCodeMercadoPago,
+  isRifaDisponivelParaPix,
+  montarBilheteReservadoPix,
 } from "../helpers/checkoutPixHelper";
 import {
   compensarErroCriacaoPix,
@@ -21,8 +22,9 @@ import {
   STATUS_PAGAMENTO_PIX_ATIVO,
   verificarDisponibilidadeRifasPix,
   erroMensagem,
+  persistirPedidoMercadoPagoNoFirestore,
 } from "../helpers/checkoutPixFirestoreHelper";
-import { CheckoutPixResposta, CriarCheckoutPixPayload } from "../../rifas/types/rifasTypes";
+import { CheckoutPixResposta, CriarCheckoutPixPayload } from "../types/checkoutPixTypes";
 import { obterContextoAderidoPorEmail } from "../../rifas/helpers/usuarioRifasHelper";
 import { MercadoPagoPixClient } from "../../../shared/services/mercadoPagoPixClient";
 
@@ -51,7 +53,7 @@ export class CriarCheckoutPixService {
     if (pagamentoAtivo) return montarRespostaPagamentoPix(pagamentoAtivo);
 
     // Pre-check rápido fora da transação
-    await verificarDisponibilidadeRifasPix(db, dados.numerosRifas);
+    await verificarDisponibilidadeRifasPix(db, dados.numerosRifas, payload.sessaoCheckoutId);
 
     const agora = new Date().toISOString();
     const valorBruto = calcularValorPixReais(dados.numerosRifas);
@@ -93,7 +95,10 @@ export class CriarCheckoutPixService {
       for (const { ref } of rifasRefs) {
         const snap = await transaction.get(ref);
         if (!snap.exists) throw new Error("RIFA_NOT_FOUND");
-        if ((snap.data() as Bilhete).status !== "disponivel") throw new Error("RIFA_INDISPONIVEL");
+        const data = snap.data() as Bilhete;
+        const disponivel = isRifaDisponivelParaPix(data, payload.sessaoCheckoutId);
+
+        if (!disponivel) throw new Error("RIFA_INDISPONIVEL");
       }
 
       transaction.set(compradorRef, comprador);
@@ -144,43 +149,21 @@ export class CriarCheckoutPixService {
 
       if (!orderId) throw new Error("MERCADOPAGO_ORDER_INVALIDO");
 
-      await db.runTransaction(async (transaction) => {
-        const pagamentoSnap = await transaction.get(pagamentoRef);
-        if (!pagamentoSnap.exists) throw new Error("PAGAMENTO_NOT_FOUND");
-
-        transaction.set(
-          pagamentoRef,
-          {
-            pix_order_id: orderId,
-            pix_qr_code_id: qrCode.id,
-            copia_e_cola: qrCode.copiaECola,
-            qr_code_imagem_url: qrCode.qrCodeImagemUrl || null,
-            qr_code_base64: qrCode.qrCodeBase64 || null,
-            data_expiracao: qrCode.expiraEm || expiraEm,
-            status_pagamento_banco: "WAITING",
-            raw_mercadopago: respostaMercadoPago,
-          },
-          { merge: true },
-        );
-
-        dados.numerosRifas.forEach((numero) => {
-          transaction.set(
-            db.collection("bilhetes").doc(numero),
-            {
-              pix_order_id: orderId,
-              pix_qr_code_id: qrCode.id,
-              data_expiracao: qrCode.expiraEm || expiraEm,
-              status_pagamento_banco: "WAITING",
-            },
-            { merge: true },
-          );
-        });
+      await persistirPedidoMercadoPagoNoFirestore({
+        db,
+        pagamentoRef,
+        orderId,
+        qrCode,
+        expiraEmFallback: expiraEm,
+        numerosRifas: dados.numerosRifas,
+        respostaMercadoPago,
       });
 
       return montarRespostaCheckoutPix({
         id: pagamentoRef.id,
         status: "WAITING",
         qrCode,
+        numerosRifas: dados.numerosRifas,
       });
     } catch (error) {
       if (!orderId) {

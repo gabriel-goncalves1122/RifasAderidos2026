@@ -7,17 +7,19 @@ import {
   CheckoutPixResposta,
   CheckoutPixStatus,
   CriarCheckoutPixPayload,
-} from "../../rifas/types/rifasTypes";
+} from "../types/checkoutPixTypes";
 import { Bilhete, Comprador, PagamentoPix } from "../../types/models";
+import { somenteNumeros } from "../../../shared/utils/formatadores";
 
 export const VALOR_RIFA_REAIS = 10;
 
 export interface CheckoutPixDadosNormalizados {
   nome: string;
   telefone: string;
-  email?: string;
-  documento?: string;
+  email: string;
+  documento: string;
   numerosRifas: string[];
+  sessaoCheckoutId?: string;
 }
 
 export interface MercadoPagoQrCodeNormalizado {
@@ -30,8 +32,27 @@ export interface MercadoPagoQrCodeNormalizado {
 
 export const CHECKOUT_PIX_IDEMPOTENCIA_JANELA_MS = 5 * 60 * 1000;
 
-export function somenteNumeros(valor?: string | null) {
-  return String(valor || "").replace(/\D/g, "");
+export function isRifaDisponivelParaPix(
+  dados: Partial<Bilhete>,
+  sessaoCheckoutId?: string,
+): boolean {
+  let disponivel = dados.status === "disponivel";
+
+  if (!disponivel && dados.data_expiracao) {
+    if (new Date() > new Date(dados.data_expiracao)) {
+      disponivel = true;
+    }
+  }
+
+  if (
+    !disponivel &&
+    sessaoCheckoutId &&
+    dados.sessao_checkout_id === sessaoCheckoutId
+  ) {
+    disponivel = true;
+  }
+
+  return disponivel;
 }
 
 export function normalizarNumerosRifas(valor: unknown) {
@@ -55,16 +76,17 @@ export function normalizarDadosCheckoutPix(
   const documento = somenteNumeros(payload?.documento);
   const numerosRifas = normalizarNumerosRifas(payload?.numerosRifas);
 
-  if (!nome || !telefone || numerosRifas.length === 0) {
+  if (!nome || !telefone || !email || !documento || numerosRifas.length === 0) {
     throw new Error("INVALID_DATA");
   }
 
   return {
     nome,
     telefone,
-    email: email || undefined,
-    documento: documento || undefined,
+    email,
+    documento,
     numerosRifas,
+    sessaoCheckoutId: payload?.sessaoCheckoutId || undefined,
   };
 }
 
@@ -78,22 +100,10 @@ export function calcularValorPixCentavos(numerosRifas: string[]) {
 
 export function dataExpiracaoPix(dataBase = new Date()) {
   const expiraEm = new Date(dataBase);
-  expiraEm.setMinutes(expiraEm.getMinutes() + 5);
+  expiraEm.setMinutes(expiraEm.getMinutes() + 30);
   
-  // Format to YYYY-MM-DDTHH:mm:ss.000-03:00 to avoid any timezone parsing bugs in Mercado Pago
-  const ano = expiraEm.getFullYear();
-  const mes = String(expiraEm.getMonth() + 1).padStart(2, "0");
-  const dia = String(expiraEm.getDate()).padStart(2, "0");
-  const hora = String(expiraEm.getHours()).padStart(2, "0");
-  const min = String(expiraEm.getMinutes()).padStart(2, "0");
-  const seg = String(expiraEm.getSeconds()).padStart(2, "0");
-  
-  const timezoneOffset = expiraEm.getTimezoneOffset();
-  const offsetHours = String(Math.abs(Math.floor(timezoneOffset / 60))).padStart(2, "0");
-  const offsetMinutes = String(Math.abs(timezoneOffset % 60)).padStart(2, "0");
-  const sign = timezoneOffset > 0 ? "-" : "+";
-  
-  return `${ano}-${mes}-${dia}T${hora}:${min}:${seg}.000${sign}${offsetHours}:${offsetMinutes}`;
+  // Format to UTC with 'Z' as recommended by Mercado Pago to avoid offset parsing bugs
+  return expiraEm.toISOString();
 }
 
 export function montarReferenceIdPix(compradorId: string) {
@@ -147,6 +157,7 @@ export function montarRespostaCheckoutPix(params: {
   id: string;
   status: string;
   qrCode: MercadoPagoQrCodeNormalizado;
+  numerosRifas: string[];
 }): CheckoutPixResposta {
   return {
     id: params.id,
@@ -155,6 +166,7 @@ export function montarRespostaCheckoutPix(params: {
     qrCodeBase64: params.qrCode.qrCodeBase64,
     copiaECola: params.qrCode.copiaECola,
     expiraEm: params.qrCode.expiraEm,
+    numerosRifas: params.numerosRifas,
   };
 }
 
@@ -178,7 +190,9 @@ export async function liberarBilhetesNaTransacao(
   FieldValueDelete: any, // admin.firestore.FieldValue.delete()
   numerosRifas: string[],
   statusBanco: string,
-  motivo: string | null
+  motivo: string | null,
+  reterReserva = false,
+  sessaoCheckoutId?: string
 ) {
   if (!numerosRifas || numerosRifas.length === 0) return;
 
@@ -186,30 +200,34 @@ export async function liberarBilhetesNaTransacao(
   await transaction.getAll(...refs);
 
   refs.forEach((ref) => {
-    transaction.set(
-      ref,
-      {
-        status: "disponivel",
-        comprador_id: FieldValueDelete,
-        comprador_nome: FieldValueDelete,
-        comprador_email: FieldValueDelete,
-        comprador_telefone: FieldValueDelete,
-        vendedor_nome: FieldValueDelete,
-        vendedor_cpf: FieldValueDelete,
-        vendedor_id: FieldValueDelete,
-        data_reserva: FieldValueDelete,
-        data_expiracao: FieldValueDelete,
-        pix_order_id: FieldValueDelete,
-        pix_qr_code_id: FieldValueDelete,
-        pix_reference_id: FieldValueDelete,
-        status_pagamento_banco: statusBanco,
-        status_validacao: FieldValueDelete,
-        valor_bruto: FieldValueDelete,
-        valor_pago: 0,
-        motivo_recusa: motivo || FieldValueDelete,
-      },
-      { merge: true }
-    );
+    const atualizacao: any = {
+      pix_order_id: FieldValueDelete,
+      pix_qr_code_id: FieldValueDelete,
+      pix_reference_id: FieldValueDelete,
+      status_pagamento_banco: statusBanco,
+      valor_pago: 0,
+    };
+
+    if (!reterReserva) {
+      atualizacao.status = "disponivel";
+      atualizacao.comprador_id = FieldValueDelete;
+      atualizacao.comprador_nome = FieldValueDelete;
+      atualizacao.comprador_email = FieldValueDelete;
+      atualizacao.comprador_telefone = FieldValueDelete;
+      atualizacao.data_reserva = FieldValueDelete;
+      atualizacao.data_expiracao = FieldValueDelete;
+      atualizacao.status_validacao = FieldValueDelete;
+      atualizacao.valor_bruto = FieldValueDelete;
+      atualizacao.motivo_recusa = motivo || FieldValueDelete;
+      atualizacao.sessao_checkout_id = FieldValueDelete;
+    } else {
+      if (sessaoCheckoutId) {
+        atualizacao.sessao_checkout_id = sessaoCheckoutId;
+      }
+      atualizacao.motivo_recusa = motivo || FieldValueDelete;
+    }
+
+    transaction.set(ref, atualizacao, { merge: true });
   });
 }
 
@@ -294,5 +312,6 @@ export function montarBilheteReservadoPix(params: {
     status_validacao: null,
     valor_bruto: params.valorRifa,
     valor_pago: 0,
+    sessao_checkout_id: params.dados.sessaoCheckoutId || null,
   };
 }

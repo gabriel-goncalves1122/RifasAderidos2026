@@ -82,6 +82,14 @@ jest.mock("firebase-admin", () => {
   return { firestore: firestoreMock };
 });
 
+jest.mock("firebase-admin/firestore", () => {
+  return {
+    FieldValue: {
+      delete: jest.fn().mockReturnValue("__DELETE__"),
+    }
+  };
+});
+
 jest.mock("../../../src/shared/services/mercadoPagoPixClient", () => ({
   MercadoPagoPixClient: {
     consultarPedido: mockConsultarPedido,

@@ -27,8 +27,12 @@ export class PixTransacoesService {
     const grupos = new Map<string, BilheteComNumero[]>();
 
     bilhetesSnap.docs.forEach((doc) => {
+      const data = doc.data() as Bilhete;
+
+      if (!data.pix_order_id) return;
+
       const bilhete = {
-        ...(doc.data() as Bilhete),
+        ...data,
         numero: doc.id,
       };
       const chave = chaveCompra(bilhete);

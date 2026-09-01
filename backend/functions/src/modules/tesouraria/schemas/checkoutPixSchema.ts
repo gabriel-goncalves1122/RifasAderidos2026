@@ -19,5 +19,6 @@ export const checkoutPixSchema = yup
       .of(yup.string().trim().required())
       .min(1, "Selecione ao menos uma rifa.")
       .required("Selecione ao menos uma rifa."),
+    sessaoCheckoutId: yup.string().optional(),
   })
   .required();

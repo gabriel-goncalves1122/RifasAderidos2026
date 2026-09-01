@@ -135,4 +135,132 @@ describe("Controllers Tesouraria: Pix transações", () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(resultado);
   });
+  it("Deve retornar 500 ao falhar ao listar transações Pix", async () => {
+    mocks.buscarPixTransacoes.mockRejectedValueOnce(new Error("Database error"));
+
+    await listarPixTransacoes(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Erro ao buscar transações Pix." });
+  });
+
+  it("Deve retornar 500 ao falhar ao obter resumo", async () => {
+    mocks.obterPixTransacoesResumo.mockRejectedValueOnce(new Error("Database error"));
+
+    await obterPixTransacoesResumo(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Erro ao gerar resumo Pix." });
+  });
+
+  it("Deve retornar 500 ao falhar na sincronização", async () => {
+    mocks.sincronizarPixTransacoes.mockRejectedValueOnce(new Error("Network error"));
+
+    await sincronizarPixTransacoes(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Erro ao sincronizar transações Pix." });
+  });
+
+  it("Deve retornar 400 se transacaoId estiver ausente ao aceitar", async () => {
+    req.params = {} as any;
+
+    await aceitarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: "ID da transação inválido." });
+  });
+
+  it("Deve retornar 404 se transação não encontrada ao aceitar", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    mocks.aceitarPixTransacao.mockRejectedValueOnce(new Error("TRANSACAO_NOT_FOUND"));
+
+    await aceitarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: "Transação Pix não encontrada." });
+  });
+
+  it("Deve retornar 409 se Pix não confirmado ao aceitar", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    mocks.aceitarPixTransacao.mockRejectedValueOnce(new Error("PIX_NOT_CONFIRMED"));
+
+    await aceitarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.json).toHaveBeenCalledWith({ error: "A transação ainda não foi confirmada pelo banco." });
+  });
+
+  it("Deve retornar 409 se Pix já validado ao aceitar", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    mocks.aceitarPixTransacao.mockRejectedValueOnce(new Error("PIX_ALREADY_VALIDATED"));
+
+    await aceitarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.json).toHaveBeenCalledWith({ error: "Transação Pix já validada." });
+  });
+
+  it("Deve retornar 422 se transação sem rifas ao aceitar", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    mocks.aceitarPixTransacao.mockRejectedValueOnce(new Error("TRANSACAO_SEM_RIFAS"));
+
+    await aceitarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(422);
+    expect(res.json).toHaveBeenCalledWith({ error: "Transação sem rifas vinculadas." });
+  });
+
+  it("Deve retornar 500 genérico ao falhar ao aceitar transação", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    mocks.aceitarPixTransacao.mockRejectedValueOnce(new Error("Database error"));
+
+    await aceitarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Erro ao aceitar transação Pix." });
+  });
+
+  it("Deve retornar 400 se motivo for exigido pela regra de negócios (MOTIVO_REQUIRED)", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    req.body = { motivo: "" };
+    mocks.negarPixTransacao.mockRejectedValueOnce(new Error("MOTIVO_REQUIRED"));
+
+    await negarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: "Motivo da negativa é obrigatório." });
+  });
+
+  it("Deve retornar 400 se transacaoId estiver ausente ao negar", async () => {
+    req.params = {} as any;
+    req.body = { motivo: "Não reconhecido" };
+
+    await negarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: "ID da transação inválido." });
+  });
+
+  it("Deve retornar 404 se transação não encontrada ao negar", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    req.body = { motivo: "Não reconhecido" };
+    mocks.negarPixTransacao.mockRejectedValueOnce(new Error("TRANSACAO_NOT_FOUND"));
+
+    await negarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: "Transação Pix não encontrada." });
+  });
+
+  it("Deve retornar 500 genérico ao falhar ao negar transação", async () => {
+    req.params = { transacaoId: "tx_001" } as any;
+    req.body = { motivo: "Não reconhecido" };
+    mocks.negarPixTransacao.mockRejectedValueOnce(new Error("Database error"));
+
+    await negarPixTransacao(req as AuthRequest, res as Response);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Erro ao negar transação Pix." });
+  });
 });

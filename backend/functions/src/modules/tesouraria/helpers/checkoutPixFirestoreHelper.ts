@@ -1,8 +1,8 @@
 import * as admin from "firebase-admin";
 
 import { Bilhete, PagamentoPix } from "../../types/models";
-import { CheckoutPixResposta } from "../../rifas/types/rifasTypes";
-import { mapearStatusCheckoutPix } from "./checkoutPixHelper";
+import { CheckoutPixResposta } from "../types/checkoutPixTypes";
+import { mapearStatusCheckoutPix, isRifaDisponivelParaPix } from "./checkoutPixHelper";
 
 export const STATUS_PAGAMENTO_PIX_ATIVO = ["CRIANDO", "WAITING", "IN_ANALYSIS"];
 
@@ -13,6 +13,7 @@ export function erroMensagem(error: unknown) {
 export async function verificarDisponibilidadeRifasPix(
   db: admin.firestore.Firestore,
   numeros: string[],
+  sessaoCheckoutId?: string
 ): Promise<void> {
   for (const numero of numeros) {
     const ref = db.collection("bilhetes").doc(numero);
@@ -23,8 +24,9 @@ export async function verificarDisponibilidadeRifasPix(
     }
 
     const dados = snap.data() as Bilhete;
+    const disponivel = isRifaDisponivelParaPix(dados, sessaoCheckoutId);
 
-    if (dados.status !== "disponivel") {
+    if (!disponivel) {
       throw new Error("RIFA_INDISPONIVEL");
     }
   }
@@ -44,6 +46,7 @@ export function montarRespostaPagamentoPix(
     qrCodeBase64: pagamento.qr_code_base64 || null,
     copiaECola: pagamento.copia_e_cola,
     expiraEm: pagamento.data_expiracao || null,
+    numerosRifas: pagamento.numeros_rifas || [],
   };
 }
 
@@ -126,9 +129,6 @@ export async function compensarErroCriacaoPix(params: {
           status: "disponivel",
           comprador_id: null,
           comprador_nome: null,
-          vendedor_id: null,
-          vendedor_nome: null,
-          vendedor_cpf: null,
           data_reserva: null,
           data_expiracao: null,
           pix_order_id: null,
@@ -138,9 +138,61 @@ export async function compensarErroCriacaoPix(params: {
           status_validacao: null,
           valor_bruto: null,
           valor_pago: 0,
+          sessao_checkout_id: null,
         },
         { merge: true },
       );
     }
+  });
+}
+
+export async function persistirPedidoMercadoPagoNoFirestore(params: {
+  db: admin.firestore.Firestore;
+  pagamentoRef: admin.firestore.DocumentReference;
+  orderId: string;
+  qrCode: {
+    id: string;
+    copiaECola: string;
+    qrCodeImagemUrl?: string | null;
+    qrCodeBase64?: string | null;
+    expiraEm?: string | null;
+  };
+  expiraEmFallback: string;
+  numerosRifas: string[];
+  respostaMercadoPago: any;
+}) {
+  await params.db.runTransaction(async (transaction) => {
+    const pagamentoSnap = await transaction.get(params.pagamentoRef);
+    if (!pagamentoSnap.exists) throw new Error("PAGAMENTO_NOT_FOUND");
+
+    const expiraEm = params.qrCode.expiraEm || params.expiraEmFallback;
+
+    transaction.set(
+      params.pagamentoRef,
+      {
+        pix_order_id: params.orderId,
+        pix_qr_code_id: params.qrCode.id,
+        copia_e_cola: params.qrCode.copiaECola,
+        qr_code_imagem_url: params.qrCode.qrCodeImagemUrl || null,
+        qr_code_base64: params.qrCode.qrCodeBase64 || null,
+        data_expiracao: expiraEm,
+        status_pagamento_banco: "WAITING",
+        raw_mercadopago: params.respostaMercadoPago,
+      },
+      { merge: true },
+    );
+
+    params.numerosRifas.forEach((numero) => {
+      transaction.set(
+        params.db.collection("bilhetes").doc(numero),
+        {
+          pix_order_id: params.orderId,
+          pix_qr_code_id: params.qrCode.id,
+          data_expiracao: expiraEm,
+          status_pagamento_banco: "WAITING",
+        },
+        { merge: true },
+      );
+    });
   });
 }

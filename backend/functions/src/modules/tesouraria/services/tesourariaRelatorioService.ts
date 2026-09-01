@@ -80,7 +80,7 @@ export class TesourariaRelatorioService {
 
     const bilhetesSnap = await db
       .collection("bilhetes")
-      .where("status", "in", ["pago", "pendente"])
+      .where("status", "in", ["pago", "pendente", "reservado"])
       .get();
 
     // Map para agrupar as compras por comprador

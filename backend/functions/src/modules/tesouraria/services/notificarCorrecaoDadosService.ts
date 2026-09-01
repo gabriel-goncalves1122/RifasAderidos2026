@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 
-import { Bilhete, Notificacao } from "../../types/models";
-
+import { Bilhete } from "../../types/models";
+import { NotificacoesService } from "../../notificacoes/notificacoesService";
 export class NotificarCorrecaoDadosService {
   static async notificar(compradorId: string, mensagem: string): Promise<void> {
     const db = admin.firestore();
@@ -47,21 +47,12 @@ export class NotificarCorrecaoDadosService {
       });
 
       // 2. Criar a notificação
-      const novaNotificacao: Omit<Notificacao, "id"> = {
-        vendedor_id: vendedorId,
-        titulo: "Correção de Dados Solicitada",
+      NotificacoesService.criarNotificacaoCorrecaoDados(
+        transaction,
+        vendedorId,
         mensagem,
         rifas,
-        tipo: "correcao_dados",
-        lida: false,
-        data_criacao: new Date().toISOString(),
-      };
-
-      const notifRef = db.collection("notificacoes").doc();
-      transaction.set(notifRef, {
-        ...novaNotificacao,
-        id: notifRef.id,
-      });
+      );
     });
   }
 }

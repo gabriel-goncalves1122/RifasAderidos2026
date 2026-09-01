@@ -44,7 +44,13 @@ describe("cancelarCheckoutPixController", () => {
 
     await cancelarCheckoutPix(req, res);
 
-    expect(CancelarCheckoutPixService.executar).toHaveBeenCalledWith("tesouraria_123", "pag_123");
+    expect(CancelarCheckoutPixService.executar).toHaveBeenCalledWith({
+      uid: "tesouraria_123",
+      email: "tesouraria@teste.com",
+      role: "tesouraria",
+      pagamentoId: "pag_123",
+      reterReserva: false,
+    });
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ message: "Pagamento cancelado com sucesso." });
   });
@@ -77,5 +83,15 @@ describe("cancelarCheckoutPixController", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: "Erro ao cancelar o pagamento." });
+  });
+
+  it("deve retornar 401 se não tiver permissão para cancelar (UNAUTHORIZED lançado pelo service)", async () => {
+    req.params = { id: "pag_123" };
+    (CancelarCheckoutPixService.executar as jest.Mock).mockRejectedValueOnce(new Error("UNAUTHORIZED"));
+
+    await cancelarCheckoutPix(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ error: "Você não tem permissão para cancelar este pagamento." });
   });
 });

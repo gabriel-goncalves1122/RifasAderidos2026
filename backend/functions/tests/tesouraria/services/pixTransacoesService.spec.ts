@@ -19,6 +19,17 @@ jest.mock("firebase-admin", () => {
   };
 });
 
+jest.mock("../../../src/shared/services/mercadoPagoPixClient", () => ({
+  MercadoPagoPixClient: { consultarPedido: jest.fn() },
+}));
+
+jest.mock("../../../src/modules/tesouraria/services/checkoutPixWebhookService", () => ({
+  CheckoutPixWebhookService: { processarPayloadConfiavel: jest.fn() },
+}));
+
+import { MercadoPagoPixClient } from "../../../src/shared/services/mercadoPagoPixClient";
+import { CheckoutPixWebhookService } from "../../../src/modules/tesouraria/services/checkoutPixWebhookService";
+
 import { PixTransacoesService } from "../../../src/modules/tesouraria/services/pixTransacoesService";
 
 describe("Service: PixTransacoesService", () => {
@@ -33,6 +44,7 @@ describe("Service: PixTransacoesService", () => {
           id: "002",
           data: () => ({
             status: "pago",
+            pix_order_id: "mock_order_123",
             comprador_id: "COMPRA_001",
             comprador_nome: "Ana",
             comprador_email: "ana@teste.com",
@@ -49,6 +61,7 @@ describe("Service: PixTransacoesService", () => {
           id: "001",
           data: () => ({
             status: "pago",
+            pix_order_id: "mock_order_123",
             comprador_id: "COMPRA_001",
             comprador_nome: "Ana",
             vendedor_id: "ADERIDO_001",
@@ -63,6 +76,7 @@ describe("Service: PixTransacoesService", () => {
           id: "003",
           data: () => ({
             status: "pendente",
+            pix_order_id: "mock_order_456",
             comprador_id: "COMPRA_002",
             comprador_nome: "Bruno",
             data_reserva: "2026-01-03T10:00:00.000Z",
@@ -73,7 +87,7 @@ describe("Service: PixTransacoesService", () => {
 
     const resultado = await PixTransacoesService.buscarTransacoes();
     const transacaoPaga = resultado.find(
-      (transacao: any) => transacao.id === "comprovante-https-storage-mock-comprovante-1-png",
+      (transacao: any) => transacao.id === "pix-mock_order_123",
     );
 
     expect(mockWhere).toHaveBeenCalledWith("status", "in", [
@@ -120,6 +134,7 @@ describe("Service: PixTransacoesService", () => {
           id: "001",
           data: () => ({
             status: "pago",
+            pix_order_id: "mock_order_789",
             comprador_id: "COMPRA_001",
             comprador_nome: "Ana",
             data_reserva: "2026-01-01T10:00:00.000Z",
@@ -135,5 +150,39 @@ describe("Service: PixTransacoesService", () => {
         totalRecebido: 10,
       })
     );
+  });
+
+  it("Deve sincronizar cobranças abertas chamando a API do Mercado Pago e o webhook interno", async () => {
+    mockGet.mockResolvedValueOnce({
+      empty: false,
+      docs: [
+        { id: "PAG_001", data: () => ({ pix_order_id: "ORDER_111" }) },
+        { id: "PAG_002", data: () => ({ pix_order_id: "ORDER_222" }) },
+        { id: "PAG_003", data: () => ({ id: "ORDER_333" }) },
+      ],
+    });
+
+    (MercadoPagoPixClient.consultarPedido as jest.Mock)
+      .mockResolvedValueOnce({ id: "ORDER_111", status: "approved" })
+      .mockResolvedValueOnce({ id: "ORDER_222", status: "rejected" })
+      .mockResolvedValueOnce({ id: "ORDER_333", status: "pending" });
+
+    (CheckoutPixWebhookService.processarPayloadConfiavel as jest.Mock).mockResolvedValue(undefined);
+
+    const resultado = await PixTransacoesService.sincronizar();
+
+    expect(resultado).toEqual({
+      sucesso: true,
+      sincronizado: true,
+      atualizados: 3,
+      mensagem: "Sincronização Pix concluída.",
+    });
+
+    expect(MercadoPagoPixClient.consultarPedido).toHaveBeenCalledTimes(3);
+    expect(MercadoPagoPixClient.consultarPedido).toHaveBeenCalledWith("ORDER_111");
+    expect(MercadoPagoPixClient.consultarPedido).toHaveBeenCalledWith("ORDER_222");
+    expect(MercadoPagoPixClient.consultarPedido).toHaveBeenCalledWith("ORDER_333");
+
+    expect(CheckoutPixWebhookService.processarPayloadConfiavel).toHaveBeenCalledTimes(3);
   });
 });

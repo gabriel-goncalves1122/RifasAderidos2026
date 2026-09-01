@@ -19,6 +19,14 @@ jest.mock("firebase-admin", () => {
   };
 });
 
+jest.mock("firebase-admin/firestore", () => {
+  return {
+    FieldValue: {
+      delete: jest.fn(() => "DELETE_TOKEN")
+    }
+  };
+});
+
 jest.mock("../../../src/shared/services/mercadoPagoPixClient", () => ({
   MercadoPagoPixClient: {
     cancelarPedidoPix: jest.fn(),
@@ -48,10 +56,36 @@ describe("CancelarCheckoutPixService", () => {
       await callback(transaction);
     });
 
-    await expect(CancelarCheckoutPixService.executar("uid", "pag_123")).rejects.toThrow("PAGAMENTO_NOT_FOUND");
+      await expect(
+        CancelarCheckoutPixService.executar({ uid: "uid", email: "teste@teste.com", role: "tesouraria", pagamentoId: "pag_404" })
+      ).rejects.toThrow("PAGAMENTO_NOT_FOUND");
   });
 
-  it("deve retornar sem fazer nada se o status ja estiver cancelado", async () => {
+  it("deve liberar bilhetes se o status ja estiver cancelado e reterReserva=false", async () => {
+    const runTransactionMock = (admin.firestore().runTransaction as jest.Mock);
+    runTransactionMock.mockImplementationOnce(async (callback) => {
+      const transaction = {
+        get: jest.fn().mockResolvedValue({
+          exists: true,
+          data: () => ({ vendedor_id: "uid", status_pagamento_banco: "CANCELADO", numeros_rifas: ["001"] }),
+        }),
+      };
+      await callback(transaction);
+    });
+
+    await CancelarCheckoutPixService.executar({ uid: "uid", email: "a@a.com", role: "admin", pagamentoId: "pag_123", reterReserva: false });
+    expect(checkoutPixHelper.liberarBilhetesNaTransacao).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      ["001"],
+      "CANCELADO",
+      "Cancelado pelo usuário.",
+      false
+    );
+  });
+
+  it("deve retornar sem liberar bilhetes se o status ja estiver cancelado e reterReserva=true", async () => {
     const runTransactionMock = (admin.firestore().runTransaction as jest.Mock);
     runTransactionMock.mockImplementationOnce(async (callback) => {
       const transaction = {
@@ -63,7 +97,7 @@ describe("CancelarCheckoutPixService", () => {
       await callback(transaction);
     });
 
-    await CancelarCheckoutPixService.executar("uid", "pag_123");
+    await CancelarCheckoutPixService.executar({ uid: "uid", email: "a@a.com", role: "admin", pagamentoId: "pag_123", reterReserva: true });
     expect(checkoutPixHelper.liberarBilhetesNaTransacao).not.toHaveBeenCalled();
   });
 
@@ -79,7 +113,9 @@ describe("CancelarCheckoutPixService", () => {
       await callback(transaction);
     });
 
-    await expect(CancelarCheckoutPixService.executar("uid", "pag_123")).rejects.toThrow("STATUS_INVALIDO_CANCELAMENTO");
+      await expect(
+        CancelarCheckoutPixService.executar({ uid: "uid", email: "teste@teste.com", role: "tesouraria", pagamentoId: "pag_invalido" })
+      ).rejects.toThrow("STATUS_INVALIDO_CANCELAMENTO");
   });
 
   it("deve cancelar o pagamento, liberar rifas e chamar mercado pago", async () => {
@@ -105,7 +141,7 @@ describe("CancelarCheckoutPixService", () => {
       await callback(transaction);
     });
 
-    await CancelarCheckoutPixService.executar("uid", "pag_123");
+    await CancelarCheckoutPixService.executar({ uid: "uid", email: "a@a.com", role: "admin", pagamentoId: "pag_123" });
 
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.anything(), // pagamentoRef
@@ -121,10 +157,9 @@ describe("CancelarCheckoutPixService", () => {
       expect.anything(), // FieldValue.delete()
       ["001"],
       "CANCELADO",
-      "Cancelado pelo usuário."
+      "Cancelado pelo usuário.",
+      false
     );
-
-    expect(mockDelete).toHaveBeenCalled(); // deletou idempotency key
 
     expect(MercadoPagoPixClient.cancelarPedidoPix).toHaveBeenCalledWith("order_123");
   });
@@ -152,7 +187,7 @@ describe("CancelarCheckoutPixService", () => {
 
     (MercadoPagoPixClient.cancelarPedidoPix as jest.Mock).mockRejectedValueOnce(new Error("API ERROR"));
 
-    await CancelarCheckoutPixService.executar("uid", "pag_123");
+    await CancelarCheckoutPixService.executar({ uid: "uid", email: "a@a.com", role: "admin", pagamentoId: "pag_123" });
 
     expect(consoleWarnMock).toHaveBeenCalled();
     

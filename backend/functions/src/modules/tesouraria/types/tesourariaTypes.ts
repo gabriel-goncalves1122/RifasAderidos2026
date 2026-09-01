@@ -63,6 +63,7 @@ export interface PixTransacao {
   qrCodeTexto?: string;
   qrCodeImagemUrl?: string;
 
+  statusValidacao?: StatusValidacaoPix;
   observacao?: string;
 }
 
