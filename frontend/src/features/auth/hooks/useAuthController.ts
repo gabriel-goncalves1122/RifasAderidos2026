@@ -49,11 +49,47 @@ function normalizarCargoUsuario(dadosUsuario: any): CargoComissao {
 }
 
 export function useAuthController() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    // Procura no localStorage por uma sessão cacheada válida
+    if (typeof window !== "undefined") {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith("auth_cache_")) {
+          // Se encontrou cache, inicia sem loading
+          return false;
+        }
+      }
+    }
+    return true;
+  });
+
+  const [usuarioAtual, setUsuarioAtual] = useState<UsuarioFormatura | null>(() => {
+    if (typeof window !== "undefined") {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith("auth_cache_")) {
+          const uid = key.replace("auth_cache_", "");
+          try {
+            const cacheLocal = localStorage.getItem(key);
+            if (cacheLocal) {
+              const dadosCacheados = JSON.parse(cacheLocal);
+              return {
+                uid,
+                email: dadosCacheados.email || "",
+                cargo: normalizarCargoUsuario(dadosCacheados),
+                nome: normalizarNomeUsuario(dadosCacheados),
+              } as UsuarioFormatura;
+            }
+          } catch {
+            // Ignora erro e aguarda o firebase autenticar normalmente
+          }
+        }
+      }
+    }
+    return null;
+  });
+
   const [error, setError] = useState<string | null>(null);
-  const [usuarioAtual, setUsuarioAtual] = useState<UsuarioFormatura | null>(
-    null,
-  );
 
   useEffect(() => {
     let unsubscribeUsuario: (() => void) | undefined;
@@ -70,6 +106,22 @@ export function useAuthController() {
       setLoading(true);
 
       const emailNormalizado = user.email.toLowerCase().trim();
+      const cacheKey = `auth_cache_${user.uid}`;
+      const cacheLocal = localStorage.getItem(cacheKey);
+      
+      if (cacheLocal) {
+        try {
+          const dadosCacheados = JSON.parse(cacheLocal);
+          setUsuarioAtual({
+            ...user,
+            cargo: normalizarCargoUsuario(dadosCacheados),
+            nome: normalizarNomeUsuario(dadosCacheados),
+          } as UsuarioFormatura);
+          setLoading(false); // Renderiza a tela instantaneamente
+        } catch {
+          // Fallback se o cache estiver corrompido
+        }
+      }
 
       const consultaUsuario = query(
         collection(db, "usuarios"),
@@ -86,11 +138,17 @@ export function useAuthController() {
           const cargo = normalizarCargoUsuario(dadosUsuario);
           const nome = normalizarNomeUsuario(dadosUsuario);
 
-          setUsuarioAtual({
+          const usuarioAtualizado = {
             ...user,
             cargo,
             nome,
-          } as UsuarioFormatura);
+          } as UsuarioFormatura;
+
+          setUsuarioAtual(usuarioAtualizado);
+          
+          if (dadosUsuario) {
+            localStorage.setItem(cacheKey, JSON.stringify(dadosUsuario));
+          }
 
           setLoading(false);
         },
@@ -142,13 +200,16 @@ export function useAuthController() {
 
   const handleLogout = async () => {
     setError(null);
-
     try {
+      if (auth.currentUser) {
+        localStorage.removeItem(`auth_cache_${auth.currentUser.uid}`);
+      }
       await authService.logout();
     } catch (erro) {
       if (import.meta.env.DEV) {
-        console.error("[Auth] Erro ao fazer logout:", erro);
+        console.error("[Auth] Erro no logout:", erro);
       }
+      throw new Error("Não foi possível sair da conta.");
     }
   };
 
