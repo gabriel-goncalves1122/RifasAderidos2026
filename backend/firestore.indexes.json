@@ -36,7 +36,48 @@
           "order": "DESCENDING"
         }
       ],
-      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "pagamentos_pix",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status_pagamento_banco",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "data_expiracao",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "pagamentos_pix",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status_pagamento_banco",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "data_criacao",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "bilhetes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "data_pagamento",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
