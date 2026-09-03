@@ -1,7 +1,7 @@
 # 🎟️ Portal da Comissão - Sistema de Gestão de Rifas
 
 ![Status](https://img.shields.io/badge/Status-Produção-success)
-![Versão](https://img.shields.io/badge/Versão-1.0.0-blue)
+![Versão](https://img.shields.io/badge/Versão-2.0.0-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)
@@ -14,15 +14,15 @@ Plataforma web completa desenvolvida para automatizar a arrecadação financeira
 
 ### 👤 Área do Aderido
 * **Autenticação Segura:** Login protegido com Firebase Authentication.
-* **Reserva de Rifas:** Seleção de números com bloqueio de concorrência em tempo real.
-* **Checkout Integrado:** Modal de pagamento com QR Code dinâmico, cópia de chave PIX e upload de comprovante (imagem ou PDF).
-* **Meus Bilhetes:** Visualização do status das compras (Pendente, Aprovado, Recusado).
+* **Reserva de Rifas:** Seleção de números com bloqueio de concorrência em tempo real e tempo de expiração customizado.
+* **Checkout Integrado:** Modal de pagamento com QR Code PIX dinâmico (Integração Oficial PagBank/Mercado Pago) com baixa automática (Webhooks).
+* **Meus Bilhetes:** Visualização do status das compras (Pendente, Pago, Recusado, Expirado).
 
 ### 💼 Painel da Tesouraria (Acesso Administrativo)
-* **Auditoria de Pagamentos:** Tabela de aprovação rápida com visualizador de comprovantes em anexo.
-* **Visão Gráfica (Dashboard):** Acompanhamento de metas de arrecadação, conversão de vendas e top vendedores.
-* **Histórico Detalhado:** Registro imutável de todas as transações da comissão agrupadas por lote.
-* **Exportação de Dados:** Geração de relatórios financeiros em Excel (CSV) com aplicação de filtros dinâmicos de busca.
+* **Auditoria de Pagamentos (Versão Legado):** Interface para aprovação manual com visualizador de comprovantes e OCR (Optical Character Recognition) em anexo. A partir da v2.0, o foco é na conciliação via Webhooks.
+* **Visão Gráfica (Dashboard):** Acompanhamento de metas de arrecadação, receitas mensais, tickets médios e ranking de vendas.
+* **Histórico Detalhado:** Registro imutável de todas as transações, estornos e cancelamentos.
+* **Exportação de Dados:** Geração de relatórios financeiros CSV com filtros avançados.
 
 ---
 
