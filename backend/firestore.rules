@@ -10,11 +10,10 @@ service cloud.firestore {
       // =====================================================================
       // REGRA DE LEITURA (DEV E PROD)
       // =====================================================================
-      // Qualquer usuário autenticado pode ler a coleção de usuários.
-      // Essa flexibilização garante que usuários legados (sem Custom Claims geradas
-      // no token de autenticação) consigam recuperar seus próprios cargos sem que 
-      // o Firestore bloqueie a requisição do frontend.
-      allow read: if request.auth != null;
+      // Acesso restrito ao próprio documento para evitar vazamento de dados.
+      // Usuários com claims geradas no admin podem consultar a base via SDK Admin (backend).
+      // Permite leitura se o documentId for o uid ou se a query for filtrada pelo e-mail autenticado.
+      allow read: if request.auth != null && (request.auth.uid == documentId || resource.data.email == request.auth.token.email);
       
       // Escrita totalmente bloqueada. Nenhuma atualização é permitida pelo frontend!
       // Apenas a API com Admin SDK pode alterar o documento.

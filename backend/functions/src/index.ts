@@ -60,6 +60,10 @@ const criarCorsOptions = (req: express.Request): cors.CorsOptions => ({
       /^https:\/\/rifasaderidos2026\.firebaseapp\.com$/,
     ];
 
+    if (process.env.ALLOWED_CORS_DOMAIN) {
+      origensPermitidas.push(new RegExp(`^https:\\/\\/${process.env.ALLOWED_CORS_DOMAIN.replace(/\\./g, "\\.")}$`, 'i'));
+    }
+
     const origemPermitida = origensPermitidas.some((regex) =>
       regex.test(origin),
     );
@@ -164,6 +168,7 @@ app.use(errorHandler);
 
 export const api = onRequest(
   {
+    region: "southamerica-east1",
     timeoutSeconds: 180,
     memory: "512MiB",
 

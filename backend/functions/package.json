@@ -1,5 +1,5 @@
 {
-  "name": "functions",
+  "name": "sistema-rifas-backend",
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('lib', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc -p tsconfig.build.json",
@@ -18,7 +18,7 @@
     "backfill:claims": "npx tsx src/scripts/backfillCustomClaims.ts"
   },
   "engines": {
-    "node": "22"
+    "node": "20"
   },
   "main": "lib/index.js",
   "dependencies": {
