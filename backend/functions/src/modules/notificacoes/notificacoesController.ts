@@ -19,9 +19,13 @@ export const notificacoesController = {
   async marcarLidas(req: AuthRequest, res: Response) {
     try {
       const { ids } = req.body;
+      const email = req.user?.email;
+
+      if (!email) return res.status(401).json({ error: "Não autorizado" });
       if (!Array.isArray(ids))
         return res.status(400).json({ error: "IDs inválidos" });
-      await NotificacoesService.marcarComoLidas(ids);
+
+      await NotificacoesService.marcarComoLidas(ids, email);
       return res.status(200).json({ sucesso: true });
     } catch (error) {
       return res.status(500).json({ error: "Erro interno" });

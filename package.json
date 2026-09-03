@@ -1,29 +1,21 @@
 {
   "name": "sistema-rifas",
-  "version": "1.0.0",
-  "description": "Orquestrador do Monorepo - Comissão de Formatura 2026",
   "private": true,
   "scripts": {
-    "// --- Instalação ---": "",
-    "install:all": "npm install --prefix backend/functions && npm install --prefix frontend",
-
-    "// --- Desenvolvimento ---": "",
-    "dev:back": "npm run serve --prefix backend/functions",
-    "dev:front": "npm run dev --prefix frontend",
-    "dev": "npm run dev:back & npm run dev:front",
-
-    "// --- Testes ---": "",
-    "test:backend": "npm run test --prefix backend/functions",
-    "test:frontend": "npm run test --prefix frontend",
+    "dev:vite": "npm --prefix frontend run dev",
+    "dev:vite:network": "npm --prefix frontend run dev:network",
+    "dev:backend:local": "npm --prefix backend/functions run dev:emulators",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:frontend:network": "npm --prefix frontend run dev:network",
+    "dev:emulators": "npm --prefix backend/functions run dev:emulators",
+    "emulators:check": "node backend/scripts/verificarPortasEmuladores.mjs",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend/functions run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "test:frontend": "npm --prefix frontend run test:run",
+    "test:backend": "npm --prefix backend/functions test",
     "test": "npm run test:backend && npm run test:frontend",
-
-    "// --- Build e Deploy ---": "",
-    "build:front": "npm run build --prefix frontend",
-    "build:back": "npm run build --prefix backend/functions",
-    "build:all": "npm run build:back && npm run build:front",
-    "deploy:all": "npm run build:all && firebase deploy"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
+    "setup:linux": "bash scripts/dev/configurar-inotify-linux.sh",
+    "ngrok": "npx ngrok http 5001"
   }
 }

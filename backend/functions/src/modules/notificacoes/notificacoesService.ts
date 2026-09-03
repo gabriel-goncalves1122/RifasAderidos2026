@@ -51,25 +51,52 @@ export class NotificacoesService {
     }
   }
 
-  static async marcarComoLidas(ids: string[]) {
+  static async marcarComoLidas(ids: string[], email: string) {
     // Se não vier IDs, sai fora para não dar erro de batch vazio
     if (!ids || ids.length === 0) return;
 
     const db = admin.firestore();
+
+    // 1. Busca o usuário com segurança
+    const userDocs = await db
+      .collection("usuarios")
+      .where("email", "==", email)
+      .limit(1)
+      .get();
+
+    if (userDocs.empty) return;
+    const userData = userDocs.docs[0].data();
+    const idBusca = userData.id_aderido || userDocs.docs[0].id;
+    if (!idBusca) return;
+
+    // 2. Busca todas as notificações em chunks de 30 para evitar o limite do operador 'in'
     const batch = db.batch();
+    const CHUNK_SIZE = 30;
+    let hasUpdates = false;
 
-    ids.forEach((id) => {
-      if (id) {
-        // Proteção contra IDs nulos/undefined
-        batch.update(db.collection("notificacoes").doc(id), { lida: true });
+    for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+      const chunk = ids.slice(i, i + CHUNK_SIZE);
+      const snap = await db
+        .collection("notificacoes")
+        .where(admin.firestore.FieldPath.documentId(), "in", chunk)
+        .where("vendedor_id", "==", idBusca)
+        .get();
+
+      if (!snap.empty) {
+        hasUpdates = true;
+        snap.docs.forEach((doc) => {
+          batch.update(doc.ref, { lida: true });
+        });
       }
-    });
+    }
 
-    await batch.commit();
+    if (hasUpdates) {
+      await batch.commit();
+    }
   }
 
   static criarNotificacaoRecusa(
-    batch: admin.firestore.WriteBatch,
+    batchOrTransaction: admin.firestore.WriteBatch | admin.firestore.Transaction,
     vendedorId: string,
     motivo: string,
     numerosRifas: string[],
@@ -80,12 +107,57 @@ export class NotificacoesService {
     // Proteção: Garante que vendedorId existe para não criar lixo no banco
     if (!vendedorId) return;
 
-    batch.set(notificacaoRef, {
+    (batchOrTransaction as admin.firestore.WriteBatch).set(notificacaoRef, {
       vendedor_id: vendedorId,
       titulo: "Comprovante Recusado ⚠️",
       mensagem:
         motivo || "O comprovante enviado não foi aceito pela tesouraria.",
       rifas: numerosRifas || [], // Fallback para array vazio
+      lida: false,
+      data_criacao: new Date().toISOString(),
+    });
+  }
+
+  static criarNotificacaoCorrecaoDados(
+    batchOrTransaction: admin.firestore.WriteBatch | admin.firestore.Transaction,
+    vendedorId: string,
+    motivo: string,
+    numerosRifas: string[],
+  ) {
+    const db = admin.firestore();
+    const notificacaoRef = db.collection("notificacoes").doc();
+
+    if (!vendedorId) return;
+
+    (batchOrTransaction as admin.firestore.WriteBatch).set(notificacaoRef, {
+      vendedor_id: vendedorId,
+      tipo: "correcao_dados",
+      titulo: "Venda recusada",
+      mensagem: motivo || "Revise os dados do comprador e envie novamente.",
+      rifas: numerosRifas || [],
+      lida: false,
+      data_criacao: new Date().toISOString(),
+    });
+  }
+
+  static criarNotificacaoRifaLiberada(
+    batchOrTransaction: admin.firestore.WriteBatch | admin.firestore.Transaction,
+    vendedorId: string,
+    motivo: string,
+    numerosRifas: string[],
+  ) {
+    const db = admin.firestore();
+    const notificacaoRef = db.collection("notificacoes").doc();
+
+    if (!vendedorId) return;
+
+    (batchOrTransaction as admin.firestore.WriteBatch).set(notificacaoRef, {
+      vendedor_id: vendedorId,
+      tipo: "rifa_liberada",
+      titulo: "Rifas disponíveis novamente",
+      mensagem:
+        motivo || "O pagamento não foi confirmado pelo banco e as rifas voltaram para venda.",
+      rifas: numerosRifas || [],
       lida: false,
       data_criacao: new Date().toISOString(),
     });

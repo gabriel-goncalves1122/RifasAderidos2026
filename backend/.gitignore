@@ -1,0 +1,30 @@
+# Firebase emulators/export local
+banco-local/
+firebase-export-*/
+.runtimeconfig.json
+
+# Functions build
+functions/lib/
+functions/coverage/
+
+# Env e credenciais
+.env
+.env.local
+.env.*.local
+*.local
+*serviceAccount*.json
+*chave*.json
+*credentials*.json
+*secret*.json
+
+# Logs
+*.log
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+
+# Sistema/IDE
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/

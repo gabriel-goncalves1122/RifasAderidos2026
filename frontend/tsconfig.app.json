@@ -1,27 +1,34 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+
     "module": "ESNext",
-    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+
+    "paths": {
+      "@/*": ["./src/*"],
+      "@tests/*": ["./tests/*"]
+    },
+
     "types": ["vitest/globals", "@testing-library/jest-dom"],
 
-    /* Bundler mode */
-    "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
-    "jsx": "react-jsx",
+    "skipLibCheck": true,
 
-    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "../backend/functions/src/middlewares", "../backend/functions/src/middlewares/controllers", "../backend/functions/src/routes", "../backend/functions/tests/authMiddleware.test.ts", "tests", "../backend/functions/src/modules/rifas/rifasRoutes.ts"]
+  "include": ["src", "tests", "vite.config.ts", "types", "../app"],
+  "exclude": ["node_modules", "dist", "coverage", "tests/e2e"]
 }

@@ -16,7 +16,8 @@ jest.mock("../../src/modules/premios/premiosController", () => ({
 }));
 
 jest.mock("../../src/shared/middlewares/authMiddleware", () => ({
-  validateToken: (req: any, res: any, next: any) => next(),
+  validateToken: (_req: any, _res: any, next: any) => next(),
+  requireTesourariaOrAdmin: (_req: any, _res: any, next: any) => next(),
 }));
 
 describe("Rotas: /premios", () => {

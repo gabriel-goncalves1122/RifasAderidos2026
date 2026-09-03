@@ -1,36 +1,7 @@
-import { Router } from "express";
-import {
-  requireTesourariaOrAdmin,
-  validateToken,
-} from "../../shared/middlewares/authMiddleware";
-import { auditoriaController } from "./auditoriaController";
+// ============================================================================
+// ARQUIVO: backend/functions/src/modules/auditoria/auditoriaRoutes.ts
+// ============================================================================
+// Compatibilidade: preserva /auditorias/* delegando para a implementação legacy.
+import auditoriaLegacyRoutes from "../tesouraria/legacy/auditoria/auditoriaRoutes";
 
-const router = Router();
-
-// As rotas aqui herdam o prefixo "/auditoria" do roteador mestre
-router.get(
-  "/pendentes",
-  validateToken,
-  requireTesourariaOrAdmin,
-  auditoriaController.listarPendentes,
-);
-router.post(
-  "/avaliar",
-  validateToken,
-  requireTesourariaOrAdmin,
-  auditoriaController.avaliarManual,
-);
-router.post(
-  "/auditar-lote",
-  validateToken,
-  requireTesourariaOrAdmin,
-  auditoriaController.auditarIA,
-);
-router.post(
-  "/extrato",
-  validateToken,
-  requireTesourariaOrAdmin,
-  auditoriaController.salvarExtrato,
-);
-
-export default router;
+export default auditoriaLegacyRoutes;

@@ -1,20 +1,29 @@
-/* Importação da fonte Montserrat do Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+/* Importação da fonte Inter do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* Variáveis CSS Globais (Para casos onde o MUI não alcança) */
 :root {
   --cor-verde-fundo: #0B1B15; /* Um verde escuro, quase preto, extraído da sua logo */
   --cor-dourado-brilho: #D4AF37; /* Dourado clássico */
   --cor-dourado-escuro: #AA8222;
+  background-color: #F6F8F7;
 }
 
 body, html {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  background-color: #f5f5f5;
-  font-family: 'Montserrat', sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: #F6F8F7;
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: #F6F8F7;
 }
 
 /* Scrollbar personalizada e discreta */

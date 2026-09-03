@@ -1,22 +1,24 @@
 import request from "supertest";
 import express from "express";
-// Ajuste o caminho de importação consoante a sua estrutura de pastas
-import auditoriaRoutes from "../../src/modules/auditoria/auditoriaRoutes";
+import auditoriaRoutes from "../../src/modules/tesouraria/legacy/auditoria/auditoriaRoutes";
 import { jest, describe, beforeAll, it, expect } from "@jest/globals";
 
 // 1. MOCK DO CONTROLLER
-jest.mock("../../src/modules/auditoria/auditoriaController", () => ({
-  auditoriaController: {
-    listarPendentes: (req: any, res: any) =>
-      res.status(200).json({ acao: "listar_pendentes" }),
-    avaliarManual: (req: any, res: any) =>
-      res.status(200).json({ acao: "avaliar_manual" }),
-    auditarIA: (req: any, res: any) =>
-      res.status(200).json({ acao: "auditar_ia" }),
-    salvarExtrato: (req: any, res: any) =>
-      res.status(200).json({ acao: "salvar_extrato" }), // <- ADICIONAR ESTA LINHA
-  },
-}));
+jest.mock(
+  "../../src/modules/tesouraria/legacy/auditoria/auditoriaController",
+  () => ({
+    auditoriaController: {
+      listarPendentes: (req: any, res: any) =>
+        res.status(200).json({ acao: "listar_pendentes" }),
+      avaliarManual: (req: any, res: any) =>
+        res.status(200).json({ acao: "avaliar_manual" }),
+      auditarIA: (req: any, res: any) =>
+        res.status(200).json({ acao: "auditar_ia" }),
+      salvarExtrato: (req: any, res: any) =>
+        res.status(200).json({ acao: "salvar_extrato" }), // <- ADICIONAR ESTA LINHA
+    },
+  }),
+);
 
 // 2. MOCK DO MIDDLEWARE
 jest.mock("../../src/shared/middlewares/authMiddleware", () => ({

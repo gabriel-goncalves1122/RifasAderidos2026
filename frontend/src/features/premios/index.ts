@@ -1,0 +1,1 @@
+export { PremiosTab } from "./PremiosTab";

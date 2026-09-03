@@ -61,7 +61,7 @@ describe("Notificações Controller", () => {
         req as AuthRequest,
         res as Response,
       );
-      expect(mockMarcarComoLidas).toHaveBeenCalledWith(["msg1", "msg2"]);
+      expect(mockMarcarComoLidas).toHaveBeenCalledWith(["msg1", "msg2"], "teste@teste.com");
       expect(res.status).toHaveBeenCalledWith(200);
     });
   });

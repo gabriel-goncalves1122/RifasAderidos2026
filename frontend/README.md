@@ -1,50 +1,37 @@
-# React + TypeScript + Vite
+# 💻 Sistema de Rifas - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este é o módulo Frontend do sistema de gestão de rifas da Comissão. Foi construído com foco em performance e manutenibilidade utilizando React, Vite e TypeScript.
 
-Currently, two official plugins are available:
+## 🚀 Tecnologias
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Framework:** React + Vite
+- **Linguagem:** TypeScript
+- **Estilização:** Material UI (MUI)
+- **Gerenciamento de Estado:** React Query
+- **Roteamento:** React Router DOM
 
-## Expanding the ESLint configuration
+## 📁 Estrutura Principal (`src/features`)
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+A arquitetura do projeto segue a separação por *features* (Contextos delimitados), promovendo maior isolamento e facilidade de manutenção:
 
-- Configure the top-level `parserOptions` property like this:
+- `aderidos/`: Interface voltada aos compradores. Contém a lógica de reserva, checkout PIX (PagBank/MercadoPago) e visualização de bilhetes.
+- `tesouraria/`: Painel administrativo. Focado na auditoria de compras, visualização de relatórios, gráficos de desempenho e conciliação de transações.
+- `secretaria/`: Gestão de documentos, cadastros gerais e controle de acesso.
+- `auth/`: Lógica global de autenticação e proteção de rotas com Firebase.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 🛠️ Como Executar Localmente
+
+Certifique-se de estar na raiz do repositório antes de rodar os comandos ou navegue até esta pasta (`/frontend`).
+
+```bash
+# Instalar dependências
+npm install
+
+# Rodar o servidor de desenvolvimento
+npm run dev
+
+# Rodar testes unitários
+npm run test
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+> **Nota:** Para o funcionamento completo do fluxo de reservas, é recomendável rodar os emuladores do Firebase no backend simultaneamente.

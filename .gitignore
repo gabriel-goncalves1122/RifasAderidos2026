@@ -30,6 +30,8 @@ backend/.runtimeconfig.json
 *chave*.json
 *credentials*.json
 *secret*.json
+docs/pagbank/credenciais.local.md
+docs/pagbank/*.secrets.md
 
 # ----------------------------------------------------------------------------
 # 3. PASTAS DE BUILD E COMPILAÇÃO
@@ -78,6 +80,7 @@ microservico-ocr/**/temp_*
 *.png
 !frontend/src/assets/**/*
 !frontend/public/**/*
+!frontend/tests/e2e/fixtures/**/*.pdf
 
 # ----------------------------------------------------------------------------
 # 6. SISTEMA & IDE
@@ -93,6 +96,27 @@ microservico-ocr/**/temp_*
 # ----------------------------------------------------------------------------
 coverage/
 frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
 .nyc_output/
 *.log
 npm-debug.log*
+# ----------------------------------------------------------------------------
+# 8. BACKEND FUNCTIONS - BUILD, CACHE E ARQUIVOS LOCAIS
+# ----------------------------------------------------------------------------
+backend/functions/lib/
+backend/functions/coverage/
+backend/functions/.runtimeconfig.json
+
+# Arquivos sensíveis/locais dentro de scripts
+backend/functions/src/scripts/*chave*.json
+backend/functions/src/scripts/*credential*.json
+backend/functions/src/scripts/*secret*.json
+backend/functions/src/scripts/*.csv
+
+# ----------------------------------------------------------------------------
+# 9. AGENTES DE IA E FERRAMENTAS LOCAIS
+# ----------------------------------------------------------------------------
+.agents/
+.codex/

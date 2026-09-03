@@ -1,7 +1,7 @@
 // ============================================================================
 // ARQUIVO: backend/functions/src/modules/auth/authService.ts
 // ============================================================================
-import { db } from "../../shared/config/firebaseAdmin";
+import { db, auth } from "../../shared/config/firebaseAdmin";
 import { Usuario } from "../types/models"; // <-- IMPORTAÇÃO DA TIPAGEM
 
 export interface DadosRegisto {
@@ -59,6 +59,14 @@ export const authService = {
     updateData.data_ativacao = new Date().toISOString();
 
     await db.collection("usuarios").doc(docId).update(updateData);
+
+    // Define custom claims com o cargo do documento para a regra firestore.rules funcionar
+    const role = dadosAntigos.role || "aderido";
+    try {
+      await auth.setCustomUserClaims(uid, { role, roleAtualizado: true });
+    } catch (error) {
+      console.error("[AuthService] Erro ao definir custom claims:", error);
+    }
   },
 
   /* 👇 DESATIVADO: Usaremos o sendPasswordResetEmail no Frontend

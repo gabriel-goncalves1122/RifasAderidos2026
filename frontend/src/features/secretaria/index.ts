@@ -1,0 +1,1 @@
+export { SecretariaView } from "./SecretariaView";
