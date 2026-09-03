@@ -66,16 +66,6 @@ export function CheckoutResumoVenda({
           >
             Resumo da venda
           </Typography>
-
-          <Typography
-            sx={{
-              color: "#526760",
-              fontSize: "0.84rem",
-              mt: 0.25,
-            }}
-          >
-            Confira os números antes de gerar o Pix.
-          </Typography>
         </Box>
       </Stack>
 

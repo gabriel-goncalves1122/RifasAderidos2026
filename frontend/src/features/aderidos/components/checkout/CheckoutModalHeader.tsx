@@ -36,16 +36,6 @@ export function CheckoutModalHeader({
         >
           Finalizar venda
         </Typography>
-
-        <Typography
-          sx={{
-            color: colors.cinzaTexto,
-            fontSize: "0.86rem",
-            mt: 0.35,
-          }}
-        >
-          Preencha os dados para gerar o pagamento via Pix.
-        </Typography>
       </Box>
 
       <IconButton

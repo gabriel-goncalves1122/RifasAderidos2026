@@ -183,13 +183,14 @@ export function usePixStateMachine({
 
   const liberarReservaTotal = useCallback(async () => {
     if (cobrancaPix && cobrancaPix.status !== "sucesso") {
+      const idParaCancelar = cobrancaPix.id;
+      resetarFluxo();
       try {
-        await checkoutPixService.cancelarCobrancaPix(cobrancaPix.id, false);
+        await checkoutPixService.cancelarCobrancaPix(idParaCancelar, false);
       } catch (error) {
         console.error("Erro ao liberar reserva completa:", error);
       }
-    }
-    if (isMounted.current) {
+    } else {
       resetarFluxo();
     }
     invalidarDadosPainel?.();

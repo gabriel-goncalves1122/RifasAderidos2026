@@ -75,10 +75,6 @@ export function CheckoutPixBox({
           >
             Pagamento via Pix
           </Typography>
-
-          <Typography sx={{ color: colors.cinzaTexto, fontSize: "0.82rem", mt: 0.2 }}>
-            Gere o pagamento para exibir o QR Code e o Pix copia-e-cola.
-          </Typography>
         </Box>
 
         {!gerando && cobranca && pollingStatus !== "sucesso" && onCancelarPix && (

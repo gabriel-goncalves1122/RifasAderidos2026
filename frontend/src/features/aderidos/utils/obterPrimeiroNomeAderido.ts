@@ -9,10 +9,14 @@ interface DadosNomeAderido {
 
 function extrairPrimeiroNome(valor?: string | null) {
   const texto = valor?.trim();
-
   if (!texto) return "";
 
   return texto.split(/\s+/)[0];
+}
+
+function capitalizar(texto: string) {
+  if (!texto) return "";
+  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
 }
 
 export function obterPrimeiroNomeAderido({
@@ -22,11 +26,11 @@ export function obterPrimeiroNomeAderido({
 }: DadosNomeAderido) {
   const primeiroNome = extrairPrimeiroNome(nome);
 
-  if (primeiroNome) return primeiroNome;
+  if (primeiroNome) return capitalizar(primeiroNome);
 
   const primeiroDisplayName = extrairPrimeiroNome(displayName);
 
-  if (primeiroDisplayName) return primeiroDisplayName;
+  if (primeiroDisplayName) return capitalizar(primeiroDisplayName);
 
   const emailNormalizado = email?.trim();
 

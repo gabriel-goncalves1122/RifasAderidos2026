@@ -82,22 +82,12 @@ export function CheckoutDadosCompradorForm({
 
       <Divider sx={{ borderStyle: "dashed", my: 1, borderColor: "divider" }} />
 
-      <Box
-        sx={{
-          display: "flex",
-          gap: 1.5,
-          bgcolor: "rgba(0, 0, 0, 0.02)",
-          p: 2,
-          borderRadius: 2,
-          border: "1px solid",
-          borderColor: "rgba(0, 0, 0, 0.05)",
-        }}
-      >
+      <Box sx={{ display: "flex", gap: 1.5, pt: 1 }}>
         <InfoOutlinedIcon color="primary" fontSize="small" sx={{ mt: 0.25 }} />
         <Box>
           <Typography
             variant="subtitle2"
-            sx={{ fontWeight: 600, color: "text.primary", mb: 0.5 }}
+            sx={{ fontWeight: 600, color: "text.primary", mb: 0.25 }}
           >
             Dados do Titular do Pagamento
           </Typography>
@@ -105,8 +95,7 @@ export function CheckoutDadosCompradorForm({
             variant="body2"
             sx={{ color: "text.secondary", lineHeight: 1.4 }}
           >
-            Estes dados devem pertencer ao titular da conta bancária que
-            realizará o pagamento.
+            Estes dados devem pertencer ao titular da conta bancária que realizará o pagamento.
           </Typography>
         </Box>
       </Box>
@@ -122,9 +111,7 @@ export function CheckoutDadosCompradorForm({
           autoCapitalize: "none",
         }}
         error={Boolean(errors.email)}
-        helperText={
-          errors.email?.message || "Obrigatório para gerar o pagamento via Pix."
-        }
+        helperText={errors.email?.message}
         {...register("email")}
         InputProps={{
           startAdornment: (
@@ -146,10 +133,7 @@ export function CheckoutDadosCompradorForm({
           maxLength: 18,
         }}
         error={Boolean(errors.documento)}
-        helperText={
-          errors.documento?.message ||
-          "O documento deve ser o mesmo de quem irá realizar o pagamento Pix."
-        }
+        helperText={errors.documento?.message}
         {...register("documento")}
         onChange={(event) => {
           const valorFormatado = aplicarMascaraCpfCnpj(event.target.value);

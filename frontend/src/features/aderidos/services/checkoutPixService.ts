@@ -109,7 +109,9 @@ export const checkoutPixService = {
         sessaoCheckoutId: params.sessaoCheckoutId,
       });
 
-      return normalizarCobrancaPix(resposta);
+      const cobranca = normalizarCobrancaPix(resposta);
+      cobranca.numerosRifas = numerosRifas;
+      return cobranca;
     } finally {
       requisicaoEmAndamento = false;
     }
