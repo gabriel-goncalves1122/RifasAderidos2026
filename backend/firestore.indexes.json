@@ -36,6 +36,7 @@
           "order": "DESCENDING"
         }
       ],
+      "density": "SPARSE_ALL"
     },
     {
       "collectionGroup": "pagamentos_pix",
