@@ -74,7 +74,7 @@ export function LoginForm({
           fullWidth
           id="email"
           label="E-mail"
-          inputProps={{ "data-testid": "login-email" }}
+          inputProps={{ "data-testid": "login-email", autoCapitalize: "none" }}
           autoComplete="email"
           autoFocus
           disabled={isUIBlocked}
@@ -88,7 +88,7 @@ export function LoginForm({
           fullWidth
           id="password"
           label="Senha"
-          inputProps={{ "data-testid": "login-password" }}
+          inputProps={{ "data-testid": "login-password", autoCapitalize: "none" }}
           autoComplete="current-password"
           type={showPassword ? "text" : "password"}
           disabled={isUIBlocked}

@@ -94,6 +94,7 @@ export function RegisterForm({
           label="E-mail da Keeper"
           autoComplete="email"
           disabled={isUIBlocked}
+          inputProps={{ autoCapitalize: "none" }}
           {...register("email")}
           error={!!errors.email}
           helperText={errors.email?.message || " "}
@@ -130,6 +131,7 @@ export function RegisterForm({
           autoComplete="new-password"
           type={showPassword ? "text" : "password"}
           disabled={isUIBlocked}
+          inputProps={{ autoCapitalize: "none" }}
           {...register("senha")}
           error={!!errors.senha}
           helperText={errors.senha?.message || " "}
@@ -156,6 +158,7 @@ export function RegisterForm({
           autoComplete="new-password"
           type={showConfirmPassword ? "text" : "password"}
           disabled={isUIBlocked}
+          inputProps={{ autoCapitalize: "none" }}
           {...register("confirmarSenha")}
           error={!!errors.confirmarSenha}
           helperText={errors.confirmarSenha?.message || " "}

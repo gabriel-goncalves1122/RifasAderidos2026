@@ -33,7 +33,7 @@ function obterApiBaseUrl() {
       : hostname,
   );
 
-  return `http://${hostApi}:5001/rifasaderidos2026/us-central1/api`;
+  return `http://${hostApi}:5001/rifasaderidos2026/southamerica-east1/api`;
 }
 
 function ehHostRedeLocal(hostname: string) {
