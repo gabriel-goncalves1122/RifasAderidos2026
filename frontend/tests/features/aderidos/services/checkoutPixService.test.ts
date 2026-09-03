@@ -47,6 +47,7 @@ describe("Service: checkoutPixService", () => {
       qrCodeBase64: null,
       copiaECola: "000201PIXTESTE",
       expiraEm: "2026-06-07T18:00:00.000-03:00",
+      numerosRifas: ["001", "002"],
     });
   });
 

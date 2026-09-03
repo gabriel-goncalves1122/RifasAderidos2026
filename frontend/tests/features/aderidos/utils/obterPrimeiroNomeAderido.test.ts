@@ -26,7 +26,7 @@ describe("Utils: obterPrimeiroNomeAderido", () => {
     expect(resultado).toBe("Ana");
   });
 
-  it("Deve usar a parte antes do @ quando só houver e-mail", () => {
+  it("Deve usar a parte antes do @ quando só houver e-mail (sem capitalizar)", () => {
     const resultado = obterPrimeiroNomeAderido({
       nome: undefined,
       displayName: undefined,

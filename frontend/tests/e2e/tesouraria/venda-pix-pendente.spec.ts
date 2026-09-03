@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const PROJECT_ID = "rifasaderidos2026";
-const API_BASE_URL = `http://127.0.0.1:5001/${PROJECT_ID}/us-central1/api`;
+const API_BASE_URL = `http://127.0.0.1:5001/${PROJECT_ID}/southamerica-east1/api`;
 const AUTH_EMULATOR_URL = "http://127.0.0.1:9099";
 const COMPRADOR_NOME = "Cliente E2E Pix";
 const COMPRADOR_EMAIL = "comprador.e2e.pix@example.com";

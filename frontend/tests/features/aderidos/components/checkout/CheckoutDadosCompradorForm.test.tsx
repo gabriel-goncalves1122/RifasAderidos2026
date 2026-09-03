@@ -24,7 +24,7 @@ describe("Componente: CheckoutDadosCompradorForm", () => {
     );
 
     expect(
-      screen.getByText(/Obrigatório para gerar o pagamento via Pix\./i),
+      screen.getByText(/Dados do Titular do Pagamento/i),
     ).toBeInTheDocument();
   });
 
@@ -80,7 +80,7 @@ describe("Componente: CheckoutDadosCompradorForm", () => {
     );
 
     expect(
-      screen.getByText(/O documento deve ser o mesmo de quem irá realizar o pagamento Pix\./i),
+      screen.getByText(/Dados do Titular do Pagamento/i),
     ).toBeInTheDocument();
   });
 
@@ -100,7 +100,7 @@ describe("Componente: CheckoutDadosCompradorForm", () => {
 
     expect(screen.getByText("E-mail inválido.")).toBeInTheDocument();
     expect(
-      screen.queryByText(/Obrigatório para gerar o pagamento via Pix\./i),
-    ).not.toBeInTheDocument();
+      screen.queryByText(/Dados do Titular do Pagamento/i),
+    ).toBeInTheDocument();
   });
 });

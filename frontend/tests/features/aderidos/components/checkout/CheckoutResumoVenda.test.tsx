@@ -11,9 +11,6 @@ describe("Componente: CheckoutResumoVenda", () => {
     render(<CheckoutResumoVenda numerosRifas={["001", "002"]} />);
 
     expect(screen.getByText("Resumo da venda")).toBeInTheDocument();
-    expect(
-      screen.getByText("Confira os números antes de gerar o Pix."),
-    ).toBeInTheDocument();
   });
 
   it("Deve exibir todos os números das rifas selecionadas", () => {

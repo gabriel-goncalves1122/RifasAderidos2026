@@ -12,12 +12,13 @@ jest.mock("firebase-admin", () => {
   return {
     firestore: Object.assign(
       jest.fn().mockReturnValue({
-        collection: mockCollection.mockReturnValue({
-          doc: mockDoc.mockReturnValue({
-            id: "MOCK_DOC_ID",
+        collection: mockCollection.mockImplementation((colPath: string) => ({
+          doc: mockDoc.mockImplementation((docId?: string) => ({
+            id: docId || "MOCK_DOC_ID",
+            path: `${colPath}/${docId || "MOCK_DOC_ID"}`,
             get: mockGet,
-          }),
-        }),
+          })),
+        })),
         runTransaction: mockRunTransaction,
       }),
       {

@@ -85,7 +85,7 @@ describe("Componente <CheckoutModal />", () => {
       />,
     );
 
-    expect(screen.getByText(/Preencha os dados/i)).toBeInTheDocument();
+    expect(screen.getByText(/Resumo da venda/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /gerar pagamento/i }));
 
